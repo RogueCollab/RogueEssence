@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class EntityBrowserViewModel : ViewModelBase
     {
+        public event Action PreviewChanged;
+
         public GroundEntity SelectedEntity { get; private set; }
 
 
@@ -60,6 +62,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.Direction = (Dir8)value;
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -70,6 +73,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.Bounds = new Rect(SelectedEntity.Bounds.Start, new Loc(value, SelectedEntity.Bounds.Size.Y));
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -80,6 +84,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.Bounds = new Rect(SelectedEntity.Bounds.Start, new Loc(SelectedEntity.Bounds.Size.X, value));
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -163,6 +168,7 @@ namespace RogueEssence.Dev.ViewModels
                 this.RaisePropertyChanged();
                 if (SelectedEntity.GetEntityType() == GroundEntity.EEntTypes.Object)
                     animTypeChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -190,6 +196,7 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.ObjectAnim.AnimIndex = value > 0 ? ObjectAnims[value] : "";
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -214,6 +221,7 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.DrawOffset.X = value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -237,6 +245,7 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.DrawOffset.Y = value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -261,6 +270,7 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.ObjectAnim.StartFrame = value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -284,6 +294,7 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.ObjectAnim.EndFrame = value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -307,6 +318,7 @@ namespace RogueEssence.Dev.ViewModels
                     groundEnt.ObjectAnim.FrameTime = value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -361,6 +373,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
                 this.RaisePropertyChanged();
                 speciesChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -387,6 +400,7 @@ namespace RogueEssence.Dev.ViewModels
                     charEnt.Data.BaseForm.Form = value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -414,6 +428,7 @@ namespace RogueEssence.Dev.ViewModels
                     charEnt.Data.BaseForm.Skin = skinKeys[value];
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 
@@ -439,6 +454,7 @@ namespace RogueEssence.Dev.ViewModels
                     charEnt.Data.BaseForm.Gender = (Gender)value;
                 }
                 this.RaisePropertyChanged();
+                PreviewChanged?.Invoke();
             }
         }
 

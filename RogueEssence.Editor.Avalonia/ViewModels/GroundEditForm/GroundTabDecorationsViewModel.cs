@@ -95,6 +95,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.ObjectAnim.AnimIndex = value > -1 ? ObjectAnims[value] : "";
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -107,6 +108,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.ObjectAnim.AnimDir = (Dir8)value;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -118,6 +120,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.ObjectAnim.StartFrame = value;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -128,6 +131,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.ObjectAnim.EndFrame = value;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -138,6 +142,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.ObjectAnim.FrameTime = value;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -152,6 +157,7 @@ namespace RogueEssence.Dev.ViewModels
                 else
                     SelectedEntity.ObjectAnim.AnimFlip &= ~SpriteFlip.Horiz;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -166,6 +172,7 @@ namespace RogueEssence.Dev.ViewModels
                 else
                     SelectedEntity.ObjectAnim.AnimFlip &= ~SpriteFlip.Vert;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -180,7 +187,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (entMode == EntEditMode.SelectEntity)
             {
-                //do nothing
+                //set pending to null
+                GroundEditScene.Instance.DecorationInProgress = null;
             }
             else
             {
@@ -190,13 +198,13 @@ namespace RogueEssence.Dev.ViewModels
                     setEntity(new GroundAnim(GroundEditScene.Instance.SelectedDecoration));
                     GroundEditScene.Instance.SelectedDecoration = null;
                 }
+                animChanged();
             }
         }
 
         public void ProcessInput(InputManager input)
         {
-            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                return;
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
 
             Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
 
@@ -209,26 +217,31 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (GroundEditScene.Instance.DecorationInProgress == null)
+                        GroundEditScene.Instance.DecorationInProgress.MapLoc = groundCoords;
+                        if (!GroundEditScene.Instance.PendingStroke)
                         {
-                            if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                                PendEntity(groundCoords);
+                            if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
+                            {
+                                PreviewEntity(groundCoords);
+                                GroundEditScene.Instance.PendingStroke = true;
+                            }
                             else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
                                 RemoveEntityAt(groundCoords);
                         }
                         else
                         {
-                            GroundEditScene.Instance.DecorationInProgress.MapLoc = groundCoords;
                             if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                            {
                                 PlaceEntity();
-                            else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                                GroundEditScene.Instance.DecorationInProgress = null;
+                                GroundEditScene.Instance.PendingStroke = false;
+                                PreviewEntity(groundCoords);
+                            }
                         }
                         break;
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                         {
                             SelectEntityAt(groundCoords);
                             if (SelectedEntity != null)
@@ -270,7 +283,7 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
         }
 
-        public void PendEntity(Loc position)
+        public void PreviewEntity(Loc position)
         {
             GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), position);
             GroundEditScene.Instance.DecorationInProgress = placeableEntity;
@@ -278,9 +291,7 @@ namespace RogueEssence.Dev.ViewModels
         public void PlaceEntity()
         {
             GroundAnim placeableEntity = GroundEditScene.Instance.DecorationInProgress;
-            GroundEditScene.Instance.DecorationInProgress = null;
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
-
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
         }
 
@@ -358,6 +369,13 @@ namespace RogueEssence.Dev.ViewModels
                     newAnim = ii;
             }
             ChosenObjectAnim = newAnim;
+        }
+
+
+        private void animChanged()
+        {
+            if (entMode == EntEditMode.PlaceEntity)
+                PreviewEntity(Loc.Zero);
         }
     }
 

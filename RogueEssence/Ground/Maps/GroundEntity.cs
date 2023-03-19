@@ -291,7 +291,8 @@ namespace RogueEssence.Ground
         }
 
         public virtual void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
-        public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
+        public void Draw(SpriteBatch spriteBatch, Loc offset) { Draw(spriteBatch, offset, 1f); }
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, float alpha) { }
         public virtual Loc GetDrawLoc(Loc offset) { return Bounds.Start; }
         public virtual Loc GetDrawSize() { return Bounds.Size; }
 

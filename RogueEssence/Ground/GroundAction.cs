@@ -95,12 +95,12 @@ namespace RogueEssence.Ground
         }
 
 
-        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet, float alpha)
         {
             Loc drawLoc = GetDrawLoc(offset, sheet);
             drawLoc.Y -= LocHeight;
             //draw sprite at current frame
-            sheet.DrawChar(spriteBatch, AnimFrameType, true, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+            sheet.DrawChar(spriteBatch, AnimFrameType, true, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity * alpha / 255));
         }
         public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
@@ -154,12 +154,12 @@ namespace RogueEssence.Ground
                 NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], new FrameTick());
         }
 
-        public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet, float alpha)
         {
             Loc drawLoc = GetDrawLoc(offset, sheet);
             drawLoc.Y -= LocHeight;
             //draw sprite at current frame
-            sheet.DrawChar(spriteBatch, AnimFrameType, false, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity / 255));
+            sheet.DrawChar(spriteBatch, AnimFrameType, false, DirExt.AddAngles(CharDir, dirOffset), drawLoc.ToVector2(), FrameMethod, Microsoft.Xna.Framework.Color.White * ((float)opacity * alpha / 255));
         }
         public override Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {

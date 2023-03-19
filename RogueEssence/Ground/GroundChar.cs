@@ -383,10 +383,10 @@ namespace RogueEssence.Ground
 
             drawCross(spriteBatch, center - offset, centerColor);
         }
-        public override void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset, float alpha)
         {
             CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
-            currentCharAction.Draw(spriteBatch, offset, sheet);
+            currentCharAction.Draw(spriteBatch, offset, sheet, 1f);
 
             if (currentEmote != null)
             {
