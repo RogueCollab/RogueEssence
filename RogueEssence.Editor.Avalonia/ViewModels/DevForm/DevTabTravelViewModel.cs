@@ -158,20 +158,21 @@ namespace RogueEssence.Dev.ViewModels
         {
             lock (GameBase.lockObj)
             {
-                if (chosenZone == -1 || chosenStructure == -1)
-                    return;
-
                 int temp = chosenFloor;
                 floorIDs.Clear();
-
-                string chosen_entry = Zones[chosenZone].Split(':')[0];
-                ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
                 ObservableCollection<string> newFloors = new ObservableCollection<string>();
-                foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
+
+                if (chosenZone > -1 && chosenStructure > -1)
                 {
-                    newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
-                    floorIDs.Add(ii);
+                    string chosen_entry = Zones[chosenZone].Split(':')[0];
+                    ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
+                    foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
+                    {
+                        newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
+                        floorIDs.Add(ii);
+                    }
                 }
+
                 Floors = newFloors;
                 ChosenFloor = Math.Min(Math.Max(temp, 0), Floors.Count - 1);
             }
