@@ -11,6 +11,7 @@ using System.IO;
 using System.Collections;
 using Newtonsoft.Json;
 using System.Text;
+using RogueEssence.Dev;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -494,9 +495,13 @@ namespace RogueEssence.Script
             if (ZoneManager.Instance != null)
             {
                 ZoneManager.Instance.LuaEngineReload();
-                if (ZoneManager.Instance.CurrentZone != null && 
-                    (GameManager.Instance.CurrentScene == GroundScene.Instance || GameManager.Instance.CurrentScene == DungeonScene.Instance))
-                    GameManager.Instance.SceneOutcome = ReInitZone();
+                if (ZoneManager.Instance.CurrentZone != null)
+                {
+                    if (GameManager.Instance.CurrentScene == GroundScene.Instance || GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        GameManager.Instance.SceneOutcome = ReInitZone();
+                    else if (GameManager.Instance.CurrentScene == GroundEditScene.Instance || GameManager.Instance.CurrentScene == DungeonEditScene.Instance)
+                        ReInitZoneEditor();
+                }
             }
 
         }
@@ -506,16 +511,25 @@ namespace RogueEssence.Script
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentGround != null)
             {
-                OnGroundMapInit(ZoneManager.Instance.CurrentGround.AssetName, ZoneManager.Instance.CurrentGround);
                 OnGroundModeBegin();
-
-                //process events before the map fades in
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
             }
             else if (ZoneManager.Instance.CurrentMap != null)
             {
-                //!#FIXME : We'll need to call the method on map entry too if a map is running!
-                //OnDungeonFloorInit();
+                OnDungeonModeBegin();
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
+            }
+        }
+
+        public void ReInitZoneEditor()
+        {
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                ZoneManager.Instance.CurrentGround.OnEditorInit();
+            }
+            else if (ZoneManager.Instance.CurrentMap != null)
+            {
+                ZoneManager.Instance.CurrentMap.OnEditorInit();
             }
         }
 
@@ -1820,7 +1834,6 @@ namespace RogueEssence.Script
             m_scriptUI.Reset();
             DiagManager.Instance.LogInfo("LuaEngine.OnGroundMapInit()..");
             m_scrsvc.Publish(EServiceEvents.GroundMapInit.ToString(), mapname, map);
-
         }
 
         /// <summary>

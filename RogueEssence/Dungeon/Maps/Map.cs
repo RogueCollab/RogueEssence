@@ -9,7 +9,6 @@ using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
-using QuadTrees;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
 
@@ -918,6 +917,22 @@ namespace RogueEssence.Dungeon
         //  Script Stuff
         //========================
 
+
+        public void OnEditorInit()
+        {
+            if (AssetName != "")
+                LuaEngine.Instance.RunDungeonMapScript(AssetName);
+
+            //Reload the map events
+            LoadScriptEvents();
+
+            foreach (var ev in ScriptEvents)
+                ev.Value.ReloadEvent();
+
+            //!TODO: Handle entity callbacks maybe?
+
+        }
+
         /// <summary>
         /// Called before the map is displayed to run script events and etc.
         /// </summary>
@@ -928,11 +943,13 @@ namespace RogueEssence.Dungeon
             if (AssetName != "")
                 LuaEngine.Instance.RunDungeonMapScript(AssetName);
 
+            //Reload the map events
+            LoadScriptEvents();
+
             //Check for floor specific events in the current dungeon's package.
             //Reload the map events
             foreach (var ev in ScriptEvents)
                 ev.Value.ReloadEvent();
-
 
             //!TODO: Handle entity callbacks maybe?
 
@@ -984,6 +1001,7 @@ namespace RogueEssence.Dungeon
 
         public void LuaEngineReload()
         {
+            LoadScriptEvents();
             LoadLua();
         }
 
