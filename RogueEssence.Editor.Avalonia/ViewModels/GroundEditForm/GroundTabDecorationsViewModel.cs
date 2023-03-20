@@ -300,7 +300,7 @@ namespace RogueEssence.Dev.ViewModels
         }
         public void PlaceEntity()
         {
-            GroundAnim placeableEntity = GroundEditScene.Instance.DecorationInProgress;
+            GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), GroundEditScene.Instance.DecorationInProgress.MapLoc);
             DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
             ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
         }

@@ -182,7 +182,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void PlaceEntity()
         {
-            GroundEntity placeableEntity = GroundEditScene.Instance.EntityInProgress;
+            GroundEntity placeableEntity = EntBrowser.CreateEntity();
+            placeableEntity.Position = GroundEditScene.Instance.EntityInProgress.Position;
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
             placeableEntity.ReloadEvents();
 
