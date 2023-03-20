@@ -1230,7 +1230,8 @@ namespace RogueEssence.Dungeon
                 if (!String.IsNullOrEmpty(skill.SkillNum))
                     newSlot++;
             }
-            ReplaceSkill(skillNum, newSlot, enabled);
+            if (newSlot < MAX_SKILL_SLOTS)
+                ReplaceSkill(skillNum, newSlot, enabled);
         }
         public void ReplaceSkill(string skillNum, int newSlot, bool enabled)
         {
