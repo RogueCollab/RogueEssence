@@ -603,6 +603,13 @@ namespace RogueEssence
                 yield break;
             }
 
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Zone].ContainsKey(destId.ID))
+                throw new ArgumentException(String.Format("Invalid Zone Name: {0}", destId.ID), nameof(destId.ID));
+
+            ZoneEntrySummary summary = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(destId.ID);
+            if (!summary.SegLocValid(destId.StructID))
+                throw new ArgumentException(String.Format("Invalid Segment ID: {0}", destId.StructID), nameof(destId));
+
             bool newGround = (destId.StructID.Segment <= -1);
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
             bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
@@ -675,12 +682,14 @@ namespace RogueEssence
 
 
 
-
         /// <summary>
         /// Enter a ground map by name, and makes the player spawn at the specified named marker
         /// </summary>
+        /// <param name="zone"></param>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
+        /// <param name="preserveMusic"></param>
+        /// <returns></returns>
         public IEnumerator<YieldInstruction> MoveToGround(string zone, string mapname, string entrypoint, bool preserveMusic)
         {
             //if we're in a test map, return to editor
@@ -689,6 +698,13 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
                 yield break;
             }
+
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Zone].ContainsKey(zone))
+                throw new ArgumentException(String.Format("Invalid Zone Name: {0}", zone), nameof(zone));
+
+            ZoneEntrySummary summary = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zone);
+            if (!summary.GroundValid(mapname))
+                throw new ArgumentException(String.Format("Invalid Ground Map Name: {0}", mapname), nameof(mapname));
 
             bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));

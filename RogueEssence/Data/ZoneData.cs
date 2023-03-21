@@ -118,7 +118,27 @@ namespace RogueEssence.Data
                 if (structure.IsRelevant)
                     totalFloors += structure.FloorCount;
             }
-            return new ZoneEntrySummary(Name, Released, Comment, NoEXP, Level, LevelCap, TeamRestrict, TeamSize, MoneyRestrict, BagRestrict, BagSize, Rescues, totalFloors, Rogue);
+            ZoneEntrySummary summary = new ZoneEntrySummary(Name, Released, Comment);
+            summary.NoEXP = NoEXP;
+            summary.Level = Level;
+            summary.LevelCap = LevelCap;
+            summary.TeamRestrict = TeamRestrict;
+            summary.TeamSize = TeamSize;
+            summary.MoneyRestrict = MoneyRestrict;
+            summary.BagRestrict = BagRestrict;
+            summary.BagSize = BagSize;
+            summary.Rescues = Rescues;
+            summary.CountedFloors = totalFloors;
+            summary.Rogue = Rogue;
+            summary.Grounds.AddRange(GroundMaps);
+            for (int ii = 0; ii < Segments.Count; ii++)
+            {
+                HashSet<int> floors = new HashSet<int>();
+                foreach (int id in Segments[ii].GetFloorIDs())
+                    floors.Add(id);
+                summary.Maps.Add(floors);
+            }
+            return summary;
         }
 
         /// <summary>
@@ -193,26 +213,34 @@ namespace RogueEssence.Data
         public int Rescues;
         public int CountedFloors;
         public RogueStatus Rogue;
+        public List<string> Grounds;
+        public List<HashSet<int>> Maps;
 
         public ZoneEntrySummary() : base()
         {
-
+            Grounds = new List<string>();
+            Maps = new List<HashSet<int>>();
         }
 
-        public ZoneEntrySummary(LocalText name, bool released, string comment, bool noEXP, int level, bool levelCap, bool teamRestrict, int teamSize, bool moneyRestrict, int bagRestrict, int bagSize, int rescues, int countedFloors, RogueStatus rogue)
+        public ZoneEntrySummary(LocalText name, bool released, string comment)
             : base(name, released, comment)
         {
-            NoEXP = noEXP;
-            Level = level;
-            LevelCap = levelCap;
-            TeamRestrict = teamRestrict;
-            TeamSize = teamSize;
-            MoneyRestrict = moneyRestrict;
-            BagRestrict = bagRestrict;
-            BagSize = bagSize;
-            Rescues = rescues;
-            CountedFloors = countedFloors;
-            Rogue = rogue;
+            Grounds = new List<string>();
+            Maps = new List<HashSet<int>>();
+        }
+
+        public bool SegLocValid(SegLoc segLoc)
+        {
+            if (segLoc.Segment == -1)
+                return (0 <= segLoc.ID && segLoc.ID < Grounds.Count);
+            else if (0 <= segLoc.Segment && segLoc.Segment < Maps.Count)
+                return Maps[segLoc.Segment].Contains(segLoc.ID);
+            return false;
+        }
+
+        public bool GroundValid(string groundName)
+        {
+            return Grounds.Contains(groundName);
         }
 
 
