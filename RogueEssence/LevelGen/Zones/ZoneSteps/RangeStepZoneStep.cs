@@ -41,5 +41,22 @@ namespace RogueEssence.LevelGen
             }
         }
 
+
+        public override string ToString()
+        {
+            int count = 0;
+            IGenPriority singleGen = null;
+            if (Spawns != null)
+            {
+                foreach (IntRange range in Spawns.EnumerateRanges())
+                {
+                    count++;
+                    singleGen = Spawns[range.Min];
+                }
+            }
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
+        }
     }
 }
