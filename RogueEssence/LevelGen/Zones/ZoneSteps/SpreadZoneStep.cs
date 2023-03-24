@@ -8,7 +8,7 @@ using RogueEssence.Dungeon;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Generates specific rooms randomly across the whole dungeon segment.  This is done by replacing an existing room on the floor.
+    /// Generates specific occurrences randomly across the whole dungeon segment.
     /// </summary>
     [Serializable]
     public abstract class SpreadZoneStep : ZoneStep
