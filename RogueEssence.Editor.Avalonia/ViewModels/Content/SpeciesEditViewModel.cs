@@ -410,6 +410,8 @@ namespace RogueEssence.Dev.ViewModels
                 CharaIndexNode charaNode = GetIndexNode();
                 for (int ii = 0; ii < monsterKeys.Count; ii++)
                 {
+                    if (monsterKeys[ii] == null) // in case of non continuous index of Dex numbers
+                        continue;
                     MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                     CharID dexID = new CharID(ii, -1, -1, -1);
