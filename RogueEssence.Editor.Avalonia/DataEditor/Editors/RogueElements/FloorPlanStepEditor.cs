@@ -20,8 +20,8 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IAddConnectedRoomsStep obj, Type type, object[] attributes)
         {
-            PropertyInfo amountInfo = type.GetProperty(nameof(obj.Amount));
-            PropertyInfo hallInfo = type.GetProperty(nameof(obj.HallPercent));
+            PropertyInfo amountInfo = typeof(IAddConnectedRoomsStep).GetProperty(nameof(obj.Amount));
+            PropertyInfo hallInfo = typeof(IAddConnectedRoomsStep).GetProperty(nameof(obj.HallPercent));
             return string.Format("{0}: Add:{1} Hall:{2}%", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.Amount, amountInfo.GetMemberInfoType(), amountInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.HallPercent, hallInfo.GetMemberInfoType(), hallInfo.GetCustomAttributes(false)));
@@ -32,7 +32,7 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IAddDisconnectedRoomsStep obj, Type type, object[] attributes)
         {
-            PropertyInfo amountInfo = type.GetProperty(nameof(obj.Amount));
+            PropertyInfo amountInfo = typeof(IAddDisconnectedRoomsStep).GetProperty(nameof(obj.Amount));
             return string.Format("{0}: Add:{1}", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.Amount, amountInfo.GetMemberInfoType(), amountInfo.GetCustomAttributes(false)));
         }
@@ -42,7 +42,7 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IConnectRoomStep obj, Type type, object[] attributes)
         {
-            PropertyInfo connectInfo = type.GetProperty(nameof(obj.ConnectFactor));
+            PropertyInfo connectInfo = typeof(IConnectRoomStep).GetProperty(nameof(obj.ConnectFactor));
             return string.Format("{0}: {1}%", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.ConnectFactor, connectInfo.GetMemberInfoType(), connectInfo.GetCustomAttributes(false)));
         }
@@ -52,9 +52,9 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IFloorPathBranch obj, Type type, object[] attributes)
         {
-            PropertyInfo fillInfo = type.GetProperty(nameof(obj.FillPercent));
-            PropertyInfo hallInfo = type.GetProperty(nameof(obj.HallPercent));
-            PropertyInfo branchInfo = type.GetProperty(nameof(obj.BranchRatio));
+            PropertyInfo fillInfo = typeof(IFloorPathBranch).GetProperty(nameof(obj.FillPercent));
+            PropertyInfo hallInfo = typeof(IFloorPathBranch).GetProperty(nameof(obj.HallPercent));
+            PropertyInfo branchInfo = typeof(IFloorPathBranch).GetProperty(nameof(obj.BranchRatio));
             return string.Format("{0}: Fill:{1}% Hall:{2}% Branch:{3}%", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.FillPercent, fillInfo.GetMemberInfoType(), fillInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.HallPercent, hallInfo.GetMemberInfoType(), hallInfo.GetCustomAttributes(false)),

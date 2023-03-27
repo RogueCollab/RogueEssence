@@ -29,7 +29,7 @@ namespace RogueEssence.Dev
 
         public override string GetString(IMultiStepSpawner obj, Type type, object[] attributes)
         {
-            PropertyInfo memberInfo = type.GetProperty(nameof(obj.Picker));
+            PropertyInfo memberInfo = typeof(IMultiStepSpawner).GetProperty(nameof(obj.Picker));
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
@@ -40,8 +40,18 @@ namespace RogueEssence.Dev
 
         public override string GetString(IPickerSpawner obj, Type type, object[] attributes)
         {
-            PropertyInfo memberInfo = type.GetProperty(nameof(obj.Picker));
+            PropertyInfo memberInfo = typeof(IPickerSpawner).GetProperty(nameof(obj.Picker));
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Picker, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+        }
+    }
+    public class MoneyDivSpawnerEditor : Editor<IDivSpawner>
+    {
+        public override bool DefaultSubgroup => true;
+
+        public override string GetString(IDivSpawner obj, Type type, object[] attributes)
+        {
+            PropertyInfo memberInfo = typeof(IDivSpawner).GetProperty(nameof(obj.DivAmount));
+            return string.Format("{0}[{1}]", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.DivAmount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
     public class ContextSpawnerEditor : Editor<IContextSpawner>
@@ -51,7 +61,17 @@ namespace RogueEssence.Dev
 
         public override string GetString(IContextSpawner obj, Type type, object[] attributes)
         {
-            PropertyInfo memberInfo = type.GetProperty(nameof(obj.Amount));
+            PropertyInfo memberInfo = typeof(IContextSpawner).GetProperty(nameof(obj.Amount));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+        }
+    }
+    public class TeamContextSpawnerEditor : Editor<ITeamContextSpawner>
+    {
+        public override bool DefaultSubgroup => true;
+
+        public override string GetString(ITeamContextSpawner obj, Type type, object[] attributes)
+        {
+            PropertyInfo memberInfo = typeof(ITeamContextSpawner).GetProperty(nameof(obj.Amount));
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
