@@ -275,16 +275,17 @@ namespace RogueEssence.Dev
 
         public static string GetDisplayName(this Type type)
         {
-            if (type.IsConstructedGenericType)
+            if (type.IsGenericType)
             {
-                Type[] args = type.GetGenericArguments();
-                StringBuilder str = new StringBuilder(type.Name);
+                StringBuilder str = new StringBuilder(type.Name.Substring(0, type.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
                 str.Append("<");
+                Type[] args = type.GetGenericArguments();
                 for (int ii = 0; ii < args.Length; ii++)
                 {
                     if (ii > 0)
                         str.Append(",");
-                    str.Append(args[ii].GetDisplayName());
+                    if (type.IsConstructedGenericType)
+                        str.Append(args[ii].GetDisplayName());
                 }
                 str.Append(">");
                 return str.ToString();
@@ -350,16 +351,21 @@ namespace RogueEssence.Dev
         }
 
 
-
-        public static Type[] GetTypesFromConstraints(Type[] parentTemplateTypes, params Type[] types)
+        /// <summary>
+        /// Works like GetAssignableTypes, but does not recurse into template types.
+        /// </summary>
+        /// <param name="parentTemplateTypes"></param>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public static PartialType[] GetTypesFromConstraints(Type[] parentTemplateTypes, params Type[] types)
         {
             if (types.Length == 1 && types[0].IsArray)
             {
                 Type type = types[0];
                 Type arrayType = type.GetElementType();
-                Type[] assignableArrays = GetTypesFromConstraints(parentTemplateTypes, arrayType);
+                PartialType[] assignableArrays = GetTypesFromConstraints(parentTemplateTypes, arrayType);
                 for (int ii = 0; ii < assignableArrays.Length; ii++)
-                    assignableArrays[ii] = assignableArrays[ii].MakeArrayType();
+                    assignableArrays[ii] = new PartialType(assignableArrays[ii].Type.MakeArrayType(), assignableArrays[ii].SearchAssemblies, assignableArrays[ii].GenericArgs);
                 return assignableArrays;
             }
             else
@@ -370,15 +376,15 @@ namespace RogueEssence.Dev
                 for (int ii = 0; ii < types.Length; ii++)
                     assemblies[parentTemplateTypes.Length + ii] = types[ii].Assembly;
                 List<Assembly> dependentAssemblies = GetDependentAssemblies(assemblies);
-                List<Type> resultTypes = getAssignableTypesBasic(false, dependentAssemblies.ToArray(), types);
-                resultTypes.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.BaseType.Name + type1.BaseType.FullName, type2.BaseType.Name + type2.BaseType.FullName); });
+                List<PartialType> resultTypes = getAssignableTypesBasic(false, dependentAssemblies.ToArray(), types);
+                resultTypes.Sort((PartialType type1, PartialType type2) => { return String.CompareOrdinal(type1.Type.Name + type1.Type.FullName, type2.Type.Name + type2.Type.FullName); });
                 return resultTypes.ToArray();
             }
         }
 
-        private static List<Type> getAssignableTypesBasic(bool allowAbstract, Assembly[] searchAssemblies, params Type[] constraints)
+        private static List<PartialType> getAssignableTypesBasic(bool allowAbstract, Assembly[] searchAssemblies, params Type[] constraints)
         {
-            List<Type> children = new List<Type>();
+            List<PartialType> children = new List<PartialType>();
             foreach (Assembly assembly in searchAssemblies)
             {
                 Type[] types = assembly.GetTypes();
@@ -411,7 +417,7 @@ namespace RogueEssence.Dev
                         continue;
 
                     if (!checkType.ContainsGenericParameters)
-                        children.Add(checkType);
+                        children.Add(new PartialType(checkType, searchAssemblies));
                     else
                     {
                         //checkType is now currently a generic type whos argument-less form inherits from the constraint type's argument-less form
@@ -440,7 +446,11 @@ namespace RogueEssence.Dev
                         }
                         if (correctFill)
                         {
-                            children.Add(checkType);
+                            PartialType partialType = new PartialType(checkType, searchAssemblies, paramsFromBase);
+                            //also, check to see if there exists at least one constructable child given the current constraints
+                            Type[] testTypes = GetClosedTypesFromPartial(partialType, 1);
+                            if (testTypes.Length > 0)
+                                children.Add(partialType);
                         }
                     }
                 }
@@ -561,6 +571,37 @@ namespace RogueEssence.Dev
             }
 
             return children;
+        }
+
+        public static Type[] GetClosedTypesFromPartial(PartialType partialType, int limit = 0)
+        {
+            if (partialType.Type.IsArray)
+            {
+                PartialType arrayType = new PartialType(partialType.Type.GetElementType(), partialType.SearchAssemblies, partialType.GenericArgs);
+                Type[] assignableArrays = GetClosedTypesFromPartial(arrayType, limit);
+                for (int ii = 0; ii < assignableArrays.Length; ii++)
+                    assignableArrays[ii] = assignableArrays[ii].MakeArrayType();
+                return assignableArrays;
+            }
+            else
+            {
+                List<Type> children = new List<Type>();
+
+                Type[] checkArgs = partialType.Type.GetGenericArguments();
+                Type[] chosenParams = new Type[checkArgs.Length];
+
+                //NOTE: partial construction is not possible at this point
+                //because some of the chosen generic args have constraints that could be types that are still open
+                //thus, the best we can do is just use a pending params stack
+                Stack<Type[]> pendingParams = new Stack<Type[]>();
+                pendingParams.Push(partialType.GenericArgs);
+                Stack<int> typeIndex = new Stack<int>();
+                typeIndex.Push(0);
+                defSpecifiedGenericParameter(children, 3, limit, partialType.SearchAssemblies, partialType.Type, checkArgs, chosenParams, pendingParams, typeIndex, new Stack<Type[]>(), new Stack<int>());
+
+                children.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
+                return children.ToArray();
+            }
         }
 
         private static void defSpecifiedGenericParameter(List<Type> children, int recursionDepth, int limit, Assembly[] searchAssemblies, Type checkType, Type[] checkArgs, Type[] chosenParams, Stack<Type[]> pendingParams, Stack<int> typeIndex, Stack<Type[]> constraints, Stack<int> constraintIndex)
@@ -801,6 +842,11 @@ namespace RogueEssence.Dev
         {
             if ((type1 == null) != (type2 == null))
                 return false;
+
+            if (type1.IsArray != type2.IsArray)
+                return false;
+            if (type1.IsArray)
+                return IsGenericEqual(type1.GetElementType(), type2.GetElementType());
 
             if (type1.IsConstructedGenericType)
                 type1 = type1.GetGenericTypeDefinition();

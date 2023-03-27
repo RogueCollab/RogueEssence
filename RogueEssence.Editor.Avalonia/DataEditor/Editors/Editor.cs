@@ -15,7 +15,7 @@ namespace RogueEssence.Dev
 {
     public abstract class Editor<T> : IEditor
     {
-        protected delegate void CreateMethod(Type type, Type fullType);
+        protected delegate void CreateMethod(PartialType type, Type fullType);
 
         /// <summary>
         /// Determines if the editor contents should be shown in the containing panel.
@@ -415,6 +415,7 @@ namespace RogueEssence.Dev
                 }
                 else
                 {
+                    control.DataContext = null;
                     //note: considerations must be made when dealing with inheritance/polymorphism
                     //eg: find all children in this assembly that can be instantiated,
                     //add them to different panels
@@ -624,6 +625,28 @@ namespace RogueEssence.Dev
         }
 
         /// <summary>
+        /// Creates a string that consists of a generic type and its single type argument.
+        /// Used only for the editor display HACK
+        /// </summary>
+        /// <returns></returns>
+        private static string encaseParentTypes(Type[] parentTemplateTypes, Type type)
+        {
+            StringBuilder str = new StringBuilder();
+            for (int ii = 0; ii < parentTemplateTypes.Length; ii++)
+            {
+                Type parentType = parentTemplateTypes[ii];
+                str.Append(parentType.Name.Substring(0, parentType.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
+                str.Append("<");
+            }
+            str.Append(type.GetDisplayName());
+            for (int ii = 0; ii < parentTemplateTypes.Length; ii++)
+            {
+                str.Append(">");
+            }
+            return str.ToString();
+        }
+
+        /// <summary>
         /// Populates a stack panel with options to choose the type for the editor
         /// </summary>
         /// <param name="type">Type of variable to be assigned to</param>
@@ -632,16 +655,49 @@ namespace RogueEssence.Dev
         /// <param name="chosenType">Assignining variable's type</param>
         private void populateTypeChoice(StackPanel typeContainer, Action initNewConstructedType, Type chosenType, Type[] parentTemplateTypes, params Type[] constraints)
         {
-            typeContainer.Children.Clear();
-
+            //TODO: piecewise selection of individual type args of generic types, instead of all at once
             bool piecewiseTypes = false;
 
-            Type[] baseList;
-            if (piecewiseTypes)
-                baseList = ReflectionExt.GetTypesFromConstraints(parentTemplateTypes, constraints);
-            else
-                baseList = constraints[0].GetAssignableTypes();
+            PartialType[] baseList = ReflectionExt.GetTypesFromConstraints(parentTemplateTypes, constraints);
+
+            typeContainer.Children.Clear();
             typeContainer.DataContext = baseList;
+
+            //NOTE: this block is a HACK to make a certain common editor display case look nicer.
+            //remove this when piecewise type construction actually works!!
+            if (baseList.Length == 1)
+            {
+                PartialType childType = baseList[0];
+                //recurse special cases where there is only one possible option with one template class
+                if (childType.Type.IsGenericTypeDefinition)
+                {
+                    //and it has one GenericArg that is not specified
+
+                    if (childType.GenericArgs.Length == 1 && childType.GenericArgs[0] == null)
+                    {
+                        StackPanel subPanel = new StackPanel();
+                        typeContainer.Children.Add(subPanel);
+
+                        Type[] checkArgs = childType.Type.GetGenericArguments();
+                        Type argType = checkArgs[0];
+                        Type[] tpConstraints = argType.GetGenericParameterConstraints();
+
+                        Type[] childTemplateTypes = new Type[parentTemplateTypes.Length + 1];
+                        for (int nn = 0; nn < parentTemplateTypes.Length; nn++)
+                            childTemplateTypes[nn] = parentTemplateTypes[nn];
+                        childTemplateTypes[parentTemplateTypes.Length] = childType.Type;
+
+                        Type chosenTypeArg = null;
+                        if (chosenType != null)
+                        {
+                            Type[] filledArgs = chosenType.GenericTypeArguments;
+                            chosenTypeArg = filledArgs[0];
+                        }
+                        populateTypeChoice(subPanel, initNewConstructedType, chosenTypeArg, childTemplateTypes, tpConstraints);
+                        return;
+                    }
+                }
+            }
 
             Grid sharedRowPanel = getSharedRowPanel(2);
 
@@ -665,21 +721,22 @@ namespace RogueEssence.Dev
             typeContainer.Children.Add(templatePanel);
 
 
-            CreateMethod templateArgMethod = (Type childType, Type fullChildType) =>
+            CreateMethod templateArgMethod = (PartialType childType, Type fullChildType) =>
             {
                 //clear the sub-type panel
                 templatePanel.Children.Clear();
-
-                //TODO: treat constructed types differently
-                //NOTE: due to the fact that one type argument can be a constraint for another,
-                //types with multiple arguments must maintain an order of dependency
-                //and an update in one will require a check on every dependent argument
+                templatePanel.DataContext = null;
 
                 if (piecewiseTypes)
                 {
+                    //TODO: treat constructed types differently
+                    //NOTE: due to the fact that one type argument can be a constraint for another,
+                    //types with multiple arguments must maintain an order of dependency
+                    //and an update in one will require a check on every dependent argument
+
                     //populate the sub-panel
-                    Type[] generics = childType.GenericTypeArguments;
-                    Type[] checkArgs = childType.GetGenericArguments();
+                    //Type[] generics = childType.Type.GenericTypeArguments;
+                    Type[] checkArgs = childType.Type.GetGenericArguments();
                     Type[] filledArgs = new Type[checkArgs.Length];
                     if (fullChildType != null)
                         filledArgs = fullChildType.GetGenericArguments();
@@ -695,9 +752,14 @@ namespace RogueEssence.Dev
                         Type[] childTemplateTypes = new Type[parentTemplateTypes.Length + 1];
                         for (int nn = 0; nn < parentTemplateTypes.Length; nn++)
                             childTemplateTypes[nn] = parentTemplateTypes[nn];
-                        childTemplateTypes[parentTemplateTypes.Length] = childType;
+                        childTemplateTypes[parentTemplateTypes.Length] = childType.Type;
                         populateTypeChoice(typeArgsPanel, initNewConstructedType, filledArgs[ii], childTemplateTypes, tpConstraints);
                     }
+                }
+                else
+                {
+                    if (childType.Type.IsGenericTypeDefinition)
+                        populateTypeArgChoice(templatePanel, initNewConstructedType, childType, fullChildType);
                 }
             };
 
@@ -705,26 +767,18 @@ namespace RogueEssence.Dev
             int selection = -1;
             for (int ii = 0; ii < baseList.Length; ii++)
             {
-                Type childType = baseList[ii];
-                items.Add(childType.GetDisplayName());
+                PartialType childType = baseList[ii];
 
-                if (piecewiseTypes)
-                {
-                    if (childType.IsGenericEqual(chosenType))
-                        selection = ii;
-                }
-                else
-                {
-                    if (childType == chosenType)
-                        selection = ii;
-                }
+                //NOTE: the hack uses parent template types different from how the piecewise types approach would do it.
+                items.Add(encaseParentTypes(parentTemplateTypes, childType.Type));
+
+                if (childType.Type.IsGenericEqual(chosenType))
+                    selection = ii;
             }
             if (chosenType == null)
                 selection = 0;
             if (selection == -1)
                 throw new TargetException("Types do not match.");
-
-
 
             var subject = new Subject<List<string>>();
             cbValue.Bind(ComboBox.ItemsProperty, subject);
@@ -732,18 +786,18 @@ namespace RogueEssence.Dev
             cbValue.SelectedIndex = selection;
 
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex]);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].Type);
                 ToolTip.SetTip(cbValue, typeDesc);
             }
 
             cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex]);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].Type);
                 ToolTip.SetTip(cbValue, typeDesc);
 
                 // this will pass in an unconstructed generic type, if generic
                 // otherwise, if non-generic, just passes the type
-                Type childType = baseList[cbValue.SelectedIndex];
+                PartialType childType = baseList[cbValue.SelectedIndex];
                 templateArgMethod(childType, null);
 
                 //the distinction lies in the triggering of the selected index callback.
@@ -763,30 +817,146 @@ namespace RogueEssence.Dev
             templateArgMethod(baseList[cbValue.SelectedIndex], chosenType);
         }
 
+
+        private static string getTypeArgString(Type genericType)
+        {
+            StringBuilder str = new StringBuilder("<");
+            Type[] args = genericType.GetGenericArguments();
+            for (int ii = 0; ii < args.Length; ii++)
+            {
+                if (ii > 0)
+                    str.Append(",");
+                str.Append(args[ii].GetDisplayName());
+            }
+            str.Append(">");
+            return str.ToString();
+        }
+        private void populateTypeArgChoice(StackPanel templatePanel, Action initNewConstructedType, PartialType partialType, Type chosenType)
+        {
+            templatePanel.Children.Clear();
+
+            Type[] baseList = ReflectionExt.GetClosedTypesFromPartial(partialType);
+            templatePanel.DataContext = baseList;
+
+            Grid sharedRowPanel = getSharedRowPanel(2);
+
+            TextBlock lblType = new TextBlock();
+            lblType.Text = "Args:";
+            lblType.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            sharedRowPanel.Children.Add(lblType);
+            sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
+            lblType.SetValue(Grid.ColumnProperty, 0);
+
+            ComboBox cbValue = new SearchComboBox();
+            cbValue.Margin = new Thickness(4, 0, 0, 0);
+            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
+            sharedRowPanel.Children.Add(cbValue);
+            cbValue.SetValue(Grid.ColumnProperty, 1);
+
+            templatePanel.Children.Add(sharedRowPanel);
+
+
+            List<string> items = new List<string>();
+            int selection = -1;
+            for (int ii = 0; ii < baseList.Length; ii++)
+            {
+                Type childType = baseList[ii];
+                items.Add(getTypeArgString(childType));
+
+                if (childType == chosenType)
+                    selection = ii;
+            }
+            if (chosenType == null)
+                selection = 0;
+            if (selection == -1)
+                throw new TargetException("Types do not match.");
+
+
+
+            var subject = new Subject<List<string>>();
+            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            subject.OnNext(items);
+            cbValue.SelectedIndex = selection;
+
+            {
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].BaseType);
+                ToolTip.SetTip(cbValue, typeDesc);
+            }
+
+            cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+            {
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].BaseType);
+                ToolTip.SetTip(cbValue, typeDesc);
+
+                initNewConstructedType();
+            };
+
+        }
+
         private Type getChosenType(StackPanel typeContainer)
         {
-            Type[] baseList = (Type[])typeContainer.DataContext;
+            PartialType[] baseList = (PartialType[])typeContainer.DataContext;
+
+            //NOTE: this block is a HACK to make a certain common editor display case look nicer.
+            //remove this when piecewise type construction actually works!!
+            if (baseList.Length == 1)
+            {
+                PartialType childType = baseList[0];
+                //recurse special cases where there is only one possible option with one template class
+                if (childType.Type.IsGenericTypeDefinition)
+                {
+                    //and it has one GenericArg that is not specified
+
+                    if (childType.GenericArgs.Length == 1 && childType.GenericArgs[0] == null)
+                    {
+                        StackPanel subPanel = (StackPanel)typeContainer.Children[0];
+                        Type chosenArgType = getChosenType(subPanel);
+                        return childType.Type.MakeGenericType(new Type[1] { chosenArgType });
+                    }
+                }
+            }
+
             Grid subGrid = (Grid)typeContainer.Children[0];
             ComboBox cbValue = (ComboBox)subGrid.Children[1];
 
-            Type chosenType = baseList[cbValue.SelectedIndex];
+            PartialType chosenType = baseList[cbValue.SelectedIndex];
 
-            if (chosenType.IsGenericTypeDefinition)
+            bool piecewiseTypes = false;
+            Type returnType;
+            if (chosenType.Type.IsGenericTypeDefinition)
             {
                 StackPanel templatePanel = (StackPanel)typeContainer.Children[1];
-                Type[] argTypes = new Type[chosenType.GetGenericArguments().Length];
-                for (int ii = 0; ii < argTypes.Length; ii++)
+                if (piecewiseTypes)
                 {
-                    StackPanel typeArgsPanel = (StackPanel)templatePanel.Children[ii];
+                    Type[] argTypes = new Type[chosenType.Type.GetGenericArguments().Length];
+                    for (int ii = 0; ii < argTypes.Length; ii++)
+                    {
+                        StackPanel typeArgsPanel = (StackPanel)templatePanel.Children[ii];
 
-                    Type argType = getChosenType(typeArgsPanel);
-                    argTypes[ii] = argType;
+                        Type argType = getChosenType(typeArgsPanel);
+                        argTypes[ii] = argType;
+                    }
+                    returnType = chosenType.Type.MakeGenericType(argTypes);
                 }
+                else
+                    returnType = getChosenTypeArgs(templatePanel);
 
-                chosenType = chosenType.MakeGenericType(argTypes);
             }
+            else
+                returnType = chosenType.Type;
 
-            return chosenType;
+
+
+            return returnType;
+        }
+
+        private Type getChosenTypeArgs(StackPanel templatePanel)
+        {
+            Type[] baseList = (Type[])templatePanel.DataContext;
+            Grid subGrid = (Grid)templatePanel.Children[0];
+            ComboBox cbValue = (ComboBox)subGrid.Children[1];
+
+            return baseList[cbValue.SelectedIndex];
         }
 
         object IEditor.SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)

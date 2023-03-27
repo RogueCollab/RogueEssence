@@ -20,9 +20,14 @@ namespace RogueEssence.Dev
     {
         public override string GetString(MobSpawn obj, Type type, object[] attributes)
         {
-            MonsterData entry = DataManager.Instance.GetMonster(obj.BaseForm.Species);
+            string monName = "[EMPTY]";
+            if (!String.IsNullOrEmpty(obj.BaseForm.Species))
+            {
+                MonsterData entry = DataManager.Instance.GetMonster(obj.BaseForm.Species);
+                entry.Name.ToLocal();
+            }
             MemberInfo[] spawnInfo = type.GetMember(nameof(obj.Level));
-            return String.Format("{0} Lv.{1}", entry.Name.ToLocal(), DataEditor.GetString(obj.Level, spawnInfo[0].GetMemberInfoType(), spawnInfo[0].GetCustomAttributes(false)));
+            return String.Format("{0} Lv.{1}", monName, DataEditor.GetString(obj.Level, spawnInfo[0].GetMemberInfoType(), spawnInfo[0].GetCustomAttributes(false)));
         }
     }
 }
