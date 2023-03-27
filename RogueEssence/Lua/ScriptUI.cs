@@ -154,7 +154,7 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="text">The text to display.</param>
         /// <param name="expireTime">The time for the textbox to remain on screen.</param>
-        public void PopUp(string text, int expireTime)
+        public void TextPopUp(string text, int expireTime)
         {
             try
             {
