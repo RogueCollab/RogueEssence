@@ -97,7 +97,7 @@ namespace RogueEssence.Dungeon
             SingleCharContext mainContext = new SingleCharContext(character);
             yield return CoroutineManager.Instance.StartCoroutine(character.OnWalk(mainContext));
             if (!character.Dead)
-                yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem, false));
+                yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem));
             if (switchedChar != null)
             {
                 SingleCharContext switchedContext = new SingleCharContext(switchedChar);
@@ -139,8 +139,15 @@ namespace RogueEssence.Dungeon
             //only do this when someone has changed location, or when someone has changed mobility
             foreach (Character standChar in ZoneManager.Instance.CurrentMap.DisplacedChars)
             {
-                if (!standChar.Dead && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
-                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+                if (!standChar.Dead)
+                {
+                    HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
+                    while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
+                    {
+                        iterWarpHistory.Add(standChar.CharLoc);
+                        yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+                    }
+                }
             }
             ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
 
@@ -167,10 +174,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ArriveOnTile(Character character)
         {
-            return ArriveOnTile(character, false, false, false);
+            return ArriveOnTile(character, false, false);
         }
 
-        public IEnumerator<YieldInstruction> ArriveOnTile(Character character, bool checkItem, bool wantItem, bool noTrap)
+        public IEnumerator<YieldInstruction> ArriveOnTile(Character character, bool checkItem, bool wantItem)
         {
             //if void, add restart
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, character.CharLoc))
@@ -242,32 +249,40 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
-                Loc landTile = character.CharLoc;
-                if (!String.IsNullOrEmpty(tile.Effect.ID))
-                {
-                    if (!character.WarpHistory.Contains(character.CharLoc))
-                    {
-                        character.WarpHistory.Add(character.CharLoc);
-                        //check for tile property
-                        yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
-                        yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
-                        character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
-                    }
-                }
-
-                //check to make sure the character is on the same tile still, before moving on
-                if (character.CharLoc == landTile)
-                {
-                    if (!character.WarpHistory.Contains(character.CharLoc))
-                    {
-                        character.WarpHistory.Add(character.CharLoc);
-                        yield return CoroutineManager.Instance.StartCoroutine(tile.Data.LandedOnTile(character));
-                        character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
-                    }
-                }
+                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
             }
         }
+
+        public IEnumerator<YieldInstruction> RecurseDisplacements(Character character)
+        {
+            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
+            Loc landTile = character.CharLoc;
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                if (!character.WarpHistory.Contains(character.CharLoc))
+                {
+                    character.WarpHistory.Add(character.CharLoc);
+                    //check for tile property
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
+                    yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
+                    character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
+                }
+            }
+
+            //check to make sure the character is on the same tile still, before moving on
+            if (character.CharLoc == landTile)
+            {
+                if (!character.WarpHistory.Contains(character.CharLoc))
+                {
+                    character.WarpHistory.Add(character.CharLoc);
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Data.LandedOnTile(character));
+                    character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
+                }
+            }
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
+        }
+
 
         public void QueueTrap(Loc loc)
         {
