@@ -113,7 +113,8 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Ending.ActiveTeam.Assembly.Count > 0)
+                int eligibleAssemblyCount = AssemblyResultsMenu.GetEligibleCount(Ending);
+                if (eligibleAssemblyCount > 0)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, 0));
                 else
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
@@ -136,10 +137,11 @@ namespace RogueEssence.Menu
 
         protected override string GetTitle()
         {
+            int eligibleAssemblyCount = GetEligibleCount(Ending);
             if (Ending.ActiveTeam.Name != "")
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(Ending.ActiveTeam.Assembly.Count, 4));
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
             else
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(Ending.ActiveTeam.Assembly.Count, 4));
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
         }
 
         protected override EventedList<Character> GetChars()
@@ -163,6 +165,21 @@ namespace RogueEssence.Menu
             return characters;
         }
 
+        public static int GetEligibleCount(GameProgress ending)
+        {
+            EventedList<Character> characters = new EventedList<Character>();
+            int trueIdx = 0;
+            for (int ii = 0; ii < ending.ActiveTeam.Assembly.Count; ii++)
+            {
+                if (!ending.ActiveTeam.Assembly[ii].Absentee)
+                {
+                    trueIdx++;
+                }
+
+            }
+            return trueIdx;
+        }
+
         public override void Update(InputManager input)
         {
             if (input.JustPressed(FrameInput.InputType.Menu) || input.JustPressed(FrameInput.InputType.Confirm)
@@ -182,7 +199,8 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Page < (Ending.ActiveTeam.Assembly.Count - 1) / 4)
+                int eligibleAssemblyCount = GetEligibleCount(Ending);
+                if (Page < (eligibleAssemblyCount - 1) / 4)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, Page+1));
                 else
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));

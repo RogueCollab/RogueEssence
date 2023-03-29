@@ -66,8 +66,9 @@ namespace RogueEssence.Menu
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, Page - 1));
                 else
                 {
-                    if (Ending.ActiveTeam.Assembly.Count > 0)
-                        MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, (Ending.ActiveTeam.Assembly.Count - 1) / 4));
+                    int eligibleAssemblyCount = AssemblyResultsMenu.GetEligibleCount(Ending);
+                    if (eligibleAssemblyCount > 0)
+                        MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, (eligibleAssemblyCount - 1) / 4));
                     else
                         MenuManager.Instance.ReplaceMenu(new PartyResultsMenu(Ending));
                 }
