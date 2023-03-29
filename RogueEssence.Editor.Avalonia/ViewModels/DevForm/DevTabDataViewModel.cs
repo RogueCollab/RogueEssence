@@ -11,6 +11,8 @@ using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Script;
+using SkiaSharp;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -332,7 +334,31 @@ namespace RogueEssence.Dev.ViewModels
             {
                 string assetName = choices.ChosenAsset;
 
-                MessageBox.MessageBoxResult result = await MessageBox.Show(form, "Are you sure you want to delete the following " + dataType.ToString() + ":\n" + assetName, "Delete " + dataType.ToString(),
+                bool hasBase = false;
+                bool fromCurrentMod = false;
+                string testPath = Path.Join(DataManager.DATA_PATH + dataType.ToString(), assetName + DataManager.DATA_EXT);
+                foreach ((ModHeader, string) modWithPath in PathMod.FallforthPathsWithHeader(testPath))
+                {
+                    if (modWithPath.Item1.Path == PathMod.Quest.Path)
+                    {
+                        fromCurrentMod = true;
+                        break;
+                    }
+                    else
+                        hasBase = true;
+                }
+
+                if (!fromCurrentMod)
+                {
+                    await MessageBox.Show(form, String.Format("The {0} {1} is part of another mod or the base game and cannot be deleted.", dataType.ToString(), assetName), "Delete " + dataType.ToString(),
+                        MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+
+                string extraWarning = "";
+                if (hasBase)
+                    extraWarning = String.Format("\n\nThis asset is a mod over the base game's {0}", assetName);
+                MessageBox.MessageBoxResult result = await MessageBox.Show(form, String.Format("Are you sure you want to delete the following {0}:\n{1}{2}", dataType.ToString(), assetName, extraWarning), "Delete " + dataType.ToString(),
                     MessageBox.MessageBoxButtons.YesNo);
                 if (result == MessageBox.MessageBoxResult.No)
                     return;

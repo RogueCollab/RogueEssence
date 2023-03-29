@@ -203,7 +203,9 @@ namespace RogueEssence
 
         public static IEnumerable<(ModHeader, string)> FallforthPathsWithHeader(string basePath)
         {
-            yield return (ModHeader.Invalid, HardMod("", basePath));
+            string baseFullPath = HardMod("", basePath);
+            if (File.Exists(baseFullPath) || Directory.Exists(baseFullPath))
+                yield return (ModHeader.Invalid, baseFullPath);
 
             for (int ii = 0; ii < LoadOrder.Count; ii++)
             {
