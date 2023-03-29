@@ -15,9 +15,9 @@ namespace RogueEssence.Menu
         MenuDivider MenuDiv;
         public MenuText[] Diffs;
 
-        public ModDiffSummary() : base(new Rect(new Loc(16, 16), new Loc(16, 16)))
+        public ModDiffSummary(string title) : base(new Rect(new Loc(16, 16), new Loc(16, 16)))
         {
-            Title = new MenuText(Text.FormatKey("MENU_MODS_MISSING"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
+            Title = new MenuText(title, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Title);
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),
                 Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);

@@ -163,7 +163,7 @@ namespace RogueEssence.Menu
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { attemptLoadMain(); });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => {  });
-                MenuManager.Instance.AddMenu(new ModDiffDialog(Text.FormatKey("DLG_ASK_LOAD_UPGRADE"), removedMods, false, choices, 0, 1), false);
+                MenuManager.Instance.AddMenu(new ModDiffDialog(Text.FormatKey("DLG_ASK_LOAD_UPGRADE"), Text.FormatKey("MENU_MODS_MISSING"), removedMods, false, choices, 0, 1), false);
             }
             else
                 attemptLoadMain();
