@@ -473,7 +473,7 @@ namespace RogueEssence.Data
 
         public void SaveStartParams()
         {
-            string path = PathMod.ModPath(DATA_PATH + "StartParams.xml");
+            string path = PathMod.HardMod(DATA_PATH + "StartParams.xml");
             try
             {
                 XmlDocument xmldoc = new XmlDocument();
