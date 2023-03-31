@@ -19,11 +19,10 @@
     <converters:FrameConverter x:Key="FrameConverter"/>
     <converters:MultiSelectConverter x:Key="MultiSelectConverter"/>
   </UserControl.Resources>
-  <Grid >
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="11*"/>
       <RowDefinition Height="9*"/>
-      <RowDefinition Height="40"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition MinWidth="400" Width="2*"/>
@@ -93,7 +92,12 @@
         </Border>
       </Grid>
     </ScrollViewer>
-    <views:SearchListBox DataContext="{Binding Tilesets}" Margin="4" Grid.Row="1" Grid.Column="1"/>
-    <Button Command="{Binding btnDeleteTileset_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete Selected Tileset</Button>
+    <views:SearchListBox DataContext="{Binding Tilesets}" Margin="4" Grid.Row="1" Grid.Column="1">
+      <views:SearchListBox.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Delete Tileset" Command="{Binding $parent[4].DataContext.mnuDeleteTileset_Click}"/>
+        </ContextMenu>
+      </views:SearchListBox.ContextMenu>
+    </views:SearchListBox>
   </Grid>
 </UserControl>

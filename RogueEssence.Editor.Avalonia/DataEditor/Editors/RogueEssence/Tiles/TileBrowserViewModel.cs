@@ -359,7 +359,7 @@ namespace RogueEssence.Dev.ViewModels
                 Frames.RemoveAt(ChosenFrame);
         }
 
-        public async void btnDeleteTileset_Click()
+        public async void mnuDeleteTileset_Click()
         {
             //get current sprite
             int animIdx = Tilesets.InternalIndex;
