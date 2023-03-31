@@ -481,6 +481,9 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                 new_mob.Skills[ii].Element.Enabled = this.Skills[ii].Element.Enabled;
 
+            foreach (string key in StatusEffects.Keys)
+                new_mob.StatusEffects.Add(key, StatusEffects[key].Clone());
+
             return new_mob;
         }
 

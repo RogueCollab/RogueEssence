@@ -88,6 +88,7 @@ namespace RogueEssence.Dungeon
         {
             //TODO: Created v0.5.20, revert on v1.1
             ID = other.ID;
+
             StatusStates = other.StatusStates.Clone();
         }
         public StatusEffect Clone() { return new StatusEffect(this); }
