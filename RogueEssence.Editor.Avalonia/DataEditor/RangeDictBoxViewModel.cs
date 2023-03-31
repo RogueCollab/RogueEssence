@@ -202,6 +202,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             int index = getIndexFromKey(key);
             Collection[index] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[index].Start, Collection[index].End, element);
+            CurrentElement = index;
             OnMemberChanged?.Invoke();
         }
 
@@ -218,6 +219,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (ii == Collection.Count || key.Min < Collection[ii].Start)
                 {
                     Collection.Insert(ii, new RangeDictElement(StringConv, AddMin, AddMax, key.Min, key.Max, element));
+                    CurrentElement = ii;
                     break;
                 }
             }

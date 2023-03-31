@@ -108,21 +108,19 @@ namespace RogueEssence.Dev.ViewModels
 
         private void editItem(int index, object element)
         {
-            int tmp = SelectedIndex;
             index = Math.Min(Math.Max(0, index), Collection.Count);
             Collection[index] = new ListElement(StringConv, AddIndex, index, element);
-            SelectedIndex = tmp;
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
 
         public void InsertItem(int index, object element)
         {
-            int tmp = SelectedIndex;
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
             for (int ii = index + 1; ii < Collection.Count; ii++)
                 Collection[ii].Key = ii;
-            SelectedIndex = tmp;
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
 

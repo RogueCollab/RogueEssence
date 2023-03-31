@@ -131,6 +131,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
             Collection[index] = new SpawnListElement(StringConv, Collection[index].Weight, Collection[index].Chance, element);
+            CurrentElement = index;
         }
 
         private void insertItem(int index, object element)
@@ -144,6 +145,7 @@ namespace RogueEssence.Dev.ViewModels
             foreach (SpawnListElement curSpawn in Collection)
                 curSpawn.Chance = (double)curSpawn.Weight / spawnTotal;
             Collection.Insert(index, new SpawnListElement(StringConv, newWeight, (double)newWeight / spawnTotal, element));
+            CurrentElement = index;
         }
 
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)

@@ -93,6 +93,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             int index = getIndexFromKey(key);
             Collection[index] = new DictionaryElement(StringConv, Collection[index].Key, element);
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
         private async void editKey(object oldKey, object key, object element)
@@ -106,6 +107,7 @@ namespace RogueEssence.Dev.ViewModels
 
             int index = getIndexFromKey(oldKey);
             Collection[index] = new DictionaryElement(StringConv, key, element);
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
 
@@ -123,6 +125,7 @@ namespace RogueEssence.Dev.ViewModels
         private void insertItem(object oldKey, object key, object element)
         {
             Collection.Add(new DictionaryElement(StringConv, key, element));
+            SelectedIndex = Collection.Count-1;
             OnMemberChanged?.Invoke();
         }
 

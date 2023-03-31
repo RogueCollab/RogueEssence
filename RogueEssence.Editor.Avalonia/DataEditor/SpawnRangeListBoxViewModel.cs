@@ -196,12 +196,14 @@ namespace RogueEssence.Dev.ViewModels
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
             Collection[index] = new SpawnRangeListElement(StringConv, AddMin, AddMax, Collection[index].Start, Collection[index].End, Collection[index].Weight, element);
+            CurrentElement = index;
         }
 
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             Collection.Insert(index, new SpawnRangeListElement(StringConv, AddMin, AddMax, 0, 1, 10, element));
+            CurrentElement = index;
         }
 
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)
