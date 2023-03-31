@@ -79,7 +79,7 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EZoneCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeZoneScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", ZoneCurrentScriptSym, callback.ToString());
+            return String.Format("{0}.{1}", zonename, callback.ToString());
         }
 
 

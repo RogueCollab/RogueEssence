@@ -91,7 +91,7 @@ namespace RogueEssence.Dungeon
             {
                 LuaEngine.EZoneCallbacks ev = (LuaEngine.EZoneCallbacks)ii;
                 string assetName = this.ID;
-                string callback = LuaEngine.MakeZoneScriptCallbackName(assetName, ev);
+                string callback = LuaEngine.MakeZoneScriptCallbackName(LuaEngine.ZoneCurrentScriptSym, ev);
                 if (!LuaEngine.Instance.DoesFunctionExists(callback))
                     continue;
                 DiagManager.Instance.LogInfo(String.Format("Zone.LoadScriptEvents(): Added event {0} to zone {1}!", ev.ToString(), assetName));
