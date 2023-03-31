@@ -136,14 +136,38 @@ namespace RogueEssence.Dev.ViewModels
 
         private void insertItem(int index, object element)
         {
-            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
+            int newWeight = 10;
+
             int spawnTotal = 0;
             foreach (SpawnListElement curSpawn in Collection)
                 spawnTotal += curSpawn.Weight;
-            int newWeight = 10;
+
             spawnTotal += newWeight;
             foreach (SpawnListElement curSpawn in Collection)
                 curSpawn.Chance = (double)curSpawn.Weight / spawnTotal;
+
+            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
+            Collection.Insert(index, new SpawnListElement(StringConv, newWeight, (double)newWeight / spawnTotal, element));
+            CurrentElement = index;
+        }
+
+        public void InsertOnKey(int index, object element)
+        {
+            int newWeight = 10;
+            if (0 <= index && index < Collection.Count)
+            {
+                newWeight = Collection[index].Weight;
+            }
+
+            int spawnTotal = 0;
+            foreach (SpawnListElement curSpawn in Collection)
+                spawnTotal += curSpawn.Weight;
+
+            spawnTotal += newWeight;
+            foreach (SpawnListElement curSpawn in Collection)
+                curSpawn.Chance = (double)curSpawn.Weight / spawnTotal;
+
+            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             Collection.Insert(index, new SpawnListElement(StringConv, newWeight, (double)newWeight / spawnTotal, element));
             CurrentElement = index;
         }

@@ -34,7 +34,9 @@ namespace RogueEssence.Dev
                 else
                     lbxValue.MaxHeight = 180;
 
-                lbxValue.DataContext = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
+                CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
+                lbxValue.DataContext = vm;
+                lbxValue.SetListContextMenu(ListEditor.CreateContextMenu(control, type, vm));
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
@@ -48,7 +50,9 @@ namespace RogueEssence.Dev
                 else
                     lbxValue.MaxHeight = 180;
 
-                lbxValue.DataContext = createViewModel(control, parent, name, type, attributes, member, false);
+                CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, false);
+                lbxValue.DataContext = vm;
+                lbxValue.SetListContextMenu(ListEditor.CreateContextMenu(control, type, vm));
                 control.Children.Add(lbxValue);
             }
 

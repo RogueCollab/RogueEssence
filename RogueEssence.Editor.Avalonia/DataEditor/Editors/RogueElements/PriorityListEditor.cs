@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using System.Collections;
 using RogueEssence.Dev.ViewModels;
+using Avalonia.Interactivity;
 
 namespace RogueEssence.Dev
 {
@@ -30,12 +31,13 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 220;
 
-            PriorityListBoxViewModel mv = new PriorityListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
-            lbxValue.DataContext = mv;
+            PriorityListBoxViewModel vm = new PriorityListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            lbxValue.DataContext = vm;
+            lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
-            mv.OnEditItem = (Priority priority, int index, object element, PriorityListBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem = (Priority priority, int index, object element, PriorityListBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + priority.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
@@ -54,7 +56,7 @@ namespace RogueEssence.Dev
                 control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
-            mv.OnEditPriority = (Priority priority, int index, PriorityListBoxViewModel.EditPriorityOp op) =>
+            vm.OnEditPriority = (Priority priority, int index, PriorityListBoxViewModel.EditPriorityOp op) =>
             {
                 string elementName = name + "<Priority>";
                 DataEditForm frmData = new DataEditForm();
@@ -74,8 +76,53 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            mv.LoadFromList(member);
+            vm.LoadFromList(member);
             control.Children.Add(lbxValue);
+        }
+
+
+        private static ContextMenu createContextMenu(StackPanel control, Type type, PriorityListBoxViewModel vm)
+        {
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IPriorityList<>), type, 0);
+
+            ContextMenu copyPasteStrip = new ContextMenu();
+
+            MenuItem copyToolStripMenuItem = new MenuItem();
+            MenuItem pasteToolStripMenuItem = new MenuItem();
+
+            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+            list.AddRange(new MenuItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+
+            copyToolStripMenuItem.Header = "Copy List Element: " + elementType.Name;
+            pasteToolStripMenuItem.Header = "Insert List Element: " + elementType.Name;
+
+            copyToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+            {
+                if (vm.SelectedIndex > -1)
+                {
+                    object obj = vm.Collection[vm.SelectedIndex].Value;
+                    DataEditor.SetClipboardObj(obj);
+                }
+                else
+                    await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            };
+            pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+            {
+                Type type1 = DataEditor.clipboardObj.GetType();
+                Type type2 = elementType;
+                if (type2.IsAssignableFrom(type1))
+                {
+                    int idx = vm.SelectedIndex;
+                    if (idx < 0)
+                        idx = vm.Collection.Count;
+                    vm.InsertOnKey(idx, DataEditor.clipboardObj);
+                }
+                else
+                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            };
+            return copyPasteStrip;
         }
 
 

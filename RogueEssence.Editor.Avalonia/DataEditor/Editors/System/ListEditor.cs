@@ -36,7 +36,7 @@ namespace RogueEssence.Dev
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
                 lbxValue.DataContext = vm;
-                lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+                lbxValue.SetListContextMenu(CreateContextMenu(control, type, vm));
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
@@ -52,12 +52,12 @@ namespace RogueEssence.Dev
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, false);
                 lbxValue.DataContext = vm;
-                lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+                lbxValue.SetListContextMenu(CreateContextMenu(control, type, vm));
                 control.Children.Add(lbxValue);
             }
         }
 
-        private ContextMenu createContextMenu(StackPanel control, Type type, CollectionBoxViewModel vm)
+        public static ContextMenu CreateContextMenu(StackPanel control, Type type, CollectionBoxViewModel vm)
         {
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), type, 0);
 

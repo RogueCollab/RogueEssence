@@ -108,6 +108,17 @@ namespace RogueEssence.Dev.ViewModels
             SelectedIndex = boxIndex;
         }
 
+        public void InsertOnKey(int boxIndex, object element)
+        {
+            Priority priority = new Priority();
+            if (0 <= boxIndex && boxIndex < Collection.Count)
+            {
+                priority = Collection[boxIndex].Priority;
+            }
+            Collection.Insert(boxIndex, new PriorityElement(StringConv, priority, element));
+            SelectedIndex = boxIndex;
+        }
+
         private int findBoxIndex(Priority priority, int index)
         {
             if (Collection.Count == 0)

@@ -206,6 +206,22 @@ namespace RogueEssence.Dev.ViewModels
             CurrentElement = index;
         }
 
+        public void InsertOnKey(int index, object element)
+        {
+            int start = 0;
+            int end = 1;
+            int rate = 10;
+            if (0 <= index && index < Collection.Count)
+            {
+                start = Collection[index].Start;
+                end = Collection[index].End;
+                rate = Collection[index].Weight;
+            }
+            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
+            Collection.Insert(index, new SpawnRangeListElement(StringConv, AddMin, AddMax, start, end, rate, element));
+            CurrentElement = index;
+        }
+
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
