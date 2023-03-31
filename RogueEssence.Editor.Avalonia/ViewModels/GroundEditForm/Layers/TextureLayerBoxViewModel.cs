@@ -47,7 +47,7 @@ namespace RogueEssence.Dev.ViewModels
                     else
                         edits.Apply(new MapTextureStateUndo(ChosenLayer));
 
-                    Layers[ChosenLayer] = newLayer;
+                    SetLayer(ChosenLayer, newLayer);
                 }
             }
         }

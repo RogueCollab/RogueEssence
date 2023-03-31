@@ -68,11 +68,13 @@ namespace RogueEssence.Dev.ViewModels
         public void SetEntries(Dictionary<string, string> entries)
         {
             SearchList.Clear();
+            List<string> items = new List<string>();
             foreach (string key in entries.Keys)
             {
                 keys.Add(key);
-                SearchList.AddItem(key + ": " + entries[key]);
+                items.Add(key + ": " + entries[key]);
             }
+            SearchList.SetItems(items);
         }
 
         public void SetOps(params DataOpContainer[] ops)

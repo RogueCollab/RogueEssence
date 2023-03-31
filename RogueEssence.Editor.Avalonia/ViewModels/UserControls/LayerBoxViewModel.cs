@@ -25,6 +25,13 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public WrappedObservableCollection<T> Layers { get; }
+        public void SetLayer(int idx, T val)
+        {
+            int tmp = ChosenLayer;
+            Layers[idx] = val;
+            ChosenLayer = tmp;
+        }
+
         public event Action SelectedLayerChanged;
 
         private int chosenLayer;

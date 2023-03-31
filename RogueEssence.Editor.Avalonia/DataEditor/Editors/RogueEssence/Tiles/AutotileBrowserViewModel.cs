@@ -115,7 +115,9 @@ namespace RogueEssence.Dev.ViewModels
             AssociateAutotiles.Clear();
 
             keys.Add("");
-            Autotiles.AddItem("**EMPTY**");
+            List<string> autotileNames = new List<string>();
+            List<string> associateAutotileNames = new List<string>();
+            autotileNames.Add("**EMPTY**");
 
             foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.AutoTile].GetOrderedKeys(false))
             {
@@ -124,10 +126,13 @@ namespace RogueEssence.Dev.ViewModels
                 if (24 == TileSize)
                 {
                     keys.Add(key);
-                    Autotiles.AddItem(key + ": " + entry.Name.ToLocal());
-                    AssociateAutotiles.AddItem(key + ": " + entry.Name.ToLocal());
+                    autotileNames.Add(key + ": " + entry.Name.ToLocal());
+                    associateAutotileNames.Add(key + ": " + entry.Name.ToLocal());
                 }
             }
+            Autotiles.SetItems(autotileNames);
+            AssociateAutotiles.SetItems(associateAutotileNames);
+
             Associates.Clear();
         }
 

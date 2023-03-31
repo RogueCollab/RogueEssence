@@ -56,10 +56,8 @@ namespace RogueEssence.Dev.ViewModels
                 Tilesets.Clear();
 
                 foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
-                {
                     tileIndices.Add(name);
-                    Tilesets.AddItem(name);
-                }
+                Tilesets.SetItems(tileIndices);
             }
         }
 

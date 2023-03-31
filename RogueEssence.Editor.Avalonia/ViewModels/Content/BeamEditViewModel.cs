@@ -67,8 +67,8 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
                     anims.Add(filename);
-                    Anims.AddItem(filename);
                 }
+                Anims.SetItems(anims);
             }
         }
 
