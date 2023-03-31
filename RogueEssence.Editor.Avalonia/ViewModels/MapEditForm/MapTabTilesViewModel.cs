@@ -25,6 +25,8 @@ namespace RogueEssence.Dev.ViewModels
                 TileTypes.Add(key + ": " + tile_names[key]);
             }
 
+            isRevealed = true;
+
             Owners = new ObservableCollection<string>();
             for (int ii = 0; ii < 3; ii++)
                 Owners.Add(((EffectTile.TileOwner)ii).ToString());
