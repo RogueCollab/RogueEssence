@@ -175,7 +175,7 @@ namespace RogueEssence.LevelGen
 
     [Serializable]
     public abstract class FloorMapGen<T> : MapGen<T>, IFloorGen
-        where T : class, IGenContext
+        where T : BaseMapGenContext
     {
         public IGenContext GenMap(ZoneGenContext zoneContext)
         {
@@ -186,6 +186,7 @@ namespace RogueEssence.LevelGen
             //then, gensteps will continue on as per usual
 
             T map = (T)Activator.CreateInstance(typeof(T));
+            map.Map.ID = zoneContext.CurrentID;
             map.InitSeed(zoneContext.Seed);
 
             GenContextDebug.DebugInit(map);

@@ -39,7 +39,7 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
-            queue.Enqueue(Priority, new MapNameIDStep<BaseMapGenContext>(zoneContext.CurrentID, LocalText.FormatLocalText(Name, (zoneContext.CurrentID + 1).ToString())));
+            queue.Enqueue(Priority, new MapNameIDStep<BaseMapGenContext>(Name, 1));
         }
 
         public override string ToString()
