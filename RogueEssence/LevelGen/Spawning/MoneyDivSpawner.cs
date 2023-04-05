@@ -52,7 +52,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), this.DivAmount.ToString());
+            return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), this.DivAmount.ToString());
         }
     }
 

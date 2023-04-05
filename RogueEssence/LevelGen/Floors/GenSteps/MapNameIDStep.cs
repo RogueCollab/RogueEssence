@@ -37,6 +37,11 @@ namespace RogueEssence.LevelGen
             map.Map.ID = ID;
             map.Map.Name = new LocalText(Name);
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), string.Format(Name.ToLocal(), ID));
+        }
     }
 
 

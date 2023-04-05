@@ -51,7 +51,7 @@ namespace RogueEssence.Dev
         public override string GetString(IDivSpawner obj, Type type, object[] attributes)
         {
             PropertyInfo memberInfo = typeof(IDivSpawner).GetProperty(nameof(obj.DivAmount));
-            return string.Format("{0}[{1}]", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.DivAmount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.DivAmount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
     public class ContextSpawnerEditor : Editor<IContextSpawner>

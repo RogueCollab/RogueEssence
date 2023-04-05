@@ -25,5 +25,15 @@ namespace RogueEssence.LevelGen
             for (int ii = 0; ii < Spawns.Count; ii++)
                 map.TileSpawns.Add(Spawns.GetSpawn(ii), Spawns.GetSpawnRate(ii));
         }
+
+        public override string ToString()
+        {
+            if (Spawns.Count == 1)
+            {
+                object spawn = Spawns.GetSpawn(0);
+                return string.Format("{{{0}}}", spawn.ToString());
+            }
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), Spawns.Count);
+        }
     }
 }
