@@ -59,7 +59,7 @@ namespace RogueEssence.Menu
         AlphaTestEffect alphaTest;
 
 
-        public TitleDialog(string msg, bool fadeIn, int holdTime, Action action)
+        public TitleDialog(string msg, bool fadeIn, int holdTime, Rect bounds, Action action)
         {
             s1 = new DepthStencilState
             {
@@ -99,7 +99,7 @@ namespace RogueEssence.Menu
             Pauses = new List<List<TextPause>>();
             ScriptCalls = new List<List<TextScript>>();
             message = msg;
-
+            Bounds = bounds;
             Texts = new List<DialogueText>();
             updateMessage();
         }
@@ -171,8 +171,11 @@ namespace RogueEssence.Menu
 
                 Pauses.Add(pauses);
                 ScriptCalls.Add(scripts);
+                
+                int startX = Bounds.X == -1 ? 0 : Bounds.X;
+                int width = Bounds.Width <= -1 ? GraphicsManager.ScreenWidth - startX : Bounds.Width;
 
-                DialogueText text = new DialogueText("", new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
+                DialogueText text = new DialogueText("", new Rect(startX, 0, width, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
 
                 text.SetAndFormatText(scrolls[nn]);
                 Texts.Add(text);
@@ -182,7 +185,14 @@ namespace RogueEssence.Menu
                 MaxLines = Math.Max(MaxLines, text.GetLineCount());
             }
             maxSize += new Loc(8 + 4);//Magic number plus VERT_BUFFER
-            Bounds = new Rect((GraphicsManager.ScreenWidth - maxSize.X) / 2, (GraphicsManager.ScreenHeight - maxSize.Y) / 2, maxSize.X, maxSize.Y);
+            
+            int boundX = Bounds.X == -1 ? (GraphicsManager.ScreenWidth - maxSize.X) / 2 : Bounds.X;
+            int boundY = Bounds.Y == -1 ? (GraphicsManager.ScreenHeight - maxSize.Y) / 2 : Bounds.Y;
+            int boundWidth = (Bounds.Width <= -1 ? maxSize.X : Bounds.Width) + 2; // Width buffer
+            int boundHeight = Bounds.Height <= -1 ? maxSize.Y : Bounds.Height;
+            
+            
+            Bounds = new Rect(boundX, boundY, boundWidth, boundHeight);
             foreach (DialogueText text in Texts)
                 text.Rect = Bounds;
         }

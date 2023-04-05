@@ -126,6 +126,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="text">The text to display.</param>
         /// <param name="expireTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
+        /// <param name="x">The X position of the box</param>
+        /// <param name="y">The Y position of the box</param>
+        /// <param name="width">Width of the box</param>
+        /// <param name="height">Height of the box</param>
         /// <example>
         /// UI:WaitShowVoiceOver("Hello World!", 120)
         /// </example>
@@ -136,12 +140,17 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="text">The text to display.</param>
         /// <param name="expireTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
-        public void TextVoiceOver(string text, int expireTime)
+        /// <param name="x">The X position of the box</param>
+        /// <param name="y">The Y position of the box</param>
+        /// <param name="width">Width of the box</param>
+        /// <param name="height">Height of the box</param>
+        public void TextVoiceOver(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1)
         {
             try
             {
+                Rect bounds = new Rect(x, y, width, height);
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, () => { }, text);
+                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, bounds, () => { }, text);
             }
             catch (Exception e)
             {
@@ -150,15 +159,22 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Makes text pop up in the bottom-left corner. Displays concurrently with any other process.
+        /// Makes text pop up in the bottom-left corner by default. Displays concurrently with any other process.
         /// </summary>
         /// <param name="text">The text to display.</param>
         /// <param name="expireTime">The time for the textbox to remain on screen.</param>
-        public void TextPopUp(string text, int expireTime)
+        /// <param name="x">The X position of the box</param>
+        /// <param name="y">The Y position of the box</param>
+        /// <param name="width">Width of the box</param>
+        /// <param name="height">Height of the box</param>
+        /// <param name="centerH">Horizontal centering</param>
+        /// <param name="centerV">Vertical centering</param>
+        public void TextPopUp(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1, bool centerH = false, bool centerV = false)
         {
             try
             {
-                GameManager.Instance.TextPopUp.SetMessage(text, expireTime);
+                Rect bounds = new Rect(x, y, width, height);
+                GameManager.Instance.TextPopUp.SetMessage(text, expireTime, bounds, centerH, centerV);
             }
             catch (Exception e)
             {
@@ -1517,8 +1533,12 @@ namespace RogueEssence.Script
             end", "WaitShowDialogue").First() as LuaFunction;
 
             WaitShowVoiceOver = state.RunString(@"
-            return function(_, text, expiretime)
-                UI:TextVoiceOver(text, expiretime)
+            return function(_, text, expiretime, x, y, width, height)
+                x = x == nil and -1 or x
+                y = y == nil and -1 or y
+                width = width == nil and -1 or width
+                height = height == nil and -1 or height
+                UI:TextVoiceOver(text, expiretime, x, y, width, height)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowVoiceOver").First() as LuaFunction;
 
