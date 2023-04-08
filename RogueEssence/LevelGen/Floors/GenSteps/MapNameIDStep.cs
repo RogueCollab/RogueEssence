@@ -1,6 +1,6 @@
 ﻿using System;
 using RogueElements;
-
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
@@ -15,6 +15,7 @@ namespace RogueEssence.LevelGen
         /// The title of the map.
         /// Can include one string format subtituion for floor number.
         /// </summary>
+        [SubGroup]
         public LocalText Name;
 
         /// <summary>
