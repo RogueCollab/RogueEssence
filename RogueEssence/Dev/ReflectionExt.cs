@@ -376,7 +376,10 @@ namespace RogueEssence.Dev
                 for (int ii = 0; ii < types.Length; ii++)
                     assemblies[parentTemplateTypes.Length + ii] = types[ii].Assembly;
                 List<Assembly> dependentAssemblies = GetDependentAssemblies(assemblies);
-                List<PartialType> resultTypes = getAssignableTypesBasic(false, dependentAssemblies.ToArray(), types);
+
+                //parentTemplateTypes over 0 implies that this current type is being searched as the arg of that parent type.
+                bool includeAbstract = parentTemplateTypes.Length > 0;
+                List<PartialType> resultTypes = getAssignableTypesBasic(includeAbstract, dependentAssemblies.ToArray(), types);
                 resultTypes.Sort((PartialType type1, PartialType type2) => { return String.CompareOrdinal(type1.Type.Name + type1.Type.FullName, type2.Type.Name + type2.Type.FullName); });
                 return resultTypes.ToArray();
             }
