@@ -79,10 +79,6 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnSwitch_Click()
         {
-            //check to be sure it isn't the current mod
-            if (chosenMod.Path == PathMod.Quest.Path)
-                return;
-
             //give a pop up warning that the game will be reloaded and wait for confirmation
             MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "The game will be reloaded to use content from the new path.\nClick OK to proceed.", "Are you sure?",
                 MessageBox.MessageBoxButtons.OkCancel);

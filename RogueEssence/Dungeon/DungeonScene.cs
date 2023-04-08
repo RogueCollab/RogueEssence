@@ -277,6 +277,19 @@ namespace RogueEssence.Dungeon
 
         public override IEnumerator<YieldInstruction> ProcessInput()
         {
+            if (IsGameOver())
+            {
+                bool allowRescue = true;
+                if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
+                    allowRescue = false;
+                if (ZoneManager.Instance.CurrentMap.NoRescue)
+                    allowRescue = false;
+                if (!DataManager.Instance.Save.AllowRescue)
+                    allowRescue = false;
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.EndSegment(allowRescue ? GameProgress.ResultType.Downed : GameProgress.ResultType.Failed));
+                yield break;
+            }
+
             if (!IsPlayerTurn())
             {
                 //the check events may have ended the scene
@@ -312,18 +325,6 @@ namespace RogueEssence.Dungeon
 
                 if (!GameManager.Instance.FrameProcessed)
                     yield return new WaitForFrames(1);
-            }
-
-            if (GameManager.Instance.SceneOutcome == null && IsGameOver())
-            {
-                bool allowRescue = true;
-                if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
-                    allowRescue = false;
-                if (ZoneManager.Instance.CurrentMap.NoRescue)
-                    allowRescue = false;
-                if (!DataManager.Instance.Save.AllowRescue)
-                    allowRescue = false;
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.EndSegment(allowRescue ? GameProgress.ResultType.Downed : GameProgress.ResultType.Failed));
             }
         }
 
