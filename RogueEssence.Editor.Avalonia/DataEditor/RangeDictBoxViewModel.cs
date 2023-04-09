@@ -226,6 +226,27 @@ namespace RogueEssence.Dev.ViewModels
             OnMemberChanged?.Invoke();
         }
 
+        public void InsertOnKey(int index, object element)
+        {
+            IntRange key = new IntRange(0);
+            if (0 <= index && index < Collection.Count)
+            {
+                key = new IntRange(Collection[index].End);
+            }
+
+            EraseRange(key, -1);
+            for (int ii = 0; ii <= Collection.Count; ii++)
+            {
+                if (ii == Collection.Count || key.Min < Collection[ii].Start)
+                {
+                    Collection.Insert(ii, new RangeDictElement(StringConv, AddMin, AddMax, key.Min, key.Max, element));
+                    CurrentElement = ii;
+                    break;
+                }
+            }
+            OnMemberChanged?.Invoke();
+        }
+
         private void EraseRange(IntRange range, int exceptionIdx)
         {
             for (int ii = Collection.Count - 1; ii >= 0; ii--)

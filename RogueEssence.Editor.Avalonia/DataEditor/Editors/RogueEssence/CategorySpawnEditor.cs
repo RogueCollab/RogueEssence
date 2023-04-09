@@ -13,6 +13,7 @@ using RogueEssence.Dev.ViewModels;
 using Avalonia.Interactivity;
 using RogueEssence.LevelGen;
 using Avalonia;
+using System.Reflection;
 
 namespace RogueEssence.Dev
 {
@@ -259,6 +260,11 @@ namespace RogueEssence.Dev
             CategorySpawnBox lbxValue = (CategorySpawnBox)control.Children[controlIndex];
             CategorySpawnBoxViewModel mv = (CategorySpawnBoxViewModel)lbxValue.DataContext;
             return (SpawnDict<string, SpawnList<InvItem>>)mv.GetDict(type);
+        }
+
+        public override string GetString(SpawnDict<string, SpawnList<InvItem>> obj, Type type, object[] attributes)
+        {
+            return string.Format("{0}[{1}]", obj.GetType().GetFormattedTypeName(), obj.Count);
         }
     }
 }

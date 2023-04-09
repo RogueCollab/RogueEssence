@@ -11,6 +11,7 @@ using RogueEssence.Dev.Views;
 using System.Collections;
 using RogueEssence.Dev.ViewModels;
 using RogueEssence.LevelGen;
+using Avalonia.Interactivity;
 
 namespace RogueEssence.Dev
 {
@@ -50,21 +51,23 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 180;
 
-            RangeDictBoxViewModel mv = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            RangeDictBoxViewModel vm = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
-            mv.Index1 = Index1;
-            mv.Inclusive = Inclusive;
+            vm.Index1 = Index1;
+            vm.Inclusive = Inclusive;
             RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
             if (rangeAtt != null)
             {
-                mv.Index1 = rangeAtt.Index1;
-                mv.Inclusive = rangeAtt.Inclusive;
+                vm.Index1 = rangeAtt.Index1;
+                vm.Inclusive = rangeAtt.Inclusive;
             }
 
-            lbxValue.DataContext = mv;
+            lbxValue.DataContext = vm;
+
+            lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
 
             //add lambda expression for editing a single element
-            mv.OnEditItem += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
@@ -84,7 +87,7 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            mv.OnEditKey += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
+            vm.OnEditKey += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "<Range>";
                 DataEditForm frmKey = new DataEditForm();
@@ -108,8 +111,52 @@ namespace RogueEssence.Dev
                 frmKey.Show();
             };
 
-            mv.LoadFromDict(member);
+            vm.LoadFromDict(member);
             control.Children.Add(lbxValue);
+        }
+
+        private static ContextMenu createContextMenu(StackPanel control, Type type, RangeDictBoxViewModel vm)
+        {
+            Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IRangeDict<>), type, 0);
+
+            ContextMenu copyPasteStrip = new ContextMenu();
+
+            MenuItem copyToolStripMenuItem = new MenuItem();
+            MenuItem pasteToolStripMenuItem = new MenuItem();
+
+            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+            list.AddRange(new MenuItem[] {
+                            copyToolStripMenuItem,
+                            pasteToolStripMenuItem});
+
+            copyToolStripMenuItem.Header = "Copy List Element: " + elementType.Name;
+            pasteToolStripMenuItem.Header = "Insert List Element: " + elementType.Name;
+
+            copyToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+            {
+                if (vm.CurrentElement > -1)
+                {
+                    object obj = vm.Collection[vm.CurrentElement].Value;
+                    DataEditor.SetClipboardObj(obj);
+                }
+                else
+                    await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            };
+            pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+            {
+                Type type1 = DataEditor.clipboardObj.GetType();
+                Type type2 = elementType;
+                if (type2.IsAssignableFrom(type1))
+                {
+                    int idx = vm.CurrentElement;
+                    if (idx < 0)
+                        idx = vm.Collection.Count;
+                    vm.InsertOnKey(idx, DataEditor.clipboardObj);
+                }
+                else
+                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+            };
+            return copyPasteStrip;
         }
 
 
