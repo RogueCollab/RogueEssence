@@ -26,6 +26,8 @@ namespace RogueEssence.Dungeon
         protected abstract int AnimFrameType { get; }
         protected virtual int FrameMethod(List<CharAnimFrame> frames) { return zeroFrame(frames); }
 
+        public bool HideShadow { get; set; }
+        
         public bool MajorAnim { get; set; }
         public abstract Loc CharLoc { get; set; }
 
@@ -307,6 +309,16 @@ namespace RogueEssence.Dungeon
         public int BaseFrameType { get; set; }
         protected override int AnimFrameType { get { return BaseFrameType; } }
         public IdleAnimAction(Loc loc, Dir8 dir, int frameType) : base(loc, dir) { AnimLoc = loc; CharDir = dir; BaseFrameType = frameType; }
+    }
+    
+    public class CharAbsentAnim : CharAnimIdle
+    {
+        public CharAbsentAnim(Loc loc, Dir8 dir) : base(loc, dir) { AnimLoc = loc; CharDir = dir; HideShadow = true; }
+        protected override void UpdateFrameInternal()
+        {
+            MapLoc = VisualLoc * GraphicsManager.TileSize;
+            opacity = 0;
+        }
     }
 
     public class CharAnimPose : StaticCharAnimation
