@@ -54,13 +54,14 @@ namespace RogueEssence.Dev
             StackPanel groupBoxPanel = new StackPanel();
             control.Children.Add(groupBoxPanel);
 
-            //populateStack(groupBoxPanel, member);
+            cbItem.SelectedIndex = Math.Min(Math.Max(0, chosenItem), items.Count - 1);
 
             cbItem.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
                 populateStack(groupBoxPanel, new InvItem(itemKeys[cbItem.SelectedIndex]));
             };
-            cbItem.SelectedIndex = Math.Min(Math.Max(0, chosenItem), items.Count - 1);
+
+            populateStack(groupBoxPanel, member);
 
         }
 
