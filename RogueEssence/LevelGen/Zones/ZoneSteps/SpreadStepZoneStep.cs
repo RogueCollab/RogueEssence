@@ -81,10 +81,10 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             int count = 0;
-            IGenPriority singleGen = null;
+            IGenStep singleGen = null;
             if (Spawns != null)
             {
-                foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
+                foreach (IGenStep gen in Spawns.EnumerateOutcomes())
                 {
                     count++;
                     singleGen = gen;
@@ -111,6 +111,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The steps to distribute.  Probabilities can be customized across floors.
         /// </summary>
+        [RangeBorder(0, true, true)]
         public SpawnRangeList<IGenStep> Spawns;
 
 

@@ -21,6 +21,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The steps to distribute.
         /// </summary>
+        [RangeBorder(0, true, true)]
         public RangeDict<IGenStep> Spawns;
 
         public RangeStepZoneStep()

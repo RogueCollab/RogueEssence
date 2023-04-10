@@ -57,36 +57,47 @@ namespace RogueEssence.Dev
             innerPanel.ColumnDefinitions[0].Width = new GridLength(30);
             innerPanel.ColumnDefinitions[2].Width = new GridLength(30);
 
-            TextBlock lblX = new TextBlock();
-            lblX.Text = "Min:";
-            lblX.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            lblX.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
-            innerPanel.Children.Add(lblX);
-            lblX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
+            TextBlock lblMin = new TextBlock();
+            lblMin.Text = "Min:";
+            lblMin.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblMin.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+            innerPanel.Children.Add(lblMin);
+            lblMin.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
-            NumericUpDown nudValueX = new NumericUpDown();
-            nudValueX.Margin = new Thickness(4, 0, 0, 0);
-            nudValueX.Minimum = Int32.MinValue;
-            nudValueX.Maximum = Int32.MaxValue;
-            nudValueX.Value = member.Min + addMin;
-            innerPanel.Children.Add(nudValueX);
-            nudValueX.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
+            NumericUpDown nudValueMin = new NumericUpDown();
+            nudValueMin.Margin = new Thickness(4, 0, 0, 0);
+            nudValueMin.Minimum = Int32.MinValue;
+            nudValueMin.Maximum = Int32.MaxValue;
+            nudValueMin.Value = member.Min + addMin;
+            innerPanel.Children.Add(nudValueMin);
+            nudValueMin.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
-            TextBlock lblY = new TextBlock();
-            lblY.Margin = new Thickness(8, 0, 0, 0);
-            lblY.Text = "Max:";
-            lblY.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            lblY.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
-            innerPanel.Children.Add(lblY);
-            lblY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
+            TextBlock lblMax = new TextBlock();
+            lblMax.Margin = new Thickness(8, 0, 0, 0);
+            lblMax.Text = "Max:";
+            lblMax.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+            lblMax.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+            innerPanel.Children.Add(lblMax);
+            lblMax.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
-            NumericUpDown nudValueY = new NumericUpDown();
-            nudValueY.Margin = new Thickness(4, 0, 0, 0);
-            nudValueY.Minimum = Int32.MinValue;
-            nudValueY.Maximum = Int32.MaxValue;
-            nudValueY.Value = member.Max + addMax;
-            innerPanel.Children.Add(nudValueY);
-            nudValueY.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
+            NumericUpDown nudValueMax = new NumericUpDown();
+            nudValueMax.Margin = new Thickness(4, 0, 0, 0);
+            nudValueMax.Minimum = Int32.MinValue;
+            nudValueMax.Maximum = Int32.MaxValue;
+            nudValueMax.Value = member.Max + addMax;
+            innerPanel.Children.Add(nudValueMax);
+            nudValueMax.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
+
+            nudValueMin.ValueChanged += (object sender, NumericUpDownValueChangedEventArgs e) =>
+            {
+                if (nudValueMin.Value > nudValueMax.Value)
+                    nudValueMax.Value = nudValueMin.Value;
+            };
+            nudValueMax.ValueChanged += (object sender, NumericUpDownValueChangedEventArgs e) =>
+            {
+                if (nudValueMin.Value > nudValueMax.Value)
+                    nudValueMin.Value = nudValueMax.Value;
+            };
 
             control.Children.Add(innerPanel);
         }
@@ -116,7 +127,7 @@ namespace RogueEssence.Dev
             getMinMaxOffsets(attributes, out addMin, out addMax);
 
             if (obj.Min + addMin + 1 >= obj.Max + addMax)
-                return obj.Min.ToString();
+                return (obj.Min + addMin).ToString();
             else
                 return string.Format("{0}-{1}", obj.Min + addMin, obj.Max + addMax);
         }
