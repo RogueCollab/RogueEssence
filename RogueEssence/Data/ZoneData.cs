@@ -133,10 +133,15 @@ namespace RogueEssence.Data
             summary.Grounds.AddRange(GroundMaps);
             for (int ii = 0; ii < Segments.Count; ii++)
             {
-                HashSet<int> floors = new HashSet<int>();
-                foreach (int id in Segments[ii].GetFloorIDs())
-                    floors.Add(id);
-                summary.Maps.Add(floors);
+                if (Segments[ii].FloorCount < 0)
+                    summary.Maps.Add(null);
+                else
+                {
+                    HashSet<int> floors = new HashSet<int>();
+                    foreach (int id in Segments[ii].GetFloorIDs())
+                        floors.Add(id);
+                    summary.Maps.Add(floors);
+                }
             }
             return summary;
         }
@@ -234,7 +239,11 @@ namespace RogueEssence.Data
             if (segLoc.Segment == -1)
                 return (0 <= segLoc.ID && segLoc.ID < Grounds.Count);
             else if (0 <= segLoc.Segment && segLoc.Segment < Maps.Count)
+            {
+                if (Maps[segLoc.Segment] == null)
+                    return true;
                 return Maps[segLoc.Segment].Contains(segLoc.ID);
+            }
             return false;
         }
 

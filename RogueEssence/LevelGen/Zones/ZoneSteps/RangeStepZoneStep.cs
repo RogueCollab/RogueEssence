@@ -14,17 +14,24 @@ namespace RogueEssence.LevelGen
     public class RangeStepZoneStep : ZoneStep
     {
         /// <summary>
+        /// The priority to insert the step at.
+        /// </summary>
+        public Priority StepPriority;
+
+        /// <summary>
         /// The steps to distribute.
         /// </summary>
-        public RangeDict<IGenPriority> Spawns;
+        [RangeBorder(0, true, true)]
+        public RangeDict<IGenStep> Spawns;
 
         public RangeStepZoneStep()
         {
-            Spawns = new RangeDict<IGenPriority>();
+            Spawns = new RangeDict<IGenStep>();
         }
 
         protected RangeStepZoneStep(RangeStepZoneStep other, ulong seed)
         {
+            StepPriority = other.StepPriority;
             Spawns = other.Spawns;
         }
         public override ZoneStep Instantiate(ulong seed) { return new RangeStepZoneStep(this, seed); }
@@ -33,11 +40,11 @@ namespace RogueEssence.LevelGen
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
 
-            IGenPriority section;
+            IGenStep section;
             //gets the section that intersect the current ID
             if (Spawns.TryGetItem(zoneContext.CurrentID, out section))
             {
-                queue.Enqueue(section.Priority, section.GetItem());
+                queue.Enqueue(StepPriority, section);
             }
         }
 
@@ -45,7 +52,7 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             int count = 0;
-            IGenPriority singleGen = null;
+            IGenStep singleGen = null;
             if (Spawns != null)
             {
                 foreach (IntRange range in Spawns.EnumerateRanges())

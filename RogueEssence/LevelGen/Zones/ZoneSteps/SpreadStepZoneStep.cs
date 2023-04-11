@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dev;
@@ -15,27 +16,34 @@ namespace RogueEssence.LevelGen
     public class SpreadStepZoneStep : SpreadZoneStep
     {
         /// <summary>
+        /// The priority to insert the step at.
+        /// </summary>
+        public Priority StepPriority;
+
+        /// <summary>
         /// The steps to distribute.
         /// </summary>
-        public IRandPicker<IGenPriority> Spawns;
+        public IRandPicker<IGenStep> Spawns;
 
         [NonSerialized]
-        public List<IGenPriority> DropItems;
+        public List<IGenStep> DropItems;
 
         public SpreadStepZoneStep()
         {
         }
 
-        public SpreadStepZoneStep(SpreadPlanBase plan, IRandPicker<IGenPriority> spawns) : base(plan)
+        public SpreadStepZoneStep(SpreadPlanBase plan, Priority priority, IRandPicker<IGenStep> spawns) : base(plan)
         {
+            StepPriority = priority;
             Spawns = spawns;
         }
 
         protected SpreadStepZoneStep(SpreadStepZoneStep other, ulong seed) : base(other, seed)
         {
+            StepPriority = other.StepPriority;
             Spawns = other.Spawns.CopyState();
 
-            DropItems = new List<IGenPriority>();
+            DropItems = new List<IGenStep>();
             //Other SpredStep classes choose which step to place on which floor on the fly, but this one needs care, due to the potential of CanPick changing state
             for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
             {
@@ -43,7 +51,7 @@ namespace RogueEssence.LevelGen
                     break;
 
                 ReRandom rand = new ReRandom(seed);
-                IGenPriority genStep = Spawns.Pick(rand);
+                IGenStep genStep = Spawns.Pick(rand);
                 DropItems.Add(genStep);
             }
         }
@@ -57,15 +65,15 @@ namespace RogueEssence.LevelGen
                 //we don't know if changing the state of this step in a non-instantiation phase can lead to problems, stay on the safe side for now
                 if (Spawns.ChangesState || !Spawns.CanPick)
                     return false;
-                IGenPriority genStep = Spawns.Pick(context.Rand);
-                queue.Enqueue(genStep.Priority, genStep.GetItem());
+                IGenStep genStep = Spawns.Pick(context.Rand);
+                queue.Enqueue(StepPriority, genStep);
             }
             else
             {
                 if (dropIdx >= DropItems.Count)
                     return false;
-                IGenPriority genStep = DropItems[dropIdx];
-                queue.Enqueue(genStep.Priority, genStep.GetItem());
+                IGenStep genStep = DropItems[dropIdx];
+                queue.Enqueue(StepPriority, genStep);
             }
             return true;
         }
@@ -73,10 +81,10 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             int count = 0;
-            IGenPriority singleGen = null;
+            IGenStep singleGen = null;
             if (Spawns != null)
             {
-                foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
+                foreach (IGenStep gen in Spawns.EnumerateOutcomes())
                 {
                     count++;
                     singleGen = gen;
@@ -86,6 +94,7 @@ namespace RogueEssence.LevelGen
                 return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
             return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
+
     }
 
     /// <summary>
@@ -95,22 +104,30 @@ namespace RogueEssence.LevelGen
     public class SpreadStepRangeZoneStep : SpreadZoneStep
     {
         /// <summary>
+        /// The priority to insert the step at.
+        /// </summary>
+        public Priority StepPriority;
+
+        /// <summary>
         /// The steps to distribute.  Probabilities can be customized across floors.
         /// </summary>
-        public SpawnRangeList<IGenPriority> Spawns;
+        [RangeBorder(0, true, true)]
+        public SpawnRangeList<IGenStep> Spawns;
 
 
         public SpreadStepRangeZoneStep()
         {
         }
 
-        public SpreadStepRangeZoneStep(SpreadPlanBase plan, SpawnRangeList<IGenPriority> spawns) : base(plan)
+        public SpreadStepRangeZoneStep(SpreadPlanBase plan, Priority priority, SpawnRangeList<IGenStep> spawns) : base(plan)
         {
+            StepPriority = priority;
             Spawns = spawns;
         }
 
         protected SpreadStepRangeZoneStep(SpreadStepRangeZoneStep other, ulong seed) : base(other, seed)
         {
+            StepPriority = other.StepPriority;
             Spawns = other.Spawns.CopyState();
         }
         public override ZoneStep Instantiate(ulong seed) { return new SpreadStepRangeZoneStep(this, seed); }
@@ -118,21 +135,21 @@ namespace RogueEssence.LevelGen
 
         protected override bool ApplyToFloor(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue, int dropIdx)
         {
-            SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(zoneContext.CurrentID);
+            SpawnList<IGenStep> spawnList = Spawns.GetSpawnList(zoneContext.CurrentID);
             if (!spawnList.CanPick)
                 return false;
-            IGenPriority genStep = spawnList.Pick(context.Rand);
-            queue.Enqueue(genStep.Priority, genStep.GetItem());
+            IGenStep genStep = spawnList.Pick(context.Rand);
+            queue.Enqueue(StepPriority, genStep);
             return true;
         }
 
         public override string ToString()
         {
             int count = 0;
-            IGenPriority singleGen = null;
+            IGenStep singleGen = null;
             if (Spawns != null)
             {
-                foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
+                foreach (IGenStep gen in Spawns.EnumerateOutcomes())
                 {
                     count++;
                     singleGen = gen;
@@ -142,5 +159,6 @@ namespace RogueEssence.LevelGen
                 return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
             return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
+
     }
 }

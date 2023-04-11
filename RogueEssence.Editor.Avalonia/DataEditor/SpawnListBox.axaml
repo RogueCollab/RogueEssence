@@ -52,10 +52,10 @@
         <RowDefinition/>
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="30"/>
         <ColumnDefinition/>
+        <ColumnDefinition Width="100"/>
       </Grid.ColumnDefinitions>
-      <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0">Weight:</TextBlock>
+      <TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4" Grid.Row="0" Grid.Column="0">Weight:</TextBlock>
       <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentWeight}" Minimum="1" Margin="4" Grid.Row="0" Grid.Column="1"/>
     </Grid>
 

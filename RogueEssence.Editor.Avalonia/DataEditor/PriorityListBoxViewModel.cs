@@ -126,9 +126,9 @@ namespace RogueEssence.Dev.ViewModels
 
             Priority prevPriority = Collection[0].Priority;
             int runningIndex = 0;
-            for (int ii = 1; ii < Collection.Count; ii++)
+            for (int ii = 0; ii < Collection.Count; ii++)
             {
-                if (Collection[ii].Priority == prevPriority)
+                if (ii > 0 && Collection[ii].Priority == prevPriority)
                     runningIndex++;
                 else
                     runningIndex = 0;

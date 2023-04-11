@@ -24,7 +24,7 @@ namespace RogueEssence.Dev
             if (!String.IsNullOrEmpty(obj.BaseForm.Species))
             {
                 MonsterData entry = DataManager.Instance.GetMonster(obj.BaseForm.Species);
-                entry.Name.ToLocal();
+                monName = entry.Name.ToLocal();
             }
             MemberInfo[] spawnInfo = type.GetMember(nameof(obj.Level));
             return String.Format("{0} Lv.{1}", monName, DataEditor.GetString(obj.Level, spawnInfo[0].GetMemberInfoType(), spawnInfo[0].GetCustomAttributes(false)));

@@ -146,14 +146,14 @@ namespace RogueEssence.Ground
             else
                 yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
 
-            if (!GameManager.Instance.FrameProcessed)
-                yield return new WaitForFrames(1);
-
             if (GameManager.Instance.SceneOutcome == null)
             {
                 //psy's notes: put everything related to the check events in the ground map, so its more encapsulated.
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnCheck());
             }
+
+            if (!GameManager.Instance.FrameProcessed)
+                yield return new WaitForFrames(1);
         }
 
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)

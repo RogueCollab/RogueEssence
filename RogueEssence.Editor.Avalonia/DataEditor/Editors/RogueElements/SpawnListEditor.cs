@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using RogueEssence.Dev.ViewModels;
 using Avalonia.Interactivity;
+using System.Reflection;
 
 namespace RogueEssence.Dev
 {

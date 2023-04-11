@@ -19,5 +19,10 @@ namespace RogueEssence.Dev
             SearchAssemblies = searchAssemblies;
             GenericArgs = genericArgs;
         }
+
+        public override string ToString()
+        {
+            return Type.ToString();
+        }
     }
 }

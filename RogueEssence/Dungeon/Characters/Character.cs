@@ -230,6 +230,11 @@ namespace RogueEssence.Dungeon
             set { currentCharAction.CharDir = value; }
         }
 
+        public bool HideShadow
+        {
+            get { return currentCharAction.HideShadow; }
+        }
+        
         public int HP;
         public int HPRemainder;
 
@@ -2444,7 +2449,7 @@ namespace RogueEssence.Dungeon
                     yield break;
                 }
             }
-
+            
             CharAction prevAction = currentCharAction;
             CharAction newCharAction = new EmptyCharAction(charAnim);
             newCharAction.PickUpFrom(Appearance.ToCharID(), currentCharAction);
@@ -2561,6 +2566,9 @@ namespace RogueEssence.Dungeon
 
         public void DrawShadow(SpriteBatch spriteBatch, Loc offset, int terrainShadow)
         {
+            if (HideShadow)
+                return;
+            
             CharSheet sheet = GraphicsManager.GetChara(Appearance.ToCharID());
             int teamStatus = 2;
             //if (DataManager.Instance.Save != null || !DataManager.Instance.Save.CutsceneMode)

@@ -58,7 +58,7 @@ namespace RogueEssence.Dev
             StackPanel groupBoxPanel = new StackPanel();
             control.Children.Add(groupBoxPanel);
 
-            //populateStack(groupBoxPanel, member);
+            cbItem.SelectedIndex = Math.Min(Math.Max(0, chosenItem), items.Count - 1);
 
             cbItem.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
@@ -67,7 +67,8 @@ namespace RogueEssence.Dev
                 else
                     populateStack(groupBoxPanel, new MapItem(itemKeys[cbItem.SelectedIndex - 1]));
             };
-            cbItem.SelectedIndex = Math.Min(Math.Max(0, chosenItem), items.Count - 1);
+
+            populateStack(groupBoxPanel, member);
         }
 
         private bool canShowAmount(MapItem member)

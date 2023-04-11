@@ -36,4 +36,12 @@ namespace RogueEssence.Dev
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Spawn, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
+    public class MoneySpawnStepEditor : Editor<IMoneySpawnStep>
+    {
+        public override string GetString(IMoneySpawnStep obj, Type type, object[] attributes)
+        {
+            PropertyInfo memberInfo = typeof(IMoneySpawnStep).GetProperty(nameof(obj.MoneyRange));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.MoneyRange, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+        }
+    }
 }
