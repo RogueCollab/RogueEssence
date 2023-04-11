@@ -22,7 +22,6 @@ namespace RogueEssence.Menu
         public bool Visible { get; set; }
 
         public Rect Bounds;
-
         DepthStencilState s1;
         DepthStencilState s2;
         AlphaTestEffect alphaTest;
@@ -48,14 +47,22 @@ namespace RogueEssence.Menu
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
         }
 
-        public void SetMessage(string msg, int holdTime)
+        public void SetMessage(string msg, int holdTime, Rect bounds, bool centerH, bool centerV)
         {
             if (msg.Length > 0)
             {
                 CurrentFadeTime = FrameTick.FromFrames(0);
-                Text = new DialogueText(msg, new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, false, false, -1);
+                int boundX = bounds.X == -1 ? 4 : bounds.X;
+                int boundWidth = (bounds.Width <= -1 ? GraphicsManager.ScreenWidth - boundX : bounds.Width) + 2; // Width buffer
+                
+                Text = new DialogueText(msg, new Rect(boundX, 0, boundWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, centerH, centerV, -1);
                 Loc textSize = Text.GetTextSize();
-                Bounds = new Rect(4, (GraphicsManager.ScreenHeight - textSize.Y), textSize.X, textSize.Y);
+
+                int boundY = bounds.Y == -1 ? GraphicsManager.ScreenHeight - textSize.Y : bounds.Y;
+                int boundHeight = bounds.Height <= -1 ? GraphicsManager.ScreenHeight - boundY : bounds.Height;
+
+                Rect textBounds = new Rect(boundX, boundY, boundWidth, boundHeight);
+                Bounds = textBounds;
                 Text.Rect = Bounds;
                 HoldTime = holdTime;
                 
