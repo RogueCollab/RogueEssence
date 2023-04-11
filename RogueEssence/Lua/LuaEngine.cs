@@ -1807,10 +1807,10 @@ namespace RogueEssence.Script
         /// <summary>
         /// Called after failing a dungeon in main progress!
         /// </summary>
-        public void OnLossPenalty(GameProgress save)
+        public IEnumerator<YieldInstruction> OnLossPenalty(GameProgress save)
         {
             DiagManager.Instance.LogInfo("LuaEngine.OnLossPenalty()..");
-            m_scrsvc.Publish(EServiceEvents.LossPenalty.ToString(), save);
+            yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.LossPenalty.ToString(), save));
         }
         /// <summary>
         /// Called when the game mode switches to GroundMode!

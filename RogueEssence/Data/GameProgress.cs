@@ -495,7 +495,7 @@ namespace RogueEssence.Data
         /// <summary>
         /// Executed when the save file is loaded without a quicksave.  Check and clear all quicksave-related variables.
         /// </summary>
-        public void LoadedWithoutQuicksave()
+        public IEnumerator<YieldInstruction> LoadedWithoutQuicksave()
         {
             //Remove any dangling rescues
             if (Rescue != null)
@@ -507,7 +507,7 @@ namespace RogueEssence.Data
                 if (Outcome != ResultType.Unknown)
                 {
                     if (Stakes == DungeonStakes.Risk)
-                        LuaEngine.Instance.OnLossPenalty(this);
+                        yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnLossPenalty(this));
                     //retain the outcome as the last adventure's outcome
                 }
                 MidAdventure = false;
@@ -984,9 +984,9 @@ namespace RogueEssence.Data
             Outcome = result;
             bool recorded = DataManager.Instance.RecordingReplay;
             string recordFile = null;
-            try
+            if (result == ResultType.Rescue)
             {
-                if (result == ResultType.Rescue)
+                try
                 {
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -1008,7 +1008,14 @@ namespace RogueEssence.Data
                     else
                         NextDest = DataManager.Instance.Start.Map;
                 }
-                else if (result != ResultType.Cleared)
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+            else if (result != ResultType.Cleared)
+            {
+                try
                 {
                     if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                         Location = ZoneManager.Instance.CurrentGround.GetColoredName();
@@ -1018,17 +1025,23 @@ namespace RogueEssence.Data
                     DataManager.Instance.MsgLog.Clear();
                     //end the game with a recorded ending
                     recordFile = DataManager.Instance.EndPlay(this, StartDate);
-
-                    if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
-                        LuaEngine.Instance.OnLossPenalty(this);
-
-                    if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
-                        NextDest = nextArea;
-                    else
-                        NextDest = DataManager.Instance.Start.Map;
-
                 }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+
+                if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
+                    yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnLossPenalty(this));
+
+                if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
+                    NextDest = nextArea;
                 else
+                    NextDest = DataManager.Instance.Start.Map;
+            }
+            else
+            {
+                try
                 {
                     CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
 
@@ -1042,17 +1055,16 @@ namespace RogueEssence.Data
                         NextDest = nextArea;
                     else
                         NextDest = DataManager.Instance.Start.Map;
-
                 }
-
-                TotalAdventures++;
-
-                FullStateRestore();
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
             }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
+
+            TotalAdventures++;
+
+            FullStateRestore();
 
             bool mergeDataBack = (Stakes != DungeonStakes.None);
             try

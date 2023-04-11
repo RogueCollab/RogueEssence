@@ -178,7 +178,6 @@ namespace RogueEssence.Menu
                 cannotRead(DataManager.SAVE_PATH + DataManager.SAVE_FILE_PATH);
                 return;
             }
-            state.Save.LoadedWithoutQuicksave();
             MenuManager.Instance.ClearMenus();
             GameManager.Instance.SceneOutcome = continueMain(state);
         }
@@ -241,6 +240,8 @@ namespace RogueEssence.Menu
         private static IEnumerator<YieldInstruction> continueMain(GameState mainState)
         {
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
+
+            yield return CoroutineManager.Instance.StartCoroutine(mainState.Save.LoadedWithoutQuicksave());
 
             MainProgress mainSave = mainState.Save as MainProgress;
             DataManager.Instance.SetProgress(mainSave);
