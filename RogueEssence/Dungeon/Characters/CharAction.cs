@@ -75,6 +75,7 @@ namespace RogueEssence.Dungeon
         public bool MajorAction { get { return currentAnim.MajorAnim; } }
         public bool ActionPassed { get { return currentAnim.ActionPassed; } }
         public Loc DrawOffset { get { return currentAnim.DrawOffset; } }
+        public bool HideShadow { get { return currentAnim.HideShadow; } }
         public IEnumerable<Loc> GetLocsVisible() { return currentAnim.GetLocsVisible(); }
         public IEnumerable<VisionLoc> GetVisionLocs() { return currentAnim.GetVisionLocs(); }
 
