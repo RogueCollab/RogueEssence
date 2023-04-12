@@ -2401,7 +2401,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// Position on the map in pixels.
         /// </summary>
-        public Loc MapLoc { get { return currentCharAction.MapLoc; } }
+        public Loc MapLoc { get { return currentCharAction.MapLoc + new Loc(GraphicsManager.TileSize / 2); } }
         public int LocHeight { get { return currentCharAction.LocHeight; } }
 
         private void updateLoc(Loc oldLoc)
@@ -2654,8 +2654,8 @@ namespace RogueEssence.Dungeon
                     if (entry.FreeEmote != "")
                     {
                         DirSheet iconSheet = GraphicsManager.GetIcon(entry.FreeEmote);
-                        Loc animPos = new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - iconSheet.TileWidth / 2,
-                            MapLoc.Y + GraphicsManager.TileSize / 2 - iconSheet.TileHeight / 2 - LocHeight) - offset;
+                        Loc animPos = new Loc(MapLoc.X - iconSheet.TileWidth / 2,
+                            MapLoc.Y - iconSheet.TileHeight / 2 - LocHeight) - offset;
                         int currentFrame = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(STATUS_FRAME_LENGTH) % (ulong)(iconSheet.TotalFrames));
                         iconSheet.DrawDir(spriteBatch, animPos.ToVector2(), currentFrame, CharDir);
                     }

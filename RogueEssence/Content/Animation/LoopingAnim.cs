@@ -79,8 +79,8 @@ namespace RogueEssence.Content
 
         public override Loc GetDrawLoc(Loc offset)//TODO: transfer this offset out of the draw call and into the call of whatever emitter created it (or the creator of that emitter)
         {
-            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileWidth / 2,
-                MapLoc.Y + GraphicsManager.TileSize / 2 - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileHeight / 2) - offset;
+            return new Loc(MapLoc.X - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileWidth / 2,
+                MapLoc.Y - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileHeight / 2) - offset;
         }
 
         public override Loc GetDrawSize()

@@ -54,8 +54,8 @@ namespace RogueEssence.Content
 
         public override Loc GetDrawLoc(Loc offset)
         {
-            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - GraphicsManager.GetChara(Appearance).TileWidth / 2,
-                MapLoc.Y + GraphicsManager.TileSize / 2 - GraphicsManager.GetChara(Appearance).TileHeight / 2) - offset;
+            return new Loc(MapLoc.X - GraphicsManager.GetChara(Appearance).TileWidth / 2,
+                MapLoc.Y - GraphicsManager.GetChara(Appearance).TileHeight / 2) - offset;
         }
 
         public override Loc GetDrawSize()

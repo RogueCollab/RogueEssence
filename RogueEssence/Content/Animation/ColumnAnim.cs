@@ -73,7 +73,7 @@ namespace RogueEssence.Content
             if (Finished)
                 return;
 
-            Loc drawLoc = MapLoc - offset + new Loc(GraphicsManager.TileSize / 2);
+            Loc drawLoc = MapLoc - offset;
             BeamSheet sheet = GraphicsManager.GetBeam(Anim.AnimIndex);
             sheet.DrawColumn(spriteBatch, new Vector2(drawLoc.X, drawLoc.Y - LocHeight), Anim.GetCurrentFrame(ActionTime, sheet.TotalFrames), Color.White * ((float)Anim.Alpha / 255));
             

@@ -62,7 +62,7 @@ namespace RogueEssence.Dungeon
             if (ZoneManager.Instance.CurrentMap.ViewCenter.HasValue)
                 focusedLoc = ZoneManager.Instance.CurrentMap.ViewCenter.Value;
             else if (FocusedCharacter != null)
-                focusedLoc = FocusedCharacter.MapLoc + new Loc(GraphicsManager.TileSize / 2, GraphicsManager.TileSize / 3) + ZoneManager.Instance.CurrentMap.ViewOffset;
+                focusedLoc = FocusedCharacter.MapLoc - new Loc(0, GraphicsManager.TileSize / 6) + ZoneManager.Instance.CurrentMap.ViewOffset;
             return focusedLoc;
         }
         
