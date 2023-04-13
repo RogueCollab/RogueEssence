@@ -795,7 +795,7 @@ namespace RogueEssence
         {
             if (ZoneManager.Instance.InDevZone)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
+                SceneOutcome = ReturnToEditor();
                 yield break;
             }
 
