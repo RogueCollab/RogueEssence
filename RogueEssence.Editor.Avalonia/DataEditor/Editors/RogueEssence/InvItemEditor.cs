@@ -61,7 +61,11 @@ namespace RogueEssence.Dev
                 populateStack(groupBoxPanel, new InvItem(itemKeys[cbItem.SelectedIndex]));
             };
 
-            populateStack(groupBoxPanel, member);
+            //invalid item ID, default to the selected one
+            if (itemKeys[cbItem.SelectedIndex] != member.ID)
+                populateStack(groupBoxPanel, new InvItem(itemKeys[cbItem.SelectedIndex]));
+            else
+                populateStack(groupBoxPanel, member);
 
         }
 
