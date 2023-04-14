@@ -219,7 +219,7 @@ namespace RogueEssence.Menu
             Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(substr), LineHeight * curLineIndex);
             
             if (CenterH)
-                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(substr)) / 2, 0);
+                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(fullLines[curLineIndex])) / 2, 0);
             if (CenterV)
                 loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight)) / 2);
             return loc;
