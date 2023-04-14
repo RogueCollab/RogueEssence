@@ -690,12 +690,17 @@ namespace RogueEssence.Data
 
         public static object LoadData(string path, Type t)
         {
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            try
             {
-                //using (BinaryReader reader = new BinaryReader(stream))
-                //{
+                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
                     return Serializer.DeserializeData(stream);
-                //}
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(new FileLoadException("Could not deserialize file", path, ex));
+                return null;
             }
         }
 

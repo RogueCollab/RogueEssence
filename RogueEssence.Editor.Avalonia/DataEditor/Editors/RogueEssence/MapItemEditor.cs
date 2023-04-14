@@ -79,6 +79,8 @@ namespace RogueEssence.Dev
             else
             {
                 ItemData summary = DataManager.Instance.GetItem(member.Value);
+                if (summary == null)
+                    return false;
                 if (summary.MaxStack > 1)
                     showAmount = true;
             }
