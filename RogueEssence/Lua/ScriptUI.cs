@@ -1094,19 +1094,22 @@ namespace RogueEssence.Script
             try
             {
                 List<string> names = new List<string>();
+                List<string> titles = new List<string>();
                 List<ZoneLoc> dests = new List<ZoneLoc>();
                 foreach (object key in destinations.Keys)
                 {
                     LuaTable entry = destinations[key] as LuaTable;
                     string name = (string)entry["Name"];
+                    string title = entry["Title"] != null ? (string)entry["Title"] : name;
                     ZoneLoc item = (ZoneLoc)entry["Dest"];
                     names.Add(name);
+                    titles.Add(title);
                     dests.Add(item);
                 }
 
                 //give the player the choice between all the possible dungeons
                 m_choiceresult = ZoneLoc.Invalid;
-                m_curchoice = new DungeonsMenu(names, dests,
+                m_curchoice = new DungeonsMenu(names, titles, dests,
                     (int choice) => { m_choiceresult = dests[choice]; });
             }
             catch (Exception e)
