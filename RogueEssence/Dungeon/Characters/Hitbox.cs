@@ -81,7 +81,7 @@ namespace RogueEssence.Dungeon
                 if (!User.Unidentifiable)
                 {
                     FiniteEmitter tileEmitter = (FiniteEmitter)TileEmitter.Clone();
-                    tileEmitter.SetupEmit(tile * GraphicsManager.TileSize, User.MapLoc, User.CharDir);
+                    tileEmitter.SetupEmit(tile * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), User.MapLoc, User.CharDir);
                     DungeonScene.Instance.CreateAnim(tileEmitter, DrawLayer.NoDraw);
                 }
             }

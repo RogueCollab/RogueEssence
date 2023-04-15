@@ -42,9 +42,9 @@ namespace RogueEssence.Dev.ViewModels
                 if (text != "")
                 {
                     if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                        DungeonScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(Regex.Unescape(text));
+                        DungeonScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(RogueEssence.Text.FormatGrammar(Regex.Unescape(text)));
                     else if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                        GroundScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(Regex.Unescape(text));
+                        GroundScene.Instance.PendingDevEvent = MenuManager.Instance.SetDialogue(RogueEssence.Text.FormatGrammar(Regex.Unescape(text)));
                 }
             }
         }

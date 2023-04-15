@@ -347,7 +347,7 @@ namespace RogueEssence
             List<string> enumStrings = new List<string>();
             foreach (FrameInput.InputType t in Enums)
                 enumStrings.Add(DiagManager.Instance.GetControlString(t));
-            return String.Format(Key.ToLocal(), enumStrings.ToArray());
+            return Text.FormatGrammar(Key.ToLocal(), enumStrings.ToArray());
         }
     }
 }

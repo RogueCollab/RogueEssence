@@ -67,7 +67,7 @@ namespace RogueEssence.Script
         {
             try
             {
-                return String.Format(System.Text.RegularExpressions.Regex.Unescape(fmt), para);
+                return Text.FormatGrammar(System.Text.RegularExpressions.Regex.Unescape(fmt), para);
             }
             catch (Exception ex)
             {
