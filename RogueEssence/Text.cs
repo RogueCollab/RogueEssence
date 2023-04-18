@@ -41,7 +41,7 @@ namespace RogueEssence
                                                 @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\](?<a_anval>\s\w))" +
+        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\] (?<a_anval>\w))" +
                                                 @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" +
                                                 @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" +
                                                 @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" +
@@ -207,11 +207,20 @@ namespace RogueEssence
         {
             string output = String.Format(input, args);
 
-            List<(Match, string)> replacements = new List<(Match, string)>();
+            List<(int, string)> reInserts = new List<(int, string)>();
+            int lag = 0;
+            MatchCollection tagMatches = MsgTags.Matches(output);
+            foreach (Match match in tagMatches)
+            {
+                reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
+                output = output.Remove(match.Index - lag, match.Length);
+                lag += match.Length;
+            }
+
+            List<(int, int, string)> replacements = new List<(int, int, string)>();
             MatchCollection matches = GrammarTags.Matches(output);
             foreach (Match match in matches)
             {
-                string repl = "";
                 foreach (string key in match.Groups.Keys)
                 {
                     if (!match.Groups[key].Success)
@@ -222,10 +231,10 @@ namespace RogueEssence
                             {
                                 string vowelcheck = match.Groups["a_anval"].Value;
 
-                                if (Regex.IsMatch(vowelcheck, "\\s[aeiou]", RegexOptions.IgnoreCase))
-                                    repl = String.Format("{0}{1}", "an", vowelcheck);
+                                if (Regex.IsMatch(vowelcheck, "[aeiou]", RegexOptions.IgnoreCase))
+                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "an "));
                                 else
-                                    repl = String.Format("{0}{1}", "a", vowelcheck);
+                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "a "));
                             }
                             break;
                         case "eun_neun":
@@ -233,9 +242,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["eun_neunval"].Value;
                                 char vowelchar = vowelcheck[0];
                                 if ((int)(vowelchar - '가') % 28 == 0)
-                                    repl = String.Format("{0}{1}", vowelcheck, "는");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "는"));
                                 else
-                                    repl = String.Format("{0}{1}", vowelcheck, "은");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "은"));
                             }
                             break;
                         case "eul_leul":
@@ -243,9 +252,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["eul_leulval"].Value;
                                 char vowelchar = vowelcheck[0];
                                 if ((int)(vowelchar - '가') % 28 == 0)
-                                    repl = String.Format("{0}{1}", vowelcheck, "를");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "를"));
                                 else
-                                    repl = String.Format("{0}{1}", vowelcheck, "을");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "을"));
                             }
                             break;
                         case "i_ga":
@@ -253,9 +262,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["i_gaval"].Value;
                                 char vowelchar = vowelcheck[0];
                                 if ((int)(vowelchar - '가') % 28 == 0)
-                                    repl = String.Format("{0}{1}", vowelcheck, "가");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "가"));
                                 else
-                                    repl = String.Format("{0}{1}", vowelcheck, "이");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
                             }
                             break;
                         case "wa_gwa":
@@ -263,9 +272,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["wa_gwaval"].Value;
                                 char vowelchar = vowelcheck[0];
                                 if ((int)(vowelchar - '가') % 28 == 0)
-                                    repl = String.Format("{0}{1}", vowelcheck, "과");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "과"));
                                 else
-                                    repl = String.Format("{0}{1}", vowelcheck, "와");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "와"));
                             }
                             break;
                         case "eu_lo":
@@ -273,9 +282,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["eu_loval"].Value;
                                 char vowelchar = vowelcheck[0];
                                 if ((int)(vowelchar - '가') % 28 == 0)
-                                    repl = String.Format("{0}{1}", vowelcheck, "로");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "로"));
                                 else
-                                    repl = String.Format("{0}{1}", vowelcheck, "으");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "으"));
                             }
                             break;
                         case "i_lamyeon":
@@ -283,22 +292,37 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["i_lamyeonval"].Value;
                                 char vowelchar = vowelcheck[0];
                                 if ((int)(vowelchar - '가') % 28 == 0)
-                                    repl = String.Format("{0}{1}", vowelcheck, "라면");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
                                 else
-                                    repl = String.Format("{0}{1}", vowelcheck, "이");
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
                             }
                             break;
                     }
                 }
-
-                replacements.Add((match, repl));
             }
 
+            int reIdx = reInserts.Count - 1;
             for (int ii = replacements.Count - 1; ii >= 0; ii--)
             {
-                output = output.Remove(replacements[ii].Item1.Index, replacements[ii].Item1.Length);
-                output = output.Insert(replacements[ii].Item1.Index, replacements[ii].Item2);
+                while (reIdx > -1)
+                {
+                    if (reInserts[reIdx].Item1 < replacements[ii].Item1 + replacements[ii].Item2)
+                        break;
+
+                    output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].Item2);
+                    reIdx--;
+                }
+
+                output = output.Remove(replacements[ii].Item1, replacements[ii].Item2);
+                output = output.Insert(replacements[ii].Item1, replacements[ii].Item3);
             }
+
+            while (reIdx > -1)
+            {
+                output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].Item2);
+                reIdx--;
+            }
+
             return output;
         }
 
