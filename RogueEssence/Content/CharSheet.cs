@@ -823,11 +823,14 @@ namespace RogueEssence.Content
                     maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
                     maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
 
-                    frames.Add((frameTex, imgCoveredRect, offsets));
-
                     //the texture may not be centered; treat it as a texture that considered the center of the tile the center of the sprite
                     Point centerDiff = imgCoveredRect.Center - (tileRect.Center - tileRect.Location);
                     centerOffsets.Add(new Loc(centerDiff.X, centerDiff.Y));
+
+                    //do the same for offsets
+                    offsets.AddLoc(new Loc(-centerDiff.X, -centerDiff.Y));
+
+                    frames.Add((frameTex, imgCoveredRect, offsets));
                 }
                 else
                     usedFrames[kk] = -1;
