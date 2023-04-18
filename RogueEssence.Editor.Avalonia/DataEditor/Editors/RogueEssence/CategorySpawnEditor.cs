@@ -52,6 +52,11 @@ namespace RogueEssence.Dev
                 lbxValue.MaxHeight = 180;
 
             DictionaryBoxViewModel vm = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+
             lbxValue.DataContext = vm;
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
@@ -149,7 +154,12 @@ namespace RogueEssence.Dev
                 StackPanel viewPanel = frmData.ControlPanel;
 
                 SpawnListViewBox lbxValue = new SpawnListViewBox();
-                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+
+                CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+                if (confirmAtt != null)
+                    mv.ConfirmDelete = confirmAtt.ConfirmDelete;
+
                 lbxValue.DataContext = mv;
                 lbxValue.MaxHeight = 400;
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions

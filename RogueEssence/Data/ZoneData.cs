@@ -4,6 +4,7 @@ using RogueEssence.LevelGen;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
 using System.Runtime.Serialization;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -150,6 +151,7 @@ namespace RogueEssence.Data
         /// Sections of the dungeon.
         /// Ex. Splitting the dungeon into a normal and deeper section.
         /// </summary>
+        [Collection(0, true)]
         public List<ZoneSegmentBase> Segments;
         
         /// <summary>

@@ -31,8 +31,14 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 220;
 
-            PriorityListBoxViewModel vm = new PriorityListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            PriorityListBoxViewModel vm = new PriorityListBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
             lbxValue.DataContext = vm;
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+            else
+                vm.ConfirmDelete = true;
+
             lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 

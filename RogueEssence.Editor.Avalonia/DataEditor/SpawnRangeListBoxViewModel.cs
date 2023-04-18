@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueElements;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -85,6 +86,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
+        private Window parent;
+
         public event ElementOp OnEditItem;
 
         public bool Index1;
@@ -105,9 +108,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public SpawnRangeListBoxViewModel(StringConv conv)
+        public bool ConfirmDelete;
+
+        public SpawnRangeListBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
+            this.parent = parent;
             Collection = new ObservableCollection<SpawnRangeListElement>();
         }
 
@@ -243,10 +249,20 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem?.Invoke(index, element, insertItem);
         }
 
-        private void btnDelete_Click()
+        private async void btnDelete_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
+            {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                        MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 Collection.RemoveAt(CurrentElement);
+            }
         }
 
         private void Switch(int a, int b)

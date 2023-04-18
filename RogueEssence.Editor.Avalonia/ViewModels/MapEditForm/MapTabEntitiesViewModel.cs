@@ -99,7 +99,8 @@ namespace RogueEssence.Dev.ViewModels
 
             speciesChanged();
 
-            Statuses = new CollectionBoxViewModel(new StringConv(typeof(StatusEffect), new object[0]));
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            Statuses = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
         }

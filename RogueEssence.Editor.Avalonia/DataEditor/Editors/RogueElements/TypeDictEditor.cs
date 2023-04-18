@@ -31,11 +31,16 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 180;
 
-            CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
-            lbxValue.DataContext = mv;
+            CollectionBoxViewModel vm = new CollectionBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+
+            lbxValue.DataContext = vm;
 
             //add lambda expression for editing a single element
-            mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
@@ -51,7 +56,7 @@ namespace RogueEssence.Dev
 
                     bool itemExists = false;
 
-                    List<object> states = (List<object>)mv.GetList(typeof(List<object>));
+                    List<object> states = (List<object>)vm.GetList(typeof(List<object>));
                     for (int ii = 0; ii < states.Count; ii++)
                     {
                         //ignore the current index being edited
@@ -82,7 +87,7 @@ namespace RogueEssence.Dev
             List<object> states = new List<object>();
             foreach (object state in member)
                 states.Add(state);
-            mv.LoadFromList(states);
+            vm.LoadFromList(states);
             control.Children.Add(lbxValue);
         }
 

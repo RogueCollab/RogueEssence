@@ -55,6 +55,10 @@ namespace RogueEssence.Dev
 
             vm.Index1 = Index1;
             vm.Inclusive = Inclusive;
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+
             RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
             if (rangeAtt != null)
             {

@@ -27,7 +27,8 @@ namespace RogueEssence.Dev.ViewModels
                 ModTypes.Add(((PathMod.ModType)ii).ToLocal());
             ChosenModType = (int)header.ModType;
 
-            Relationships = new CollectionBoxViewModel(new StringConv(typeof(RelatedMod), new object[0]));
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            Relationships = new CollectionBoxViewModel(form, new StringConv(typeof(RelatedMod), new object[0]));
             Relationships.OnEditItem += Relationships_EditItem;
             Relationships.LoadFromList(header.Relationships);
         }

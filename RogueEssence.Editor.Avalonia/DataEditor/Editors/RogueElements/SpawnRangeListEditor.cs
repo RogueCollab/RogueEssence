@@ -46,10 +46,15 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 260;
 
-            SpawnRangeListBoxViewModel vm = new SpawnRangeListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            SpawnRangeListBoxViewModel vm = new SpawnRangeListBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
             vm.Index1 = Index1;
             vm.Inclusive = Inclusive;
+
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+
             RangeBorderAttribute rangeAtt = ReflectionExt.FindAttribute<RangeBorderAttribute>(attributes);
             if (rangeAtt != null)
             {

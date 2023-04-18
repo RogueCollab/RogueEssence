@@ -32,7 +32,8 @@ namespace RogueEssence.Dev.ViewModels
                 Owners.Add(((EffectTile.TileOwner)ii).ToString());
 
 
-            TileStates = new CollectionBoxViewModel(new StringConv(typeof(TileState), new object[0]));
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            TileStates = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(TileState), new object[0]));
             TileStates.OnEditItem += TileStates_EditItem;
         }
 

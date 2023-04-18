@@ -69,9 +69,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
-        public PriorityListBoxViewModel(StringConv conv)
+        private Window parent;
+
+        public bool ConfirmDelete;
+
+        public PriorityListBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
+            this.parent = parent;
             Collection = new ObservableCollection<PriorityElement>();
         }
 
@@ -168,10 +173,20 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem(priority, index, element, insertItem);
         }
 
-        public void btnDelete_Click()
+        public async void btnDelete_Click()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
+            {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
+                    MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 Collection.RemoveAt(SelectedIndex);
+            }
         }
 
 
