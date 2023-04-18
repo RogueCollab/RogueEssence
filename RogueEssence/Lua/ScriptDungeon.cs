@@ -68,6 +68,10 @@ namespace RogueEssence.Script
             return ZoneManager.Instance.CurrentZone.Name.ToLocal();
         }
 
+        public void SetMinimapVisible(bool visible)
+        {
+            ZoneManager.Instance.CurrentMap.HideMinimap = !visible;
+        }
 
         //===================================
         //  Animation

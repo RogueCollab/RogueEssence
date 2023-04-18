@@ -88,6 +88,8 @@ namespace RogueEssence.Dungeon
         public Loc? ViewCenter;
         public Loc ViewOffset;
 
+        public bool HideMinimap;
+
         [NonSerialized]
         private ExplorerTeam activeTeam;
         public ExplorerTeam ActiveTeam

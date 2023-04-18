@@ -1073,7 +1073,7 @@ namespace RogueEssence.Dungeon
                 if (ShowMap != MinimapState.Detail)
                     DrawGame(spriteBatch);
 
-                if ((ShowMap != MinimapState.None) && !Turn && CurrentPreviewMove == -1 && !ShowActions && !DataManager.Instance.Save.CutsceneMode && MenuManager.Instance.MenuCount == 0)
+                if ((ShowMap != MinimapState.None) && !Turn && CurrentPreviewMove == -1 && !ShowActions && !DataManager.Instance.Save.CutsceneMode && !ZoneManager.Instance.CurrentMap.HideMinimap && MenuManager.Instance.MenuCount == 0)
                 {
                     //draw minimap
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
@@ -1099,6 +1099,7 @@ namespace RogueEssence.Dungeon
                         Math.Max(0, Math.Min(centerLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
                     startLoc += MinimapOffset;
 
+                    bool seeTrap = CanSeeTraps();
                     for (int ii = startLoc.X; ii < ZoneManager.Instance.CurrentMap.Width && ii - startLoc.X < MAX_MINIMAP_WIDTH; ii++)
                     {
                         for (int jj = startLoc.Y; jj < ZoneManager.Instance.CurrentMap.Height && jj - startLoc.Y < MAX_MINIMAP_HEIGHT; jj++)
@@ -1135,7 +1136,7 @@ namespace RogueEssence.Dungeon
                                     TileData entry;
 
                                     //draw tiles
-                                    if (tile.Effect.Revealed)
+                                    if (tile.Effect.Revealed || seeTrap)
                                         entry = DataManager.Instance.GetTile(tile.Effect.ID);
                                     else
                                         entry = DataManager.Instance.GetTile(DataManager.Instance.DefaultTile);
