@@ -68,7 +68,14 @@ namespace RogueEssence.Dev
                     populateStack(groupBoxPanel, new MapItem(itemKeys[cbItem.SelectedIndex - 1]));
             };
 
-            populateStack(groupBoxPanel, member);
+            if (String.IsNullOrEmpty(member.Value))
+            {
+                MapItem other = new MapItem(member);
+                other.IsMoney = true;
+                populateStack(groupBoxPanel, other);
+            }
+            else
+                populateStack(groupBoxPanel, member);
         }
 
         private bool canShowAmount(MapItem member)
