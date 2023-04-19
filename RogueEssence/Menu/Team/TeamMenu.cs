@@ -7,6 +7,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Ground;
 using System;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -77,6 +78,8 @@ namespace RogueEssence.Menu
                 teamSlot = Math.Min(Math.Max(0, defaultChoice), team.Count-1);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_TITLE"), team.ToArray(), teamSlot);
+            
+            LuaEngine.Instance.OnTeamMenuCreated(this);
         }
 
 

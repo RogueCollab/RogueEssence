@@ -287,6 +287,15 @@ namespace RogueEssence.Script
             Deinit,
             GraphicsLoad,
             GraphicsUnload,
+            ItemMenuCreated,
+            TeamMenuCreated,
+            TacticsMenuCreated,
+            OthersMenuCreated,
+            RestMenuCreated,
+            ReplayMenuCreated,
+            MainMenuChoicesSet,
+            MainMenuCreated,
+            MainMenuReplace,
             NewGame,
             LossPenalty,
             UpgradeSave,
@@ -315,7 +324,7 @@ namespace RogueEssence.Script
             GroundMapExit,
 
             //Keep last
-            _NBEvents,
+            _NBEvents
         };
 
         private IEnumerator<EServiceEvents> IterateServiceEvents()
@@ -1713,7 +1722,8 @@ namespace RogueEssence.Script
             //}
 
             sb.Append(LuaState.GetDebugTraceback() + "\n");
-            return sb.ToString();
+            String returnString = sb.ToString();
+            return returnString;
         }
 
         /// <summary>
@@ -1783,6 +1793,73 @@ namespace RogueEssence.Script
             //Do stuff..
             DiagManager.Instance.LogInfo("LuaEngine.OnGraphicsUnload()..");
             m_scrsvc.Publish(EServiceEvents.GraphicsUnload.ToString());
+        }
+        
+
+        /// <summary>
+        /// These are called at the end of the constructor for the respective menu,
+        /// allowing modification for the completed menu.
+        /// Note that these are called after the menu is initialized, so change opportunities are limited for now.
+        /// </summary>
+        public void OnItemMenuCreated(ItemMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.ItemMenuCreated.ToString(), menu);
+        }
+
+        public void OnTacticsMenuCreated(TacticsMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.TacticsMenuCreated.ToString(), menu);
+        }
+        
+        public void OnTeamMenuCreated(TeamMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.TeamMenuCreated.ToString(), menu);
+        }
+        
+        public void OnRestMenuCreated(RestMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.RestMenuCreated.ToString(), menu);
+        }
+
+        public void OnReplayMenuCreated(ReplayMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.ReplayMenuCreated.ToString(), menu);
+        }
+        
+        /// <summary>
+        /// These are called after the menu is initialized.
+        /// </summary>
+        public void OnOthersMenuCreated(OthersMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.OthersMenuCreated.ToString(), menu);
+        }
+
+
+        /// <summary>
+        /// This is called after main menu choices are set, allowing for modification of menu choices (i.e. Moves, Items, Teams, etc.)
+        /// </summary>
+        public void OnMainMenuChoicesSet(MainMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.MainMenuChoicesSet.ToString(), menu);
+        }
+
+        /// <summary>
+        /// This is called after the main menu is created but before it is initialized.  Allows for modification of most things in the menu
+        /// </summary>
+        public void OnMainMenuCreated(MainMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.MainMenuCreated.ToString(), menu);
+        }
+        
+
+        /// <summary>
+        /// This is called after the main menu is created but before it is initialized.
+        /// Takes a ReplaceableMenu that takes an InteractableMenu (by default the main menu) as its "menu" data member.
+        /// Designed to allow the main menu to be completely swapped out.
+        /// </summary>
+        public void OnMainMenuReplace(ReplaceableMenu menu)
+        {
+            m_scrsvc.Publish(EServiceEvents.MainMenuReplace.ToString(), menu);
         }
 
         public void OnNewGame()

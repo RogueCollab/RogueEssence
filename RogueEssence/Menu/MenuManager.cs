@@ -32,6 +32,7 @@ namespace RogueEssence.Menu
             menus = new List<IInteractable>();
         }
 
+        //Open a menu
         public void AddMenu(IInteractable menu, bool stackOn)
         {
             if (menuModeDepth == 0)
@@ -53,6 +54,7 @@ namespace RogueEssence.Menu
             menus.Add(menu);
         }
 
+        //Close a menu
         public void RemoveMenu()
         {
             if (menuModeDepth == 0)

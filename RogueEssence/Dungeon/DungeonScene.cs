@@ -9,6 +9,7 @@ using RogueEssence.Dev;
 using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dungeon
 {
@@ -350,7 +351,16 @@ namespace RogueEssence.Dungeon
                         ProcessMinimapInput(input);
                     else if (DataManager.Instance.CurrentReplay.OpenMenu)
                     {
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                        MainMenu newMenu = new MainMenu();
+                        newMenu.SetupChoices();
+                        LuaEngine.Instance.OnMainMenuChoicesSet(newMenu);
+                        newMenu.SetupTitleAndSummary();
+                        LuaEngine.Instance.OnMainMenuCreated(newMenu);
+                        ReplaceableMenu replaceableMenu = new ReplaceableMenu();
+                        replaceableMenu.menu = newMenu;
+                        LuaEngine.Instance.OnMainMenuReplace(replaceableMenu);
+                        replaceableMenu.menu.InitMenu();
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(replaceableMenu.menu));
                         DataManager.Instance.CurrentReplay.OpenMenu = false;
                     }
                     else if (input.JustPressed(FrameInput.InputType.Attack))
@@ -411,7 +421,16 @@ namespace RogueEssence.Dungeon
                     GameManager.Instance.SE("Menu/Skip");
                     CurrentPreviewMove = -1;
                     Turn = false;
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                    MainMenu newMenu = new MainMenu();
+                    newMenu.SetupChoices();
+                    LuaEngine.Instance.OnMainMenuChoicesSet(newMenu);
+                    newMenu.SetupTitleAndSummary();
+                    LuaEngine.Instance.OnMainMenuCreated(newMenu);
+                    ReplaceableMenu replaceableMenu = new ReplaceableMenu();
+                    replaceableMenu.menu = newMenu;
+                    LuaEngine.Instance.OnMainMenuReplace(replaceableMenu);
+                    replaceableMenu.menu.InitMenu();
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(replaceableMenu.menu));
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.MsgLog))
                 {

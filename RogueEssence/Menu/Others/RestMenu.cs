@@ -5,6 +5,7 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using Microsoft.Xna.Framework;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -19,6 +20,8 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_QUIT"), QuitAction));
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), Text.FormatKey("MENU_REST_TITLE"), choices.ToArray(), 0);
+            
+            LuaEngine.Instance.OnRestMenuCreated(this);
         }
 
         private void SuspendAction()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -19,6 +20,8 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_END"), endReplay));
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), Text.FormatKey("MENU_REPLAY_TITLE"), choices.ToArray(), 0);
+            
+            LuaEngine.Instance.OnReplayMenuCreated(this);
         }
 
         private void makeQuicksave()

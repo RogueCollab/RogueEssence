@@ -7,6 +7,7 @@ using RogueElements;
 using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Ground;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -65,6 +66,7 @@ namespace RogueEssence.Menu
 
             Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv, startIndex, startPage, SLOTS_PER_PAGE);
 
+            LuaEngine.Instance.OnItemMenuCreated(this);
         }
 
         private void choose(int choice)

@@ -14,6 +14,11 @@ namespace RogueEssence.Menu
 
         public abstract void Update(InputManager input);
 
+        //Overridden as needed, used for calling after a menu has been replaced
+        public virtual void InitMenu()
+        {
+            
+        }
         public void ProcessActions(FrameTick elapsedTime) { }
 
         public static bool IsInputting(InputManager input, params Dir8[] dirs)
