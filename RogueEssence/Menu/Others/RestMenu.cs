@@ -19,9 +19,9 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_SUSPEND"), SuspendAction, isRecording, isRecording ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_QUIT"), QuitAction));
 
-            Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), Text.FormatKey("MENU_REST_TITLE"), choices.ToArray(), 0);
-            
             LuaEngine.Instance.OnRestMenuCreated(this);
+            
+            Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), Text.FormatKey("MENU_REST_TITLE"), choices.ToArray(), 0);
         }
 
         private void SuspendAction()

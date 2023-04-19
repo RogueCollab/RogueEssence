@@ -76,10 +76,10 @@ namespace RogueEssence.Menu
 
             if (teamSlot == -1)
                 teamSlot = Math.Min(Math.Max(0, defaultChoice), team.Count-1);
-
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_TITLE"), team.ToArray(), teamSlot);
             
             LuaEngine.Instance.OnTeamMenuCreated(this);
+            
+            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_TEAM_TITLE"), team.ToArray(), teamSlot);
         }
 
 

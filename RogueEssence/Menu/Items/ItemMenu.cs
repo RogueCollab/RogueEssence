@@ -63,11 +63,13 @@ namespace RogueEssence.Menu
 
             int startPage = actualChoice / SLOTS_PER_PAGE;
             int startIndex = actualChoice % SLOTS_PER_PAGE;
-
-            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv, startIndex, startPage, SLOTS_PER_PAGE);
-
+            
             LuaEngine.Instance.OnItemMenuCreated(this);
+            
+            Initialize(new Loc(16, 16), ITEM_MENU_WIDTH, (replaceSlot == -2) ? Text.FormatKey("MENU_ITEM_TITLE") : Text.FormatKey("MENU_ITEM_SWAP_TITLE"), inv, startIndex, startPage, SLOTS_PER_PAGE);
         }
+        
+        
 
         private void choose(int choice)
         {

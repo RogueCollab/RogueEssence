@@ -68,9 +68,9 @@ namespace RogueEssence.Menu
             }
             totalChoices[0] = new MenuSetting(Text.FormatKey("MENU_TACTICS_EVERYONE"), 88, 72, allChoices, groupTactic, confirmAction);
 
-            Initialize(new Loc(16, 16), 224, Text.FormatKey("MENU_TACTICS_TITLE"), totalChoices);
-
             LuaEngine.Instance.OnTacticsMenuCreated(this);
+            
+            Initialize(new Loc(16, 16), 224, Text.FormatKey("MENU_TACTICS_TITLE"), totalChoices);
         }
 
 
