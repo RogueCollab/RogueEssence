@@ -7,6 +7,7 @@ using RogueEssence.Menu;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Script;
 
 namespace RogueEssence.Ground
 {
@@ -137,8 +138,7 @@ namespace RogueEssence.Ground
                 yield return CoroutineManager.Instance.StartCoroutine(PendingLeaderAction);
                 PendingLeaderAction = null;
             }
-
-            if (PendingDevEvent != null)
+            else if (PendingDevEvent != null)
             {
                 yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
                 PendingDevEvent = null;
@@ -168,7 +168,7 @@ namespace RogueEssence.Ground
             if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnMenuButtonPressed());
             }
             else if (input.JustPressed(FrameInput.InputType.SkillMenu))
             {
