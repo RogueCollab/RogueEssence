@@ -287,6 +287,7 @@ namespace RogueEssence.Script
             Deinit,
             GraphicsLoad,
             GraphicsUnload,
+            MenuButtonPressed,
             NewGame,
             LossPenalty,
             UpgradeSave,
@@ -315,7 +316,7 @@ namespace RogueEssence.Script
             GroundMapExit,
 
             //Keep last
-            _NBEvents,
+            _NBEvents
         };
 
         private IEnumerator<EServiceEvents> IterateServiceEvents()
@@ -1783,6 +1784,16 @@ namespace RogueEssence.Script
             //Do stuff..
             DiagManager.Instance.LogInfo("LuaEngine.OnGraphicsUnload()..");
             m_scrsvc.Publish(EServiceEvents.GraphicsUnload.ToString());
+        }
+        
+        
+        /// <summary>
+        /// Called when the menu button is pressed!
+        /// </summary>
+        public IEnumerator<YieldInstruction> OnMenuButtonPressed()
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnMenuButtonPressed()...");
+            yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.MenuButtonPressed.ToString()));
         }
 
         public void OnNewGame()
