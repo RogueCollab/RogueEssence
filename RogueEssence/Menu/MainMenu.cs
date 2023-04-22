@@ -29,6 +29,9 @@ namespace RogueEssence.Menu
         public Rect SummaryMenuBounds { get; set; }
         public MainMenu()
         {
+            Choices = new List<MenuTextChoice>();
+            TitleElements = new List<IMenuElement>();
+            SummaryElements = new List<IMenuElement>();
         }
         
          public void SetupChoices()
@@ -44,7 +47,7 @@ namespace RogueEssence.Menu
             }
             bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !equippedItems);
 
-            Choices = new List<MenuTextChoice>();
+            Choices.Clear();
             Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SKILLS"), () =>
             {
                 int mainIndex = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
@@ -90,14 +93,14 @@ namespace RogueEssence.Menu
         {
             MenuWidth = CalculateChoiceLength(Choices, 72);
             
-            TitleElements = new List<IMenuElement>();
+            TitleElements.Clear();
             TitleMenuBounds = Rect.FromPoints(new Loc(MenuWidth + 16, 32),
                 new Loc(GraphicsManager.ScreenWidth - 16, 32 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2));
             MenuText title = new MenuText((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? ZoneManager.Instance.CurrentMap.GetColoredName() : ZoneManager.Instance.CurrentGround.GetColoredName(),
                 new Loc(TitleMenuBounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             TitleElements.Add(title);
             
-            SummaryElements = new List<IMenuElement>();
+            SummaryElements.Clear();
             SummaryMenuBounds = Rect.FromPoints(
                 new Loc(16, 32 + Choices.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8));
