@@ -243,6 +243,12 @@ namespace RogueEssence.Menu
             }
             return null;
         }
+        
+        public MainMenu CreateMainMenu()
+        {
+            Console.WriteLine("Creating main menu...");
+            return new MainMenu();
+        }
 
         public InfoMenu CreateNotice(string title, string msg)
         {
