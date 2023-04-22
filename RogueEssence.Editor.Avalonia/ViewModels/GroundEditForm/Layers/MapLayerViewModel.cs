@@ -15,6 +15,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             name = layer.Name;
             front = layer.Layer == Content.DrawLayer.Top;
+            back = layer.Layer == Content.DrawLayer.Under;
+            mid = !front && !back;
         }
 
         private string name;
@@ -31,6 +33,26 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref front, value);
+            }
+        }
+
+        private bool mid;
+        public bool Mid
+        {
+            get { return mid; }
+            set
+            {
+                this.SetIfChanged(ref mid, value);
+            }
+        }
+
+        private bool back;
+        public bool Back
+        {
+            get { return back; }
+            set
+            {
+                this.SetIfChanged(ref back, value);
             }
         }
 

@@ -79,6 +79,9 @@
     <Compile Update="Views\DialogBoxes\ModConfigWindow.axaml.cs">
       <DependentUpon>ModConfigWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\GroundEditForm\Layers\GroundLayerWindow.axaml.cs">
+      <DependentUpon>GroundLayerWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\MapEditForm\Teams\TeamWindow.axaml.cs">
       <DependentUpon>TeamWindow.axaml</DependentUpon>
     </Compile>

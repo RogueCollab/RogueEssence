@@ -24,13 +24,23 @@ namespace RogueEssence.Dev.ViewModels
 
         public override async Task EditLayer()
         {
-            MapLayerWindow window = new MapLayerWindow();
             MapLayerViewModel vm = new MapLayerViewModel(Layers[ChosenLayer]);
-            window.DataContext = vm;
-
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            bool result;
+            if (groundMode)
+            {
+                GroundLayerWindow window = new GroundLayerWindow();
+                window.DataContext = vm;
 
-            bool result = await window.ShowDialog<bool>(groundMode ? form.GroundEditForm : form.MapEditForm);
+                result = await window.ShowDialog<bool>(form.GroundEditForm);
+            }
+            else
+            {
+                MapLayerWindow window = new MapLayerWindow();
+                window.DataContext = vm;
+
+                result = await window.ShowDialog<bool>(form.MapEditForm);
+            }
 
             lock (GameBase.lockObj)
             {
@@ -38,7 +48,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     MapLayer newLayer = new MapLayer(vm.Name);
                     MapLayer oldLayer = Layers[ChosenLayer];
-                    newLayer.Layer = vm.Front ? DrawLayer.Top : DrawLayer.Bottom;
+                    newLayer.Layer = vm.Front ? DrawLayer.Top : (vm.Back ? DrawLayer.Under : DrawLayer.Bottom);
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Tiles = oldLayer.Tiles;
 
