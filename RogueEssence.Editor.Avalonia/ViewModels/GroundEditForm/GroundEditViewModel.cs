@@ -476,11 +476,11 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
-            ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
+            curgrnd.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.
-            createOrCopyScriptData(oldfname, filepath);
+            CreateOrCopyScriptData(oldfname, filepath);
             //create or update the strings
             Strings.SaveStrings();
 
@@ -501,7 +501,7 @@ namespace RogueEssence.Dev.ViewModels
         /// </summary>
         /// <param name="oldfilepath"></param>
         /// <param name="newfilepath"></param>
-        private void createOrCopyScriptData(string oldfilepath, string newfilepath)
+        public static void CreateOrCopyScriptData(string oldfilepath, string newfilepath)
         {
             string oldmapscriptdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, Path.GetFileNameWithoutExtension(oldfilepath), "/init.lua"));
             string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
