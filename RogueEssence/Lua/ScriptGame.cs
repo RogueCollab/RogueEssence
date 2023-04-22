@@ -281,6 +281,24 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Centers the camera on a character.
+        /// </summary>
+        /// <param name="x">X coordinate of the camera center, as an offset for the chara</param>
+        /// <param name="y">Y coordinate of the camera center, as an offset for the chara</param>
+        /// <param name="duration">The amount of time it takes ot move to the destination</param>
+        /// <param name="chara">The character to center on.</param>
+        /// <example>
+        /// GAME:MoveCameraToChara(200, 240, 60, false)
+        /// </example>
+        public LuaFunction MoveCameraToChara;
+        
+        public Coroutine _MoveCameraToChara(int x, int y, int duration, GroundChar chara)
+        {
+            return new Coroutine(GroundScene.Instance.MoveCameraToChara(new Loc(x, y), duration, chara));
+        }
+        
+
+        /// <summary>
         /// Gets the current center of the camera.
         /// </summary>
         /// <returns>A Loc object representing the center of the camera.</returns>
@@ -1429,6 +1447,7 @@ namespace RogueEssence.Script
             FadeOut = state.RunString("return function(_, bwhite, duration) return coroutine.yield(GAME:_FadeOut(bwhite, duration)) end").First() as LuaFunction;
             FadeIn = state.RunString("return function(_, duration) return coroutine.yield(GAME:_FadeIn(duration)) end").First() as LuaFunction;
             MoveCamera = state.RunString("return function(_, x, y, duration, toPlayer) return coroutine.yield(GAME:_MoveCamera(x, y, duration, toPlayer)) end").First() as LuaFunction;
+            MoveCameraToChara = state.RunString("return function(_, x, y, duration, chara) return coroutine.yield(GAME:_MoveCameraToChara(x, y, duration, chara)) end").First() as LuaFunction;
             WaitFrames      = state.RunString("return function(_, frames) return coroutine.yield(GAME:_WaitFrames(frames)) end").First() as LuaFunction;
         }
 
