@@ -282,6 +282,8 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Centers the camera on a character.
+        ///
+        /// As we are simply moving the camera to a character, this will simply set ViewCenter and not ViewOffset.
         /// </summary>
         /// <param name="x">X coordinate of the camera center, as an offset for the chara</param>
         /// <param name="y">Y coordinate of the camera center, as an offset for the chara</param>
