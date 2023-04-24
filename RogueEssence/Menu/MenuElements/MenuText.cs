@@ -201,5 +201,11 @@ namespace RogueEssence.Menu
             return GraphicsManager.TextFont.SubstringWidth(Text);
         }
 
+        public override string ToString()
+        {
+            if (String.IsNullOrEmpty(Text))
+                return "";
+            return Text;
+        }
     }
 }
