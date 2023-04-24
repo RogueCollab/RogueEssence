@@ -290,7 +290,7 @@ namespace RogueEssence.Dungeon
 
 
         public SelfHitbox(Character user, FiniteEmitter tileEmitter, int delay)
-            : base(user, user.CharLoc * GraphicsManager.TileSize, tileEmitter, delay)
+            : base(user, user.CharLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), tileEmitter, delay)
         {
         }
 
@@ -332,7 +332,7 @@ namespace RogueEssence.Dungeon
         public FiniteEmitter Emitter;
 
         public StaticHitbox(Character user, Alignment targetAlignments, bool hitTiles, TileAlignment burstTiles, Loc origin, FiniteEmitter tileEmitter, FiniteEmitter emitter, int delay)
-            : base(user, origin * GraphicsManager.TileSize, tileEmitter, delay)
+            : base(user, origin * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), tileEmitter, delay)
         {
             TargetAlignments = targetAlignments;
             HitTiles = hitTiles;
@@ -418,7 +418,7 @@ namespace RogueEssence.Dungeon
 
         public CircleSquareHitbox(Character user, Alignment targetAlignments, bool hitTiles, TileAlignment burstTiles, Loc origin, FiniteEmitter tileEmitter,
             CircleSquareEmitter emitter, int maxRadius, int speed, int delay, AreaLimit hitArea, Dir8 dir)
-            : base(user, origin * GraphicsManager.TileSize, tileEmitter, delay)
+            : base(user, origin * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), tileEmitter, delay)
         {
             TargetAlignments = targetAlignments;
             HitTiles = hitTiles;
@@ -558,7 +558,7 @@ namespace RogueEssence.Dungeon
 
         public CircleSweepHitbox(Character user, Alignment targetAlignments, bool hitTiles, bool burstOnWall, Loc startPoint, AnimData anim, FiniteEmitter tileEmitter,
             AttachPointEmitter emitter, int speed, int delay, Dir8 dir, int maxDistance, bool boomerang, string item)
-            : base(user, startPoint * GraphicsManager.TileSize + dir.GetLoc() * GraphicsManager.TileSize / 2, tileEmitter, delay)
+            : base(user, startPoint * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2) + dir.GetLoc() * GraphicsManager.TileSize / 2, tileEmitter, delay)
         {
             TargetAlignments = targetAlignments;
             HitTiles = hitTiles;
@@ -739,7 +739,7 @@ namespace RogueEssence.Dungeon
 
         public BeamSweepHitbox(Character user, Alignment targetAlignments, bool tileAlignments, bool burstOnWall, Loc startPoint, BeamAnimData anim, FiniteEmitter tileEmitter,
             int speed, int delay, Dir8 dir, int maxDistance, bool wide, int linger)
-            : base(user, startPoint * GraphicsManager.TileSize, tileEmitter, delay)
+            : base(user, startPoint * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), tileEmitter, delay)
         {
             TargetAlignments = targetAlignments;
             HitTiles = tileAlignments;
@@ -870,7 +870,7 @@ namespace RogueEssence.Dungeon
         public AttachPointEmitter Emitter;
 
         public ArcingHitbox(Character user, Loc startPoint, AnimData anim, FiniteEmitter tileEmitter, AttachPointEmitter emitter, Loc endPoint, int speed, string item, int delay)
-            : base(user, startPoint * GraphicsManager.TileSize, tileEmitter, delay)
+            : base(user, startPoint * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), tileEmitter, delay)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;
@@ -992,7 +992,7 @@ namespace RogueEssence.Dungeon
         //the owner class will guarantee that this hitbox will cover all the right places, as well as disposing this hitbox
         public AttachedCircleHitbox(Character user, Alignment targetAlignments, bool hitTiles, bool burstOnWall, Loc startPoint, AnimData anim, int animOffset,
             FiniteEmitter tileEmitter, AttachPointEmitter emitter, int maxDistance, int dashTime, Dir8 dir, bool wide, int delay)
-            : base(user, startPoint * GraphicsManager.TileSize, tileEmitter, delay)
+            : base(user, startPoint * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), tileEmitter, delay)
         {
             TargetAlignments = targetAlignments;
             HitTiles = hitTiles;

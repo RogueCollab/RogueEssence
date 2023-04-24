@@ -327,8 +327,8 @@ namespace RogueEssence.Dungeon
         {
             return CharSheet.TrueFrame(frames, Math.Min(ActionTime.Ticks, FrameTick.FrameToTick(AnimReturnTime)), true);
         }
-        public override bool ActionPassed { get { return ActionTime >= PoseTime; } }
-        public override bool ActionDone { get { return ActionTime >= PoseTime; } }
+        public override bool ActionPassed { get { return PoseTime > 0 && ActionTime >= PoseTime; } }
+        public override bool ActionDone { get { return PoseTime > 0 && ActionTime >= PoseTime; } }
 
         public CharAnimPose() { }
         public CharAnimPose(Loc loc, Dir8 dir, int frameType, int poseTime) { AnimLoc = loc; CharDir = dir; BaseFrameType = frameType; PoseTime = poseTime; }
