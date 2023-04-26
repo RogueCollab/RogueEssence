@@ -288,6 +288,7 @@ namespace RogueEssence.Script
             GraphicsLoad,
             GraphicsUnload,
             MenuButtonPressed,
+            OthersMenuButtonPressed,
             NewGame,
             LossPenalty,
             UpgradeSave,
@@ -316,8 +317,7 @@ namespace RogueEssence.Script
             GroundMapExit,
 
             //Keep last
-            _NBEvents,
-            OthersMenuButtonPressed
+            _NBEvents
         };
 
         private IEnumerator<EServiceEvents> IterateServiceEvents()
