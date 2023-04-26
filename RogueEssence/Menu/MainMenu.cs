@@ -6,7 +6,9 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
+using KeraLua;
 using RogueEssence.Ground;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -72,7 +74,8 @@ namespace RogueEssence.Menu
                 Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
             }
 
-            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(new OthersMenu(), false); }));
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"),
+                () => { LuaEngine.Instance.OnOthersMenuButtonPressed(); }));
             
             if (ZoneManager.Instance.InDevZone)
                 Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
