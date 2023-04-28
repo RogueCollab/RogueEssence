@@ -507,6 +507,20 @@ namespace RogueEssence.Ground
                 yield return new WaitForFrames(1);
             }
         }
-
+        
+        public IEnumerator<YieldInstruction> MoveCameraToChara(Loc loc, int time, GroundChar chara)
+         {
+             Loc startLoc = ZoneManager.Instance.CurrentGround.ViewCenter.HasValue ? ZoneManager.Instance.CurrentGround.ViewCenter.Value : chara.Bounds.Center + ZoneManager.Instance.CurrentGround.ViewOffset;
+             Loc endLoc = startLoc + loc;
+             ZoneManager.Instance.CurrentGround.ViewCenter = startLoc;
+ 
+             int currentFadeTime = time;
+             while (currentFadeTime > 0)
+             {
+                 currentFadeTime--;
+                 ZoneManager.Instance.CurrentGround.ViewCenter = new Loc(AnimMath.Lerp(endLoc.X, startLoc.X, (double)currentFadeTime / time), AnimMath.Lerp(endLoc.Y, startLoc.Y, (double)currentFadeTime / time));
+                 yield return new WaitForFrames(1);
+             }
+         }
     }
 }
