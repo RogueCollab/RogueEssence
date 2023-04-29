@@ -389,9 +389,9 @@ namespace RogueEssence
                 if (ii > 0)
                 {
                     if (input.Length > 2)
-                        totalString.Append(", ");
+                        totalString.Append("ADD_SEPARATOR");
                     else if (ii == input.Length - 1)
-                        totalString.Append(Text.FormatKey("ADD_END") + " ");
+                        totalString.Append(Text.FormatKey("ADD_END"));
                 }
                 totalString.Append(input[ii]);
             }
