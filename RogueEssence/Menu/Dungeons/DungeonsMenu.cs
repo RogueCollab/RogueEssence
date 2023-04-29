@@ -17,12 +17,15 @@ namespace RogueEssence.Menu
         DungeonSummary summaryMenu;
         private List<ZoneLoc> dests;
         private List<string> names;
+        private List<string> titles;
 
-        public DungeonsMenu(List<string> names, List<ZoneLoc> dests, OnChooseSlot destAction)
+        public DungeonsMenu(List<string> names, List<string> titles, List<ZoneLoc> dests, OnChooseSlot destAction)
         {
             this.destAction = destAction;
             this.dests = dests;
             this.names = names;
+            this.titles = titles;
+            
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < dests.Count; ii++)
             {
@@ -51,7 +54,7 @@ namespace RogueEssence.Menu
             else
             {
                 summaryMenu.Visible = true;
-                summaryMenu.SetDungeon(names[choice], dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed, true);
+                summaryMenu.SetDungeon(titles[choice], dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed, true);
             }
             base.ChoiceChanged();
         }
