@@ -11,6 +11,14 @@ namespace RogueEssence.Menu
             Choices = new List<MenuTextChoice>();
         }
 
+        public static OthersMenu InitDefaultOthersMenu()
+        {
+            OthersMenu othersMenu = new OthersMenu();
+            othersMenu.SetupChoices();
+            othersMenu.InitMenu();
+            return othersMenu;
+        }
+
         public void SetupChoices()
         {
             Choices.Clear();
@@ -18,7 +26,6 @@ namespace RogueEssence.Menu
             Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SETTINGS_TITLE"), () => { MenuManager.Instance.AddMenu(new SettingsMenu(), false); }));
             Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_KEYBOARD_TITLE"), () => { MenuManager.Instance.AddMenu(new KeyControlsMenu(), false); }));
             Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GAMEPAD_TITLE"), () => { MenuManager.Instance.AddMenu(new GamepadControlsMenu(), false); }));
- 
         }
 
         public void InitMenu()

@@ -288,7 +288,6 @@ namespace RogueEssence.Script
             GraphicsLoad,
             GraphicsUnload,
             MenuButtonPressed,
-            OthersMenuButtonPressed,
             NewGame,
             LossPenalty,
             UpgradeSave,
@@ -1796,16 +1795,6 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("LuaEngine.OnMenuButtonPressed()...");
             yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.MenuButtonPressed.ToString()));
         }
-        
-        /// <summary>
-        /// Called when the others menu button is pressed!
-        /// </summary>
-        public IEnumerator<YieldInstruction> OnOthersMenuButtonPressed()
-        {
-            DiagManager.Instance.LogInfo("LuaEngine.OnMenuButtonPressed()...");
-            yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.OthersMenuButtonPressed.ToString()));
-        }
-
         public void OnNewGame()
         {
             m_scrsvc.Publish(EServiceEvents.NewGame.ToString());

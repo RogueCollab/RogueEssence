@@ -74,7 +74,7 @@ namespace RogueEssence.Menu
                 Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
             }
 
-            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnOthersMenuButtonPressed()); }));
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(OthersMenu.InitDefaultOthersMenu(), false); }));
             
             if (ZoneManager.Instance.InDevZone)
                 Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
