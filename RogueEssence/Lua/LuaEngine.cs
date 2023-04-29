@@ -1795,7 +1795,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("LuaEngine.OnMenuButtonPressed()...");
             yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.MenuButtonPressed.ToString()));
         }
-        
+
         public void OnNewGame()
         {
             m_scrsvc.Publish(EServiceEvents.NewGame.ToString());
