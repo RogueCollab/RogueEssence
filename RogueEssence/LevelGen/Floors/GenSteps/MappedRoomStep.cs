@@ -25,9 +25,11 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(T map)
         {
-            //still use the old seed, ID, and Name
+            //still use the old seed and ID
             ulong seed = map.Rand.FirstSeed;
+            int mapID = map.Map.ID;
             map.Map = DataManager.Instance.GetMap(MapID);
+            map.Map.ID = mapID;
             map.InitSeed(seed);
         }
 
