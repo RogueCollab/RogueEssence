@@ -6,7 +6,9 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
+using KeraLua;
 using RogueEssence.Ground;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -14,12 +16,27 @@ namespace RogueEssence.Menu
     {
         private static int defaultChoice;
 
-        SummaryMenu titleMenu;
+        private bool inReplay;
 
-        SummaryMenu summaryMenu;
-
-
+        MenuText menuTimer;
+        
+        public List<MenuTextChoice> Choices { get; set; }
+        public List<IMenuElement> TitleElements { get; set; }
+        public List<IMenuElement> SummaryElements { get; set; }
+        
+        public int MenuWidth { get; set; }
+        public SummaryMenu TitleMenu { get; set; }
+        public Rect TitleMenuBounds { get; set; }
+        public SummaryMenu SummaryMenu { get; set; }
+        public Rect SummaryMenuBounds { get; set; }
         public MainMenu()
+        {
+            Choices = new List<MenuTextChoice>();
+            TitleElements = new List<IMenuElement>();
+            SummaryElements = new List<IMenuElement>();
+        }
+        
+         public void SetupChoices()
         {
             bool equippedItems = false;
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
@@ -32,8 +49,8 @@ namespace RogueEssence.Menu
             }
             bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !equippedItems);
 
-            List<MenuTextChoice> choices = new List<MenuTextChoice>();
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SKILLS"), () =>
+            Choices.Clear();
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SKILLS"), () =>
             {
                 int mainIndex = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -44,45 +61,59 @@ namespace RogueEssence.Menu
                 }
                 MenuManager.Instance.AddMenu(new SkillMenu(mainIndex), false);
             }));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
 
             bool hasTactics = (DataManager.Instance.Save.ActiveTeam.Players.Count > 1);
-            bool inReplay = (DataManager.Instance.CurrentReplay != null);
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
+            inReplay = (DataManager.Instance.CurrentReplay != null);
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 bool hasGround = DungeonScene.Instance.CanCheckGround();
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
+                Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
             }
 
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(new OthersMenu(), false); }));
-
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(OthersMenu.InitDefaultOthersMenu(), false); }));
+            
             if (ZoneManager.Instance.InDevZone)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
+                Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
             else if (!inReplay)
             {
                 if (((GameManager.Instance.CurrentScene == DungeonScene.Instance)) || DataManager.Instance.Save is RogueProgress)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
+                    Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
                 else
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SAVE"), SaveAction));
+                    Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SAVE"), SaveAction));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_TITLE"), () => { MenuManager.Instance.AddMenu(new ReplayMenu(), false); }));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), MenuManager.Instance.RemoveMenu));
+            
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_TITLE"), () => { MenuManager.Instance.AddMenu(new ReplayMenu(), false); }));
+            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), MenuManager.Instance.RemoveMenu));
+        }
 
-            Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), Math.Min(Math.Max(0, defaultChoice), choices.Count - 1));
-
-            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 32), new Loc(GraphicsManager.ScreenWidth - 16, 32 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
+        public void SetupTitleAndSummary()
+        {
+            MenuWidth = CalculateChoiceLength(Choices, 72);
+            
+            TitleElements.Clear();
+            TitleMenuBounds = Rect.FromPoints(new Loc(MenuWidth + 16, 32),
+                new Loc(GraphicsManager.ScreenWidth - 16, 32 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2));
             MenuText title = new MenuText((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? ZoneManager.Instance.CurrentMap.GetColoredName() : ZoneManager.Instance.CurrentGround.GetColoredName(),
-                new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
-            titleMenu.Elements.Add(title);
+                new Loc(TitleMenuBounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            TitleElements.Add(title);
+            
+            SummaryElements.Clear();
+            SummaryMenuBounds = Rect.FromPoints(
+                new Loc(16, 32 + Choices.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2),
+                new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8));
+            SummaryElements.Add(new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", DataManager.Instance.Save.ActiveTeam.Money)),
+                new Loc(GraphicsManager.MenuBG.TileWidth + 4, GraphicsManager.MenuBG.TileHeight)));
+            
+            int level_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT") + $"{DataManager.Instance.Start.MaxLevel}");
+            int hp_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HP") + $" {999}/{999}");
+            int hunger_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HUNGER") + $" {Character.MAX_FULLNESS}/{Character.MAX_FULLNESS}");
 
-            summaryMenu = new SummaryMenu(Rect.FromPoints(new Loc(16, 32 + choices.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2),
-                new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
-            summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", DataManager.Instance.Save.ActiveTeam.Money)),
-                new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight)));
+            int remaining_width = SummaryMenuBounds.End.X - SummaryMenuBounds.X - (GraphicsManager.MenuBG.TileWidth + 4) * 2 - level_length - hp_length - hunger_length - NicknameMenu.MAX_LENGTH;
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
@@ -96,32 +127,71 @@ namespace RogueEssence.Menu
                         break;
                     }
                 }
-                summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_MAP_CONDITION", weather),
-                    new Loc(summaryMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight)));
+                SummaryElements.Add(new MenuText(Text.FormatKey("MENU_MAP_CONDITION", weather),
+                    new Loc(GraphicsManager.MenuBG.TileWidth + 4 + NicknameMenu.MAX_LENGTH + remaining_width / 3, GraphicsManager.MenuBG.TileHeight), DirH.Left));
             }
-
-            int level_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", DataManager.Instance.MaxLevel));
-            int hp_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HP", 999, 999));
-            int hunger_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HUNGER", Character.MAX_FULLNESS, Character.MAX_FULLNESS));
-
-            int remaining_width = summaryMenu.Bounds.End.X - summaryMenu.Bounds.X - (GraphicsManager.MenuBG.TileWidth + 4) * 2 - level_length - hp_length - hunger_length - NicknameMenu.MAX_LENGTH;
-
+            
+            int max_hp_length = GraphicsManager.TextFont.SubstringWidth("999");
+            int max_fullness_length = GraphicsManager.TextFont.SubstringWidth(Character.MAX_FULLNESS.ToString());
+            int hp_label_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HP"));
+            int hunger_label_length = GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HUNGER"));
+            
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character character = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 int text_start = GraphicsManager.MenuBG.TileWidth + 4;
-                summaryMenu.Elements.Add(new MenuText(character.GetDisplayName(true),
+                SummaryElements.Add(new MenuText(character.GetDisplayName(true),
                 new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT)));
                 text_start += NicknameMenu.MAX_LENGTH + remaining_width / 3;
-                summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level),
-                new Loc(text_start + level_length / 2, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
-                text_start += level_length + remaining_width / 3;
-                summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TEAM_HP", character.HP, character.MaxHP),
-                new Loc(text_start + hp_length / 2, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
-                text_start += hp_length + remaining_width / 3;
-                summaryMenu.Elements.Add(new MenuText(Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness),
-                new Loc(text_start + hunger_length / 2, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
+                SummaryElements.Add(new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Left));
+                text_start += level_length;
+                SummaryElements.Add(new MenuText(character.Level.ToString(),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Right));
+                text_start += remaining_width / 3;
+                SummaryElements.Add(new MenuText(Text.FormatKey("MENU_TEAM_HP"),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Left));
+                text_start += hp_label_length + max_hp_length + 4;
+                SummaryElements.Add(new MenuText(character.HP.ToString(),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Right));
+                text_start += 4;
+                SummaryElements.Add(new MenuText("/",
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
+                text_start += character.MaxHP.ToString().StartsWith("1") ? 2 : 4;
+                SummaryElements.Add(new MenuText(character.MaxHP.ToString(),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Left));
+                text_start += max_hp_length + remaining_width / 3 + (character.MaxHP.ToString().StartsWith("1") ? 2 : 0);
+                SummaryElements.Add(new MenuText(Text.FormatKey("MENU_TEAM_HUNGER"), 
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Left));
+                text_start += hunger_label_length + max_fullness_length + 2;
+                SummaryElements.Add(new MenuText(character.Fullness.ToString(),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Right));
+                text_start += 4;
+                SummaryElements.Add(new MenuText("/",
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.None));
+                text_start += character.MaxFullness.ToString().StartsWith("1") ? 2 : 4;
+                SummaryElements.Add(new MenuText(character.MaxFullness.ToString(),
+                    new Loc(text_start, GraphicsManager.MenuBG.TileHeight + (ii + 1) * LINE_HEIGHT), DirH.Left));
             }
+            
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance && !inReplay)
+            {
+                int timerStart = GraphicsManager.MenuBG.TileWidth + 4 + NicknameMenu.MAX_LENGTH + level_length + hp_length + remaining_width;
+                menuTimer = new MenuText(Text.FormatKey("MENU_TIMER", DataManager.Instance.Save.GetDungeonTimeDisplay()),
+                    new Loc(timerStart, GraphicsManager.MenuBG.TileHeight), DirH.Left);
+                SummaryElements.Add(menuTimer);
+            }
+        }
+        
+        public void InitMenu()
+        {
+            Initialize(new Loc(16, 16), MenuWidth, Choices.ToArray(), Math.Min(Math.Max(0, defaultChoice), Choices.Count - 1));
+
+            TitleMenu = new SummaryMenu(TitleMenuBounds);
+            TitleMenu.Elements = TitleElements;
+
+            SummaryMenu = new SummaryMenu(SummaryMenuBounds);
+            SummaryMenu.Elements = SummaryElements;
         }
 
         private void checkGround()
@@ -142,8 +212,8 @@ namespace RogueEssence.Menu
             base.Draw(spriteBatch);
 
             //draw other windows
-            titleMenu.Draw(spriteBatch);
-            summaryMenu.Draw(spriteBatch);
+            TitleMenu.Draw(spriteBatch);
+            SummaryMenu.Draw(spriteBatch);
         }
 
 
@@ -165,6 +235,11 @@ namespace RogueEssence.Menu
             
         }
 
+        public override void Update(InputManager input)
+        {
+            base.Update(input);
+            menuTimer?.SetText(Text.FormatKey("MENU_TIMER", DataManager.Instance.Save.GetDungeonTimeDisplay()));
+        }
 
 
         public IEnumerator<YieldInstruction> processSave(bool returnToTitle)
@@ -187,7 +262,7 @@ namespace RogueEssence.Menu
         private void ReturnToEditorAction()
         {
             MenuManager.Instance.ClearMenus();
-            MenuManager.Instance.NextAction = GameManager.Instance.ReturnToEditor();
+            GameManager.Instance.SceneOutcome = GameManager.Instance.ReturnToEditor();
         }
     }
 }

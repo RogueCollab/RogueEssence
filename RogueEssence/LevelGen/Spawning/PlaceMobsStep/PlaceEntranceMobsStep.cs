@@ -74,7 +74,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0}", this.GetType().Name);
+            return String.Format("{0}", this.GetType().GetFormattedTypeName());
         }
     }
 }

@@ -11,25 +11,19 @@ namespace RogueEssence.Script
     /// </summary>
     class ScriptTask : ILuaEngineComponent
     {
-        //===========================================
-        // Pure lua functions
-        //===========================================
-        public LuaFunction WaitStartEntityTask;
-        public LuaFunction WaitEntityTask;
-        public LuaFunction WaitTask;
-        public LuaFunction JoinCoroutines;
 
         //===========================================
         //  Methods
         //===========================================
+
+
         /// <summary>
         /// Helper function to make an entity run the specified task.
         /// Will not replace a running task!
-        /// Tasks are run interlocked with the script processing and game processing, and characters can run tasks at the same time.
+        /// Tasks are run interlocked with the script processing and game processing, and characters cannot run multiple tasks at the same time.
         /// </summary>
         /// <param name="ent">Entity which will run the task.</param>
         /// <param name="fn">Task coroutine.</param>
-        /// <returns>Returns whether the task could be set or not</returns>
         public GroundScriptedTask StartEntityTask(GroundEntity ent, LuaFunction fn)
         {
             try
@@ -54,31 +48,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Same as StartEntityTask, but this one blocks until the task is set
-        /// </summary>
-        /// <param name="ent"></param>
-        /// <param name="fn"></param>
-        public Coroutine _WaitStartEntityTask(GroundEntity ent, LuaFunction fn)
-        {
-            try
-            {
-                if (ent == null || fn == null)
-                    throw new ArgumentNullException("ScriptTask._WaitStartEntityTask(): Got null entity or function pointer!");
-                if (ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
-                {
-                    BaseTaskUser tu = (BaseTaskUser)ent;
-                    return new Coroutine(tu.WaitSetTask(new GroundScriptedTask(fn)));
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
-            }
-            return new Coroutine(LuaEngine._DummyWait());
-        }
-
-        /// <summary>
-        /// Helper function to force stop an entity's current task!
+        /// Helper function to force stop an entity's current task.
         /// </summary>
         /// <param name="ent">Entity running the task to stop.</param>
         public void StopEntityTask(GroundEntity ent)
@@ -100,10 +70,43 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Helper function to invoke the Wait() function of the current task of the specified entity.
+        /// Makes an entity run a specified task, and waits for it to complete.
+        /// </summary>
+        /// <param name="ent">Entity which will run the task.</param>
+        /// <param name="fn">Task coroutine.</param>
+        /// <example>
+        /// TODO
+        /// </example>
+        public LuaFunction WaitStartEntityTask;
+
+        public Coroutine _WaitStartEntityTask(GroundEntity ent, LuaFunction fn)
+        {
+            try
+            {
+                if (ent == null || fn == null)
+                    throw new ArgumentNullException("ScriptTask._WaitStartEntityTask(): Got null entity or function pointer!");
+                if (ent.GetType().IsSubclassOf(typeof(BaseTaskUser)))
+                {
+                    BaseTaskUser tu = (BaseTaskUser)ent;
+                    return new Coroutine(tu.WaitSetTask(new GroundScriptedTask(fn)));
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return new Coroutine(LuaEngine._DummyWait());
+        }
+
+        /// <summary>
+        /// Waits for the specified entity to finish its task.
         /// </summary>
         /// <param name="ent">Entity which task we'll wait on.</param>
-        /// <returns></returns>
+        /// <example>
+        /// TASK:WaitEntityTask(player)
+        /// </example>
+        public LuaFunction WaitEntityTask;
+
         public Coroutine _WaitEntityTask(GroundEntity ent)
         {
             try
@@ -123,6 +126,15 @@ namespace RogueEssence.Script
         }
 
 
+        /// <summary>
+        /// Runs a task and waits for it to complete.
+        /// Most methods that do not expose themselves to script need ot be wrapped with this.
+        /// </summary>
+        /// <param name="obj">The task to wait on.</param>
+        /// <example>
+        /// TASK:WaitTask(_DUNGEON:AddMapStatus("rain"))
+        /// </example>
+        public LuaFunction WaitTask;
         public Coroutine _WaitTask(object obj)
         {
             if (obj is IEnumerator<YieldInstruction>)
@@ -141,13 +153,14 @@ namespace RogueEssence.Script
         //===================================
         // Coroutines
         //===================================
+
         /// <summary>
         /// A wrapper around the StartCoroutine method of the GameManager, so lua coroutines can be executed locally to the script context.
         /// AKA, it will block the script execution while its executed.
         /// </summary>
-        /// <param name = "fn" ></ param >
-        /// < param name= "args" ></ param >
-        /// < returns ></ returns >
+        /// <param name="fn"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public Coroutine StartScriptLocalCoroutine(LuaFunction fn, params object[] args)
         {
             try
@@ -161,6 +174,14 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Starts a new coroutine to run parallel to the current execution.
+        /// Useful for performing multiple actions at once.
+        /// </summary>
+        /// <param name="obj">The task to run in parallel</param>
+        /// <example>
+        /// local coro1 = TASK:BranchCoroutine(GAME:_FadeIn(60))
+        /// </example>
         public Coroutine BranchCoroutine(object obj)
         {
             if (obj is Coroutine)
@@ -175,6 +196,16 @@ namespace RogueEssence.Script
             }
             return null;
         }
+
+        /// <summary>
+        /// Waits for all specified coroutines to finish before continuing execution.
+        /// Often used for coroutines created using TASK:BranchCoroutine()
+        /// </summary>
+        /// <param name="coroTable">A table of coroutines to wait on.</param>
+        /// <example>
+        /// TASK:JoinCoroutines({coro1})
+        /// </example>
+        public LuaFunction JoinCoroutines;
 
         public Coroutine _JoinCoroutines(LuaTable coroTable)
         {

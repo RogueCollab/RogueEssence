@@ -9,8 +9,11 @@ namespace RogueEssence.Menu
     public class TeamMiniSummary : SummaryMenu
     {
         MenuText FullName;
+        MenuText LevelLabel;
         MenuText Level;
+        MenuText HPLabel;
         MenuText HP;
+        MenuText FullnessLabel;
         MenuText Fullness;
         MenuText EXP;
         MenuText Intrinsics;
@@ -20,12 +23,18 @@ namespace RogueEssence.Menu
         {
             FullName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(FullName);
-            Level = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), DirH.Right);
+            LevelLabel = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 6, GraphicsManager.MenuBG.TileHeight));
+            Elements.Add(LevelLabel);
+            Level = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 6 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT")), GraphicsManager.MenuBG.TileHeight), DirH.Left);
             Elements.Add(Level);
-            HP = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
+            HPLabel = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
+            Elements.Add(HPLabel);
+            HP = new MenuText("", new Loc( GraphicsManager.MenuBG.TileWidth * 2 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HP")) + 4, GraphicsManager.MenuBG.TileHeight + VERT_SPACE), DirH.Left);
             Elements.Add(HP);
 
-            Fullness = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
+            FullnessLabel = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
+            Elements.Add(FullnessLabel);
+            Fullness = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HUNGER")) + 4, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2), DirH.Left);
             Elements.Add(Fullness);
             EXP = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
             Elements.Add(EXP);
@@ -36,12 +45,16 @@ namespace RogueEssence.Menu
         public void SetMember(Character character)
         {
             FullName.SetText(character.GetDisplayName(true) + " / " + CharData.GetFullFormName(character.BaseForm));
-            Level.SetText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level));
-            HP.SetText(Text.FormatKey("MENU_TEAM_HP", character.HP, character.MaxHP));
-            Fullness.SetText(Text.FormatKey("MENU_TEAM_HUNGER", character.Fullness, character.MaxFullness));
+            LevelLabel.SetText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"));
+            Level.SetText(character.Level.ToString());
+            HPLabel.SetText(Text.FormatKey("MENU_TEAM_HP"));
+            HP.SetText(String.Format("{0}/{1}", character.HP, character.MaxHP));
+            
+            FullnessLabel.SetText(Text.FormatKey("MENU_TEAM_HUNGER"));
+            Fullness.SetText(String.Format("{0}/{1}", character.Fullness, character.MaxFullness));
 
             int expToNext = 0;
-            if (character.Level < DataManager.Instance.MaxLevel)
+            if (character.Level < DataManager.Instance.Start.MaxLevel)
             {
                 string growth = DataManager.Instance.GetMonster(character.BaseForm.Species).EXPTable;
                 GrowthData growthData = DataManager.Instance.GetGrowth(growth);

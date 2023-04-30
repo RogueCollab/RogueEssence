@@ -69,9 +69,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
-        public PriorityListBoxViewModel(StringConv conv)
+        private Window parent;
+
+        public bool ConfirmDelete;
+
+        public PriorityListBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
+            this.parent = parent;
             Collection = new ObservableCollection<PriorityElement>();
         }
 
@@ -108,6 +113,17 @@ namespace RogueEssence.Dev.ViewModels
             SelectedIndex = boxIndex;
         }
 
+        public void InsertOnKey(int boxIndex, object element)
+        {
+            Priority priority = new Priority();
+            if (0 <= boxIndex && boxIndex < Collection.Count)
+            {
+                priority = Collection[boxIndex].Priority;
+            }
+            Collection.Insert(boxIndex, new PriorityElement(StringConv, priority, element));
+            SelectedIndex = boxIndex;
+        }
+
         private int findBoxIndex(Priority priority, int index)
         {
             if (Collection.Count == 0)
@@ -115,9 +131,9 @@ namespace RogueEssence.Dev.ViewModels
 
             Priority prevPriority = Collection[0].Priority;
             int runningIndex = 0;
-            for (int ii = 1; ii < Collection.Count; ii++)
+            for (int ii = 0; ii < Collection.Count; ii++)
             {
-                if (Collection[ii].Priority == prevPriority)
+                if (ii > 0 && Collection[ii].Priority == prevPriority)
                     runningIndex++;
                 else
                     runningIndex = 0;
@@ -157,10 +173,20 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem(priority, index, element, insertItem);
         }
 
-        public void btnDelete_Click()
+        public async void btnDelete_Click()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
+            {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
+                    MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 Collection.RemoveAt(SelectedIndex);
+            }
         }
 
 

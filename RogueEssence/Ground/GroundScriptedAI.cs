@@ -194,5 +194,11 @@ namespace RogueEssence.Ground
         {
             InstantiateAI();
         }
+
+        public override void DoCleanup()
+        {
+            m_AITemplate = null;
+            m_fnUpdate = null;
+        }
     }
 }

@@ -17,6 +17,8 @@ using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
+using System.Reflection.Emit;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -106,6 +108,41 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+
+        public async void mnuExportAsGround_Click()
+        {
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Directory = mapDir;
+
+            FileDialogFilter filter = new FileDialogFilter();
+            filter.Name = "Ground Files";
+            filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
+            saveFileDialog.Filters.Add(filter);
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+
+            string result = await saveFileDialog.ShowAsync(form.MapEditForm);
+
+            if (!String.IsNullOrEmpty(result))
+            {
+                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+                    await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+                else if (Path.GetFileName(result).Contains(" "))
+                    await MessageBox.Show(form.MapEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
+                else
+                {
+                    lock (GameBase.lockObj)
+                    {
+                        //Schedule saving the map
+                        ExportToGround(ZoneManager.Instance.CurrentMap, result);
+                    }
+                    await MessageBox.Show(form.MapEditForm, String.Format("Textures have been saved to Ground!"), "Success", MessageBox.MessageBoxButtons.Ok);
+                }
+            }
+        }
+
         public async Task<bool> mnuSave_Click()
         {
             if (CurrentFile == "")
@@ -142,12 +179,13 @@ namespace RogueEssence.Dev.ViewModels
                 string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+                else if (Path.GetFileName(result).Contains(" "))
+                    await MessageBox.Show(form.MapEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
                     {
                         string oldFilename = CurrentFile;
-                        ZoneManager.Instance.CurrentMap.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
 
                         //Schedule saving the map
                         DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
@@ -306,6 +344,7 @@ namespace RogueEssence.Dev.ViewModels
 
             Terrain.SetupLayerVisibility();
             Entrances.SetupLayerVisibility();
+            //Entities.Teams.LoadTeams();
             Spawns.LoadMapSpawns();
             Effects.LoadMapEffects();
             Properties.LoadMapProperties();
@@ -388,7 +427,79 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(Map curmap, string filepath, string oldfname)
         {
+            curmap.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curmap);
+
+            CurrentFile = filepath;
+        }
+
+        private void ExportToGround(Map curmap, string filepath)
+        {
+            GroundMap curgrnd = new GroundMap();
+            curgrnd.CreateNew(curmap.Width, curmap.Height, GraphicsManager.DungeonTexSize);
+
+            curgrnd.Layers.Clear();
+
+            foreach (MapLayer layer in curmap.Layers)
+            {
+                if (layer.Layer == DrawLayer.Under)
+                {
+                    //Add layers marked "under", using DrawLayer.Bottom
+                    MapLayer newLayer = new MapLayer(layer.Name);
+                    newLayer.Layer = DrawLayer.Bottom;
+                    newLayer.Visible = layer.Visible;
+                    newLayer.Tiles = layer.Tiles;
+                    curgrnd.Layers.Add(newLayer);
+                }
+            }
+
+            //Add terrain
+            {
+                MapLayer newLayer = new MapLayer("Terrain");
+                newLayer.CreateNew(curmap.Width, curmap.Height);
+                newLayer.Layer = DrawLayer.Bottom;
+                newLayer.Visible = true;
+                for (int xx = 0; xx < curmap.Width; xx++)
+                {
+                    for (int yy = 0; yy < curmap.Height; yy++)
+                        newLayer.Tiles[xx][yy] = curmap.Tiles[xx][yy].Data.TileTex;
+                }
+                curgrnd.Layers.Add(newLayer);
+            }
+
+            //Add layers marked Bottom, using DrawLayer.Bottom
+            foreach (MapLayer layer in curmap.Layers)
+            {
+                if (layer.Layer != DrawLayer.Under && layer.Layer != DrawLayer.Top)
+                {
+                    //Add layers marked "under", using DrawLayer.Bottom
+                    MapLayer newLayer = new MapLayer(layer.Name);
+                    newLayer.Layer = DrawLayer.Bottom;
+                    newLayer.Visible = layer.Visible;
+                    newLayer.Tiles = layer.Tiles;
+                    curgrnd.Layers.Add(newLayer);
+                }
+            }
+
+            //add layers marked top, using DrawLayer.Top
+            foreach (MapLayer layer in curmap.Layers)
+            {
+                if (layer.Layer == DrawLayer.Top)
+                {
+                    //Add layers marked "under", using DrawLayer.Bottom
+                    MapLayer newLayer = new MapLayer(layer.Name);
+                    newLayer.Layer = DrawLayer.Top;
+                    newLayer.Visible = layer.Visible;
+                    newLayer.Tiles = layer.Tiles;
+                    curgrnd.Layers.Add(newLayer);
+                }
+            }
+
+            curgrnd.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
+            DataManager.SaveData(filepath, curgrnd);
+
+            //Actually create the script folder, and default script file.
+            GroundEditViewModel.CreateOrCopyScriptData("", filepath);
 
             CurrentFile = filepath;
         }
@@ -417,9 +528,11 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case 3://Items
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Item;
+                    Items.TabbedIn();
                     break;
                 case 4://Entities
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entity;
+                    Entities.TabbedIn();
                     break;
                 case 5://Entrances
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entrance;
@@ -428,6 +541,10 @@ namespace RogueEssence.Dev.ViewModels
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Other;
                     break;
             }
+            if (selectedTabIndex != 3)
+                Items.TabbedOut();
+            if (selectedTabIndex != 4)
+                Entities.TabbedOut();
         }
 
         public void ProcessInput(InputManager input)

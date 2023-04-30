@@ -64,7 +64,10 @@ namespace RogueEssence.Data
 
         public override string ToString()
         {
-            return FormName.DefaultText;
+            if (!String.IsNullOrEmpty(FormName.DefaultText))
+                return FormName.DefaultText;
+            else
+                return "[EMPTY]";
         }
 
 

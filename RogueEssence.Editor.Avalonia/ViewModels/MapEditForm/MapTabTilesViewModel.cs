@@ -25,12 +25,15 @@ namespace RogueEssence.Dev.ViewModels
                 TileTypes.Add(key + ": " + tile_names[key]);
             }
 
+            isRevealed = true;
+
             Owners = new ObservableCollection<string>();
             for (int ii = 0; ii < 3; ii++)
                 Owners.Add(((EffectTile.TileOwner)ii).ToString());
 
 
-            TileStates = new CollectionBoxViewModel(new StringConv(typeof(TileState), new object[0]));
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            TileStates = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(TileState), new object[0]));
             TileStates.OnEditItem += TileStates_EditItem;
         }
 
@@ -65,16 +68,6 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.RaiseAndSet(ref isRevealed, value);
-            }
-        }
-
-        private bool isDanger;
-        public bool IsDanger
-        {
-            get { return isDanger; }
-            set
-            {
-                this.RaiseAndSet(ref isDanger, value);
             }
         }
 
@@ -182,7 +175,6 @@ namespace RogueEssence.Dev.ViewModels
         private EffectTile getBrush()
         {
             EffectTile brush = new EffectTile(keys[ChosenTile], IsRevealed);
-            brush.Danger = IsDanger;
             brush.Owner = (EffectTile.TileOwner)ChosenOwner;
 
             List<TileState> states = TileStates.GetList<List<TileState>>();
@@ -195,7 +187,6 @@ namespace RogueEssence.Dev.ViewModels
         {
             ChosenTile = keys.IndexOf(brush.ID);
             ChosenOwner = (int)brush.Owner;
-            IsDanger = brush.Danger;
             IsRevealed = brush.Revealed;
 
             List<TileState> states = new List<TileState>();

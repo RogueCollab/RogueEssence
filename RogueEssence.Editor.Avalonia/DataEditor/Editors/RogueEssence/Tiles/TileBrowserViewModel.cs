@@ -135,6 +135,13 @@ namespace RogueEssence.Dev.ViewModels
 
         public ObservableCollection<TileFrame> Frames { get; }
 
+        public void SetFrame(int idx, TileFrame val)
+        {
+            int tmp = ChosenFrame;
+            Frames[idx] = val;
+            ChosenFrame = tmp;
+        }
+
         private int chosenFrame;
         public int ChosenFrame
         {
@@ -291,7 +298,7 @@ namespace RogueEssence.Dev.ViewModels
                     if (!Animated)
                         Preview = SelectedTile;
                     //update the (one) frame
-                    Frames[ChosenFrame] = SelectedTile;
+                    SetFrame(ChosenFrame, SelectedTile);
                 }
                 else
                 {
@@ -302,7 +309,7 @@ namespace RogueEssence.Dev.ViewModels
                         Preview = new TileFrame(loc, CurrentTileset);
 
                     //update the (one) frame
-                    Frames[ChosenFrame] = SelectedTile;
+                    SetFrame(ChosenFrame, SelectedTile);
                 }
             }
         }
@@ -317,11 +324,9 @@ namespace RogueEssence.Dev.ViewModels
             foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
             {
                 if (GraphicsManager.TileIndex.GetTileSize(name) == TileSize)
-                {
                     tileIndices.Add(name);
-                    Tilesets.AddItem(name);
-                }
             }
+            Tilesets.SetItems(tileIndices);
 
             //reset tile choices
             SelectedTile = TileFrame.Empty;
@@ -354,7 +359,7 @@ namespace RogueEssence.Dev.ViewModels
                 Frames.RemoveAt(ChosenFrame);
         }
 
-        public async void btnDeleteTileset_Click()
+        public async void mnuDeleteTileset_Click()
         {
             //get current sprite
             int animIdx = Tilesets.InternalIndex;

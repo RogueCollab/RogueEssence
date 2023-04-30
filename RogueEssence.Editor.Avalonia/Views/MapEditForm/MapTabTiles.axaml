@@ -59,7 +59,6 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
       <CheckBox Margin="4" IsChecked="{Binding IsRevealed}" Grid.Column="0">Revealed</CheckBox>
-      <CheckBox Margin="4" IsChecked="{Binding IsDanger}" Grid.Column="1">Warn Before Activate</CheckBox>
     </Grid>
     <Grid Grid.Row="3">
       <Grid.RowDefinitions>

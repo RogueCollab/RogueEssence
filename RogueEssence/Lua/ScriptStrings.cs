@@ -48,17 +48,26 @@ namespace RogueEssence.Script
 
         
 
-
+        /// <summary>
+        /// Gets the current language setting of the game.
+        /// </summary>
+        /// <returns>The current language, represented by a locale code.</returns>
         public string LocaleCode()
         {
             return DiagManager.Instance.CurSettings.Language;
         }
 
+        /// <summary>
+        /// Formats a string.  Will unescape escaped characters.
+        /// </summary>
+        /// <param name="fmt">String to format.</param>
+        /// <param name="para">Arguments</param>
+        /// <returns>The formatted string.</returns>
         public string Format( string fmt, params object[] para )
         {
             try
             {
-                return String.Format(System.Text.RegularExpressions.Regex.Unescape(fmt), para);
+                return Text.FormatGrammar(System.Text.RegularExpressions.Regex.Unescape(fmt), para);
             }
             catch (Exception ex)
             {
@@ -67,6 +76,12 @@ namespace RogueEssence.Script
             return fmt;
         }
 
+        /// <summary>
+        /// Formats a string given a string key.  Will unescape escaped characters.
+        /// </summary>
+        /// <param name="fmt">The string key to format</param>
+        /// <param name="para">string arguments</param>
+        /// <returns></returns>
         public string FormatKey(string fmt, params object[] para)
         {
             try
@@ -80,6 +95,11 @@ namespace RogueEssence.Script
             return fmt;
         }
 
+        /// <summary>
+        /// Gets the string representing a button or key.
+        /// </summary>
+        /// <param name="index">The input type of the input.</param>
+        /// <returns>The string representing the button o key the input maps to.</returns>
         public string LocalKeyString(int index)
         {
             try
@@ -93,6 +113,12 @@ namespace RogueEssence.Script
             }
             return ((FrameInput.InputType)index).ToString();
         }
+
+        /// <summary>
+        /// Builds a single string of comma separated elements.
+        /// </summary>
+        /// <param name="listStrings">LuaTable of strings containing the elements to build the list from.</param>
+        /// <returns>The combined string containing all elements.</returns>
         public string CreateList(LuaTable listStrings)
         {
             try

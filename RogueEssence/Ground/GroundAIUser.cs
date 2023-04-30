@@ -95,5 +95,12 @@ namespace RogueEssence.Ground
             if (hasAI() && ShouldAIRun())
                 UpdateAI();
         }
+
+        public override void DoCleanup()
+        {
+            base.DoCleanup();
+            if (hasAI())
+                AI.DoCleanup();
+        }
     }
 }

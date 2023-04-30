@@ -130,19 +130,29 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
-        protected virtual void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
+        protected virtual void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool objDrawOnly, bool seeTrap)
         {
             Loc visualLoc = new Loc(xx, yy);
             Loc wrappedLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
-            ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, wrappedLoc, false);
+            if (!objDrawOnly)
+                ZoneManager.Instance.CurrentMap.DrawLoc(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, wrappedLoc, false);
+            
             EffectTile effect = ZoneManager.Instance.CurrentMap.Tiles[wrappedLoc.X][wrappedLoc.Y].Effect;
             if (!String.IsNullOrEmpty(effect.ID) && effect.Exposed && !DataManager.Instance.HideObjects)
             {
                 List<(IDrawableSprite, Loc)> targetDraw;
-                if (DataManager.Instance.GetTile(effect.ID).ObjectLayer)
-                    targetDraw = backDraw;
-                else
-                    targetDraw = groundDraw;
+                switch (DataManager.Instance.GetTile(effect.ID).Layer)
+                {
+                    case DrawLayer.Back:
+                        targetDraw = backDraw;
+                        break;
+                    case DrawLayer.Front:
+                        targetDraw = frontDraw;
+                        break;
+                    default:
+                        targetDraw = groundDraw;
+                        break;
+                }
 
                 if (seeTrap || effect.Revealed)
                     AddToDraw(targetDraw, new DrawTile(visualLoc, effect.ID));
@@ -264,16 +274,18 @@ namespace RogueEssence.Dungeon
             Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
             bool seeTrap = CanSeeTraps();
 
-
+            //draw a little more outside the view rect
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
                 for (int xx = viewTileRect.X - 1; xx < viewTileRect.End.X + 1; xx++)
                 {
+                    //but only draw objects outside the view rect
+                    bool objDrawOnly = !Collision.InBounds(viewTileRect, new Loc(xx, yy));
                     //if it's a tile on the discovery array, show it
                     if (CanSeeTile(xx, yy))
                     {
                         if (wrapped || Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(xx, yy)))
-                            PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
+                            PrepareTileDraw(spriteBatch, xx, yy, objDrawOnly, seeTrap);
                         else
                             ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
                     }

@@ -94,6 +94,8 @@ namespace RogueEssence.Dungeon
         public override string GetDisplayName()
         {
             ItemData entry = DataManager.Instance.GetItem(ID);
+            if (entry == null)
+                return String.Format("[color=#FFFFFF]{0}[color]", ID);
 
             string prefix = "";
             if (entry.Icon > -1)
@@ -110,15 +112,18 @@ namespace RogueEssence.Dungeon
 
         public override string ToString()
         {
-            ItemData entry = DataManager.Instance.GetItem(ID);
-
             string nameStr = "";
+            if (Price > 0)
+                nameStr += String.Format("${0} ", Price);
             if (Cursed)
                 nameStr += "[X]";
 
-            nameStr += entry.Name.ToLocal();
-            if (entry.MaxStack > 1)
-                nameStr += " (" + Amount + ")";
+            nameStr += ID;
+            if (Amount > 0)
+                nameStr += String.Format("({0})", Amount);
+
+            if (!String.IsNullOrEmpty(HiddenValue))
+                nameStr += String.Format("[{0}]", HiddenValue);
 
             return nameStr;
         }
@@ -126,6 +131,9 @@ namespace RogueEssence.Dungeon
         public int GetSellValue()
         {
             ItemData entry = DataManager.Instance.GetItem(ID);
+            if (entry == null)
+                return 0;
+
             if (entry.MaxStack > 1)
                 return entry.Price * Amount;
             else

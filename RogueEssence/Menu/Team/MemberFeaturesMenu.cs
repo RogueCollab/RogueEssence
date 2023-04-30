@@ -13,13 +13,21 @@ namespace RogueEssence.Menu
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+
         public MenuText Title;
+        public MenuText PageText;
         public MenuDivider Div;
 
         public SpeakerPortrait Portrait;
         public MenuText Name;
+
+        public MenuText LevelLabel;
         public MenuText Level;
+
+        public MenuText HPLabel;
         public MenuText HP;
+
+        public MenuText FullnessLabel;
         public MenuText Fullness;
 
         public MenuText Elements;
@@ -31,7 +39,6 @@ namespace RogueEssence.Menu
         public MenuDivider IntrinsicDiv;
         public MenuText Intrinsic;
         public DialogueText IntrinsicDesc;
-
         public MemberFeaturesMenu(int teamSlot, bool assembly, bool allowAssembly)
         {
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
@@ -41,9 +48,16 @@ namespace RogueEssence.Menu
             this.allowAssembly = allowAssembly;
 
             Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
+            
+            MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
+            BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
+            
+            int totalLearnsetPages = (int) Math.Ceiling((double) formEntry.LevelSkills.Count / MemberLearnsetMenu.SLOTS_PER_PAGE);
+            int totalOtherMemberPages = 3;
+            int totalPages = totalLearnsetPages + totalOtherMemberPages;
 
-            //TODO: align this text properly
-            Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES") + " (1/3)", new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Title = new MenuText(Text.FormatKey("MENU_TEAM_FEATURES"), new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            PageText = new MenuText($"(1/{totalPages})", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight), DirH.Right);
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Portrait = new SpeakerPortrait(player.BaseForm, new EmoteStyle(0),
@@ -61,11 +75,14 @@ namespace RogueEssence.Menu
             origElements &= (player.Element2 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element2);
             Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
 
-            Level = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", player.Level), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
+            LevelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
+            Level = new MenuText(player.Level.ToString(), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT")), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.Left);
 
-
-            HP = new MenuText(Text.FormatKey("MENU_TEAM_HP", player.HP, player.MaxHP), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
-            Fullness = new MenuText(Text.FormatKey("MENU_TEAM_HUNGER", player.Fullness, player.MaxFullness), new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
+            HPLabel = new MenuText(Text.FormatKey("MENU_TEAM_HP"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
+            HP = new MenuText(String.Format("{0}/{1}", player.HP, player.MaxHP), new Loc( GraphicsManager.MenuBG.TileWidth * 2 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HP")) + 4, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET), DirH.Left);
+            
+            FullnessLabel = new MenuText(Text.FormatKey("MENU_TEAM_HUNGER"), new Loc((Bounds.End.X - Bounds.X) / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET));
+            Fullness = new MenuText(String.Format("{0}/{1}", player.Fullness, player.MaxFullness), new Loc((Bounds.End.X - Bounds.X) / 2 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_HUNGER")) + 4, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + TitledStripMenu.TITLE_OFFSET), DirH.Left);
 
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
@@ -90,7 +107,7 @@ namespace RogueEssence.Menu
             }
 
             IntrinsicDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
-
+            
             bool origIntrinsic = (player.Intrinsics[0].Element.ID == player.BaseIntrinsics[0]);
             IntrinsicData entry = DataManager.Instance.GetIntrinsic(player.Intrinsics[0].Element.ID);
             Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
@@ -101,14 +118,21 @@ namespace RogueEssence.Menu
         public override IEnumerable<IMenuElement> GetElements()
         {
             yield return Title;
+            yield return PageText;
             yield return Div;
 
             yield return Portrait;
             yield return Name;
-            
+
+            yield return LevelLabel;
             yield return Level;
+            
             yield return Elements;
+
+            yield return HPLabel;
             yield return HP;
+
+            yield return FullnessLabel;
             yield return Fullness;
 
             yield return MainDiv;
@@ -138,7 +162,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot, assembly, allowAssembly, true));
             }
             else if (IsInputting(input, Dir8.Right))
             {

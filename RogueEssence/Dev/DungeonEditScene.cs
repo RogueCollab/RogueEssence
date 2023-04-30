@@ -46,6 +46,9 @@ namespace RogueEssence.Dev
         public CanvasStroke<AutoTile> AutoTileInProgress;
         public CanvasStroke<TerrainTile> TerrainInProgress;
         public CanvasStroke<EffectTile> TileInProgress;
+        public MapItem ItemInProgress;
+        public Character CharacterInProgress;
+
         public bool ShowTerrain;
         public bool ShowEntrances;
 
@@ -259,6 +262,7 @@ namespace RogueEssence.Dev
                                 {
                                     DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
                                     Loc drawLoc = new Loc(ii * GraphicsManager.TileSize, jj * GraphicsManager.TileSize) - ViewRect.Start + new Loc(GraphicsManager.TileSize / 2) - new Loc(sheet.Width, sheet.Height) / 2;
+                                    drawLoc += entry.Offset;
                                     sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), entry.Anim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames),
                                         entry.Anim.GetDrawDir(Dir8.None), Color.White);
                                 }
@@ -269,6 +273,11 @@ namespace RogueEssence.Dev
                     }
                 }
             }
+
+            if (ItemInProgress != null)
+                ItemInProgress.DrawPreview(spriteBatch, ViewRect.Start, 0.75f);
+            if (CharacterInProgress != null)
+                CharacterInProgress.DrawPreview(spriteBatch, ViewRect.Start, 0.75f);
 
             spriteBatch.End();
         }

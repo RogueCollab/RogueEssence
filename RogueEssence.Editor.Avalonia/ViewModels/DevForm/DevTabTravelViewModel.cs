@@ -24,6 +24,25 @@ namespace RogueEssence.Dev.ViewModels
             floorIDs = new List<int>();
         }
 
+        public void ReloadZones()
+        {
+            Dictionary<string, string> entry_names = DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetLocalStringArray(true);
+            Zones.Clear();
+            foreach (string key in entry_names.Keys)
+                Zones.Add(key + ": " + entry_names[key]);
+            ChosenZone = -1;
+            ChosenZone = Math.Min(Math.Max(DevForm.GetConfig("ZoneChoice", 0), 0), Zones.Count - 1);
+
+            ChosenStructure = -1;
+            ChosenStructure = Math.Min(Math.Max(DevForm.GetConfig("StructChoice", 0), 0), Structures.Count - 1);
+
+            ChosenFloor = -1;
+            ChosenFloor = Math.Min(Math.Max(DevForm.GetConfig("FloorChoice", 0), 0), Floors.Count - 1);
+
+            ChosenGround = -1;
+            ChosenGround = Math.Min(Math.Max(DevForm.GetConfig("GroundChoice", 0), 0), Grounds.Count - 1);
+        }
+
 
         private bool debugGen;
         public bool DebugGen
@@ -132,27 +151,28 @@ namespace RogueEssence.Dev.ViewModels
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, "[X]").ToLocal().Replace('\n', ' ');
             }
-            return String.Format("[{0}] {1}F", segment.GetType().Name, "[X]");
+            return String.Format("[{0}] {1}F", segment.GetType().GetFormattedTypeName(), "[X]");
         }
 
         private void StructureChanged()
         {
             lock (GameBase.lockObj)
             {
-                if (chosenStructure == -1)
-                    return;
-
                 int temp = chosenFloor;
                 floorIDs.Clear();
-
-                string chosen_entry = Zones[chosenZone].Split(':')[0];
-                ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
                 ObservableCollection<string> newFloors = new ObservableCollection<string>();
-                foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
+
+                if (chosenZone > -1 && chosenStructure > -1)
                 {
-                    newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
-                    floorIDs.Add(ii);
+                    string chosen_entry = Zones[chosenZone].Split(':')[0];
+                    ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
+                    foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
+                    {
+                        newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
+                        floorIDs.Add(ii);
+                    }
                 }
+
                 Floors = newFloors;
                 ChosenFloor = Math.Min(Math.Max(temp, 0), Floors.Count - 1);
             }
@@ -167,7 +187,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, (floorID + 1).ToString()).ToLocal().Replace('\n', ' ');
             }
-            return String.Format("[{0}] {1}F", segment.GetType().Name, (floorID + 1).ToString());
+            return String.Format("[{0}] {1}F", segment.GetType().GetFormattedTypeName(), (floorID + 1).ToString());
         }
 
         public void btnEnterGround_Click()

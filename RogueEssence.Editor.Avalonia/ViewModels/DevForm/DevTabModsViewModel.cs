@@ -79,10 +79,6 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnSwitch_Click()
         {
-            //check to be sure it isn't the current mod
-            if (chosenMod.Path == PathMod.Quest.Path)
-                return;
-
             //give a pop up warning that the game will be reloaded and wait for confirmation
             MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "The game will be reloaded to use content from the new path.\nClick OK to proceed.", "Are you sure?",
                 MessageBox.MessageBoxButtons.OkCancel);
@@ -109,7 +105,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnAdd_Click()
         {
             ModConfigWindow window = new ModConfigWindow();
-            ModHeader header = new ModHeader("", "", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
+            ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
             ModConfigViewModel vm = new ModConfigViewModel(header);
             window.DataContext = vm;
 
@@ -122,9 +118,9 @@ namespace RogueEssence.Dev.ViewModels
             string newNamespace = Text.Sanitize(vm.Namespace).ToLower();
 
             //sanitize name and check for name conflicts
-            if (newName == "")
+            if (String.IsNullOrWhiteSpace(newName))
                 return;
-            if (newNamespace == "")
+            if (String.IsNullOrWhiteSpace(newNamespace))
                 return;
 
             //check for children name conflicts
@@ -149,7 +145,7 @@ namespace RogueEssence.Dev.ViewModels
             //add all asset folders
             Directory.CreateDirectory(fullPath);
             //create the mod xml
-            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
+            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
             PathMod.SaveModDetails(fullPath, newHeader);
 
             //add Strings
@@ -179,8 +175,9 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
+            string fullPath = PathMod.FromExe(chosenMod.Path);
             //delete folder
-            Directory.Delete(chosenMod.Path, true);
+            Directory.Delete(fullPath, true);
 
             //and then delete node
             Mods.Remove(chosenMod);
@@ -200,11 +197,11 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //save the mod data
                 string fullPath = PathMod.FromExe(PathMod.Quest.Path);
-                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
+                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
                 PathMod.SaveModDetails(fullPath, resultHeader);
 
                 reloadMods();
-                doSwitch();
+                DevForm.ExecuteOrPend(doSwitch);
             }
         }
 
@@ -213,11 +210,15 @@ namespace RogueEssence.Dev.ViewModels
             Mods.Clear();
             Mods.Add(new ModsNodeViewModel(null, PathMod.BaseNamespace, ""));
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+            ModsNodeViewModel chosenModel = null;
             foreach (string modPath in modsPath)
             {
                 ModHeader header = PathMod.GetModDetails(modPath);
                 Mods.Add(new ModsNodeViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+                if (PathMod.Quest.Path == header.Path)
+                    chosenModel = Mods[Mods.Count - 1];
             }
+            ChosenMod = chosenModel;
         }
 
         private static string getModName(ModHeader mod)

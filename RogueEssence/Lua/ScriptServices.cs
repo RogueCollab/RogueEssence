@@ -5,6 +5,7 @@ using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using NLua;
 using System.IO;
+using System.Xml.Linq;
 
 namespace RogueEssence.Script
 {
@@ -72,6 +73,21 @@ namespace RogueEssence.Script
             {
                 if(svc.Value.callbacks.ContainsKey(msgname))
                     svc.Value.callbacks[msgname].Call(svc.Value.lobj, arguments);
+            }
+        }
+        public IEnumerator<YieldInstruction> PublishCoroutine(string msgname, params object[] arguments)
+        {
+            //DiagManager.Instance.LogInfo("[SE]: Dispatching " + msgname + " event!!");
+
+            foreach (var svc in m_services)
+            {
+                if (svc.Value.callbacks.ContainsKey(msgname))
+                {
+                    LuaFunction func = svc.Value.callbacks[msgname];
+                    LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(func, svc.Value.lobj, arguments);
+
+                    yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(msgname, func_iter));
+                }
             }
         }
 

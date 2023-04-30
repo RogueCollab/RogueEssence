@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class MapItem : IDrawableSprite, ISpawnable
+    public class MapItem : IDrawableSprite, ISpawnable, IPreviewable
     {
         public bool IsMoney;
         public bool Cursed;
@@ -182,10 +182,36 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        public override string ToString()
+        {
+            if (IsMoney)
+                return String.Format("${0}", Amount);
+
+            string nameStr = "";
+            if (Price > 0)
+                nameStr += String.Format("${0} ", Price);
+            if (Cursed)
+                nameStr += "[X]";
+
+            nameStr += Value;
+            if (Amount > 0)
+                nameStr += String.Format("({0})", Amount);
+
+            if (!String.IsNullOrEmpty(HiddenValue))
+                nameStr += String.Format("[{0}]", HiddenValue);
+
+            return nameStr;
+        }
+
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
         public void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Draw(spriteBatch, offset, Color.White);
+        }
+
+        public void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
+        {
+            Draw(spriteBatch, offset, Color.White * alpha);
         }
 
         public void Draw(SpriteBatch spriteBatch, Loc offset, Color color)

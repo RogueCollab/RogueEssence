@@ -68,12 +68,29 @@ namespace RogueEssence.Menu
                 cannotRead();
             else
             {
-                MenuManager.Instance.RemoveMenu();
-                TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
+                List<ModDiff> modDiffs = replay.States[0].Save.GetModDiffs();
+                if (modDiffs.Count > 0)
+                    DiagManager.Instance.LogInfo("Loading with version diffs:");
 
-                MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = Replay(replay, false);
+                if (modDiffs.Count > 0)
+                {
+                    DialogueChoice[] choices = new DialogueChoice[2];
+                    choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { attemptLoadReplay(replay); });
+                    choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => { });
+                    MenuManager.Instance.AddMenu(new ModDiffDialog(Text.FormatKey("DLG_ASK_VERSION_DIFF"), Text.FormatKey("MENU_MODS_DIFF"), modDiffs, false, choices, 0, 1), false);
+                }
+                else
+                    attemptLoadReplay(replay);
             }
+        }
+
+        private void attemptLoadReplay(ReplayData replay)
+        {
+            MenuManager.Instance.RemoveMenu();
+            TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
+
+            MenuManager.Instance.ClearMenus();
+            GameManager.Instance.SceneOutcome = Replay(replay, false);
         }
 
         private void VerifyAction() {
@@ -157,7 +174,7 @@ namespace RogueEssence.Menu
                     if (verifying)
                         DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
                     DataManager.Instance.CurrentReplay = replay;
-                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+                    yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
                     yield break;
                 }
             }

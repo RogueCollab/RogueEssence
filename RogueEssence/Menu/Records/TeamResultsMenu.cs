@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             EventedList<Character> charList = GetChars();
-            Stats = new MenuText[charList.Count * 4];
+            Stats = new MenuText[charList.Count * 5];
             Portraits = new SpeakerPortrait[charList.Count];
             for (int ii = 0; ii < charList.Count; ii++)
             {
@@ -37,21 +37,23 @@ namespace RogueEssence.Menu
                 Portraits[ii] = new SpeakerPortrait(character.BaseForm, new EmoteStyle(0),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), false);
                 string speciesText = character.BaseName + " / " + CharData.GetFullFormName(character.BaseForm);
-                Stats[ii * 4] = new MenuText(speciesText,
+                Stats[ii * 5] = new MenuText(speciesText,
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
-                Stats[ii * 4 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level),
-                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 24, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET));
+                Stats[ii * 5 + 1] = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16, GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Stats[ii * 5 + 2] = new MenuText(character.Level.ToString(),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + 44 * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
                 if (Ending.UUID == character.OriginalUUID)
                 {
-                    Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),
+                    Stats[ii * 5 + 3] = new MenuText(Text.FormatKey("MENU_TEAM_MET_AT", character.MetAt),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 }
                 else
                 {
-                    Stats[ii * 4 + 2] = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", character.OriginalTeam),
+                    Stats[ii * 5 + 3] = new MenuText(Text.FormatKey("MENU_TEAM_TRADED_FROM", character.OriginalTeam),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 44 * ii + TitledStripMenu.TITLE_OFFSET));
                 }
-                Stats[ii * 4 + 3] = new MenuText((String.IsNullOrEmpty(character.DefeatAt) ? "" : Text.FormatKey("MENU_TEAM_FELL_AT", character.DefeatAt)),
+                Stats[ii * 5 + 4] = new MenuText((String.IsNullOrEmpty(character.DefeatAt) ? "" : Text.FormatKey("MENU_TEAM_FELL_AT", character.DefeatAt)),
                     new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + 44 * ii + TitledStripMenu.TITLE_OFFSET));
 
                 base.Initialize();
@@ -111,7 +113,8 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Ending.ActiveTeam.Assembly.Count > 0)
+                int eligibleAssemblyCount = AssemblyResultsMenu.GetEligibleCount(Ending);
+                if (eligibleAssemblyCount > 0)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, 0));
                 else
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
@@ -134,18 +137,47 @@ namespace RogueEssence.Menu
 
         protected override string GetTitle()
         {
+            int eligibleAssemblyCount = GetEligibleCount(Ending);
             if (Ending.ActiveTeam.Name != "")
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(Ending.ActiveTeam.Assembly.Count, 4));
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
             else
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(Ending.ActiveTeam.Assembly.Count, 4));
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
         }
 
         protected override EventedList<Character> GetChars()
         {
             EventedList<Character> characters = new EventedList<Character>();
-            for (int ii = Page * 4; ii < Ending.ActiveTeam.Assembly.Count && ii < (Page + 1) * 4; ii++)
-                characters.Add(Ending.ActiveTeam.Assembly[ii]);
+            int trueIdx = 0;
+            for (int ii = 0; ii < Ending.ActiveTeam.Assembly.Count; ii++)
+            {
+                if (!Ending.ActiveTeam.Assembly[ii].Absentee)
+                {
+                    if (Page * 4 <= ii && ii < (Page + 1) * 4)
+                    {
+                        characters.Add(Ending.ActiveTeam.Assembly[ii]);
+                        if (characters.Count == 4)
+                            break;
+                    }
+                    trueIdx++;
+                }
+
+            }
             return characters;
+        }
+
+        public static int GetEligibleCount(GameProgress ending)
+        {
+            EventedList<Character> characters = new EventedList<Character>();
+            int trueIdx = 0;
+            for (int ii = 0; ii < ending.ActiveTeam.Assembly.Count; ii++)
+            {
+                if (!ending.ActiveTeam.Assembly[ii].Absentee)
+                {
+                    trueIdx++;
+                }
+
+            }
+            return trueIdx;
         }
 
         public override void Update(InputManager input)
@@ -167,7 +199,8 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Page < (Ending.ActiveTeam.Assembly.Count - 1) / 4)
+                int eligibleAssemblyCount = GetEligibleCount(Ending);
+                if (Page < (eligibleAssemblyCount - 1) / 4)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, Page+1));
                 else
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));

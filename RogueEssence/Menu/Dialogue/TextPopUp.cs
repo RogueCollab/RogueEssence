@@ -1,0 +1,147 @@
+using RogueElements;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Content;
+
+namespace RogueEssence.Menu
+{
+    public class TextPopUp
+    {
+        public const int TEXT_HEIGHT = 12;
+        public const int FADE_TIME = 50;
+        
+        protected DialogueText Text;
+        
+        public int HoldTime;
+
+        private bool fading;
+        private bool fadingIn;
+        
+        private FrameTick CurrentFadeTime;
+        private FrameTick timeSinceUpdate;
+        public bool Visible { get; set; }
+
+        public Rect Bounds;
+        DepthStencilState s1;
+        DepthStencilState s2;
+        AlphaTestEffect alphaTest;
+        public TextPopUp()
+        {
+            s1 = new DepthStencilState
+            {
+                StencilEnable = true,
+                StencilFunction = CompareFunction.Always,
+                StencilPass = StencilOperation.Replace,
+                ReferenceStencil = 1,
+                DepthBufferEnable = false,
+            };
+
+            s2 = new DepthStencilState
+            {
+                StencilEnable = true,
+                StencilFunction = CompareFunction.LessEqual,
+                StencilPass = StencilOperation.Keep,
+                ReferenceStencil = 1,
+                DepthBufferEnable = false,
+            };
+            alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
+        }
+
+        public void SetMessage(string msg, int holdTime, Rect bounds, bool centerH, bool centerV)
+        {
+            if (msg.Length > 0)
+            {
+                CurrentFadeTime = FrameTick.FromFrames(0);
+                int boundX = bounds.X == -1 ? 4 : bounds.X;
+                int boundWidth = (bounds.Width <= -1 ? GraphicsManager.ScreenWidth - boundX : bounds.Width) + 2; // Width buffer
+                
+                Text = new DialogueText(msg, new Rect(boundX, 0, boundWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, centerH, centerV, -1);
+                Loc textSize = Text.GetTextSize();
+
+                int boundY = bounds.Y == -1 ? GraphicsManager.ScreenHeight - textSize.Y : bounds.Y;
+                int boundHeight = bounds.Height <= -1 ? GraphicsManager.ScreenHeight - boundY : bounds.Height;
+
+                Rect textBounds = new Rect(boundX, boundY, boundWidth, boundHeight);
+                Bounds = textBounds;
+                Text.Rect = Bounds;
+                HoldTime = holdTime;
+                
+                timeSinceUpdate = new FrameTick();
+                fading = true;
+                fadingIn = true;
+                Visible = true;
+            }
+        }
+        
+        public void Update(FrameTick elapsedTime)
+        {
+            if (fading)
+            {
+                if (fadingIn)
+                {
+                    CurrentFadeTime += elapsedTime;
+                    if (CurrentFadeTime >= FADE_TIME)
+                    {
+                        CurrentFadeTime = FrameTick.FromFrames(FADE_TIME);
+                        fading = false;
+                    }
+                }
+                else
+                {
+                    CurrentFadeTime -= elapsedTime;
+                    if (CurrentFadeTime <= 0)
+                    {
+                        CurrentFadeTime = FrameTick.FromFrames(0);
+                        fading = false;
+                        Visible = false;
+                    }
+
+                }
+            }
+            else
+            {
+                if (HoldTime > -1 && timeSinceUpdate >= HoldTime)
+                {
+                    fading = true;
+                    fadingIn = false;
+                }
+                else
+                {
+                    timeSinceUpdate += elapsedTime;
+                }
+            }
+
+            if (Visible)
+                Text.TextOpacity = CurrentFadeTime.FractionOf(FADE_TIME);
+        }
+
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+
+            spriteBatch.End();
+            float scale = GraphicsManager.WindowZoom;
+            Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(
+                0, GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, 0,
+                0, 1);
+
+            alphaTest.Projection = orthMatrix;
+            BlendState blend = new BlendState();
+            blend.ColorWriteChannels = ColorWriteChannels.None;
+            spriteBatch.Begin(SpriteSortMode.Deferred, blend, SamplerState.PointWrap, s1, null, alphaTest);
+
+            GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X, Bounds.Y, Bounds.Width, Bounds.Height), null, Color.White);
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s2, null, null, zoomMatrix);
+            
+            Text.Draw(spriteBatch, Loc.Zero);
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
+        }
+    }
+}

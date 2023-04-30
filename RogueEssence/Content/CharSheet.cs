@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
+using static RogueEssence.Dungeon.GameAction;
 
 namespace RogueEssence.Content
 {
@@ -822,11 +823,14 @@ namespace RogueEssence.Content
                     maxWidth = Math.Max(maxWidth, centeredOffsetRect.Width);
                     maxHeight = Math.Max(maxHeight, centeredOffsetRect.Height);
 
-                    frames.Add((frameTex, imgCoveredRect, offsets));
-
                     //the texture may not be centered; treat it as a texture that considered the center of the tile the center of the sprite
                     Point centerDiff = imgCoveredRect.Center - (tileRect.Center - tileRect.Location);
                     centerOffsets.Add(new Loc(centerDiff.X, centerDiff.Y));
+
+                    //do the same for offsets
+                    offsets.AddLoc(new Loc(-centerDiff.X, -centerDiff.Y));
+
+                    frames.Add((frameTex, imgCoveredRect, offsets));
                 }
                 else
                     usedFrames[kk] = -1;
@@ -1563,6 +1567,16 @@ namespace RogueEssence.Content
                 else
                     return 0;
             }
+            return 0;
+        }
+
+        /// <summary>
+        /// A current frame always of 0
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static int DefaultFrame(List<CharAnimFrame> frames)
+        {
             return 0;
         }
 

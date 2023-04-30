@@ -138,12 +138,13 @@ namespace RogueEssence.Dev.ViewModels
                 string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
                 if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
                     await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+                else if (Path.GetFileName(result).Contains(" "))
+                    await MessageBox.Show(form.GroundEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
                 else
                 {
                     lock (GameBase.lockObj)
                     {
                         string oldFilename = CurrentFile;
-                        ZoneManager.Instance.CurrentGround.AssetName = Path.GetFileNameWithoutExtension(result); //Set the assetname to the file name!
 
                         //Schedule saving the map
                         DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
@@ -296,6 +297,7 @@ namespace RogueEssence.Dev.ViewModels
             GameManager.Instance.ForceReady();
 
             ZoneManager.Instance.CurrentZone.DevNewGround();
+            ZoneManager.Instance.CurrentGround.OnEditorInit();
 
             loadEditorSettings();
             DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
@@ -310,6 +312,7 @@ namespace RogueEssence.Dev.ViewModels
             GameManager.Instance.ForceReady();
 
             ZoneManager.Instance.CurrentZone.DevLoadGround(mapName);
+            ZoneManager.Instance.CurrentGround.OnEditorInit();
 
             CurrentFile = PathMod.ModPath(Path.Combine(DataManager.GROUND_PATH, mapName + DataManager.GROUND_EXT));
             loadEditorSettings();
@@ -473,10 +476,11 @@ namespace RogueEssence.Dev.ViewModels
 
         private void DoSave(GroundMap curgrnd, string filepath, string oldfname)
         {
+            curgrnd.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
             DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.
-            createOrCopyScriptData(oldfname, filepath);
+            CreateOrCopyScriptData(oldfname, filepath);
             //create or update the strings
             Strings.SaveStrings();
 
@@ -497,7 +501,7 @@ namespace RogueEssence.Dev.ViewModels
         /// </summary>
         /// <param name="oldfilepath"></param>
         /// <param name="newfilepath"></param>
-        private void createOrCopyScriptData(string oldfilepath, string newfilepath)
+        public static void CreateOrCopyScriptData(string oldfilepath, string newfilepath)
         {
             string oldmapscriptdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, Path.GetFileNameWithoutExtension(oldfilepath), "/init.lua"));
             string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
@@ -537,17 +541,23 @@ namespace RogueEssence.Dev.ViewModels
                     break;
                 case 1://Decorations
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Decoration;
+                    Decorations.TabbedIn();
                     break;
                 case 2://Walls
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Wall;
                     break;
                 case 3://Entities
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Entity;
+                    Entities.TabbedIn();
                     break;
                 default:
                     GroundEditScene.Instance.EditMode = GroundEditScene.EditorMode.Other;
                     break;
             }
+            if (selectedTabIndex != 1)
+                Decorations.TabbedOut();
+            if (selectedTabIndex != 3)
+                Entities.TabbedOut();
         }
 
         public void ProcessInput(InputManager input)

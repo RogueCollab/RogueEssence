@@ -94,13 +94,16 @@ namespace RogueEssence.Dungeon
                 yield return CoroutineManager.Instance.StartCoroutine(switchedChar.StartAnim(switchedWalkAnim));
             }
 
-
-            yield return CoroutineManager.Instance.StartCoroutine(character.OnWalk());
-            yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem, false));
+            SingleCharContext mainContext = new SingleCharContext(character);
+            yield return CoroutineManager.Instance.StartCoroutine(character.OnWalk(mainContext));
+            if (!character.Dead)
+                yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(character, true, wantItem));
             if (switchedChar != null)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(switchedChar.OnWalk());
-                yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(switchedChar));
+                SingleCharContext switchedContext = new SingleCharContext(switchedChar);
+                yield return CoroutineManager.Instance.StartCoroutine(switchedChar.OnWalk(switchedContext));
+                if (!switchedChar.Dead)
+                    yield return CoroutineManager.Instance.StartCoroutine(ArriveOnTile(switchedChar));
             }
 
 
@@ -136,14 +139,24 @@ namespace RogueEssence.Dungeon
             //only do this when someone has changed location, or when someone has changed mobility
             foreach (Character standChar in ZoneManager.Instance.CurrentMap.DisplacedChars)
             {
-                if (!standChar.Dead && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
-                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+                if (!standChar.Dead)
+                {
+                    HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
+                    while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
+                    {
+                        iterWarpHistory.Add(standChar.CharLoc);
+                        yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+                    }
+                }
             }
             ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
 
             //end turn
             if (!character.Dead)
-                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnEnd());
+            {
+                SingleCharContext turnContext = new SingleCharContext(character);
+                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnEnd(turnContext));
+            }
 
 
             if (!character.Dead) //add HP based on natural healing
@@ -161,10 +174,10 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ArriveOnTile(Character character)
         {
-            return ArriveOnTile(character, false, false, false);
+            return ArriveOnTile(character, false, false);
         }
 
-        public IEnumerator<YieldInstruction> ArriveOnTile(Character character, bool checkItem, bool wantItem, bool noTrap)
+        public IEnumerator<YieldInstruction> ArriveOnTile(Character character, bool checkItem, bool wantItem)
         {
             //if void, add restart
             if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, character.CharLoc))
@@ -214,7 +227,7 @@ namespace RogueEssence.Dungeon
                                     }
                                 }
                                 if (canGet)
-                                    PickupItem(character, itemSlot);
+                                    yield return CoroutineManager.Instance.StartCoroutine(PickupItem(character, itemSlot));
                                 else
                                 {
                                     if (character == ActiveTeam.Leader)
@@ -227,7 +240,7 @@ namespace RogueEssence.Dungeon
                                 if (item.Price > 0 || item.IsMoney || !String.IsNullOrEmpty(character.EquippedItem.ID))
                                     wantItem = false;
                                 else
-                                    PickupHoldItem(character);
+                                    yield return CoroutineManager.Instance.StartCoroutine(PickupHoldItem(character));
                             }
                         }
 
@@ -236,32 +249,40 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
-                Loc landTile = character.CharLoc;
-                if (!String.IsNullOrEmpty(tile.Effect.ID))
-                {
-                    if (!character.WarpHistory.Contains(character.CharLoc))
-                    {
-                        character.WarpHistory.Add(character.CharLoc);
-                        //check for tile property
-                        yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
-                        yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
-                        character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
-                    }
-                }
-
-                //check to make sure the character is on the same tile still, before moving on
-                if (character.CharLoc == landTile)
-                {
-                    if (!character.WarpHistory.Contains(character.CharLoc))
-                    {
-                        character.WarpHistory.Add(character.CharLoc);
-                        yield return CoroutineManager.Instance.StartCoroutine(tile.Data.LandedOnTile(character));
-                        character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
-                    }
-                }
+                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
             }
         }
+
+        public IEnumerator<YieldInstruction> RecurseDisplacements(Character character)
+        {
+            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
+            Loc landTile = character.CharLoc;
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                if (!character.WarpHistory.Contains(character.CharLoc))
+                {
+                    character.WarpHistory.Add(character.CharLoc);
+                    //check for tile property
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
+                    yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
+                    character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
+                }
+            }
+
+            //check to make sure the character is on the same tile still, before moving on
+            if (character.CharLoc == landTile)
+            {
+                if (!character.WarpHistory.Contains(character.CharLoc))
+                {
+                    character.WarpHistory.Add(character.CharLoc);
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Data.LandedOnTile(character));
+                    character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
+                }
+            }
+            else
+                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
+        }
+
 
         public void QueueTrap(Loc loc)
         {
@@ -280,13 +301,19 @@ namespace RogueEssence.Dungeon
             {
                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[pendingLoc.X][pendingLoc.Y];
                 if (!String.IsNullOrEmpty(tile.Effect.ID))
-                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(activator));
+                {
+                    SingleCharContext singleContext = new SingleCharContext(activator);
+                    yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(singleContext));
+                }
             }
             yield break;
         }
 
         public IEnumerator<YieldInstruction> PromptFloorItem()
         {
+            if (DataManager.Instance.CurrentReplay != null)
+                yield break;
+
             int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(ActiveTeam.Leader.CharLoc);
             if (itemSlot > -1)
             {
@@ -312,7 +339,7 @@ namespace RogueEssence.Dungeon
             {
                 result.Success = ActionResult.ResultType.TurnTaken;
 
-                PickupItem(character, itemSlot);
+                yield return CoroutineManager.Instance.StartCoroutine(PickupItem(character, itemSlot));
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
 
                 yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character));
@@ -321,7 +348,7 @@ namespace RogueEssence.Dungeon
                 LogMsg(Text.FormatKey("MSG_NOTHING_UNDERFOOT", character), false, true);
         }
 
-        public void PickupItem(Character character, int itemSlot)
+        public IEnumerator<YieldInstruction> PickupItem(Character character, int itemSlot)
         {
             //assumes they have the space
             MapItem item = ZoneManager.Instance.CurrentMap.Items[itemSlot];
@@ -377,11 +404,11 @@ namespace RogueEssence.Dungeon
                 LogPickup(new PickupItem(msg, item.SpriteIndex, teamCharacter ? GraphicsManager.PickupSE : GraphicsManager.PickupFoeSE, item.TileLoc, character, false));
             }
 
-            character.OnPickup(context);
+            yield return CoroutineManager.Instance.StartCoroutine(character.OnPickup(context));
         }
 
 
-        public void PickupHoldItem(Character character)
+        public IEnumerator<YieldInstruction> PickupHoldItem(Character character)
         {
             //TODO: Due to logging no pickups, the code in here happens instantaneously when it should not
             int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
@@ -402,7 +429,7 @@ namespace RogueEssence.Dungeon
             else
                 LogMsg(Text.FormatKey("MSG_PICKUP_HOLD_ITEM", character.GetDisplayName(false), item.GetDisplayName()));
 
-            character.EquipItem(item);
+            yield return CoroutineManager.Instance.StartCoroutine(character.EquipItem(item));
         }
 
 
@@ -454,7 +481,7 @@ namespace RogueEssence.Dungeon
 
                     LogMsg(Text.FormatKey("MSG_REPLACE_HOLD_ITEM", character.GetDisplayName(false), item.GetDungeonName(), invItem.GetDisplayName()));
 
-                    character.EquipItem(item.MakeInvItem());
+                    yield return CoroutineManager.Instance.StartCoroutine(character.EquipItem(item.MakeInvItem()));
                 }
                 else
                 {
@@ -473,7 +500,7 @@ namespace RogueEssence.Dungeon
 
                     memberTeam.AddToInv(item.MakeInvItem());
 
-                    character.OnPickup(context);
+                    yield return CoroutineManager.Instance.StartCoroutine(character.OnPickup(context));
                 }
             }
             else
@@ -492,7 +519,7 @@ namespace RogueEssence.Dungeon
                 GameManager.Instance.SE(GraphicsManager.PlaceSE);
 
                 if (invSlot == -1)
-                    character.DequipItem();
+                    yield return CoroutineManager.Instance.StartCoroutine(character.DequipItem());
                 else
                     character.MemberTeam.RemoveFromInv(invSlot);
             }
@@ -574,18 +601,17 @@ namespace RogueEssence.Dungeon
                 throw new Exception("Attempted to trigger a nonexistent tile effect.  This should never happen.");
             else
             {
-                TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
-                bool turnTaken = !(entry.StepType == TileData.TriggerType.Passage);
+                SingleCharContext singleContext = new SingleCharContext(character);
+                yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(singleContext));
 
-                result.Success = turnTaken ? ActionResult.ResultType.TurnTaken : ActionResult.ResultType.Success;
+                if (singleContext.CancelState.Cancel && singleContext.TurnCancel.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(singleContext.User.CharLoc)); yield break; }
 
-                yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(character));
-
-                if (turnTaken)
+                if (!singleContext.TurnCancel.Cancel)
                 {
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
                     yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(character));
                 }
+                result.Success = singleContext.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
             }
         }
 
@@ -613,7 +639,7 @@ namespace RogueEssence.Dungeon
             if (invSlot == BattleContext.FLOOR_ITEM_SLOT)
             {
                 //character and itemChar are the same
-                PickupHoldItem(character);
+                yield return CoroutineManager.Instance.StartCoroutine(PickupHoldItem(character));
             }
             else
             {
@@ -631,7 +657,7 @@ namespace RogueEssence.Dungeon
                 else
                     LogMsg(Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName()));
 
-                itemChar.EquipItem(item);
+                yield return CoroutineManager.Instance.StartCoroutine(itemChar.EquipItem(item));
             }
 
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20));
@@ -660,7 +686,7 @@ namespace RogueEssence.Dungeon
             InvItem item = itemChar.EquippedItem;
             GameManager.Instance.SE(GraphicsManager.EquipSE);
             LogMsg(Text.FormatKey("MSG_ITEM_DEQUIP", character.GetDisplayName(false), item.GetDisplayName()));
-            itemChar.DequipItem();
+            yield return CoroutineManager.Instance.StartCoroutine(itemChar.DequipItem());
 
             memberTeam.AddToInv(item);
 
@@ -697,7 +723,7 @@ namespace RogueEssence.Dungeon
                 return new ItemUnderfootMenu(itemSlot);
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
             if (!String.IsNullOrEmpty(tile.Effect.ID))
-                return new TileUnderfootMenu(tile.Effect.ID, tile.Effect.Danger);
+                return new TileUnderfootMenu(tile.Effect.ID);
             
             return null;
         }
@@ -729,13 +755,13 @@ namespace RogueEssence.Dungeon
                 int levelDiff = 0;
                 int totalExp = 0;
 
-                if (!player.Dead && player.Level < DataManager.Instance.MaxLevel)
+                if (!player.Dead && player.Level < DataManager.Instance.Start.MaxLevel)
                 {
                     totalExp += GainedEXP[ii];
 
                     string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                     GrowthData growthData = DataManager.Instance.GetGrowth(growth);
-                    while (player.Level + levelDiff < DataManager.Instance.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
+                    while (player.Level + levelDiff < DataManager.Instance.Start.MaxLevel && player.EXP + totalExp >= growthData.GetExpTo(player.Level, player.Level + levelDiff + 1))
                         levelDiff++;
                     while (player.Level + levelDiff > 1 && player.EXP + totalExp < growthData.GetExpTo(player.Level, player.Level + levelDiff))
                         levelDiff--;
@@ -772,14 +798,14 @@ namespace RogueEssence.Dungeon
                 int oldMAtk = player.BaseMAtk;
                 int oldMDef = player.BaseMDef;
 
-                if (player.Level < DataManager.Instance.MaxLevel && player.EXP >= growthData.GetExpToNext(player.Level))
+                if (player.Level < DataManager.Instance.Start.MaxLevel && player.EXP >= growthData.GetExpToNext(player.Level))
                 {
                     while (player.EXP >= growthData.GetExpToNext(player.Level))
                     {
                         player.EXP -= growthData.GetExpToNext(player.Level);
                         player.Level++;
 
-                        if (player.Level >= DataManager.Instance.MaxLevel)
+                        if (player.Level >= DataManager.Instance.Start.MaxLevel)
                         {
                             player.EXP = 0;
                             break;
@@ -966,7 +992,7 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                yield return CoroutineManager.Instance.StartCoroutine(player.DequipItem());
                 if (ActiveTeam.GetInvCount() + 1 < ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                     ActiveTeam.AddToInv(heldItem);
                 else if (player.Dead)
@@ -976,7 +1002,7 @@ namespace RogueEssence.Dungeon
             }
 
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
-            ActiveTeam.AddToSortedAssembly(player);
+            ActiveTeam.Assembly.Insert(0, player);
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(player);
             yield return new WaitForFrames(30);
@@ -991,13 +1017,13 @@ namespace RogueEssence.Dungeon
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                player.SilentDequipItem();
                 if (ActiveTeam.GetInvCount() + 1 < ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone))
                     ActiveTeam.AddToInv(heldItem);
             }
 
             RemoveChar(new CharIndex(Faction.Player, 0, false, index));
-            ActiveTeam.AddToSortedAssembly(player);
+            ActiveTeam.Assembly.Insert(0, player);
         }
 
         public IEnumerator<YieldInstruction> DropItem(InvItem item, Loc loc)
@@ -1042,7 +1068,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!silent)
                 {
-                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize, loc * GraphicsManager.TileSize, item.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), loc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), item.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
                     CreateAnim(itemAnim, DrawLayer.Normal);
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }
@@ -1472,7 +1498,7 @@ namespace RogueEssence.Dungeon
             }
             return false;
         }
-
+        
         public bool CanTeamSeeLoc(Team team, Loc loc)
         {
             foreach (Character player in team.Players)
@@ -1485,6 +1511,19 @@ namespace RogueEssence.Dungeon
             }
             return false;
         }
+        public bool CanTeamSeeCharLoc(Team team, Loc loc)
+        {
+            foreach (Character player in team.Players)
+            {
+                if (!player.Dead)
+                {
+                    if (player.CanSeeLoc(loc, player.GetCharSight()))
+                        return true;
+                }
+            }
+            return false;
+        }
+
 
         public bool ShotBlocked(Character character, Loc loc, Dir8 dir, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
         {

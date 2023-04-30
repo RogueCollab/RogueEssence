@@ -1,5 +1,6 @@
 ﻿using RogueEssence.Content;
 using System;
+using RogueElements;
 
 namespace RogueEssence.Menu
 {
@@ -10,8 +11,8 @@ namespace RogueEssence.Menu
 
         protected FrameTick FinishedTextTime;
 
-        public TimedDialog(string message, bool sound, bool centerH, bool centerV, int time, Action action)
-            : base(message, sound, centerH, centerV)
+        public TimedDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, int time, Action action)
+            : base(message, sound, centerH, centerV, bounds)
         {
             this.time = time;
             this.action = action;

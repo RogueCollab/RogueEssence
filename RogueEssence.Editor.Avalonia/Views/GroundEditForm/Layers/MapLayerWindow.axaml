@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="RogueEssence.Dev.Views.MapLayerWindow"
-        Title="Map Layer" Width="200" Height="172">
+        Title="Map Layer" Width="200" Height="200">
   <Design.DataContext>
     <vm:MapLayerViewModel/>
   </Design.DataContext>
@@ -14,7 +14,9 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="20"/>
       <RowDefinition Height="42"/>
-      <RowDefinition Height="42"/>
+      <RowDefinition Height="26"/>
+      <RowDefinition Height="26"/>
+      <RowDefinition Height="26"/>
       <RowDefinition Height="42"/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -23,8 +25,10 @@
     </Grid.ColumnDefinitions>
     <TextBlock VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Layer Name</TextBlock>
     <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
-    <CheckBox Margin="4" IsChecked="{Binding Front}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Draw in Front</CheckBox>
-    <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="0">OK</Button>
-    <Button Click="btnCancel_Click" Margin="4" Grid.Row="3" Grid.Column="1">Cancel</Button>
+    <RadioButton Margin="4,0" IsChecked="{Binding Front}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Draw in Front</RadioButton>
+    <RadioButton Margin="4,0" IsChecked="{Binding Mid}" VerticalAlignment="Center" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">Draw on Terrain</RadioButton>
+    <RadioButton Margin="4,0" IsChecked="{Binding Back}" VerticalAlignment="Center" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">Draw below Terrain</RadioButton>
+    <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="5" Grid.Column="0">OK</Button>
+    <Button Click="btnCancel_Click" Margin="4" Grid.Row="5" Grid.Column="1">Cancel</Button>
   </Grid>
 </Window>

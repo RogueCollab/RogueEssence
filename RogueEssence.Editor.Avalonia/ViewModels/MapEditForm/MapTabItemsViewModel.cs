@@ -76,6 +76,7 @@ namespace RogueEssence.Dev.ViewModels
                     TabIndex = 1;
                 }
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -113,13 +114,24 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (entMode == EntEditMode.SelectEntity)
             {
-                //do nothing
+                DungeonEditScene.Instance.ItemInProgress = null;
             }
             else
             {
                 //copy the selection
                 setEntity(new MapItem(SelectedEntity));
+                animChanged();
             }
+        }
+
+        public void TabbedIn()
+        {
+            animChanged();
+        }
+
+        public void TabbedOut()
+        {
+            DungeonEditScene.Instance.ItemInProgress = null;
         }
 
         public void ProcessUndo()
@@ -130,19 +142,20 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
-            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                return;
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
-                return;
+            bool inBounds = Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords);
 
             switch (EntMode)
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        DungeonEditScene.Instance.ItemInProgress.TileLoc = mapCoords;
+                        if (!inBounds)
+                            return;
+                        if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                             PlaceEntity(mapCoords);
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
                             RemoveEntityAt(mapCoords);
@@ -150,7 +163,9 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (!inBounds)
+                            return;
+                        if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                             SelectEntityAt(mapCoords);
                         else if (input[FrameInput.InputType.LeftMouse])
                             MoveEntity(mapCoords);
@@ -179,6 +194,13 @@ namespace RogueEssence.Dev.ViewModels
 
             DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapItemStateUndo());
             ZoneManager.Instance.CurrentMap.Items.Remove(ent);
+        }
+
+        public void PreviewEntity(Loc position)
+        {
+            MapItem placeableEntity = new MapItem(SelectedEntity);
+            placeableEntity.TileLoc = position;
+            DungeonEditScene.Instance.ItemInProgress = placeableEntity;
         }
 
         public void PlaceEntity(Loc position)
@@ -237,6 +259,12 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (SelectedEntity != null)
                 SelectedEntity.TileLoc = loc;
+        }
+
+        private void animChanged()
+        {
+            if (entMode == EntEditMode.PlaceEntity)
+                PreviewEntity(Loc.Zero);
         }
     }
 

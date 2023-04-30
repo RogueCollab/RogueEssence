@@ -7,6 +7,7 @@ using RogueEssence.Menu;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Script;
 
 namespace RogueEssence.Ground
 {
@@ -137,8 +138,7 @@ namespace RogueEssence.Ground
                 yield return CoroutineManager.Instance.StartCoroutine(PendingLeaderAction);
                 PendingLeaderAction = null;
             }
-
-            if (PendingDevEvent != null)
+            else if (PendingDevEvent != null)
             {
                 yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
                 PendingDevEvent = null;
@@ -146,14 +146,14 @@ namespace RogueEssence.Ground
             else
                 yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
 
-            if (!GameManager.Instance.FrameProcessed)
-                yield return new WaitForFrames(1);
-
             if (GameManager.Instance.SceneOutcome == null)
             {
                 //psy's notes: put everything related to the check events in the ground map, so its more encapsulated.
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnCheck());
             }
+
+            if (!GameManager.Instance.FrameProcessed)
+                yield return new WaitForFrames(1);
         }
 
         IEnumerator<YieldInstruction> ProcessInput(InputManager input)
@@ -168,7 +168,7 @@ namespace RogueEssence.Ground
             if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnMenuButtonPressed());
             }
             else if (input.JustPressed(FrameInput.InputType.SkillMenu))
             {
@@ -508,5 +508,19 @@ namespace RogueEssence.Ground
             }
         }
 
+        public IEnumerator<YieldInstruction> MoveCameraToChara(Loc loc, int time, GroundChar chara)
+        {
+            Loc startLoc = ZoneManager.Instance.CurrentGround.ViewCenter.HasValue ? ZoneManager.Instance.CurrentGround.ViewCenter.Value : chara.Bounds.Center + ZoneManager.Instance.CurrentGround.ViewOffset;
+            Loc endLoc = startLoc + loc;
+            ZoneManager.Instance.CurrentGround.ViewCenter = startLoc;
+
+            int currentFadeTime = time;
+            while (currentFadeTime > 0)
+            {
+                currentFadeTime--;
+                ZoneManager.Instance.CurrentGround.ViewCenter = new Loc(AnimMath.Lerp(endLoc.X, startLoc.X, (double)currentFadeTime / time), AnimMath.Lerp(endLoc.Y, startLoc.Y, (double)currentFadeTime / time));
+                yield return new WaitForFrames(1);
+            }
+        }
     }
 }

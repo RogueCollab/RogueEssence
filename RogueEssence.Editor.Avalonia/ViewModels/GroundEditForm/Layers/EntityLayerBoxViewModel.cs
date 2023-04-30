@@ -44,7 +44,7 @@ namespace RogueEssence.Dev.ViewModels
 
                     edits.Apply(new GroundEntityStateUndo(ChosenLayer));
 
-                    Layers[ChosenLayer] = newLayer;
+                    SetLayer(ChosenLayer, newLayer);
                 }
             }
         }

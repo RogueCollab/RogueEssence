@@ -21,30 +21,15 @@ namespace RogueEssence.Menu
 
         public RogueDestMenu()
         {
-            dungeonIndices = new List<string>();
-
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetOrderedKeys(true))
-            {
-                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(key) as ZoneEntrySummary;
-                if (!DiagManager.Instance.DevMode)
-                {
-                    if (DataManager.Instance.Save.GetDungeonUnlock(key) == GameProgress.UnlockState.None)
-                        continue;
-                    if (summary == null)
-                        continue;
-                    if (summary.Rogue != RogueStatus.AllTransfer)
-                        continue;
-                }
-                dungeonIndices.Add(key);
-            }
+            dungeonIndices = GetDestinationsList();
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(dungeonIndices[MathUtils.Rand.Next(dungeonIndices.Count)]); }));
+            flatChoices.Add(new MenuTextChoice(Text.FormatKey("MENU_START_RANDOM"), () => { choose(dungeonIndices[MathUtils.Rand.Next(dungeonIndices.Count)], true); }));
             for (int ii = 0; ii < dungeonIndices.Count; ii++)
             {
                 string zone = dungeonIndices[ii];
                 ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zone) as ZoneEntrySummary;
-                flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone); }));
+                flatChoices.Add(new MenuTextChoice(summary.GetColoredName(), () => { choose(zone, false); }));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);
@@ -75,7 +60,9 @@ namespace RogueEssence.Menu
                 bool isComplete = false;
                 if (DataManager.Instance.Save != null)
                     isComplete = DataManager.Instance.Save.GetDungeonUnlock(dungeonIndices[choice]) == GameProgress.UnlockState.Completed;
-                summaryMenu.SetDungeon(dungeonIndices[choice], isComplete, false);
+
+                ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(dungeonIndices[choice]) as ZoneEntrySummary;
+                summaryMenu.SetDungeon(zoneEntry.GetColoredName(), dungeonIndices[choice], isComplete, false);
             }
             else
                 summaryMenu.Visible = false;
@@ -94,9 +81,16 @@ namespace RogueEssence.Menu
             infoMenu.Draw(spriteBatch);
         }
 
-        private void choose(string choice)
+        private void choose(string choice, bool randomized)
         {
-            MenuManager.Instance.AddMenu(new RogueTeamInputMenu(choice, seed), false);
+            RogueConfig config = new RogueConfig();
+            config.Destination = choice;
+            config.DestinationRandomized = randomized;
+            bool seedRandomized = !seed.HasValue;
+            ulong seedVal = seedRandomized ?  MathUtils.Rand.NextUInt64() : seed.Value;
+            config.Seed = seedVal;
+            config.SeedRandomized = seedRandomized;
+            MenuManager.Instance.AddMenu(new RogueTeamInputMenu(config), false);
         }
 
 
@@ -124,6 +118,28 @@ namespace RogueEssence.Menu
                 seed = null;
 
             infoMenu.SetDetails(seed);
+        }
+
+        public static List<string> GetDestinationsList()
+        {
+            List<string> dungeonIndices = new List<string>();
+
+            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Zone].GetOrderedKeys(true))
+            {
+                ZoneEntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(key) as ZoneEntrySummary;
+                if (!DiagManager.Instance.DevMode)
+                {
+                    if (DataManager.Instance.Save.GetDungeonUnlock(key) == GameProgress.UnlockState.None)
+                        continue;
+                    if (summary == null)
+                        continue;
+                    if (summary.Rogue != RogueStatus.AllTransfer)
+                        continue;
+                }
+                dungeonIndices.Add(key); 
+            }
+
+            return dungeonIndices;
         }
     }
 }

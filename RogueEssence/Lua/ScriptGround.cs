@@ -16,6 +16,14 @@ namespace RogueEssence.Script
     /// </summary>
     class ScriptGround : ILuaEngineComponent
     {
+        //===================================
+        // Objects and Characters
+        //===================================
+
+        /// <summary>
+        /// Hides an entity.
+        /// </summary>
+        /// <param name="entityname">The name of the entity to hide.</param>
         public void Hide(string entityname)
         {
             try
@@ -32,6 +40,10 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Unhides an entity.
+        /// </summary>
+        /// <param name="entityname">The name of the entity to unhide.</param>
         public void Unhide(string entityname)
         {
             try
@@ -48,14 +60,16 @@ namespace RogueEssence.Script
             }
         }
 
-        //===================================
-        //  Custscene stuff
-        //===================================
-
-
-        //===================================
-        // Objects and Characters
-        //===================================
+        /// <summary>
+        /// TODO: WIP
+        /// </summary>
+        /// <param name="objtype"></param>
+        /// <param name="instancename"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public object CreateObject(string objtype, string instancename, int x, int y, int w, int h)
         {
             try
@@ -81,6 +95,16 @@ namespace RogueEssence.Script
             return null;
         }
 
+        /// <summary>
+        /// TODO: WIP
+        /// </summary>
+        /// <param name="chartype"></param>
+        /// <param name="instancename"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="actionfun"></param>
+        /// <param name="thinkfun"></param>
+        /// <returns></returns>
         public object CreateCharacter(string chartype, string instancename, int x, int y, string actionfun, string thinkfun)
         {
             try
@@ -111,6 +135,11 @@ namespace RogueEssence.Script
             return null;
         }
 
+        /// <summary>
+        /// Deletes an object from the ground map, identified by its instance name.
+        /// </summary>
+        /// <param name="instancename">The instance name of the object.</param>
+        /// <returns>Returns true if succeeded, false otherwise.</returns>
         public bool RemoveObject(string instancename)
         {
             try
@@ -129,6 +158,11 @@ namespace RogueEssence.Script
             return false;
         }
 
+        /// <summary>
+        /// Deletes a character from the ground map, identified by its instance name.
+        /// </summary>
+        /// <param name="instancename">The instance name of the object.</param>
+        /// <returns>Returns true if succeeded, false otherwise.</returns>
         public bool RemoveCharacter(string instancename)
         {
             try
@@ -157,7 +191,15 @@ namespace RogueEssence.Script
             return false;
         }
 
-
+        /// <summary>
+        /// Creates a ground character, given a dungeon character.
+        /// </summary>
+        /// <param name="instancename">The instance name to give the character</param>
+        /// <param name="data">Character data to create from</param>
+        /// <param name="x">X coordinate of the character</param>
+        /// <param name="y">Y coordinate of the character</param>
+        /// <param name="direction">Direction the character will face, defaults to Dir8.Down</param>
+        /// <returns></returns>
         public GroundChar CreateCharacterFromCharData(string instancename, Character data, int x = 0, int y = 0, Dir8 direction = Dir8.Down)
         {
             GroundChar groundChar = new GroundChar(data, new Loc(x, y), direction, instancename);
@@ -165,14 +207,19 @@ namespace RogueEssence.Script
             return groundChar;
         }
 
-
+        /// <summary>
+        /// Reloads the controllable player's character data to be the current team's leader.
+        /// </summary>
         public void RefreshPlayer()
         {
             GroundChar leaderChar = GroundScene.Instance.FocusedCharacter;
             ZoneManager.Instance.CurrentGround.SetPlayerChar(new GroundChar(DataManager.Instance.Save.ActiveTeam.Leader, leaderChar.MapLoc, leaderChar.CharDir, "PLAYER"));
         }
 
-
+        /// <summary>
+        /// Sets the controllable player to use new character data
+        /// </summary>
+        /// <param name="charData">The new character data</param>
         public void SetPlayer(CharData charData)
         {
             GroundChar leaderChar = GroundScene.Instance.FocusedCharacter;
@@ -183,7 +230,7 @@ namespace RogueEssence.Script
         /// Make the specified spawner run its spawn method.
         /// </summary>
         /// <param name="spawnername"></param>
-        /// <returns></returns>
+        /// <returns>The ground character spawned.</returns>
         public GroundChar SpawnerDoSpawn(string spawnername)
         {
             try
@@ -205,8 +252,8 @@ namespace RogueEssence.Script
         /// <summary>
         /// Sets the character to the specified spawner
         /// </summary>
-        /// <param name="spawnername"></param>
-        /// <param name="spawnChar"></param>
+        /// <param name="spawnername">The spawner to set the character to, by name</param>
+        /// <param name="spawnChar">The character to spawn.</param>
         /// <returns></returns>
         public void SpawnerSetSpawn(string spawnername, CharData spawnChar)
         {
@@ -223,178 +270,39 @@ namespace RogueEssence.Script
             }
         }
 
-        //===================================
-        //  Animation
-        //===================================
-
-        /// <summary>
-        /// Set a character's emote
-        /// </summary>
-        /// <param name="chara"></param>
-        /// <param name="emoteid"></param>
-        /// <param name="cycles"></param>
-        public void CharSetEmote(GroundChar chara, string emoteid, int cycles)
-        {
-            if (chara != null)
-            {
-                if (!String.IsNullOrEmpty(emoteid))
-                {
-                    EmoteData emote = DataManager.Instance.GetEmote(emoteid);
-                    chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));
-                }
-                else
-                    chara.StartEmote(null);
-            }
-        }
-
-        public void CharSetDrawEffect(GroundChar chara, DrawEffect effect)
-        {
-            if (chara != null)
-            {
-                chara.SetDrawEffect(effect);
-            }
-        }
-
-        public void CharEndDrawEffect(GroundChar chara, DrawEffect effect)
-        {
-            if (chara != null)
-            {
-                chara.RemoveDrawEffect(effect);
-            }
-        }
-
-        /// <summary>
-        /// Set a character's animation
-        /// </summary>
-        /// <param name="chara"></param>
-        /// <param name="anim"></param>
-        public void CharSetAnim(GroundChar chara, string anim, bool loop)
-        {
-            int animIndex = GraphicsManager.GetAnimIndex(anim);
-            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, animIndex, loop));
-        }
-        public void CharEndAnim(GroundChar chara)
-        {
-            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
-        }
-
-        public LuaFunction CharWaitAnim;
-        public YieldInstruction _CharWaitAnim(GroundEntity ent, string anim)
-        {
-            try
-            {
-                if (ent is GroundChar)
-                {
-                    GroundChar ch = (GroundChar)ent;
-                    int animIndex = GraphicsManager.GetAnimIndex(anim);
-                    IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
-                    ch.StartAction(action);
-                    return new WaitUntil(() =>
-                    {
-                        return action.Complete || (ch.GetCurrentAction() != action);
-                    });
-                }
-                throw new ArgumentException("Entity is not a valid type.");
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
-            }
-            return null;
-        }
-
-        public void CharSetAction(GroundChar chara, GroundAction action)
-        {
-            chara.StartAction(action);
-        }
-
-        public void ObjectSetAnim(GroundObject obj, int frameTime, int startFrame, int endFrame, Dir8 dir, int cycles)
-        {
-            obj.StartAction(new ObjAnimData(obj.ObjectAnim.AnimIndex, frameTime, startFrame, endFrame, 255, dir), cycles);
-        }
-
-        public void ObjectSetDefaultAnim(GroundObject obj, string objectName, int frameTime, int startFrame, int endFrame, Dir8 dir)
-        {
-            obj.ObjectAnim = new ObjAnimData(objectName, frameTime, startFrame, endFrame, 255, dir);
-        }
-
-        //===================================
-        //  VFX
-        //===================================
-
-
-
-        /// <summary>
-        /// Plays a VFX
-        /// </summary>
-        /// <param name="chara"></param>
-        /// <param name="anim"></param>
-        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir = Dir8.Down)
-        {
-            FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
-            endEmitter.SetupEmit(new Loc(x, y), new Loc(x, y), dir);
-            GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
-        }
-        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir, int xTo, int yTo)
-        {
-            FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
-            endEmitter.SetupEmit(new Loc(x, y), new Loc(xTo, yTo), dir);
-            GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
-        }
-        public void PlayVFXAnim(BaseAnim anim, DrawLayer layer)
-        {
-            GroundScene.Instance.CreateAnim(anim, layer);
-        }
-
-        public void MoveScreen(ScreenMover mover)
-        {
-            GroundScene.Instance.SetScreenShake(new ScreenMover(mover));
-        }
-
-        public void AddMapStatus(string statusIdx)
-        {
-            MapStatus status = new MapStatus(statusIdx);
-            status.LoadFromData();
-            GroundScene.Instance.AddMapStatus(status);
-        }
-
-        public void RemoveMapStatus(string statusIdx)
-        {
-            GroundScene.Instance.RemoveMapStatus(statusIdx);
-        }
-
-
-
 
         //===================================
         //  Movement
         //===================================
 
         /// <summary>
-        /// Makes a character turn to face another
+        /// Makes a character turn to face another character instantly.
         /// </summary>
-        /// <param name="curch"></param>
-        /// <param name="turnto"></param>
-        public void CharTurnToChar(GroundChar curch, GroundChar turnto)
+        /// <param name="turnchar">The character that is turning.</param>
+        /// <param name="turnto">The character to turn to.</param>
+        public void CharTurnToChar(GroundChar turnchar, GroundChar turnto)
         {
-            if (curch == null || turnto == null)
+            if (turnchar == null || turnto == null)
                 return;
-            Dir8 destDir = DirExt.ApproximateDir8(turnto.MapLoc - curch.MapLoc);
+            Dir8 destDir = DirExt.ApproximateDir8(turnto.MapLoc - turnchar.MapLoc);
             if (destDir == Dir8.None)
                 destDir = turnto.CharDir.Reverse();
-            curch.CharDir = destDir;
+            turnchar.CharDir = destDir;
         }
 
-
-
         /// <summary>
-        ///
+        /// Makes a character do an animated turn to face another character over the specified time.
+        /// Clockwise or counter-clockwise are chosen based on the closest direction.
+        /// Waits until the operation is completed.
         /// </summary>
-        /// <param name="curch"></param>
-        /// <param name="turnto"></param>
-        /// <param name="framedur"></param>
-        /// <returns></returns>
+        /// <param name="curch">Character that is turning</param>
+        /// <param name="turnto">Character to turn to</param>
+        /// <param name="framedur">Time spent on each direction, in frames</param>
+        /// <example>
+        /// CharTurnToCharAnimated(charFrom, charTo, 3)
+        /// </example>
         public LuaFunction CharTurnToCharAnimated;
+
         public Coroutine _CharTurnToCharAnimated(GroundChar curch, GroundChar turnto, int framedur)
         {
             if (curch == null || turnto == null)
@@ -407,10 +315,10 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Make an entity immediately turn towards a direction
+        /// Makes a ground entity turn to face a direction.
         /// </summary>
-        /// <param name="curch"></param>
-        /// <param name="direction"></param>
+        /// <param name="ent">The ground entity.  Can be a character or object.</param>
+        /// <param name="direction">The direction to face.</param>
         public void EntTurn(GroundEntity ent, Dir8 direction)
         {
             if (ent == null || direction == Dir8.None)
@@ -419,11 +327,17 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Do an animated turn
+        /// Makes a character do an animated turn to face a chosen direction over the specified time.
+        /// Must specify clockwise or counter-clockwise.
+        /// Waits until the operation is completed.
         /// </summary>
-        /// <param name="ch"></param>
-        /// <param name="direction"></param>
-        /// <param name="framedur"></param>
+        /// <param name="ch">The character to turn</param>
+        /// <param name="direction">The direction to turn to</param>
+        /// <param name="framedur">The time spent in each intermediate direction, in frames</param>
+        /// <param name="ccw">false if clockwise, true if counter-clockwise</param>
+        /// <example>
+        /// CharTurnToCharAnimated(charFrom, Dir8.Left, 3, true)
+        /// </example>
         public LuaFunction CharAnimateTurn;
         public Coroutine _CharAnimateTurn(GroundChar ch, Dir8 direction, int framedur, bool ccw)
         {
@@ -432,6 +346,16 @@ namespace RogueEssence.Script
             return new Coroutine(_DoAnimatedTurn(ch, _CountDirectionDifference(ch.CharDir, direction), framedur, ccw));
         }
 
+        /// <summary>
+        /// Makes a character do an animated turn to face a chosen direction over the specified time.
+        /// Waits until the operation is completed.
+        /// </summary>
+        /// <param name="ch">The character to turn</param>
+        /// <param name="direction">The direction to turn to</param>
+        /// <param name="framedur">The time spent in each intermediate direction, in frames</param>
+        /// <example>
+        /// CharTurnToCharAnimated(charFrom, Dir8.Left, 3)
+        /// </example>
         public LuaFunction CharAnimateTurnTo;
         public Coroutine _CharAnimateTurnTo(GroundChar ch, Dir8 direction, int framedur)
         {
@@ -483,34 +407,14 @@ namespace RogueEssence.Script
                 return cntclockwise; //If a clockwise turn is less or equal than half the nb of direction, then clockwise is the shortest turn!
         }
 
-
-        public LuaFunction MoveInDirection;
-
         /// <summary>
-        /// Make an entity move in a direction
+        /// Repositions the ground entity in a specified location.
         /// </summary>
-        /// <returns></returns>
-        public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, int speed = 2)
-        {
-            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
-            return _MoveToPosition(chara, endLoc.X, endLoc.Y, run, speed);
-        }
-
-
-        public LuaFunction AnimateInDirection;
-
-        /// <summary>
-        /// Make an entity move in a direction with custom animation
-        /// </summary>
-        /// <returns></returns>
-        public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, int speed)
-        {
-            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
-            return _AnimateToPosition(chara, anim, animDir, endLoc.X, endLoc.Y, animSpeed, speed);
-        }
-
-
-        public void TeleportTo(object ent, int x, int y, Dir8 direction = Dir8.None)
+        /// <param name="ent">The ground entity to reposition</param>
+        /// <param name="x">The X coordinate of the destination</param>
+        /// <param name="y">The Y coordinate of the destination</param>
+        /// <param name="direction">The direction to point the entity.  Defaults to Dir8.None, which leaves it untouched.</param>
+        public void TeleportTo(GroundEntity ent, int x, int y, Dir8 direction = Dir8.None)
         {
             try
             {
@@ -533,14 +437,161 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Make ground character move in a direction.
+        /// </summary>
+        /// <param name="chara">Character to move</param>
+        /// <param name="direction">Direction to move in</param>
+        /// <param name="duration">Duration of movement, in frames</param>
+        /// <param name="run">True if using a running animation, false otherwise</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <example>
+        /// GROUND:MoveInDirection(player, Dir8.Down, 24, false, 2)
+        /// </example>
+        public LuaFunction MoveInDirection;
+
+        public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, int speed = 2)
+        {
+            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
+            return _MoveToPosition(chara, endLoc.X, endLoc.Y, run, speed);
+        }
+
 
         /// <summary>
-        /// Makes an entity move to the selected position over a certain time, with a certain animation.
+        /// Make ground character move to a position.
         /// </summary>
-        /// <param name="ent"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
+        /// <param name="chara">Character to move</param>
+        /// <param name="x">X coordinate of destination</param>
+        /// <param name="y">Y  coordinate of destination</param>
+        /// <param name="run">True if using a running animation, false otherwise</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <example>
+        /// GROUND:MoveInDirection(player, 200, 240, false, 2)
+        /// </example>
+        public LuaFunction MoveToPosition;
+        public YieldInstruction _MoveToPosition(GroundEntity chara, int x, int y, bool run = false, int speed = 2)
+        {
+            try
+            {
+                if (speed < 1)
+                    throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
+
+                if (chara is GroundChar)
+                {
+                    GroundChar ch = (GroundChar)chara;
+                    FrameTick prevTime = new FrameTick();
+                    GroundAction prevAction = ch.GetCurrentAction();
+                    if (prevAction is AnimateToPositionGroundAction)
+                        prevTime = prevAction.ActionTime;
+                    Loc diff = new Loc(x, y) - ch.MapLoc;
+                    Dir8 approxDir = diff.ApproximateDir8();
+                    if (approxDir == Dir8.None)
+                        approxDir = ch.Direction;
+
+                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(GraphicsManager.WalkAction, ch.Position, approxDir, run ? 2 : 1, speed, prevTime, new Loc(x, y));
+                    ch.StartAction(newAction);
+                    return new WaitUntil(() =>
+                    {
+                        return newAction.Complete || (ch.GetCurrentAction() != newAction);
+                    });
+                }
+
+                throw new ArgumentException("Entity is not a valid type.");
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
+        }
+
+
+        /// <summary>
+        /// Make ground character move to a ground marker.
+        /// </summary>
+        /// <param name="chara">Character to move</param>
+        /// <param name="mark">GroundMarker object ot move to</param>
+        /// <param name="run">True if using a running animation, false otherwise</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <example>
+        /// GROUND:MoveInDirection(player, marker, false, 2)
+        /// </example>
+        public LuaFunction MoveToMarker;
+        public YieldInstruction _MoveToMarker(GroundEntity chara, GroundMarker mark, bool run = false, int speed = 2)
+        {
+            return _MoveToPosition(chara, mark.X, mark.Y, run, speed);
+        }
+
+
+        /// <summary>
+        /// Make ground object move to a position.
+        /// </summary>
+        /// <param name="ent">Ground Entity to move</param>
+        /// <param name="x">X coordinate of destination</param>
+        /// <param name="y">Y  coordinate of destination</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <example>
+        /// GROUND:MoveInDirection(player, 200, 240, 2)
+        /// </example>
+        public LuaFunction MoveObjectToPosition;
+        public YieldInstruction _MoveObjectToPosition(GroundEntity ent, int x, int y, int speed)
+        {
+            try
+            {
+                if (speed < 1)
+                    throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
+
+                if (ent is GroundObject)
+                {
+                    //is this really the best place to put this?
+                    GroundObject obj = (GroundObject)ent;
+                    return new Coroutine(obj.MoveToLoc(obj.Position, speed, new Loc(x, y)));
+                }
+
+                throw new ArgumentException("Entity is not a valid type.");
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Make a ground character move in a direction with custom animation
+        /// </summary>
+        /// <param name="chara">Character to move</param>
+        /// <param name="anim">Name of the animation</param>
+        /// <param name="animDir">Direction of animation</param>
+        /// <param name="direction">Direction to move in</param>
+        /// <param name="duration">Duration of movement, in frames</param>
+        /// <param name="animSpeed">Speed of animation, where 1.0 represents normal speed</param>
+        /// <param name="speed">Speed movement, in pixels per frame</param>
+        /// <example>
+        /// GROUND:AnimateInDirection(player, "Hurt", Dir8.Down, 24, 0.5, 2)
+        /// </example>
+        public LuaFunction AnimateInDirection;
+        public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, int speed)
+        {
+            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
+            return _AnimateToPosition(chara, anim, animDir, endLoc.X, endLoc.Y, animSpeed, speed);
+        }
+
+        /// <summary>
+        /// Make a ground entity move to a position with custom animation
+        /// </summary>
+        /// <param name="ent">Entity to move</param>
+        /// <param name="anim">Name of the animation</param>
+        /// <param name="animDir">Direction of animation</param>
+        /// <param name="x">X coordinate of the destination</param>
+        /// <param name="y">Y coordinate of the destination</param>
+        /// <param name="animSpeed">Speed of animation, where 1.0 represents normal speed</param>
+        /// <param name="speed">Speed movement, in pixels per frame</param>
+        /// <example>
+        /// GROUND:AnimateToPosition(player, "Hurt", Dir8.Down, 200, 240, 0.5, 2)
+        /// </example>
         public LuaFunction AnimateToPosition;
         public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, int speed)
         {
@@ -578,6 +629,130 @@ namespace RogueEssence.Script
         }
 
 
+        //===================================
+        //  Animation
+        //===================================
+
+
+        /// <summary>
+        /// Make a character emote on the ground map.
+        /// </summary>
+        /// <param name="chara">Character to emote</param>
+        /// <param name="emoteid">ID of the emote</param>
+        /// <param name="cycles">The number of times to play the emote.</param>
+        public void CharSetEmote(GroundChar chara, string emoteid, int cycles)
+        {
+            if (chara != null)
+            {
+                if (!String.IsNullOrEmpty(emoteid))
+                {
+                    EmoteData emote = DataManager.Instance.GetEmote(emoteid);
+                    chara.StartEmote(new Emote(emote.Anim, emote.LocHeight, cycles));
+                }
+                else
+                    chara.StartEmote(null);
+            }
+        }
+
+        /// <summary>
+        /// Sets the ground character's draw effect to become invisible, shaking, still, etc.
+        /// </summary>
+        /// <param name="chara">Target ground character.</param>
+        /// <param name="effect">The draw effect.</param>
+        public void CharSetDrawEffect(GroundChar chara, DrawEffect effect)
+        {
+            if (chara != null)
+            {
+                chara.SetDrawEffect(effect);
+            }
+        }
+
+        /// <summary>
+        /// Sets the ground character's draw effect to become invisible, shaking, still, etc.
+        /// </summary>
+        /// <param name="chara">Target ground character.</param>
+        /// <param name="effect">The draw effect.</param>
+        public void CharEndDrawEffect(GroundChar chara, DrawEffect effect)
+        {
+            if (chara != null)
+            {
+                chara.RemoveDrawEffect(effect);
+            }
+        }
+
+        /// <summary>
+        /// Set a character's animation.
+        /// </summary>
+        /// <param name="chara">Character to animate</param>
+        /// <param name="anim">Name of the animation</param>
+        /// <param name="loop">Whether to loop the animation</param>
+        public void CharSetAnim(GroundChar chara, string anim, bool loop)
+        {
+            int animIndex = GraphicsManager.GetAnimIndex(anim);
+            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, animIndex, loop));
+        }
+
+        /// <summary>
+        /// Stops a character's current animation, reverting them to default idle.
+        /// </summary>
+        /// <param name="chara">Character to stop animating</param>
+        public void CharEndAnim(GroundChar chara)
+        {
+            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
+        }
+
+        /// <summary>
+        /// Makes the character perform an animation and waits until it's over.
+        /// </summary>
+        /// <param name="ent">Character to animate</param>
+        /// <param name="anim">Animation to play</param>
+        /// <example>
+        /// GROUND:CharWaitAnim(player, "Hurt")
+        /// </example>
+        public LuaFunction CharWaitAnim;
+        public YieldInstruction _CharWaitAnim(GroundEntity ent, string anim)
+        {
+            try
+            {
+                if (ent is GroundChar)
+                {
+                    GroundChar ch = (GroundChar)ent;
+                    int animIndex = GraphicsManager.GetAnimIndex(anim);
+                    IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
+                    ch.StartAction(action);
+                    return new WaitUntil(() =>
+                    {
+                        return action.Complete || (ch.GetCurrentAction() != action);
+                    });
+                }
+                throw new ArgumentException("Entity is not a valid type.");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Set a character's action.
+        /// </summary>
+        /// <param name="chara">Character to perfomr the action</param>
+        /// <param name="action">The action to perform</param>
+        public void CharSetAction(GroundChar chara, GroundAction action)
+        {
+            chara.StartAction(action);
+        }
+
+
+        /// <summary>
+        /// Makes the character perform an action and waits until it's over.
+        /// </summary>
+        /// <param name="ent">Character to animate</param>
+        /// <param name="action">Action to perform</param>
+        /// <example>
+        /// GROUND:CharWaitAction(player, action)
+        /// </example>
         public LuaFunction CharWaitAction;
         public YieldInstruction _CharWaitAction(GroundEntity ent, GroundAction action)
         {
@@ -603,42 +778,51 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Makes an entity move to the selected position over a certain time.
+        /// Sets a ground object's animation.  After it finishes, it will return to the default animation.
         /// </summary>
-        /// <param name="ent"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public LuaFunction MoveToPosition;
-        public YieldInstruction _MoveToPosition(GroundEntity ent, int x, int y, bool run = false, int speed = 2)
+        /// <param name="obj">The object to animate</param>
+        /// <param name="frameTime">The duration of each frame of animation</param>
+        /// <param name="startFrame">The start frame of animation</param>
+        /// <param name="endFrame">The end frame of animation</param>
+        /// <param name="dir">The direction of the animation</param>
+        /// <param name="cycles">The number of times to repeat the animation</param>
+        public void ObjectSetAnim(GroundObject obj, int frameTime, int startFrame, int endFrame, Dir8 dir, int cycles)
+        {
+            obj.StartAction(new ObjAnimData(obj.ObjectAnim.AnimIndex, frameTime, startFrame, endFrame, 255, dir), cycles);
+        }
+
+        /// <summary>
+        /// Sets a ground object's default animation.
+        /// </summary>
+        /// <param name="obj">The object to animate</param>
+        /// <param name="animName">The name of the animation</param>
+        /// <param name="frameTime">The duration of each frame of animation</param>
+        /// <param name="startFrame">The start frame of animation</param>
+        /// <param name="endFrame">The end frame of animation</param>
+        /// <param name="dir">The direction of the animation</param>
+        public void ObjectSetDefaultAnim(GroundObject obj, string animName, int frameTime, int startFrame, int endFrame, Dir8 dir)
+        {
+            obj.ObjectAnim = new ObjAnimData(animName, frameTime, startFrame, endFrame, 255, dir);
+        }
+
+
+        /// <summary>
+        /// Waits for the object to reach a specific frame before continuing.
+        /// </summary>
+        /// <param name="obj">The object ot wait on</param>
+        /// <param name="frame">The frame of animation to wait on.</param>
+        /// <example>
+        /// GROUND:WaitObjectAnim(fountain, 3)
+        /// </example>
+        public LuaFunction ObjectWaitAnimFrame;
+        public YieldInstruction _ObjectWaitAnimFrame(GroundObject obj, int frame)
         {
             try
             {
-                if (speed < 1)
-                    throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
-
-                if (ent is GroundChar)
+                return new WaitUntil(() =>
                 {
-                    GroundChar ch = (GroundChar)ent;
-                    FrameTick prevTime = new FrameTick();
-                    GroundAction prevAction = ch.GetCurrentAction();
-                    if (prevAction is AnimateToPositionGroundAction)
-                        prevTime = prevAction.ActionTime;
-                    Loc diff = new Loc(x, y) - ch.MapLoc;
-                    Dir8 approxDir = diff.ApproximateDir8();
-                    if (approxDir == Dir8.None)
-                        approxDir = ch.Direction;
-
-                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(GraphicsManager.WalkAction, ch.Position, approxDir, run ? 2 : 1, speed, prevTime, new Loc(x, y));
-                    ch.StartAction(newAction);
-                    return new WaitUntil(() =>
-                    {
-                        return newAction.Complete || (ch.GetCurrentAction() != newAction);
-                    });
-                }
-
-                throw new ArgumentException("Entity is not a valid type.");
-
+                    return obj.GetCurrentFrame() == frame;
+                });
             }
             catch (Exception ex)
             {
@@ -646,18 +830,79 @@ namespace RogueEssence.Script
             }
             return null;
         }
-        
+
+        //===================================
+        //  VFX
+        //===================================
+
 
         /// <summary>
-        /// Makes an entity move to a marker.
+        /// Plays a VFX using a finite emitter that generates BaseAnims.
         /// </summary>
-        /// <param name="ent"></param>
-        /// <param name="mark"></param>
-        /// <returns></returns>
-        public LuaFunction MoveToMarker;
-        public YieldInstruction _MoveToMarker(GroundEntity ent, GroundMarker mark, bool run = false, int speed = 2)
+        /// <param name="emitter">The VFX emitter</param>
+        /// <param name="x">X position</param>
+        /// <param name="y">Y Position</param>
+        /// <param name="dir">Direction to orient the VFX, defaults to Down</param>
+        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir = Dir8.Down)
         {
-            return _MoveToPosition(ent, mark.X, mark.Y, run, speed);
+            FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
+            endEmitter.SetupEmit(new Loc(x, y), new Loc(x, y), dir);
+            GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
+        }
+
+        /// <summary>
+        /// Plays a VFX that has a start position and an end position.  It uses a finite emitter that generates BaseAnims.
+        /// </summary>
+        /// <param name="emitter">The VFX emitter</param>
+        /// <param name="x">Start X position</param>
+        /// <param name="y">Start Y Position</param>
+        /// <param name="dir">Direction to orient the VFX, defaults to Down.</param>
+        /// <param name="xTo">End X position</param>
+        /// <param name="yTo">End Y position</param>
+        public void PlayVFX(FiniteEmitter emitter, int x, int y, Dir8 dir, int xTo, int yTo)
+        {
+            FiniteEmitter endEmitter = (FiniteEmitter)emitter.Clone();
+            endEmitter.SetupEmit(new Loc(x, y), new Loc(xTo, yTo), dir);
+            GroundScene.Instance.CreateAnim(endEmitter, DrawLayer.NoDraw);
+        }
+
+        /// <summary>
+        /// Plays a VFX using just a BaseAnim
+        /// </summary>
+        /// <param name="anim">The animation to play</param>
+        /// <param name="layer">The layer to put it on</param>
+        public void PlayVFXAnim(BaseAnim anim, DrawLayer layer)
+        {
+            GroundScene.Instance.CreateAnim(anim, layer);
+        }
+
+        /// <summary>
+        /// Plays a screen-moving effect.
+        /// </summary>
+        /// <param name="mover">The screen mover.</param>
+        public void MoveScreen(ScreenMover mover)
+        {
+            GroundScene.Instance.SetScreenShake(new ScreenMover(mover));
+        }
+
+        /// <summary>
+        /// Adds a mapstatus to the ground map.  Map statuses only have an aesthetic effect in ground maps.
+        /// </summary>
+        /// <param name="statusIdx">The ID of the Map Status</param>
+        public void AddMapStatus(string statusIdx)
+        {
+            MapStatus status = new MapStatus(statusIdx);
+            status.LoadFromData();
+            GroundScene.Instance.AddMapStatus(status);
+        }
+
+        /// <summary>
+        /// Removes a map status from the ground map.
+        /// </summary>
+        /// <param name="statusIdx">The ID of the Map Status to remove.</param>
+        public void RemoveMapStatus(string statusIdx)
+        {
+            GroundScene.Instance.RemoveMapStatus(statusIdx);
         }
 
         //
@@ -669,6 +914,7 @@ namespace RogueEssence.Script
         {
             //Implement stuff that should be written in lua!
             CharWaitAnim = state.RunString("return function(_, ent, anim) return coroutine.yield(GROUND:_CharWaitAnim(ent, anim)) end", "CharWaitAnim").First() as LuaFunction;
+            ObjectWaitAnimFrame = state.RunString("return function(_, ent, animframe) return coroutine.yield(GROUND:_ObjectWaitAnimFrame(ent, animframe)) end", "ObjectWaitAnimFrame").First() as LuaFunction;
 
             MoveInDirection = state.RunString("return function(_, chara, direction, duration, shouldrun, speed) return coroutine.yield(GROUND:_MoveInDirection(chara, direction, duration, shouldrun, speed)) end", "MoveInDirection").First() as LuaFunction;
             AnimateInDirection = state.RunString("return function(_, chara, anim, animdir, direction, duration, animspeed, speed) return coroutine.yield(GROUND:_AnimateInDirection(chara, anim, animdir, direction, duration, animspeed, speed)) end", "AnimateInDirection").First() as LuaFunction;
@@ -676,10 +922,14 @@ namespace RogueEssence.Script
             CharAnimateTurnTo = state.RunString("return function(_, ch, direction, framedur) return coroutine.yield(GROUND:_CharAnimateTurnTo(ch, direction, framedur)) end", "CharAnimateTurn").First() as LuaFunction;
             CharTurnToCharAnimated = state.RunString("return function(_, curch, turnto, framedur) return coroutine.yield(GROUND:_CharTurnToCharAnimated(curch, turnto, framedur)) end", "CharTurnToCharAnimated").First() as LuaFunction;
 
+
+
             MoveToMarker = state.RunString("return function(_, ent, mark, shouldrun, speed) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun, speed)) end", "MoveToMarker").First() as LuaFunction;
             MoveToPosition = state.RunString("return function(_, ent, x, y, shouldrun, speed) return coroutine.yield(GROUND:_MoveToPosition(ent, x, y, shouldrun, speed)) end", "MoveToPosition").First() as LuaFunction;
             AnimateToPosition = state.RunString("return function(_, ent, anim, animdir, x, y, animspeed, speed) return coroutine.yield(GROUND:_AnimateToPosition(ent, anim, animdir, x, y, animspeed, speed)) end", "AnimateToPosition").First() as LuaFunction;
             CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
+
+            MoveObjectToPosition = state.RunString("return function(_, ent, x, y, speed) return coroutine.yield(GROUND:_MoveObjectToPosition(ent, x, y, speed)) end", "MoveObjectToPosition").First() as LuaFunction;
         }
     }
 }

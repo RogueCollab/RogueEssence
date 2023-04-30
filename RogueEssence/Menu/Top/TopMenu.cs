@@ -48,14 +48,14 @@ namespace RogueEssence.Menu
             if (!inQuest)
             {
                 string[] questsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-                if (QuestsMenu.GetEligibleQuests().Count > 0)
+                if (PathMod.GetEligibleMods(PathMod.ModType.Quest).Count > 0)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_TITLE"), () => { MenuManager.Instance.AddMenu(new QuestsMenu(), false); }));
             }
             else
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_EXIT"), exitQuest));
 
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-            if (ModsMenu.GetEligibleMods().Count > 0)
+            if (PathMod.GetEligibleMods(PathMod.ModType.Mod).Count > 0)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
 
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUIT_GAME"), exitGame));
@@ -139,6 +139,8 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SceneOutcome = continueReplay(replay, rescueMail);
                 return;
             }
+
+            //otherwise, load just the main save
             continueMain(rescueMail);
         }
 
@@ -161,7 +163,7 @@ namespace RogueEssence.Menu
                 DialogueChoice[] choices = new DialogueChoice[2];
                 choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), () => { attemptLoadMain(); });
                 choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), () => {  });
-                MenuManager.Instance.AddMenu(new ModDiffDialog(Text.FormatKey("DLG_ASK_LOAD_UPGRADE"), removedMods, false, choices, 0, 1), false);
+                MenuManager.Instance.AddMenu(new ModDiffDialog(Text.FormatKey("DLG_ASK_LOAD_UPGRADE"), Text.FormatKey("MENU_MODS_MISSING"), removedMods, false, choices, 0, 1), false);
             }
             else
                 attemptLoadMain();
@@ -175,11 +177,6 @@ namespace RogueEssence.Menu
             {
                 cannotRead(DataManager.SAVE_PATH + DataManager.SAVE_FILE_PATH);
                 return;
-            }
-            if (state.Save.Rescue != null)
-            {
-                state.Save.Rescue = null;
-                DataManager.Instance.SaveGameState(state);
             }
             MenuManager.Instance.ClearMenus();
             GameManager.Instance.SceneOutcome = continueMain(state);
@@ -203,7 +200,7 @@ namespace RogueEssence.Menu
 
             DataManager.Instance.Loading = DataManager.LoadMode.Loading;
             DataManager.Instance.CurrentReplay = replay;
-
+            
             if (rescueMail != null)
                 DataManager.Instance.Save.Rescue = new RescueState(rescueMail, false);
 
@@ -216,7 +213,8 @@ namespace RogueEssence.Menu
             else
             {
                 //no valid next dest happens when the player has saved in a ground map in the middle of an adventure
-                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                 DataManager.Instance.CurrentReplay = null;
                 DataManager.Instance.Save.UpdateOptions();
 
@@ -242,6 +240,8 @@ namespace RogueEssence.Menu
         private static IEnumerator<YieldInstruction> continueMain(GameState mainState)
         {
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
+
+            yield return CoroutineManager.Instance.StartCoroutine(mainState.Save.LoadedWithoutQuicksave());
 
             MainProgress mainSave = mainState.Save as MainProgress;
             DataManager.Instance.SetProgress(mainSave);
@@ -285,27 +285,27 @@ namespace RogueEssence.Menu
         {
             if (String.IsNullOrEmpty(monId.Species) || backPhase == 0)
             {
-                if (DataManager.Instance.StartChars.Count > 1)
+                if (DataManager.Instance.Start.Chars.Count > 1)
                 {
                     int startIndex = 0;
                     if (backPhase == 0)
-                        startIndex = DataManager.Instance.StartChars.FindIndex(start => start.mon == monId);
-                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), DataManager.Instance.StartChars, startIndex, (int index) =>
+                        startIndex = DataManager.Instance.Start.Chars.FindIndex(start => start.ID == monId);
+                    MenuManager.Instance.AddMenu(new ChooseMonsterMenu(Text.FormatKey("MENU_CHARA_CHOICE_TITLE"), DataManager.Instance.Start.Chars, startIndex, (int index) =>
                     {
                         string newName = null;
-                        if (DataManager.Instance.StartChars[index].name != "")
-                            newName = DataManager.Instance.StartChars[index].name;
-                        StartFlow(DataManager.Instance.StartChars[index].mon, newName, -1);
+                        if (DataManager.Instance.Start.Chars[index].Name != "")
+                            newName = DataManager.Instance.Start.Chars[index].Name;
+                        StartFlow(DataManager.Instance.Start.Chars[index].ID, newName, -1);
                     }, () => { }), false);
                     return;
                 }
                 else if (backPhase == 0)
                     return;
-                else if (DataManager.Instance.StartChars.Count == 1)
+                else if (DataManager.Instance.Start.Chars.Count == 1)
                 {
-                    monId = DataManager.Instance.StartChars[0].mon;
-                    if (DataManager.Instance.StartChars[0].name != "")
-                        name = DataManager.Instance.StartChars[0].name;
+                    monId = DataManager.Instance.Start.Chars[0].ID;
+                    if (DataManager.Instance.Start.Chars[0].Name != "")
+                        name = DataManager.Instance.Start.Chars[0].Name;
                 }
                 else
                 {
@@ -382,7 +382,7 @@ namespace RogueEssence.Menu
             DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
 
-            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.StartLevel, "", DataManager.Instance.StartPersonality);
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, monId, DataManager.Instance.Start.Level, "", DataManager.Instance.Start.Personality);
             newChar.Nickname = name;
             newChar.IsFounder = true;
             DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
@@ -398,7 +398,7 @@ namespace RogueEssence.Menu
                 DiagManager.Instance.LogError(ex);
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Start.Map, true, false));
         }
 
         private static IEnumerator<YieldInstruction> DefaultBegin()
@@ -407,7 +407,7 @@ namespace RogueEssence.Menu
 
             GameManager.Instance.NewGamePlus(MathUtils.Rand.NextUInt64());
 
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.StartMap));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Start.Map, true, false));
         }
 
     }

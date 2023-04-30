@@ -15,7 +15,7 @@ namespace RogueEssence.Script
     /// <summary>
     /// This class is meant to be used to iterate over a lua iterator/coroutine in C# in a conscise way.
     /// </summary>
-    class LuaCoroutineIterator : IEnumerator<YieldInstruction>
+    public class LuaCoroutineIterator : IEnumerator<YieldInstruction>
     {
         public YieldInstruction Current { get; internal set; }
 

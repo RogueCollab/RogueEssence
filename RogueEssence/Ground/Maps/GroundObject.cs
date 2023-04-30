@@ -110,6 +110,28 @@ namespace RogueEssence.Ground
             AnimTime = FrameTick.Zero;
         }
 
+        public IEnumerator<YieldInstruction> MoveToLoc(Loc loc, int moveRate, Loc destination)
+        {
+            this.Position = loc;
+            Loc goalDiff = destination - this.Position;
+            int framesPassed = 1;
+            while (this.Position != destination)
+            {
+
+                bool vertical = Math.Abs(goalDiff.Y) > Math.Abs(goalDiff.X);
+                int mainMove = moveRate * framesPassed;
+                int subMove = (int)Math.Abs(Math.Round((double)moveRate * framesPassed * goalDiff.GetScalar(vertical ? Axis4.Horiz : Axis4.Vert) / goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)));
+                Loc newDiff = new Loc((vertical ? subMove : mainMove) * Math.Sign(goalDiff.X), (vertical ? mainMove : subMove) * Math.Sign(goalDiff.Y));
+                if (mainMove >= Math.Abs(goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)))
+                    newDiff = goalDiff;
+
+                this.Position = loc + newDiff;
+
+                yield return new WaitForFrames(1);
+
+                framesPassed++;
+            }
+        }
 
         public void Update(FrameTick elapsedTime)
         {
@@ -137,24 +159,43 @@ namespace RogueEssence.Ground
                 blank.Draw(spriteBatch, new Rectangle(Collider.X - offset.X, Collider.Y - offset.Y, Collider.Width, Collider.Height), null, Color.Cyan * 0.7f);
             }
         }
+
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
+        {
+            DrawPreview(spriteBatch, offset, 1f);
+        }
+        public override void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
         {
             if (CurrentAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetDirSheet(CurrentAnim.AssetType, CurrentAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Direction), Color.White * ((float)CurrentAnim.Alpha / 255), CurrentAnim.AnimFlip);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames), CurrentAnim.GetDrawDir(Direction), Color.White * ((float)CurrentAnim.Alpha * alpha / 255), CurrentAnim.AnimFlip);
             }
             else if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Direction), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Direction), Color.White * ((float)ObjectAnim.Alpha * alpha / 255), ObjectAnim.AnimFlip);
             }
         }
 
+        public int GetCurrentFrame()
+        {
+            if (CurrentAnim.AnimIndex != "")
+            {
+                DirSheet sheet = GraphicsManager.GetDirSheet(CurrentAnim.AssetType, CurrentAnim.AnimIndex);
+                return CurrentAnim.GetCurrentFrame(AnimTime, sheet.TotalFrames);
+            }
+            else if (ObjectAnim.AnimIndex != "")
+            {
+                DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
+                return ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames);
+            }
+            return -1;
+        }
 
         public override Loc GetDrawLoc(Loc offset)
         {

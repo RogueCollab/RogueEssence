@@ -81,11 +81,41 @@ namespace RogueEssence.Menu
             }
         }
 
+        public void SetPreview(bool preview)
+        {
+            if (skillCharges.Text != "")
+                skillText.Color = preview ? Color.Yellow : skillCharges.Color;
+        }
+
         public override IEnumerable<IMenuElement> GetElements()
         {
             yield return skillText;
             yield return skillCharges;
             yield return skillElement;
+        }
+    }
+
+
+    public class PreviewSkillMenu : MenuBase
+    {
+        private MenuText menuText;
+
+        public PreviewSkillMenu()
+        {
+            menuText = new MenuText("", Loc.Zero, DirH.Right);
+        }
+
+        public override IEnumerable<IMenuElement> GetElements()
+        {
+            yield return menuText;
+        }
+
+        public void UpdateControls()
+        {
+            menuText.SetText(DiagManager.Instance.GetControlString(FrameInput.InputType.SkillPreview) + " [color=#FFFF00]" + Text.FormatKey("MENU_SKILL_PREVIEW") + "[color]");
+            int textLength = MathUtils.DivUp(menuText.GetTextLength(), 4) * 4;
+            Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth - textLength - 16 - GraphicsManager.MenuBG.TileWidth, 24), new Loc(GraphicsManager.ScreenWidth + GraphicsManager.MenuBG.TileWidth, 24 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2));
+            menuText.Loc = new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight);
         }
     }
 }

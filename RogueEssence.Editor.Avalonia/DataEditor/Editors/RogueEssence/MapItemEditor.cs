@@ -58,8 +58,6 @@ namespace RogueEssence.Dev
             StackPanel groupBoxPanel = new StackPanel();
             control.Children.Add(groupBoxPanel);
 
-            populateStack(groupBoxPanel, member);
-
             cbItem.SelectedIndex = Math.Min(Math.Max(0, chosenItem), items.Count - 1);
 
             cbItem.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
@@ -67,13 +65,41 @@ namespace RogueEssence.Dev
                 if (cbItem.SelectedIndex == 0)
                     populateStack(groupBoxPanel, MapItem.CreateMoney(1));
                 else
-                    populateStack(groupBoxPanel, new MapItem(items[cbItem.SelectedIndex]));
+                    populateStack(groupBoxPanel, new MapItem(itemKeys[cbItem.SelectedIndex - 1]));
             };
+
+            if (String.IsNullOrEmpty(member.Value))
+            {
+                MapItem other = new MapItem(member);
+                other.IsMoney = true;
+                populateStack(groupBoxPanel, other);
+            }
+            else
+                populateStack(groupBoxPanel, member);
+        }
+
+        private bool canShowAmount(MapItem member)
+        {
+            bool showAmount = false;
+            if (member.IsMoney)
+                showAmount = true;
+            else
+            {
+                ItemData summary = DataManager.Instance.GetItem(member.Value);
+                if (summary == null)
+                    return false;
+                if (summary.MaxStack > 1)
+                    showAmount = true;
+            }
+            return showAmount;
         }
 
         private void populateStack(StackPanel groupBoxPanel, MapItem member)
         {
             groupBoxPanel.Children.Clear();
+
+            bool showAmount = canShowAmount(member);
+            if (showAmount)
             {
                 Avalonia.Controls.Grid innerPanel = getSharedRowPanel(2);
 
@@ -99,6 +125,7 @@ namespace RogueEssence.Dev
             if (member.IsMoney)
                 return;
 
+            if (!showAmount)
             {
                 Avalonia.Controls.Grid innerPanel = getSharedRowPanel(2);
 
@@ -150,18 +177,26 @@ namespace RogueEssence.Dev
             // read from the adjustable panel from here on
             StackPanel adjustablePanel = (StackPanel)control.Children[controlIndex];
             controlIndex = 0;
-            Avalonia.Controls.Grid innerControl2 = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
-            NumericUpDown nudAmount = (NumericUpDown)innerControl2.Children[1];
-            result.Amount = (int)nudAmount.Value;
+
+            bool showAmount = canShowAmount(result);
+            if (showAmount)
+            {
+                Avalonia.Controls.Grid innerControl2 = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
+                NumericUpDown nudAmount = (NumericUpDown)innerControl2.Children[1];
+                result.Amount = (int)nudAmount.Value;
+                controlIndex++;
+            }
 
             if (!result.IsMoney)
             {
-                controlIndex++;
-                Avalonia.Controls.Grid innerControl3 = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
-                TextBox txtHidden = (TextBox)innerControl3.Children[1];
-                result.HiddenValue = txtHidden.Text;
+                if (!showAmount)
+                {
+                    Avalonia.Controls.Grid innerControl3 = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
+                    TextBox txtHidden = (TextBox)innerControl3.Children[1];
+                    result.HiddenValue = txtHidden.Text;
+                    controlIndex++;
+                }
 
-                controlIndex++;
                 CheckBox chkCursed = (CheckBox)adjustablePanel.Children[controlIndex];
                 result.Cursed = chkCursed.IsChecked.HasValue && chkCursed.IsChecked.Value;
             }
@@ -175,11 +210,22 @@ namespace RogueEssence.Dev
                 return String.Format("{0}P", obj.Amount);
             else if (!String.IsNullOrEmpty(obj.Value))
             {
+                string nameStr = "";
+                if (obj.Price > 0)
+                    nameStr += String.Format("${0} ", obj.Price);
+                if (obj.Cursed)
+                    nameStr += "[X]";
+
                 ItemData entry = DataManager.Instance.GetItem(obj.Value);
+
+                nameStr += entry.Name.ToLocal();
                 if (entry.MaxStack > 1)
-                    return (obj.Cursed ? "[X]" : "") + entry.Name.ToLocal() + " (" + obj.Amount + ")";
-                else
-                    return (obj.Cursed ? "[X]" : "") + entry.Name.ToLocal();
+                    nameStr += String.Format("({0})", obj.Amount);
+
+                if (!String.IsNullOrEmpty(obj.HiddenValue))
+                    nameStr += String.Format("[{0}]", obj.HiddenValue);
+
+                return nameStr;
             }
             return "---";
         }

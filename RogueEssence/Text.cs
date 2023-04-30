@@ -6,7 +6,8 @@ using System.Globalization;
 using System.Xml;
 using System.IO;
 using System.Resources.NetStandard;
-
+using static System.Net.Mime.MediaTypeNames;
+using RogueElements;
 
 namespace RogueEssence
 {
@@ -35,7 +36,18 @@ namespace RogueEssence
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<scrollbreak>\[scroll\])" +
-                                                @"(?<script>\[script=(?<scriptval>\d+)\])",
+                                                @"|(?<script>\[script=(?<scriptval>\d+)\])" +
+                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
+                                                @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
+                                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\] (?<a_anval>\w))" +
+                                                @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" +
+                                                @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" +
+                                                @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" +
+                                                @"|(?<wa_gwa>(?<wa_gwaval>\w)\[와/과\])" +
+                                                @"|(?<eu_lo>(?<eu_loval>\w)\[으/로\])" +
+                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
@@ -191,6 +203,129 @@ namespace RogueEssence
             }
         }
 
+        public static string FormatGrammar(string input, params object[] args)
+        {
+            string output = String.Format(input, args);
+
+            List<(int, string)> reInserts = new List<(int, string)>();
+            int lag = 0;
+            MatchCollection tagMatches = MsgTags.Matches(output);
+            foreach (Match match in tagMatches)
+            {
+                reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
+                output = output.Remove(match.Index - lag, match.Length);
+                lag += match.Length;
+            }
+
+            List<(int, int, string)> replacements = new List<(int, int, string)>();
+            MatchCollection matches = GrammarTags.Matches(output);
+            foreach (Match match in matches)
+            {
+                foreach (string key in match.Groups.Keys)
+                {
+                    if (!match.Groups[key].Success)
+                        continue;
+                    switch (key)
+                    {
+                        case "a_an":
+                            {
+                                string vowelcheck = match.Groups["a_anval"].Value;
+
+                                if (Regex.IsMatch(vowelcheck, "[aeiou]", RegexOptions.IgnoreCase))
+                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "an "));
+                                else
+                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "a "));
+                            }
+                            break;
+                        case "eun_neun":
+                            {
+                                string vowelcheck = match.Groups["eun_neunval"].Value;
+                                char vowelchar = vowelcheck[0];
+                                if ((int)(vowelchar - '가') % 28 == 0)
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "는"));
+                                else
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "은"));
+                            }
+                            break;
+                        case "eul_leul":
+                            {
+                                string vowelcheck = match.Groups["eul_leulval"].Value;
+                                char vowelchar = vowelcheck[0];
+                                if ((int)(vowelchar - '가') % 28 == 0)
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "를"));
+                                else
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "을"));
+                            }
+                            break;
+                        case "i_ga":
+                            {
+                                string vowelcheck = match.Groups["i_gaval"].Value;
+                                char vowelchar = vowelcheck[0];
+                                if ((int)(vowelchar - '가') % 28 == 0)
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "가"));
+                                else
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
+                            }
+                            break;
+                        case "wa_gwa":
+                            {
+                                string vowelcheck = match.Groups["wa_gwaval"].Value;
+                                char vowelchar = vowelcheck[0];
+                                if ((int)(vowelchar - '가') % 28 == 0)
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "과"));
+                                else
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "와"));
+                            }
+                            break;
+                        case "eu_lo":
+                            {
+                                string vowelcheck = match.Groups["eu_loval"].Value;
+                                char vowelchar = vowelcheck[0];
+                                if ((int)(vowelchar - '가') % 28 == 0)
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "로"));
+                                else
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "으"));
+                            }
+                            break;
+                        case "i_lamyeon":
+                            {
+                                string vowelcheck = match.Groups["i_lamyeonval"].Value;
+                                char vowelchar = vowelcheck[0];
+                                if ((int)(vowelchar - '가') % 28 == 0)
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
+                                else
+                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            int reIdx = reInserts.Count - 1;
+            for (int ii = replacements.Count - 1; ii >= 0; ii--)
+            {
+                while (reIdx > -1)
+                {
+                    if (reInserts[reIdx].Item1 < replacements[ii].Item1 + replacements[ii].Item2)
+                        break;
+
+                    output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].Item2);
+                    reIdx--;
+                }
+
+                output = output.Remove(replacements[ii].Item1, replacements[ii].Item2);
+                output = output.Insert(replacements[ii].Item1, replacements[ii].Item3);
+            }
+
+            while (reIdx > -1)
+            {
+                output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].Item2);
+                reIdx--;
+            }
+
+            return output;
+        }
+
         public static string FormatKey(string key, params object[] args)
         {
             try
@@ -200,7 +335,7 @@ namespace RogueEssence
                 for (int ii = 0; ii < Strings.Count; ii++)
                 {
                     if (Text.Strings[ii].TryGetValue(key, out text))
-                        return String.Format(Regex.Unescape(text), args);
+                        return FormatGrammar(Regex.Unescape(text), args);
                 }
                 throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
             }
@@ -254,9 +389,9 @@ namespace RogueEssence
                 if (ii > 0)
                 {
                     if (input.Length > 2)
-                        totalString.Append(", ");
+                        totalString.Append("ADD_SEPARATOR");
                     else if (ii == input.Length - 1)
-                        totalString.Append(Text.FormatKey("ADD_END") + " ");
+                        totalString.Append(Text.FormatKey("ADD_END"));
                 }
                 totalString.Append(input[ii]);
             }
@@ -292,6 +427,33 @@ namespace RogueEssence
             //then go through all mods of the default language
             foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
                 strings.Add(LoadStringResx(path));
+        }
+
+        public static string GetLanguagedPath(string basePath, string cultureCode)
+        {
+            if (String.IsNullOrEmpty(cultureCode))
+                return basePath;
+
+            string dir = Path.GetDirectoryName(basePath);
+            string noExt = Path.GetFileNameWithoutExtension(basePath);
+            string ext = Path.GetExtension(basePath);
+            return Path.Join(dir, noExt + "." + cultureCode + ext);
+        }
+
+        public static string ModLangPath(string basePath)
+        {
+            string cultureCode = Culture.Name.ToLower();
+            string langPath = GetLanguagedPath(basePath, cultureCode);
+            if (File.Exists(langPath) || Directory.Exists(langPath))
+                return langPath;
+            foreach (string fallback in LangNames[cultureCode].Fallbacks)
+            {
+                langPath = GetLanguagedPath(basePath, cultureCode);
+                if (File.Exists(langPath) || Directory.Exists(langPath))
+                    return langPath;
+            }
+
+            return basePath;
         }
 
         public static string Sanitize(string input)
@@ -451,7 +613,7 @@ namespace RogueEssence
             List<string> enumStrings = new List<string>();
             foreach (T t in Enums)
                 enumStrings.Add(t.ToLocal());
-            return String.Format(Key.ToLocal(), enumStrings.ToArray());
+            return Text.FormatGrammar(Key.ToLocal(), enumStrings.ToArray());
         }
     }
 
@@ -487,7 +649,7 @@ namespace RogueEssence
             object[] args = new object[Args.Count];
             for (int ii = 0; ii < args.Length; ii++)
                 args[ii] = Args[ii].ToLocal();
-            return String.Format(Key.ToLocal(), args);
+            return Text.FormatGrammar(Key.ToLocal(), args);
         }
     }
 
@@ -518,17 +680,17 @@ namespace RogueEssence
         }
         public LocalText(LocalText other, string[] args)
         {
-            DefaultText = String.Format(other.DefaultText, args);
+            DefaultText = Text.FormatGrammar(other.DefaultText, args);
             LocalTexts = new Dictionary<string, string>();
             foreach (string key in other.LocalTexts.Keys)
-                LocalTexts.Add(key, String.Format(other.LocalTexts[key], args));
+                LocalTexts.Add(key, Text.FormatGrammar(other.LocalTexts[key], args));
         }
         public LocalText(LocalText other, LocalText[] args)
         {
             string[] defaultArgs = new string[args.Length];
             for (int ii = 0; ii < args.Length; ii++)
                 defaultArgs[ii] = args[ii].DefaultText;
-            DefaultText = String.Format(other.DefaultText, defaultArgs);
+            DefaultText = Text.FormatGrammar(other.DefaultText, defaultArgs);
             LocalTexts = new Dictionary<string, string>();
             foreach (string key in other.LocalTexts.Keys)
             {
@@ -540,7 +702,7 @@ namespace RogueEssence
                     else//if there is no translation for this string argument, fall back on default text.
                         localArgs[ii] = args[ii].DefaultText;
                 }
-                LocalTexts.Add(key, String.Format(other.LocalTexts[key], localArgs));
+                LocalTexts.Add(key, Text.FormatGrammar(other.LocalTexts[key], localArgs));
             }
         }
         public static LocalText FormatLocalText(LocalText format, params string[] args)

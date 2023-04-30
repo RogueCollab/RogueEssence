@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
 using Avalonia.Data.Converters;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -67,6 +68,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
+        private Window parent;
+
 
         public delegate void EditElementOp(int index, object element);
         public delegate void ElementOp(int index, object element, EditElementOp op);
@@ -77,9 +80,12 @@ namespace RogueEssence.Dev.ViewModels
         public bool Index1;
         public int AddIndex { get { return Index1 ? 1 : 0; } }
 
-        public CollectionBoxViewModel(StringConv conv)
+        public bool ConfirmDelete;
+
+        public CollectionBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
+            this.parent = parent;
             Collection = new ObservableCollection<ListElement>();
             SelectedIndex = -1;
         }
@@ -110,6 +116,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
             Collection[index] = new ListElement(StringConv, AddIndex, index, element);
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
 
@@ -119,7 +126,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection.Insert(index, new ListElement(StringConv, AddIndex, index, element));
             for (int ii = index + 1; ii < Collection.Count; ii++)
                 Collection[ii].Key = ii;
-            SelectedIndex = -1;
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
 
@@ -145,10 +152,18 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem?.Invoke(index, element, InsertItem);
         }
 
-        private void btnDelete_Click()
+        private async void btnDelete_Click()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
+                    MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 int index = SelectedIndex;
                 Collection.RemoveAt(SelectedIndex);
                 for (int ii = index; ii < Collection.Count; ii++)

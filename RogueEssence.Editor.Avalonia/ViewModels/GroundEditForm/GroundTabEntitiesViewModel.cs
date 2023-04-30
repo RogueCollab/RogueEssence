@@ -19,6 +19,7 @@ namespace RogueEssence.Dev.ViewModels
             Layers = new EntityLayerBoxViewModel(DiagManager.Instance.DevEditor.GroundEditor.Edits);
             Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             EntBrowser = new EntityBrowserViewModel();
+            EntBrowser.PreviewChanged += EntBrowser_EntityChanged;
         }
 
         private EntEditMode entMode;
@@ -55,7 +56,11 @@ namespace RogueEssence.Dev.ViewModels
         private void EntModeChanged()
         {
             if (entMode == EntEditMode.SelectEntity)
+            {
                 EntBrowser.AllowEntTypes = false;
+                //set pending to null
+                GroundEditScene.Instance.EntityInProgress = null;
+            }
             else
             {
                 EntBrowser.AllowEntTypes = true;
@@ -64,7 +69,18 @@ namespace RogueEssence.Dev.ViewModels
                     EntBrowser.SelectEntity(GroundEditScene.Instance.SelectedEntity.Clone());
                     GroundEditScene.Instance.SelectedEntity = null;
                 }
+                EntBrowser_EntityChanged();
             }
+        }
+
+        public void TabbedIn()
+        {
+            EntBrowser_EntityChanged();
+        }
+
+        public void TabbedOut()
+        {
+            GroundEditScene.Instance.EntityInProgress = null;
         }
 
         public void ProcessUndo()
@@ -75,8 +91,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
-            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                return;
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
 
             Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
 
@@ -89,26 +104,28 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (GroundEditScene.Instance.EntityInProgress == null)
+                        GroundEditScene.Instance.EntityInProgress.Position = groundCoords;
+                        if (!GroundEditScene.Instance.PendingStroke)
                         {
-                            if (input.JustPressed(FrameInput.InputType.LeftMouse))
-                                PendEntity(groundCoords);
+                            if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
+                                GroundEditScene.Instance.PendingStroke = true;
                             else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
                                 RemoveEntityAt(groundCoords);
                         }
                         else
                         {
-                            GroundEditScene.Instance.EntityInProgress.Position = groundCoords;
                             if (input.JustReleased(FrameInput.InputType.LeftMouse))
+                            {
                                 PlaceEntity();
-                            else if (input.JustPressed(FrameInput.InputType.RightMouse))
-                                GroundEditScene.Instance.EntityInProgress = null;
+                                GroundEditScene.Instance.PendingStroke = false;
+                                PreviewEntity(groundCoords);
+                            }
                         }
                         break;
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                         {
                             SelectEntityAt(groundCoords);
                             dragDiff = groundCoords - EntBrowser.SelectedEntity.MapLoc;
@@ -156,7 +173,7 @@ namespace RogueEssence.Dev.ViewModels
                 ZoneManager.Instance.CurrentGround.RemoveSpawner((GroundSpawner)ent);
         }
 
-        public void PendEntity(Loc position)
+        public void PreviewEntity(Loc position)
         {
             GroundEntity placeableEntity = EntBrowser.CreateEntity();
             placeableEntity.Position = position;
@@ -165,9 +182,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void PlaceEntity()
         {
-            GroundEntity placeableEntity = GroundEditScene.Instance.EntityInProgress;
-            GroundEditScene.Instance.EntityInProgress = null;
-
+            GroundEntity placeableEntity = EntBrowser.CreateEntity();
+            placeableEntity.Position = GroundEditScene.Instance.EntityInProgress.Position;
             placeableEntity.EntName = ZoneManager.Instance.CurrentGround.FindNonConflictingName(placeableEntity.EntName);
             placeableEntity.ReloadEvents();
 
@@ -222,6 +238,12 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (EntMode == EntEditMode.SelectEntity)
                 EntBrowser.SelectEntity(null);
+        }
+
+        public void EntBrowser_EntityChanged()
+        {
+            if (entMode == EntEditMode.PlaceEntity)
+                PreviewEntity(Loc.Zero);
         }
 
     }

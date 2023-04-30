@@ -36,7 +36,7 @@ namespace RogueEssence.Dev
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
                 lbxValue.DataContext = vm;
-                lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+                lbxValue.SetListContextMenu(CreateContextMenu(control, type, vm));
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
@@ -52,12 +52,12 @@ namespace RogueEssence.Dev
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, false);
                 lbxValue.DataContext = vm;
-                lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+                lbxValue.SetListContextMenu(CreateContextMenu(control, type, vm));
                 control.Children.Add(lbxValue);
             }
         }
 
-        private ContextMenu createContextMenu(StackPanel control, Type type, CollectionBoxViewModel vm)
+        public static ContextMenu CreateContextMenu(StackPanel control, Type type, CollectionBoxViewModel vm)
         {
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), type, 0);
 
@@ -105,10 +105,15 @@ namespace RogueEssence.Dev
         {
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IList<>), type, 0);
 
-            CollectionBoxViewModel mv = new CollectionBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
-            mv.Index1 = index1;
+            CollectionBoxViewModel vm = new CollectionBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            vm.Index1 = index1;
+
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+
             //add lambda expression for editing a single element
-            mv.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
@@ -128,8 +133,8 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            mv.LoadFromList(member);
-            return mv;
+            vm.LoadFromList(member);
+            return vm;
         }
 
         public override IList SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)

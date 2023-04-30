@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueElements;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -53,9 +54,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
-        public SpawnListBoxViewModel(StringConv conv)
+        private Window parent;
+
+        public bool ConfirmDelete;
+
+        public SpawnListBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
+            this.parent = parent;
             Collection = new ObservableCollection<SpawnListElement>();
         }
 
@@ -114,24 +120,62 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void LoadFromTupleList(List<(object, double)> source)
+        {
+            Collection.Clear();
+
+            for (int ii = 0; ii < source.Count; ii++)
+            {
+                object obj = source[ii].Item1;
+                double rate = source[ii].Item2;
+                Collection.Add(new SpawnListElement(StringConv, (int)(rate * 1000000), rate, obj));
+            }
+        }
+
 
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
             Collection[index] = new SpawnListElement(StringConv, Collection[index].Weight, Collection[index].Chance, element);
+            CurrentElement = index;
         }
 
         private void insertItem(int index, object element)
         {
-            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
+            int newWeight = 10;
+
             int spawnTotal = 0;
             foreach (SpawnListElement curSpawn in Collection)
                 spawnTotal += curSpawn.Weight;
-            int newWeight = 10;
+
             spawnTotal += newWeight;
             foreach (SpawnListElement curSpawn in Collection)
                 curSpawn.Chance = (double)curSpawn.Weight / spawnTotal;
+
+            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             Collection.Insert(index, new SpawnListElement(StringConv, newWeight, (double)newWeight / spawnTotal, element));
+            CurrentElement = index;
+        }
+
+        public void InsertOnKey(int index, object element)
+        {
+            int newWeight = 10;
+            if (0 <= index && index < Collection.Count)
+            {
+                newWeight = Collection[index].Weight;
+            }
+
+            int spawnTotal = 0;
+            foreach (SpawnListElement curSpawn in Collection)
+                spawnTotal += curSpawn.Weight;
+
+            spawnTotal += newWeight;
+            foreach (SpawnListElement curSpawn in Collection)
+                curSpawn.Chance = (double)curSpawn.Weight / spawnTotal;
+
+            index = Math.Min(Math.Max(0, index), Collection.Count + 1);
+            Collection.Insert(index, new SpawnListElement(StringConv, newWeight, (double)newWeight / spawnTotal, element));
+            CurrentElement = index;
         }
 
         public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)
@@ -155,10 +199,20 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem?.Invoke(index, element, insertItem);
         }
 
-        private void btnDelete_Click()
+        private async void btnDelete_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
+            {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                    MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 Collection.RemoveAt(CurrentElement);
+            }
         }
 
         private void Switch(int a, int b)

@@ -11,12 +11,13 @@ namespace RogueEssence.Menu
     {
         private DialogueChoiceMenu dialogueChoices;
 
-        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice,
-            int cancelChoice)
-            : base(message, sound, centerH, centerV)
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, DialogueChoice[] choices, int defaultChoice, int cancelChoice, Loc menuLoc)
+            : base(message, sound, centerH, centerV, bounds)
         {
-            dialogueChoices = new DialogueChoiceMenu(choices, defaultChoice, cancelChoice, Bounds.Y);
+            dialogueChoices = new DialogueChoiceMenu(choices, defaultChoice, cancelChoice, menuLoc);
         }
+
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice, int cancelChoice) : this(message, sound, centerH, centerV, DialogueBox.DefaultBounds, choices, defaultChoice, cancelChoice, new Loc(-1, -1)) {}
 
         public override void ProcessTextDone(InputManager input)
         {
@@ -46,11 +47,13 @@ namespace RogueEssence.Menu
 
         public const int QUESTION_SPACE = 8;
 
+        public static Loc DefaultLoc => new Loc(-1);
+        
         public override bool CanMenu { get { return false; } }
         public override bool CanCancel { get { return cancelChoice > -1; } }
 
 
-        public DialogueChoiceMenu(DialogueChoice[] choices, int defaultChoice, int cancelChoice, int startY)
+        public DialogueChoiceMenu(DialogueChoice[] choices, int defaultChoice, int cancelChoice, Loc menuLoc)
         {
             MenuTextChoice[] menu_choices = new MenuTextChoice[choices.Length];
             results = new Action[choices.Length];
@@ -60,13 +63,15 @@ namespace RogueEssence.Menu
                 menu_choices[ii] = new MenuTextChoice(choices[ii].Choice, () => { choose(index); }, choices[ii].Enabled, choices[ii].Enabled ? Color.White : Color.Red);
                 results[ii] = choices[ii].Result;
             }
+            
             int choice_width = CalculateChoiceLength(menu_choices, 0);
-            Initialize(new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width, startY - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2) - QUESTION_SPACE),
-                choice_width, menu_choices, defaultChoice);
+            
+            Loc loc = menuLoc != DialogueChoiceMenu.DefaultLoc ? menuLoc : new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width, 188 - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2));
+            Initialize(loc, choice_width, menu_choices, defaultChoice);
 
             this.cancelChoice = cancelChoice;
         }
-
+        
         private void choose(int choice)
         {
             MenuManager.Instance.RemoveMenu();
@@ -74,7 +79,6 @@ namespace RogueEssence.Menu
             if (results[choice] != null)
                 results[choice]();
         }
-
         protected override void MenuPressed() { }
         protected override void ChoseMultiIndex(List<int> slots) { }
 

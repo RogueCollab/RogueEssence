@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             Name = header.Name;
             Namespace = header.Namespace;
+            Author = header.Author;
+            Description = header.Description;
             UUID = header.UUID.ToString().ToUpper();
             Version = header.Version.ToString();
 
@@ -25,7 +27,8 @@ namespace RogueEssence.Dev.ViewModels
                 ModTypes.Add(((PathMod.ModType)ii).ToLocal());
             ChosenModType = (int)header.ModType;
 
-            Relationships = new CollectionBoxViewModel(new StringConv(typeof(RelatedMod), new object[0]));
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            Relationships = new CollectionBoxViewModel(form, new StringConv(typeof(RelatedMod), new object[0]));
             Relationships.OnEditItem += Relationships_EditItem;
             Relationships.LoadFromList(header.Relationships);
         }
@@ -35,6 +38,20 @@ namespace RogueEssence.Dev.ViewModels
         {
             get => name;
             set => this.SetIfChanged(ref name, value);
+        }
+
+        private string author;
+        public string Author
+        {
+            get => author;
+            set => this.SetIfChanged(ref author, value);
+        }
+
+        private string description;
+        public string Description
+        {
+            get => description;
+            set => this.SetIfChanged(ref description, value);
         }
 
         private string editNamespace;

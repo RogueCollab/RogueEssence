@@ -50,7 +50,7 @@ namespace RogueEssence.LevelGen
                 if (connectionGrid[testLoc.X - fillRect.X][testLoc.Y - fillRect.Y])
                     return true;
 
-                if (map.RoomTerrain.TileEquivalent(map.GetTile(testLoc)))
+                if (!map.TileBlocked(testLoc))
                     return false;
 
                 return true;

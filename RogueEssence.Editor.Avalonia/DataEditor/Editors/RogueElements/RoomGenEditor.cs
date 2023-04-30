@@ -20,10 +20,9 @@ namespace RogueEssence.Dev
     {
         public override string GetString(ISizedRoomGen obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo widthInfo = type.GetProperty("Width");
-            PropertyInfo heightInfo = type.GetProperty("Height");
-            return string.Format("{0}: {1}x{2}", obj.GetType().Name,
+            PropertyInfo widthInfo = typeof(ISizedRoomGen).GetProperty(nameof(obj.Width));
+            PropertyInfo heightInfo = typeof(ISizedRoomGen).GetProperty(nameof(obj.Height));
+            return string.Format("{0}: {1}x{2}", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.Width, widthInfo.GetMemberInfoType(), widthInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.Height, heightInfo.GetMemberInfoType(), heightInfo.GetCustomAttributes(false)));
         }
@@ -33,13 +32,12 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IRoomGenCross obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            PropertyInfo majorWidthInfo = type.GetProperty("MajorWidth");
-            PropertyInfo minorHeightInfo = type.GetProperty("MinorHeight");
-            PropertyInfo minorWidthInfo = type.GetProperty("MinorWidth");
-            PropertyInfo majorHeightInfo = type.GetProperty("MajorHeight");
+            PropertyInfo majorWidthInfo = typeof(IRoomGenCross).GetProperty(nameof(obj.MajorWidth));
+            PropertyInfo minorHeightInfo = typeof(IRoomGenCross).GetProperty(nameof(obj.MinorHeight));
+            PropertyInfo minorWidthInfo = typeof(IRoomGenCross).GetProperty(nameof(obj.MinorWidth));
+            PropertyInfo majorHeightInfo = typeof(IRoomGenCross).GetProperty(nameof(obj.MajorHeight));
 
-            return string.Format("{0}: {1}x{2}+{3}x{4}", obj.GetType().Name,
+            return string.Format("{0}: {1}x{2}+{3}x{4}", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.MajorWidth, majorWidthInfo.GetMemberInfoType(), majorWidthInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.MinorHeight, minorHeightInfo.GetMemberInfoType(), minorHeightInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.MinorWidth, minorWidthInfo.GetMemberInfoType(), minorWidthInfo.GetCustomAttributes(false)),

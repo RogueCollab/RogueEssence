@@ -98,6 +98,7 @@ namespace RogueEssence.Dungeon
             foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 character.Tactic.Initialize(character);
 
+            SingleCharContext context = new SingleCharContext(null);
             //map starts for map statuses
             EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -126,11 +127,22 @@ namespace RogueEssence.Dungeon
                 }
             };
             foreach (EventQueueElement<SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
+            {
+                context.User = effect.TargetChar;
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                //normally, we would check for cancel, but I'm not sure if it's ideal to stop it for everyone here.
+            }
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnEnter());
 
             LogMsg(Text.DIVIDER_STR);
+
+            foreach (Character standChar in ZoneManager.Instance.CurrentMap.DisplacedChars)
+            {
+                if (!standChar.Dead && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
+                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+            }
+            ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
         }
 
 
@@ -179,6 +191,9 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
 
+            //compute and update the current session time.  the value in the gameprogress wont matter, but we are just using this function to get the result value.
+            DataManager.Instance.Save.EndSession();
+            DataManager.Instance.SaveSessionTime(DataManager.Instance.Save.SessionTime);
             //TODO: resolve all Nonserialized variables (such as in mapgen, AI) being inconsistent before enabling this.
             //DataManager.Instance.LogQuicksave();
             DataManager.Instance.SuspendPlay();
@@ -823,7 +838,9 @@ namespace RogueEssence.Dungeon
                 return 12;
 
             Loc seen = Character.GetSightDims();
-            Rect sightBounds = new Rect(FocusedCharacter.CharLoc - seen, seen * 2 + new Loc(1));
+            Rect sightBounds = new Rect(FocusedCharacter.CharLoc - seen, seen * 2 + Loc.One);
+            sightBounds = ZoneManager.Instance.CurrentMap.GetClampedSight(sightBounds);
+
             if (!ZoneManager.Instance.CurrentMap.InBounds(sightBounds, movingChar.CharLoc) && !ZoneManager.Instance.CurrentMap.InBounds(sightBounds, destTile))
                 return 0;
 
@@ -983,6 +1000,7 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> ProcessMapTurnEnd()
         {
+            SingleCharContext context = new SingleCharContext(null);
             //turn ends for all
             EventEnqueueFunction<SingleCharEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<SingleCharEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
@@ -1009,7 +1027,11 @@ namespace RogueEssence.Dungeon
                 }
             };
             foreach (EventQueueElement<SingleCharEvent> effect in IterateEvents<SingleCharEvent>(function))
-                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, effect.TargetChar));
+            {
+                context.User = effect.TargetChar;
+                yield return CoroutineManager.Instance.StartCoroutine(effect.Event.Apply(effect.Owner, effect.OwnerChar, context));
+                //normally, we would check for cancel, but I'm not sure if it's ideal to stop it for everyone here.
+            }
 
 
             ZoneManager.Instance.CurrentMap.MapTurns++;
@@ -1030,8 +1052,9 @@ namespace RogueEssence.Dungeon
         {
             if (!character.Dead)
             {
+                SingleCharContext context = new SingleCharContext(character);
                 //process turn start (assume live characters)
-                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart());
+                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart(context));
             }
 
         }

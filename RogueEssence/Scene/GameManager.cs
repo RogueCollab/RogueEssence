@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using RogueElements;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
@@ -51,6 +52,7 @@ namespace RogueEssence
         public InputManager InputManager;
 
         public BaseScene CurrentScene;
+        public TextPopUp TextPopUp;
 
         public IEnumerator<YieldInstruction> SceneOutcome;
 
@@ -97,6 +99,7 @@ namespace RogueEssence
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
+            TextPopUp = new TextPopUp();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
 
@@ -266,6 +269,34 @@ namespace RogueEssence
                     MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
                 }
                 NextSong = newBGM;
+                onMusicChange(newBGM);
+            }
+        }
+
+        private void onMusicChange(string newBGM)
+        {
+            if (NextSong.Length > 0)
+            {
+                string name = "";
+                string originName = "";
+                string origin = "";
+                string artist = "";
+                string spoiler = "";
+                string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+                if (File.Exists(fileName))
+                {
+                    LoopedSong song = new LoopedSong(fileName);
+                    name = song.Name;
+                    if (song.Tags.ContainsKey("TITLE"))
+                        originName = song.Tags["TITLE"];
+                    if (song.Tags.ContainsKey("ALBUM"))
+                        origin = song.Tags["ALBUM"];
+                    if (song.Tags.ContainsKey("ARTIST"))
+                        artist = song.Tags["ARTIST"];
+                    if (song.Tags.ContainsKey("SPOILER"))
+                        spoiler = song.Tags["SPOILER"];
+                    LuaEngine.Instance.OnMusicChange(name, originName, origin, artist, spoiler);
+                }
             }
         }
 
@@ -474,6 +505,7 @@ namespace RogueEssence
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";
             Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
+            GraphicsManager.ReloadStatic();
             reInit();
             TitleScene.TitleMenuSaveState = null;
             //clean up and reload all caches
@@ -571,6 +603,13 @@ namespace RogueEssence
                 yield break;
             }
 
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Zone].ContainsKey(destId.ID))
+                throw new ArgumentException(String.Format("Invalid Zone Name: {0}", destId.ID), nameof(destId.ID));
+
+            ZoneEntrySummary summary = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(destId.ID);
+            if (!summary.SegLocValid(destId.StructID))
+                throw new ArgumentException(String.Format("Invalid Segment ID: {0}", destId.StructID), nameof(destId));
+
             bool newGround = (destId.StructID.Segment <= -1);
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
             bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
@@ -636,17 +675,6 @@ namespace RogueEssence
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
-                // title drop if faded, but do not fade directly
-                if (IsFaded())
-                {
-                    if (ZoneManager.Instance.CurrentMap.DropTitle)
-                    {
-                        yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(true, ZoneManager.Instance.CurrentMap.Name.ToLocal()));
-                        yield return new WaitForFrames(30);
-                        yield return CoroutineManager.Instance.StartCoroutine(FadeTitle(false, ""));
-                    }
-                }
-
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());
             }
             DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
@@ -654,12 +682,14 @@ namespace RogueEssence
 
 
 
-
         /// <summary>
         /// Enter a ground map by name, and makes the player spawn at the specified named marker
         /// </summary>
+        /// <param name="zone"></param>
         /// <param name="mapname"></param>
         /// <param name="entrypoint"></param>
+        /// <param name="preserveMusic"></param>
+        /// <returns></returns>
         public IEnumerator<YieldInstruction> MoveToGround(string zone, string mapname, string entrypoint, bool preserveMusic)
         {
             //if we're in a test map, return to editor
@@ -668,6 +698,13 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
                 yield break;
             }
+
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Zone].ContainsKey(zone))
+                throw new ArgumentException(String.Format("Invalid Zone Name: {0}", zone), nameof(zone));
+
+            ZoneEntrySummary summary = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zone);
+            if (!summary.GroundValid(mapname))
+                throw new ArgumentException(String.Format("Invalid Ground Map Name: {0}", mapname), nameof(mapname));
 
             bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
@@ -703,6 +740,7 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
             //no fade; the script handles that itself
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
+            DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
         }
 
 
@@ -757,7 +795,7 @@ namespace RogueEssence
         {
             if (ZoneManager.Instance.InDevZone)
             {
-                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
+                SceneOutcome = ReturnToEditor();
                 yield break;
             }
 
@@ -810,7 +848,8 @@ namespace RogueEssence
                     else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
                     {
                         //resuming a game that was just rescued
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Loading = DataManager.LoadMode.None;
                         SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
@@ -850,7 +889,8 @@ namespace RogueEssence
                         else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                         {
                             //the game accepts loading into a file that has been downed, or passed its section with nothing else
-                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                            DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                             DataManager.Instance.CurrentReplay = null;
                             //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
 
@@ -890,6 +930,9 @@ namespace RogueEssence
                 //trigger the end-segment script
                 if (rescue)
                 {
+                    //compute and update the current session time.  the value in the gameprogress wont matter, but we are just using this function to get the result value.
+                    DataManager.Instance.Save.EndSession();
+                    DataManager.Instance.SaveSessionTime(DataManager.Instance.Save.SessionTime);
                     DataManager.Instance.SuspendPlay();
                     GameState state = DataManager.Instance.LoadMainGameState(false);
                     SOSMail awaiting = new SOSMail(DataManager.Instance.Save, new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID), ZoneManager.Instance.CurrentMap.Name, dateDefeated, DataManager.Instance.Save.GetModVersion());
@@ -941,6 +984,13 @@ namespace RogueEssence
             yield break;
         }
 
+        public IEnumerator<YieldInstruction> RestartToRogue(RogueConfig config)
+        {
+            cleanup();
+            reInit();
+            yield return CoroutineManager.Instance.StartCoroutine(RogueProgress.StartRogue(config));
+        }
+
         public void MoveToScene(BaseScene scene)
         {
             //need to transfer player data
@@ -956,7 +1006,7 @@ namespace RogueEssence
                 NewGamePlus(seed);
             else
                 DataManager.Instance.Save.Rand = new ReRandom(seed);
-            DataManager.Instance.Save.FullRestore();
+            DataManager.Instance.Save.FullStateRestore();
         }
 
         public IEnumerator<YieldInstruction> DebugWarp(ZoneLoc dest, ulong seed)
@@ -1012,7 +1062,7 @@ namespace RogueEssence
             DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
             DataManager.Instance.Save.ActiveTeam.SetRank(DataManager.Instance.DefaultRank);
             DataManager.Instance.Save.ActiveTeam.Name = "Debug";
-            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), DataManager.Instance.StartLevel, "", 0));
+            DataManager.Instance.Save.ActiveTeam.Players.Add(DataManager.Instance.Save.ActiveTeam.CreatePlayer(DataManager.Instance.Save.Rand, new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), DataManager.Instance.Start.Level, "", 0));
             DataManager.Instance.Save.UpdateTeamProfile(true);
         }
 
@@ -1243,6 +1293,7 @@ namespace RogueEssence
             thisFrameErrored = false;
 
             MenuManager.Instance.ProcessActions(elapsedTime);
+            TextPopUp.Update(elapsedTime);
 
             //keep border flash off by default
             MenuBase.BorderFlash = 0;
@@ -1295,10 +1346,10 @@ namespace RogueEssence
             }
 
             MenuManager.Instance.DrawMenus(spriteBatch);
+            TextPopUp.Draw(spriteBatch);
 
             if (totalErrorCount > 0)
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth - 2, GraphicsManager.ScreenHeight - 2, String.Format("{0} ERRORS", totalErrorCount), null, DirV.Down, DirH.Right, Color.Red);
-
             if (ShowDebug)
             {
                 spriteBatch.End();

@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         private const int SCROLL_SPEED = 2;
 
         protected const int CURSOR_FLASH_TIME = 24;
-        public const int TEXT_TIME = 1;
+        
         public const int SIDE_BUFFER = 8;
         public const int TEXT_HEIGHT = 16;
         public const int FADE_TIME = 60;
@@ -26,12 +26,15 @@ namespace RogueEssence.Menu
         public List<List<TextScript>> ScriptCalls;
         protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
 
+        public List<List<TextSpeed>> Speeds;
+        protected List<TextSpeed> CurrentSpeed { get { return Speeds[curTextIndex]; } }
         //Dialogue Text needs to be able to set character index accurately
         protected List<DialogueText> Texts;
         private int curTextIndex;
         private bool scrolling;
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
-        public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count - 1; } }
+        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentSpeed.Count == 0 && CurrentScript.Count == 0; } }
+        public bool Finished { get { return CurrentBoxFinished && curTextIndex == Texts.Count - 1; } }
 
         public bool UseFade;
         public int HoldTime;
@@ -44,6 +47,7 @@ namespace RogueEssence.Menu
         private FrameTick CurrentScrollTime;
         private Action action;
         private string message;
+        private double currSpeed;
 
         public virtual bool IsCheckpoint { get { return false; } }
         public bool Inactive { get; set; }
@@ -58,7 +62,7 @@ namespace RogueEssence.Menu
         AlphaTestEffect alphaTest;
 
 
-        public TitleDialog(string msg, bool fadeIn, int holdTime, Action action)
+        public TitleDialog(string msg, bool fadeIn, int holdTime, Rect bounds, Action action)
         {
             s1 = new DepthStencilState
             {
@@ -96,9 +100,10 @@ namespace RogueEssence.Menu
             //and colors, which will get parsed by the text renderer
 
             Pauses = new List<List<TextPause>>();
+            Speeds = new List<List<TextSpeed>>();
             ScriptCalls = new List<List<TextScript>>();
             message = msg;
-
+            Bounds = bounds;
             Texts = new List<DialogueText>();
             updateMessage();
         }
@@ -111,6 +116,7 @@ namespace RogueEssence.Menu
             Texts.Clear();
             curTextIndex = 0;
             Pauses.Clear();
+            Speeds.Clear();
             ScriptCalls.Clear();
 
             string msg = message;
@@ -124,6 +130,8 @@ namespace RogueEssence.Menu
                 List<TextPause> pauses = new List<TextPause>();
                 List<TextScript> scripts = new List<TextScript>();
                 List<IntRange> tagRanges = new List<IntRange>();
+                List<TextSpeed> speeds = new List<TextSpeed>();
+                
                 int lag = 0;
                 MatchCollection matches = Text.MsgTags.Matches(scrolls[nn]);
                 foreach (Match match in matches)
@@ -156,6 +164,17 @@ namespace RogueEssence.Menu
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
+                            case "speed":
+                                {
+                                    TextSpeed speed = new TextSpeed();
+                                    speed.LetterIndex = match.Index - lag;
+                                    double param;
+                                    if (Double.TryParse(match.Groups["speedval"].Value, out param))
+                                        speed.Speed = param;
+                                    speeds.Add(speed);
+                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                }
+                                break;
                             case "colorstart":
                             case "colorend":
                                 break;
@@ -171,7 +190,12 @@ namespace RogueEssence.Menu
                 Pauses.Add(pauses);
                 ScriptCalls.Add(scripts);
 
-                DialogueText text = new DialogueText("", new Rect(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
+                Speeds.Add(speeds);
+                int startX = Bounds.X == -1 ? 0 : Bounds.X;
+                int width = Bounds.Width <= -1 ? GraphicsManager.ScreenWidth - startX : Bounds.Width;
+
+
+                DialogueText text = new DialogueText("", new Rect(startX, 0, width, GraphicsManager.ScreenHeight), TEXT_HEIGHT, true, true, UseFade ? -1 : 0);
 
                 text.SetAndFormatText(scrolls[nn]);
                 Texts.Add(text);
@@ -181,7 +205,14 @@ namespace RogueEssence.Menu
                 MaxLines = Math.Max(MaxLines, text.GetLineCount());
             }
             maxSize += new Loc(8 + 4);//Magic number plus VERT_BUFFER
-            Bounds = new Rect((GraphicsManager.ScreenWidth - maxSize.X) / 2, (GraphicsManager.ScreenHeight - maxSize.Y) / 2, maxSize.X, maxSize.Y);
+            
+            int boundX = Bounds.X == -1 ? (GraphicsManager.ScreenWidth - maxSize.X) / 2 : Bounds.X;
+            int boundY = Bounds.Y == -1 ? (GraphicsManager.ScreenHeight - maxSize.Y) / 2 : Bounds.Y;
+            int boundWidth = (Bounds.Width <= -1 ? maxSize.X : Bounds.Width) + 2; // Width buffer
+            int boundHeight = Bounds.Height <= -1 ? maxSize.Y : Bounds.Height;
+            
+            
+            Bounds = new Rect(boundX, boundY, boundWidth, boundHeight);
             foreach (DialogueText text in Texts)
                 text.Rect = Bounds;
         }
@@ -206,8 +237,7 @@ namespace RogueEssence.Menu
             else
             {
                 TotalTextTime += elapsedTime;
-                if (!CurrentText.Finished)
-                    CurrentTextTime += elapsedTime;
+                CurrentTextTime += elapsedTime;
                 if (scrolling)
                     CurrentScrollTime += elapsedTime;
             }
@@ -230,7 +260,7 @@ namespace RogueEssence.Menu
                 else if (fadingIn && CurrentFadeTime >= FrameTick.FromFrames(FADE_TIME))
                     fading = false;
             }
-            else if (!CurrentText.Finished)
+            else if (!CurrentBoxFinished)
             {
                 TextScript textScript = getCurrentTextScript();
                 if (textScript != null)
@@ -238,28 +268,50 @@ namespace RogueEssence.Menu
                     //TODO: execute callback and wait for its completion
                     CurrentScript.RemoveAt(0);
                 }
+                
+                TextSpeed textSpeed = getCurrentTextSpeed();
+                if (textSpeed != null)
+                {
+                    currSpeed = textSpeed.Speed;
+                    CurrentSpeed.RemoveAt(0);
+                }
 
                 TextPause textPause = getCurrentTextPause();
-                bool continueText;
                 if (textPause != null)
                 {
+                    bool continueText;
                     if (textPause.Time > 0)
                         continueText = CurrentTextTime >= textPause.Time;
                     else
                         continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
                             || input.JustPressed(FrameInput.InputType.LeftMouse));
-                }
-                else
-                    continueText = CurrentTextTime >= FrameTick.FromFrames(TEXT_TIME);
 
-                if (continueText)
-                {
-                    CurrentTextTime = new FrameTick();
-                    CurrentText.CurrentCharIndex++;
-
-                    if (textPause != null)//remove last text pause
+                    if (!continueText)
+                        return;
+                    else
+                    {
                         CurrentPause.RemoveAt(0);
+                        CurrentTextTime = new FrameTick();
+                    }
                 }
+
+                double speed = currSpeed > 0 ? currSpeed : DialogueBox.TextSpeed;
+                FrameTick subTick = speed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / speed)) : FrameTick.FromFrames(1);
+                while (true)
+                {
+                    if (CurrentText.Finished || getCurrentTextScript() != null || getCurrentTextPause() != null)
+                    {
+                        CurrentTextTime = new FrameTick();
+                        break;
+                    }
+
+                    if (CurrentTextTime < subTick)
+                        break;
+                    CurrentTextTime -= subTick;
+                    CurrentText.CurrentCharIndex++;
+                }
+                if (CurrentText.Finished)
+                    CurrentTextTime = new FrameTick();
             }
             else if (curTextIndex < Texts.Count - 1)
             {
@@ -269,10 +321,13 @@ namespace RogueEssence.Menu
                     scrolling = true;
                 }
 
-                if (scrolling)
-                    CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
                 int scrollFrames = TEXT_HEIGHT * MaxLines / SCROLL_SPEED;
-                if (CurrentScrollTime >= FrameTick.FromFrames(scrollFrames))
+                if (CurrentScrollTime < FrameTick.FromFrames(scrollFrames))
+                {
+                    if (scrolling)
+                        CurrentText.Rect.Start -= new Loc(0, SCROLL_SPEED);
+                }
+                else
                 {
                     curTextIndex++;
                     CurrentScrollTime = new FrameTick();
@@ -353,9 +408,10 @@ namespace RogueEssence.Menu
                 }
 
                 //draw down-tick
-                if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && CurrentText.Finished && (GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                if (HoldTime == -1 && CurrentFadeTime >= FADE_TIME && CurrentBoxFinished)
                 {
-                    GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - 5, Bounds.End.Y - 6), 1, 0);
+                    if ((GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0)
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.Center.X - 5, Bounds.End.Y - 6), 1, 0);
                 }
             }
 
@@ -368,17 +424,28 @@ namespace RogueEssence.Menu
         {
             if (CurrentPause.Count > 0)
             {
-                if (CurrentPause[0].LetterIndex == CurrentText.CurrentCharIndex)
+                if (CurrentText.CurrentCharIndex < 0 || CurrentPause[0].LetterIndex <= CurrentText.CurrentCharIndex)
                     return CurrentPause[0];
             }
             return null;
         }
+        
+        protected TextSpeed getCurrentTextSpeed()
+        {
+            if (CurrentSpeed.Count > 0)
+            {
+                if (CurrentText.CurrentCharIndex < 0 || CurrentSpeed[0].LetterIndex <= CurrentText.CurrentCharIndex)
+                    return CurrentSpeed[0];
+            }
+            return null;
+        }
 
+        
         private TextScript getCurrentTextScript()
         {
             if (CurrentScript.Count > 0)
             {
-                if (CurrentScript[0].LetterIndex == CurrentText.CurrentCharIndex)
+                if (CurrentText.CurrentCharIndex < 0 || CurrentScript[0].LetterIndex <= CurrentText.CurrentCharIndex)
                     return CurrentScript[0];
             }
             return null;

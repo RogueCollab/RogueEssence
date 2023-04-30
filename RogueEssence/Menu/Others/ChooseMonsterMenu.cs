@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         private const int SLOTS_PER_PAGE = 12;
 
         public SpeakerPortrait Portrait;
-        private readonly List<(MonsterID mon, string name)> choices;
+        private readonly List<StartChar> choices;
         private readonly OnChooseSlot chooseAction;
         private readonly Action onCancel;
         private readonly bool canMenu;
@@ -22,7 +22,7 @@ namespace RogueEssence.Menu
         public override bool CanMenu => canMenu;
         public override bool CanCancel => onCancel is not null;
 
-        public ChooseMonsterMenu(string title, List<(MonsterID mon, string name)> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true)
+        public ChooseMonsterMenu(string title, List<StartChar> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true)
         {
             this.chooseAction = chooseAction;
             this.onCancel = onCancel;
@@ -30,10 +30,13 @@ namespace RogueEssence.Menu
             this.choices = choices;
             List<MenuChoice> flatChoices = choices.Select((choice, i) =>
             {
-                MonsterID monster = choice.mon;
-                string name = choice.name;
+                MonsterID monster = choice.ID;
+                string name = choice.Name;
                 if (string.IsNullOrEmpty(name))
-                    name = DataManager.Instance.GetMonster(monster.Species).GetColoredName();
+                {
+                    EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monster.Species);
+                    name = summary.GetColoredName();
+                }
                 int index = i;
                 return (MenuChoice)new MenuTextChoice(name, () => { this.chooseAction(index); });
             }).ToList();
@@ -63,7 +66,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Portrait.Speaker = choices[CurrentChoiceTotal].mon;
+            Portrait.Speaker = choices[CurrentChoiceTotal].ID;
             base.ChoiceChanged();
         }
 

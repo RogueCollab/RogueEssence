@@ -13,6 +13,7 @@ using RogueEssence.Dev.ViewModels;
 using Avalonia.Interactivity;
 using RogueEssence.LevelGen;
 using Avalonia;
+using System.Reflection;
 
 namespace RogueEssence.Dev
 {
@@ -20,6 +21,19 @@ namespace RogueEssence.Dev
     // from Dictionary<string, CategorySpawn<InvItem>> to ICategoryZoneSpawn.  This way it can catch other spawn methods
     public class CategorySpawnEditor : Editor<Dictionary<string, CategorySpawn<InvItem>>>
     {
+        /// <summary>
+        /// Default display behavior of whether to treat 0s as 1s
+        /// </summary>
+        public bool Index1;
+
+
+        public CategorySpawnEditor(bool index1)
+        {
+            Index1 = index1;
+        }
+
+
+
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
@@ -38,6 +52,11 @@ namespace RogueEssence.Dev
                 lbxValue.MaxHeight = 180;
 
             DictionaryBoxViewModel vm = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+
+            CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+            if (confirmAtt != null)
+                vm.ConfirmDelete = confirmAtt.ConfirmDelete;
+
             lbxValue.DataContext = vm;
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
@@ -102,6 +121,7 @@ namespace RogueEssence.Dev
             nudValueTestFloor.Margin = new Thickness(4, 4, 0, 0);
             nudValueTestFloor.Minimum = Int32.MinValue;
             nudValueTestFloor.Maximum = Int32.MaxValue;
+            nudValueTestFloor.Value = Index1 ? 1 : 0;
             innerPanel.Children.Add(nudValueTestFloor);
             nudValueTestFloor.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -112,6 +132,8 @@ namespace RogueEssence.Dev
             btnTest.Click += (object sender, RoutedEventArgs e) =>
             {
                 int floor = (int)nudValueTestFloor.Value;
+                if (Index1)
+                    floor--;
                 Dictionary<string, CategorySpawn<InvItem>> curSave = (Dictionary<string, CategorySpawn<InvItem>>)vm.GetDict(type);
                 SpawnDict<string, SpawnList<InvItem>> spawns = new SpawnDict<string, SpawnList<InvItem>>();
                 //contains all LISTS that intersect the current ID
@@ -125,24 +147,29 @@ namespace RogueEssence.Dev
                         spawns.Add(key, slicedList, curSave[key].SpawnRates[floor]);
                 }
 
-                SpawnList<InvItem> flatSpawns = CategorySpawnHelper.CollapseSpawnDict<string, InvItem>(spawns);
+                List<(object, double)> flatSpawns = CategorySpawnHelper.CollapseSpawnDict<string, InvItem>(spawns);
 
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = "Spawn Summary";
                 StackPanel viewPanel = frmData.ControlPanel;
 
                 SpawnListViewBox lbxValue = new SpawnListViewBox();
-                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+
+                CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
+                if (confirmAtt != null)
+                    mv.ConfirmDelete = confirmAtt.ConfirmDelete;
+
                 lbxValue.DataContext = mv;
                 lbxValue.MaxHeight = 400;
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
-                mv.LoadFromList(flatSpawns);
+                mv.LoadFromTupleList(flatSpawns);
                 viewPanel.Children.Add(lbxValue);
 
                 frmData.SetViewOnly();
 
-                frmData.RegisterChild(frmData);
+                control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
             btnTest.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
@@ -243,6 +270,11 @@ namespace RogueEssence.Dev
             CategorySpawnBox lbxValue = (CategorySpawnBox)control.Children[controlIndex];
             CategorySpawnBoxViewModel mv = (CategorySpawnBoxViewModel)lbxValue.DataContext;
             return (SpawnDict<string, SpawnList<InvItem>>)mv.GetDict(type);
+        }
+
+        public override string GetString(SpawnDict<string, SpawnList<InvItem>> obj, Type type, object[] attributes)
+        {
+            return string.Format("{0}[{1}]", obj.GetType().GetFormattedTypeName(), obj.Count);
         }
     }
 }

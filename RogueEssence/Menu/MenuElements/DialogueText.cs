@@ -193,23 +193,33 @@ namespace RogueEssence.Menu
         public Loc GetTextProgress()
         {
             int curLineIndex = 0;
-            int curLineStart = 0;
-            foreach (string line in fullLines)
+            int curLineProgress = 0;
+            if (CurrentCharIndex == -1)
             {
-                if (CurrentCharIndex == -1 || curLineStart + line.Length < CurrentCharIndex)
-                {
-                    curLineStart += line.Length;
-                    curLineIndex++;
-                }
-                else
-                    break;
+                curLineIndex = fullLines.Length - 1;
+                curLineProgress = fullLines[fullLines.Length - 1].Length;
             }
-            int curLineProgress = CurrentCharIndex - curLineStart;
+            else
+            {
+                int curLineStart = 0;
+                foreach (string line in fullLines)
+                {
+                    if (CurrentCharIndex == -1 || curLineStart + line.Length < CurrentCharIndex)
+                    {
+                        curLineStart += line.Length;
+                        curLineIndex++;
+                    }
+                    else
+                        break;
+                }
+                curLineProgress = CurrentCharIndex - curLineStart;
+            }
+
             string substr = fullLines[curLineIndex].Substring(0, curLineProgress);
             Loc loc = new Loc(GraphicsManager.TextFont.SubstringWidth(substr), LineHeight * curLineIndex);
             
             if (CenterH)
-                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(substr)) / 2, 0);
+                loc += new Loc((Rect.Width - GraphicsManager.TextFont.SubstringWidth(fullLines[curLineIndex])) / 2, 0);
             if (CenterV)
                 loc += new Loc(0, (Rect.Height - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight)) / 2);
             return loc;

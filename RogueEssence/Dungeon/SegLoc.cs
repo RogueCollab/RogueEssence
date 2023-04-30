@@ -24,5 +24,10 @@ namespace RogueEssence.Dungeon
         {
             return (ID > -1);
         }
+
+        public override string ToString()
+        {
+            return String.Format("{0} {1}", Segment, ID);
+        }
     }
 }

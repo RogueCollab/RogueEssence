@@ -27,6 +27,11 @@ namespace RogueEssence.Content
             return (Species > -1);
         }
 
+        public override string ToString()
+        {
+            return String.Format("{0} {1} {2} {3}", Species, Form, Skin, Gender);
+        }
+
         public override bool Equals(object obj)
         {
             return (obj is CharID) && Equals((CharID)obj);

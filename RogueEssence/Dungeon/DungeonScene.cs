@@ -9,6 +9,7 @@ using RogueEssence.Dev;
 using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dungeon
 {
@@ -62,7 +63,7 @@ namespace RogueEssence.Dungeon
             if (ZoneManager.Instance.CurrentMap.ViewCenter.HasValue)
                 focusedLoc = ZoneManager.Instance.CurrentMap.ViewCenter.Value;
             else if (FocusedCharacter != null)
-                focusedLoc = FocusedCharacter.MapLoc + new Loc(GraphicsManager.TileSize / 2, GraphicsManager.TileSize / 3) + ZoneManager.Instance.CurrentMap.ViewOffset;
+                focusedLoc = FocusedCharacter.MapLoc - new Loc(0, GraphicsManager.TileSize / 6) + ZoneManager.Instance.CurrentMap.ViewOffset;
             return focusedLoc;
         }
         
@@ -84,8 +85,9 @@ namespace RogueEssence.Dungeon
         LiveMsgLog LiveBattleLog;
         
         TeamModeNotice TeamModeNote;
-        
+
         HotkeyMenu[] ShownHotkeys;
+        PreviewSkillMenu Preview;
 
         public List<Loc> PendingTraps;
         
@@ -98,6 +100,12 @@ namespace RogueEssence.Dungeon
         
         public bool Turn;
         
+        private bool canPreTurn;
+        
+        public int CurrentPreviewMove = -1;
+
+        private List<HashSet<Loc>> movePreviews;
+
         public bool ShowActions;
         
         public MinimapState ShowMap;
@@ -123,6 +131,7 @@ namespace RogueEssence.Dungeon
             ShownHotkeys = new HotkeyMenu[CharData.MAX_SKILL_SLOTS];
             for (int ii = 0; ii < ShownHotkeys.Length; ii++)
                 ShownHotkeys[ii] = new HotkeyMenu(ii);
+            Preview = new PreviewSkillMenu();
 
             ShowMap = MinimapState.Clear;
             Loc drawSight = getDrawSight();
@@ -232,7 +241,7 @@ namespace RogueEssence.Dungeon
 
         private IEnumerator<YieldInstruction> skipFloor(Loc change)
         {
-            int newStruct = Math.Max(0, Math.Min(ZoneManager.Instance.CurrentMapID.Segment + change.X, ZoneManager.Instance.CurrentZone.Segments.Count));
+            int newStruct = Math.Max(0, Math.Min(ZoneManager.Instance.CurrentMapID.Segment + change.X, ZoneManager.Instance.CurrentZone.Segments.Count - 1));
             if ((newStruct != ZoneManager.Instance.CurrentMapID.Segment || change.X == 0))
             {
                 ZoneSegmentBase structure = ZoneManager.Instance.CurrentZone.Segments[newStruct] as ZoneSegmentBase;
@@ -253,8 +262,35 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.SE("Menu/Cancel");
         }
 
+        private int ProcessSkillInput(InputManager input, bool hold)
+        {
+            int skillIndex = -1;
+            if (input.JustPressed(FrameInput.InputType.Skill1) || hold && input[FrameInput.InputType.Skill1])
+                skillIndex = 0;
+            else if (input.JustPressed(FrameInput.InputType.Skill2) || hold && input[FrameInput.InputType.Skill2])
+                skillIndex = 1;
+            else if (input.JustPressed(FrameInput.InputType.Skill3) || hold && input[FrameInput.InputType.Skill3])
+                skillIndex = 2;
+            else if (input.JustPressed(FrameInput.InputType.Skill4) || hold && input[FrameInput.InputType.Skill4])
+                skillIndex = 3;
+            return skillIndex;
+        }
+
         public override IEnumerator<YieldInstruction> ProcessInput()
         {
+            if (IsGameOver())
+            {
+                bool allowRescue = true;
+                if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
+                    allowRescue = false;
+                if (ZoneManager.Instance.CurrentMap.NoRescue)
+                    allowRescue = false;
+                if (!DataManager.Instance.Save.AllowRescue)
+                    allowRescue = false;
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.EndSegment(allowRescue ? GameProgress.ResultType.Downed : GameProgress.ResultType.Failed));
+                yield break;
+            }
+
             if (!IsPlayerTurn())
             {
                 //the check events may have ended the scene
@@ -270,8 +306,7 @@ namespace RogueEssence.Dungeon
 
                 if (IsPlayerLeaderTurn() && PendingLeaderAction != null)
                 {
-                    if (DataManager.Instance.CurrentReplay == null)
-                        yield return CoroutineManager.Instance.StartCoroutine(PendingLeaderAction);
+                    yield return CoroutineManager.Instance.StartCoroutine(PendingLeaderAction);
                     PendingLeaderAction = null;
                 }
                 else if (PendingDevEvent != null)
@@ -291,18 +326,6 @@ namespace RogueEssence.Dungeon
 
                 if (!GameManager.Instance.FrameProcessed)
                     yield return new WaitForFrames(1);
-            }
-
-            if (IsGameOver())
-            {
-                bool allowRescue = true;
-                if (DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing)//no rescues allowed when in a rescue mission yourself
-                    allowRescue = false;
-                if (ZoneManager.Instance.CurrentMap.NoRescue)
-                    allowRescue = false;
-                if (!DataManager.Instance.Save.AllowRescue)
-                    allowRescue = false;
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.EndSegment(allowRescue ? GameProgress.ResultType.Downed : GameProgress.ResultType.Failed));
             }
         }
 
@@ -328,7 +351,7 @@ namespace RogueEssence.Dungeon
                         ProcessMinimapInput(input);
                     else if (DataManager.Instance.CurrentReplay.OpenMenu)
                     {
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                        yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnMenuButtonPressed());
                         DataManager.Instance.CurrentReplay.OpenMenu = false;
                     }
                     else if (input.JustPressed(FrameInput.InputType.Attack))
@@ -344,7 +367,8 @@ namespace RogueEssence.Dungeon
                         yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(DataManager.Instance.CurrentReplay.ReadCommand()));
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
                     {
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
                         DataManager.Instance.CurrentReplay = null;
                         DataManager.Instance.Save.UpdateOptions();
 
@@ -378,12 +402,17 @@ namespace RogueEssence.Dungeon
                 bool diagonal = false;
                 bool runCommand = false;
                 bool runCancelling = false;
+                int previewMove = -1;
+                bool previewing = false;
+
                 HashSet<Character> newRevealed = null;
 
                 if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
                 {
                     GameManager.Instance.SE("Menu/Skip");
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MainMenu()));
+                    CurrentPreviewMove = -1;
+                    Turn = false;
+                    yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnMenuButtonPressed());
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.MsgLog))
                 {
@@ -446,29 +475,38 @@ namespace RogueEssence.Dungeon
                         ProcessMinimapInput(input);
                     else if (input[FrameInput.InputType.Skills])
                     {
-                        int skillIndex = -1;
-                        if (input.JustPressed(FrameInput.InputType.Skill1))
-                            skillIndex = 0;
-                        else if (input.JustPressed(FrameInput.InputType.Skill2))
-                            skillIndex = 1;
-                        else if (input.JustPressed(FrameInput.InputType.Skill3))
-                            skillIndex = 2;
-                        else if (input.JustPressed(FrameInput.InputType.Skill4))
-                            skillIndex = 3;
-
-                        if (skillIndex > -1)
+                        if (input[FrameInput.InputType.SkillPreview])
                         {
-                            Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
-                            if (!String.IsNullOrEmpty(skillState.SkillNum) && skillState.Charges > 0 && !skillState.Sealed)
-                                action = new GameAction(GameAction.ActionType.UseSkill, Dir8.None, skillIndex);
-                            else
-                                GameManager.Instance.SE("Menu/Cancel");
+                            previewing = true;
+                            int skillIndex = ProcessSkillInput(input, true);
+                            if (skillIndex > -1)
+                            {
+                                Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
+                                if (!String.IsNullOrEmpty(skillState.SkillNum))
+                                    previewMove = skillIndex;
+                            }
+                        }
+                        else
+                        {
+                            int skillIndex = ProcessSkillInput(input, false);
+                            if (skillIndex > -1)
+                            {
+                                Skill skillState = FocusedCharacter.Skills[skillIndex].Element;
+                                if (!String.IsNullOrEmpty(skillState.SkillNum) && skillState.Charges > 0 && !skillState.Sealed)
+                                    action = new GameAction(GameAction.ActionType.UseSkill, Dir8.None, skillIndex);
+                                else
+                                    GameManager.Instance.SE("Menu/Cancel");
+                            }
                         }
 
                         if (action.Type == GameAction.ActionType.None)
                         {
-                            //keep action display
-                            showSkills = true;
+                            if (previewMove == -1)
+                            {
+                                //keep action display
+                                showSkills = true;
+                            }
+
                             if (input.Direction != Dir8.None)
                                 action = new GameAction(GameAction.ActionType.Dir, input.Direction);
                         }
@@ -478,6 +516,7 @@ namespace RogueEssence.Dungeon
                         bool run = input[FrameInput.InputType.Run];
                         if (input[FrameInput.InputType.Turn])
                             turn = true;
+                        
                         if (input[FrameInput.InputType.Diagonal])
                             diagonal = true;
 
@@ -492,7 +531,7 @@ namespace RogueEssence.Dungeon
                             //if confirm was the only move, then the command is an attack
                             action = new GameAction(GameAction.ActionType.Attack, Dir8.None);
                         }//directions
-                        else if (input.JustPressed(FrameInput.InputType.Turn))
+                        else if (input.JustPressed(FrameInput.InputType.Turn) || (canPreTurn && turn))
                         {
                             //first attempt to turn to a foe
                             Dir8 losTarget = getTurnDir(false, true);
@@ -619,8 +658,15 @@ namespace RogueEssence.Dungeon
                             }
                             else
                                 ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);
+                            Preview.UpdateControls();
                         }
                     }
+                    for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
+                        ShownHotkeys[ii].SetPreview(previewing);
+
+
+                    if (previewMove != CurrentPreviewMove && previewMove > -1)
+                        CalculateMovePreviews(previewMove);
 
                     if (action.Type == GameAction.ActionType.None && !showSkills)
                     {
@@ -657,7 +703,9 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
+                canPreTurn = !turn;
                 ShowActions = showSkills;
+                CurrentPreviewMove = previewMove;
                 Turn = turn;
                 Diagonal = diagonal;
 
@@ -798,13 +846,87 @@ namespace RogueEssence.Dungeon
                 //update the team/enemies
                 foreach (Character character in ZoneManager.Instance.CurrentMap.IterateCharacters())
                 {
-                    if (DiagManager.Instance.CurSettings.BattleFlow < Settings.BattleSpeed.VeryFast && !character.Dead && !character.ActionDone || character.OccupiedwithAction())
+                    if (/*DiagManager.Instance.CurSettings.BattleFlow < Settings.BattleSpeed.VeryFast && !character.Dead && !character.ActionDone || */character.OccupiedwithAction())
                         return false;
                 }
             }
             return true;
         }
 
+        public void CalculateMovePreviews(int previewMove)
+        {
+            List<HashSet<Loc>> previews = new List<HashSet<Loc>>();
+            Skill move = FocusedCharacter.Skills[previewMove].Element;
+            SkillData data = DataManager.Instance.GetSkill(move.SkillNum);
+            ExplosionData explosion = data.Explosion;
+            CombatAction hitbox = data.HitboxAction;
+            
+            List<Dir8> dirs = new List<Dir8>();
+            for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
+                dirs.Add((Dir8)ii);
+            
+
+            // TODO: figure out a way to calculate the rangeMod
+            int rangeMod = 0;
+            bool canViewPastWalls = false;
+            
+            if (hitbox is AreaAction)
+            {
+                AreaAction areaAction = (AreaAction)hitbox;
+                if (areaAction.HitTiles)
+                    canViewPastWalls = true;
+                
+            }
+            else if (hitbox is ThrowAction)
+            {
+                canViewPastWalls = true;
+            }
+            else if (hitbox is LinearAction)
+            {
+                LinearAction linearAction = hitbox as LinearAction;
+                if (!linearAction.StopAtWall)
+                    canViewPastWalls = true;
+            }
+            else if (hitbox is OffsetAction)
+            {
+                canViewPastWalls = true;
+            }
+            
+            foreach (Dir8 dir in dirs)
+            {
+                HashSet<Loc> hitTiles = new HashSet<Loc>();
+                foreach (Loc loc in data.HitboxAction.GetPreTargets(FocusedCharacter, dir, rangeMod))
+                {
+                    if (!canViewPastWalls)
+                    {
+                        if (CanTeamSeeCharLoc(ActiveTeam, loc))
+                        {
+                            foreach (Loc expLoc in explosion.IterateTargetedTiles(loc))
+                                hitTiles.Add(ZoneManager.Instance.CurrentMap.WrapLoc(expLoc));
+                        }
+                    }
+                    else
+                    {
+                        Loc currLoc = loc;
+                        if (hitbox is ThrowAction)
+                        {
+                            ThrowAction throwAction = hitbox as ThrowAction;
+                            if (!CanTeamSeeCharLoc(ActiveTeam, currLoc))
+                            {
+                                //use the farthest distance of throw action if the team cannot see the enemy
+                                currLoc = throwAction.GetFarthestLanding(FocusedCharacter, FocusedCharacter.CharLoc, dir, rangeMod);
+                            }
+                        }
+                        foreach (Loc expLoc in explosion.IterateTargetedTiles(currLoc))
+                            hitTiles.Add(ZoneManager.Instance.CurrentMap.WrapLoc(expLoc));
+                    }
+                }
+                previews.Add(hitTiles);
+            }
+            
+            movePreviews = previews;
+        }
+        
         protected override bool CanSeeTile(int xx, int yy)
         {
             if (SeeAll)
@@ -818,19 +940,30 @@ namespace RogueEssence.Dungeon
 
             return ZoneManager.Instance.CurrentMap.DiscoveryArray[loc.X][loc.Y] == Map.DiscoveryState.Traversed;
         }
-
-        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool seeTrap)
+        
+        protected override void PrepareTileDraw(SpriteBatch spriteBatch, int xx, int yy, bool objDrawOnly, bool seeTrap)
         {
-            base.PrepareTileDraw(spriteBatch, xx, yy, seeTrap);
+            base.PrepareTileDraw(spriteBatch, xx, yy, objDrawOnly, seeTrap);
 
-            Loc visualLoc = new Loc(xx, yy);
-            Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
-            if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+            if (!objDrawOnly)
             {
-                if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
-                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
-                else
-                    GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+                Loc visualLoc = new Loc(xx, yy);
+                Loc wrapLoc = ZoneManager.Instance.CurrentMap.WrapLoc(visualLoc);
+                if (Turn && !ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+                {
+                    if (Collision.InFront(FocusedCharacter.CharLoc, visualLoc, FocusedCharacter.CharDir, -1))
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                    else
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+                }
+                else if (CurrentPreviewMove > -1 && movePreviews != null)
+                {
+                    HashSet<Loc> movePreview = movePreviews[(int)FocusedCharacter.CharDir];
+                    if (movePreview.Contains(visualLoc))
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
+                    else if (!ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
+                        GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
+                }
             }
         }
 
@@ -941,7 +1074,7 @@ namespace RogueEssence.Dungeon
                 if (ShowMap != MinimapState.Detail)
                     DrawGame(spriteBatch);
 
-                if ((ShowMap != MinimapState.None) && !Turn && !ShowActions && !DataManager.Instance.Save.CutsceneMode && MenuManager.Instance.MenuCount == 0)
+                if ((ShowMap != MinimapState.None) && !Turn && CurrentPreviewMove == -1 && !ShowActions && !DataManager.Instance.Save.CutsceneMode && !ZoneManager.Instance.CurrentMap.HideMinimap && MenuManager.Instance.MenuCount == 0)
                 {
                     //draw minimap
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
@@ -967,6 +1100,7 @@ namespace RogueEssence.Dungeon
                         Math.Max(0, Math.Min(centerLoc.Y - MAX_MINIMAP_HEIGHT / 2, ZoneManager.Instance.CurrentMap.Height - MAX_MINIMAP_HEIGHT)));
                     startLoc += MinimapOffset;
 
+                    bool seeTrap = CanSeeTraps();
                     for (int ii = startLoc.X; ii < ZoneManager.Instance.CurrentMap.Width && ii - startLoc.X < MAX_MINIMAP_WIDTH; ii++)
                     {
                         for (int jj = startLoc.Y; jj < ZoneManager.Instance.CurrentMap.Height && jj - startLoc.Y < MAX_MINIMAP_HEIGHT; jj++)
@@ -1003,7 +1137,7 @@ namespace RogueEssence.Dungeon
                                     TileData entry;
 
                                     //draw tiles
-                                    if (tile.Effect.Revealed)
+                                    if (tile.Effect.Revealed || seeTrap)
                                         entry = DataManager.Instance.GetTile(tile.Effect.ID);
                                     else
                                         entry = DataManager.Instance.GetTile(DataManager.Instance.DefaultTile);
@@ -1132,7 +1266,7 @@ namespace RogueEssence.Dungeon
 
 
             //HP bars
-            if (!Turn && !DataManager.Instance.Save.CutsceneMode)
+            if (!Turn && CurrentPreviewMove == -1 && !DataManager.Instance.Save.CutsceneMode)
             {
                 if (ActiveTeam.Players.Count > 1)
                 {
@@ -1176,6 +1310,7 @@ namespace RogueEssence.Dungeon
                 {
                     for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
                         ShownHotkeys[ii].Draw(spriteBatch);
+                    Preview.Draw(spriteBatch);
                 }
                 else
                 {
@@ -1209,6 +1344,8 @@ namespace RogueEssence.Dungeon
                         {
                             if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
+                            else
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.Black, new Vector2(GraphicsManager.TileSize));
                             continue;
                         }
 

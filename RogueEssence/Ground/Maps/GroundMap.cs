@@ -55,9 +55,10 @@ namespace RogueEssence.Ground
 
         /// <summary>
         /// the internal name of the map, no spaces or special characters, never localized.
-        /// Used to refer to map data and script data for this map!
+        /// Used to refer to map data and script data for this map.  This value is always set when loaded,
+        /// But must remain serialized for state saving
         /// </summary>
-        public string AssetName { get; set; }
+        public string AssetName;
 
         public LocalText Name { get; set; }
         public string GetColoredName()
@@ -110,6 +111,7 @@ namespace RogueEssence.Ground
         [JsonConstructor]
         public GroundMap(bool init)
         {
+            AssetName = "";
             scriptEvents = new Dictionary<LuaEngine.EMapCallbacks, ScriptEvent>();
             //dummy constructor for json serialization
         }
@@ -961,7 +963,7 @@ namespace RogueEssence.Ground
                 for (int ii = 0; ii < (int)LuaEngine.EMapCallbacks.Invalid; ii++)
                 {
                     LuaEngine.EMapCallbacks ev = (LuaEngine.EMapCallbacks)ii;
-                    string callback = LuaEngine.MakeMapScriptCallbackName(AssetName, ev);
+                    string callback = LuaEngine.MakeMapScriptCallbackName(LuaEngine.MapCurrentScriptSym, ev);
                     if (!LuaEngine.Instance.DoesFunctionExists(callback))
                         continue;
                     DiagManager.Instance.LogInfo(String.Format("GroundMap.LoadScriptEvents(): Added event {0} to map {1}!", ev.ToString(), AssetName));
@@ -1013,6 +1015,19 @@ namespace RogueEssence.Ground
                 list.Add(e.Key);
 
             return list;
+        }
+
+
+        /// <summary>
+        /// Returns true if there exists and event with the same name as the string eventname.
+        /// The script event doesn't need to be loaded.
+        /// </summary>
+        /// <param name="ev"></param>
+        /// <returns></returns>
+        public bool HasScriptEvent(LuaEngine.EMapCallbacks ev)
+        {
+            string callback = LuaEngine.MakeMapScriptCallbackName(LuaEngine.MapCurrentScriptSym, ev);
+            return LuaEngine.Instance.DoesFunctionExists(callback);
         }
 
         public void ReloadEntLayer(int layer)

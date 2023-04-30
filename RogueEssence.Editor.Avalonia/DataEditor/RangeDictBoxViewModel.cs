@@ -160,6 +160,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private Window parent;
 
+        public bool ConfirmDelete;
+
         public RangeDictBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
@@ -202,6 +204,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             int index = getIndexFromKey(key);
             Collection[index] = new RangeDictElement(StringConv, AddMin, AddMax, Collection[index].Start, Collection[index].End, element);
+            CurrentElement = index;
             OnMemberChanged?.Invoke();
         }
 
@@ -218,6 +221,28 @@ namespace RogueEssence.Dev.ViewModels
                 if (ii == Collection.Count || key.Min < Collection[ii].Start)
                 {
                     Collection.Insert(ii, new RangeDictElement(StringConv, AddMin, AddMax, key.Min, key.Max, element));
+                    CurrentElement = ii;
+                    break;
+                }
+            }
+            OnMemberChanged?.Invoke();
+        }
+
+        public void InsertOnKey(int index, object element)
+        {
+            IntRange key = new IntRange(0);
+            if (0 <= index && index < Collection.Count)
+            {
+                key = new IntRange(Collection[index].End);
+            }
+
+            EraseRange(key, -1);
+            for (int ii = 0; ii <= Collection.Count; ii++)
+            {
+                if (ii == Collection.Count || key.Min < Collection[ii].Start)
+                {
+                    Collection.Insert(ii, new RangeDictElement(StringConv, AddMin, AddMax, key.Min, key.Max, element));
+                    CurrentElement = ii;
                     break;
                 }
             }
@@ -275,10 +300,18 @@ namespace RogueEssence.Dev.ViewModels
             OnEditKey?.Invoke(newKey, element, insertKey);
         }
 
-        public void btnDelete_Click()
+        public async void btnDelete_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
             {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                    MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 Collection.RemoveAt(CurrentElement);
                 OnMemberChanged?.Invoke();
             }

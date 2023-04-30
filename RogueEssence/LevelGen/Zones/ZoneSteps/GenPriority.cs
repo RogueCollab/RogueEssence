@@ -28,7 +28,10 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}", Priority.ToString(), Item.ToString());
+            if (Item != null)
+                return string.Format("{0}: {1}", Priority.ToString(), Item.ToString());
+            else
+                return string.Format("{0}: [EMPTY]", Priority.ToString());
         }
     }
 

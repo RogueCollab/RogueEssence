@@ -39,6 +39,15 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public ObservableCollection<string> SearchItems { get; }
+        private void setVisualItem(int idx, string val)
+        {
+            int tmp = SelectedSearchIndex;
+            SearchItems[idx] = val;
+            SelectedSearchIndex = tmp;
+        }
+
+
+
         public int Count => entries.Count;
 
 
@@ -65,6 +74,21 @@ namespace RogueEssence.Dev.ViewModels
             DataName = name + ":";
         }
 
+        public void SetItems(List<string> items)
+        {
+            entries.Clear();
+
+            foreach (string item in items)
+            {
+                entries.Add(item);
+                if (SearchText == "" || entries[entries.Count - 1].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
+                {
+                    SearchItems.Add(entries[entries.Count - 1]);
+                    entryMap.Add(entries.Count - 1);
+                }
+            }
+        }
+
         public void AddItem(string item)
         {
             entries.Add(item);
@@ -73,8 +97,10 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SearchItems.Add(entries[entries.Count - 1]);
                 entryMap.Add(entries.Count - 1);
+                SelectedSearchIndex = SearchItems.Count - 1;
             }
         }
+
         public void Clear()
         {
             entries.Clear();
@@ -100,7 +126,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (SearchText == "" || entries[entryMap[index]].IndexOf(SearchText, StringComparison.CurrentCultureIgnoreCase) > -1)
             {
-                SearchItems[index] = entry;
+                setVisualItem(index, entry);
             }
             else
             {
@@ -130,7 +156,7 @@ namespace RogueEssence.Dev.ViewModels
             if (oldAppears && newAppears)
             {
                 //change
-                SearchItems[shownIndex] = entry;
+                setVisualItem(shownIndex, entry);
             }
             else if (oldAppears)
             {

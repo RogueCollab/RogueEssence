@@ -8,13 +8,8 @@ namespace RogueEssence.LevelGen
     /// Generates specific rooms randomly across the whole dungeon segment.  This is done by replacing an existing room on the floor.
     /// </summary>
     [Serializable]
-    public class SpreadRoomZoneStep : ZoneStep
+    public class SpreadRoomZoneStep : SpreadZoneStep
     {
-        /// <summary>
-        /// Determines how many floors to distribute the step to, and how spread apart they are.
-        /// </summary>
-        public SpreadPlanBase SpreadPlan;
-
         /// <summary>
         /// The rooms to distribute.
         /// </summary>
@@ -34,56 +29,67 @@ namespace RogueEssence.LevelGen
         {
             Spawns = new SpawnList<RoomGenOption>();
         }
-        public SpreadRoomZoneStep(Priority priorityGrid, Priority priorityList) : this()
+
+        public SpreadRoomZoneStep(Priority priorityGrid, Priority priorityList, SpreadPlanBase plan) : base(plan)
         {
+            Spawns = new SpawnList<RoomGenOption>();
             PriorityGrid = priorityGrid;
             PriorityList = priorityList;
-        }
-
-        public SpreadRoomZoneStep(Priority priorityGrid, Priority priorityList, SpreadPlanBase plan) : this(priorityGrid, priorityList)
-        {
             SpreadPlan = plan;
         }
 
-        protected SpreadRoomZoneStep(SpreadRoomZoneStep other, ulong seed) : this()
+        protected SpreadRoomZoneStep(SpreadRoomZoneStep other, ulong seed) : base(other, seed)
         {
             Spawns = (SpawnList<RoomGenOption>)other.Spawns.CopyState();
             PriorityGrid = other.PriorityGrid;
             PriorityList = other.PriorityList;
-            SpreadPlan = other.SpreadPlan.Instantiate(seed);
         }
         public override ZoneStep Instantiate(ulong seed) { return new SpreadRoomZoneStep(this, seed); }
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
+        protected override bool ApplyToFloor(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue, int dropIdx)
         {
             //find the first postproc that is a GridRoom postproc and add this to its special rooms
             //NOTE: if a room-based generator is not found as the generation step, it will just skip this floor but treat it as though it was placed.
-            foreach(int floorId in SpreadPlan.DropPoints)
-            {
-                if (floorId != zoneContext.CurrentID)
-                    continue;
-                //TODO: allow arbitrary components to be added
-                RoomGenOption genDuo = Spawns.Pick(context.Rand);
-                SetGridSpecialRoomStep<MapGenContext> specialStep = new SetGridSpecialRoomStep<MapGenContext>();
-                SetSpecialRoomStep<ListMapGenContext> listSpecialStep = new SetSpecialRoomStep<ListMapGenContext>();
 
-                specialStep.Filters = genDuo.Filters;
-                if (specialStep.CanApply(context))
+            //TODO: allow arbitrary components to be added
+            RoomGenOption genDuo = Spawns.Pick(context.Rand);
+            SetGridSpecialRoomStep<MapGenContext> specialStep = new SetGridSpecialRoomStep<MapGenContext>();
+            SetSpecialRoomStep<ListMapGenContext> listSpecialStep = new SetSpecialRoomStep<ListMapGenContext>();
+
+            specialStep.Filters = genDuo.Filters;
+            if (specialStep.CanApply(context))
+            {
+                specialStep.Rooms = new PresetPicker<RoomGen<MapGenContext>>(genDuo.GridOption);
+                specialStep.RoomComponents.Set(new ImmutableRoom());
+                queue.Enqueue(PriorityGrid, specialStep);
+            }
+            else if (listSpecialStep.CanApply(context))
+            {
+                listSpecialStep.Rooms = new PresetPicker<RoomGen<ListMapGenContext>>(genDuo.ListOption);
+                listSpecialStep.RoomComponents.Set(new ImmutableRoom());
+                PresetPicker<PermissiveRoomGen<ListMapGenContext>> picker = new PresetPicker<PermissiveRoomGen<ListMapGenContext>>();
+                picker.ToSpawn = new RoomGenAngledHall<ListMapGenContext>(0);
+                listSpecialStep.Halls = picker;
+                queue.Enqueue(PriorityList, listSpecialStep);
+            }
+            return true;
+        }
+
+        public override string ToString()
+        {
+            int count = 0;
+            RoomGenOption singleGen = null;
+            if (Spawns != null)
+            {
+                foreach (RoomGenOption gen in Spawns.EnumerateOutcomes())
                 {
-                    specialStep.Rooms = new PresetPicker<RoomGen<MapGenContext>>(genDuo.GridOption);
-                    specialStep.RoomComponents.Set(new ImmutableRoom());
-                    queue.Enqueue(PriorityGrid, specialStep);
-                }
-                else if (listSpecialStep.CanApply(context))
-                {
-                    listSpecialStep.Rooms = new PresetPicker<RoomGen<ListMapGenContext>>(genDuo.ListOption);
-                    listSpecialStep.RoomComponents.Set(new ImmutableRoom());
-                    PresetPicker<PermissiveRoomGen<ListMapGenContext>> picker = new PresetPicker<PermissiveRoomGen<ListMapGenContext>>();
-                    picker.ToSpawn = new RoomGenAngledHall<ListMapGenContext>(0);
-                    listSpecialStep.Halls = picker;
-                    queue.Enqueue(PriorityList, listSpecialStep);
+                    count++;
+                    singleGen = gen;
                 }
             }
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
     }
 
@@ -110,6 +116,16 @@ namespace RogueEssence.LevelGen
             GridOption = gridOption;
             ListOption = listOption;
             Filters = filters;
+        }
+
+        public override string ToString()
+        {
+            if (GridOption != null)
+                return GridOption.ToString();
+            if (ListOption != null)
+                return ListOption.ToString();
+
+            return string.Format("{0}: [EMPTY]", this.GetType().GetFormattedTypeName());
         }
     }
 }

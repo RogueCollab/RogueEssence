@@ -60,7 +60,7 @@ namespace RogueEssence.Ground
             if (invSlot < 0)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
-                activeChar.EquippedItem = new InvItem();
+                activeChar.SilentDequipItem();
             }
             else
                 DataManager.Instance.Save.ActiveTeam.RemoveFromInv(invSlot);
@@ -76,7 +76,7 @@ namespace RogueEssence.Ground
                 //no curse check in ground mode
 
                 invItem = activeChar.EquippedItem;
-                activeChar.EquippedItem = new InvItem();
+                activeChar.SilentDequipItem();
             }
             else
             {
@@ -153,7 +153,7 @@ namespace RogueEssence.Ground
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_GIVE", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
 
-            itemChar.EquipItem(item);
+            itemChar.SilentEquipItem(item);
         }
 
         public IEnumerator<YieldInstruction> ProcessTakeItem(GroundChar character, int teamSlot)
@@ -165,7 +165,7 @@ namespace RogueEssence.Ground
 
             InvItem item = itemChar.EquippedItem;
             memberTeam.AddToInv(item);
-            itemChar.DequipItem();
+            yield return CoroutineManager.Instance.StartCoroutine(itemChar.DequipItem());
             GameManager.Instance.SE(GraphicsManager.EquipSE);
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(false, Text.FormatKey("MSG_ITEM_DEQUIP", itemChar.GetDisplayName(false), item.GetDisplayName())));
 
@@ -210,12 +210,12 @@ namespace RogueEssence.Ground
             if (!String.IsNullOrEmpty(player.EquippedItem.ID))
             {
                 InvItem heldItem = player.EquippedItem;
-                player.DequipItem();
+                player.SilentDequipItem();
                 DataManager.Instance.Save.ActiveTeam.AddToInv(heldItem);
             }
 
             RemoveChar(index);
-            DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(player);
+            DataManager.Instance.Save.ActiveTeam.Assembly.Insert(0, player);
 
         }
 

@@ -56,10 +56,8 @@ namespace RogueEssence.Dev.ViewModels
                 Tilesets.Clear();
 
                 foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
-                {
                     tileIndices.Add(name);
-                    Tilesets.AddItem(name);
-                }
+                Tilesets.SetItems(tileIndices);
             }
         }
 
@@ -280,7 +278,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (!Directory.Exists(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN))))
                     Directory.CreateDirectory(Path.GetDirectoryName(PathMod.HardMod(GraphicsManager.TILE_PATTERN)));
 
-                ImportHelper.ImportAllTiles(currentPath, PathMod.HardMod(GraphicsManager.TILE_PATTERN), true, true, tileSize);
+                ImportHelper.ImportAllTiles(currentPath, PathMod.HardMod(GraphicsManager.TILE_PATTERN), tileSize);
 
                 GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
                 GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);

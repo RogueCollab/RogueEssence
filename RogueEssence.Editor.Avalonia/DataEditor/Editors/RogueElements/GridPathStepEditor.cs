@@ -20,9 +20,9 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IGridPathCircle obj, Type type, object[] attributes)
         {
-            PropertyInfo fillInfo = type.GetProperty("CircleRoomRatio");
-            PropertyInfo pathsInfo = type.GetProperty("Paths");
-            return string.Format("{0}: Fill:{1}% Paths:{2}%", obj.GetType().Name,
+            PropertyInfo fillInfo = typeof(IGridPathCircle).GetProperty(nameof(obj.CircleRoomRatio));
+            PropertyInfo pathsInfo = typeof(IGridPathCircle).GetProperty(nameof(obj.Paths));
+            return string.Format("{0}: Fill:{1}% Paths:{2}%", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.CircleRoomRatio, fillInfo.GetMemberInfoType(), fillInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.Paths, pathsInfo.GetMemberInfoType(), pathsInfo.GetCustomAttributes(false)));
         }
@@ -32,9 +32,9 @@ namespace RogueEssence.Dev
     {
         public override string GetString(IGridPathBranch obj, Type type, object[] attributes)
         {
-            PropertyInfo fillInfo = type.GetProperty("RoomRatio");
-            PropertyInfo branchInfo = type.GetProperty("BranchRatio");
-            return string.Format("{0}: Fill:{1}% Branch:{2}%", obj.GetType().Name,
+            PropertyInfo fillInfo = typeof(IGridPathBranch).GetProperty(nameof(obj.RoomRatio));
+            PropertyInfo branchInfo = typeof(IGridPathBranch).GetProperty(nameof(obj.BranchRatio));
+            return string.Format("{0}: Fill:{1}% Branch:{2}%", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.RoomRatio, fillInfo.GetMemberInfoType(), fillInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.BranchRatio, branchInfo.GetMemberInfoType(), branchInfo.GetCustomAttributes(false)));
         }

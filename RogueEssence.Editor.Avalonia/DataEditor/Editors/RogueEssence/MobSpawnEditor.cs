@@ -20,10 +20,14 @@ namespace RogueEssence.Dev
     {
         public override string GetString(MobSpawn obj, Type type, object[] attributes)
         {
-            //TODO: find a way to get member info without using a string literal of the member name
-            MonsterData entry = DataManager.Instance.GetMonster(obj.BaseForm.Species);
-            MemberInfo[] spawnInfo = type.GetMember("Level");
-            return String.Format("{0} Lv.{1}", entry.Name.ToLocal(), DataEditor.GetString(obj.Level, spawnInfo[0].GetMemberInfoType(), spawnInfo[0].GetCustomAttributes(false)));
+            string monName = "[EMPTY]";
+            if (!String.IsNullOrEmpty(obj.BaseForm.Species))
+            {
+                MonsterData entry = DataManager.Instance.GetMonster(obj.BaseForm.Species);
+                monName = entry.Name.ToLocal();
+            }
+            MemberInfo[] spawnInfo = type.GetMember(nameof(obj.Level));
+            return String.Format("{0} Lv.{1}", monName, DataEditor.GetString(obj.Level, spawnInfo[0].GetMemberInfoType(), spawnInfo[0].GetCustomAttributes(false)));
         }
     }
 }

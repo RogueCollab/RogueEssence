@@ -18,6 +18,7 @@ namespace RogueEssence.LevelGen
         //Implementations in this project can use IProjectSegmentBase where the LayeredSegment uses IProjectFloorGen as a base
         //IProjectFloorGen will be implemented via a ProjectFloorGen that is like FloorGen but has the constraint of BaseMapGenContext
         [RankedList(0, true)]
+        [Collection(0, true)]
         public List<IFloorGen> Floors;
 
         public override int FloorCount { get { return Floors.Count; } }
@@ -110,7 +111,7 @@ namespace RogueEssence.LevelGen
         public override int FloorCount { get { return FloorSpan; } }
         public override IEnumerable<int> GetFloorIDs()
         {
-            for (int ii = 0; ii < FloorCount; ii++)
+            for(int ii = 0; ii < FloorSpan; ii++)
                 yield return ii;
         }
 
@@ -122,7 +123,7 @@ namespace RogueEssence.LevelGen
 
         public override IGenContext GetMap(ZoneGenContext zoneContext)
         {
-            if (zoneContext.CurrentID < FloorSpan)
+            if (FloorSpan < 0 || zoneContext.CurrentID < FloorSpan)
                 return BaseFloor.GenMap(zoneContext);
             else
                 throw new Exception("Requested a map id out of range.");
@@ -140,6 +141,7 @@ namespace RogueEssence.LevelGen
     public class RangeDictSegment : ZoneSegmentBase
     {
         [RangeBorder(0, true, true)]
+        [Collection(0, true)]
         public RangeDict<IFloorGen> Floors;
         public override int FloorCount
         {
@@ -183,6 +185,7 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class DictionarySegment : ZoneSegmentBase
     {
+        [Collection(0, true)]
         public Dictionary<int, IFloorGen> Floors;
         public override int FloorCount { get { return Floors.Count; } }
         public override IEnumerable<int> GetFloorIDs()
@@ -213,8 +216,15 @@ namespace RogueEssence.LevelGen
         public abstract int FloorCount { get; }
         public abstract IEnumerable<int> GetFloorIDs();
 
-        //for now, post-processing must be handled here
+        /// <summary>
+        /// Map Generation steps that apply to multiple floors at a time.
+        /// </summary>
+        [Collection(0, true)]
         public List<ZoneStep> ZoneSteps;
+
+        /// <summary>
+        /// Determines if the segment counts to the dungeon's total floor count.
+        /// </summary>
         public bool IsRelevant;
 
         public ZoneSegmentBase()
@@ -232,7 +242,7 @@ namespace RogueEssence.LevelGen
                 if (startStep != null)
                     return LocalText.FormatLocalText(startStep.Name, FloorCount.ToString()).ToLocal().Replace('\n', ' ');
             }
-            return String.Format("[{0}] {1}F", this.GetType().Name, FloorCount);
+            return String.Format("[{0}] {1}F", this.GetType().GetFormattedTypeName(), FloorCount);
         }
     }
 

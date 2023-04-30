@@ -10,11 +10,9 @@ namespace RogueEssence.Menu
     public class TileUnderfootMenu : UnderfootMenu
     {
         TileSummary summaryMenu;
-        bool danger;
 
-        public TileUnderfootMenu(string tileIndex, bool danger)
+        public TileUnderfootMenu(string tileIndex)
         {
-            this.danger = danger;
             Data.TileData entry = Data.DataManager.Instance.GetTile(tileIndex);
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             
@@ -49,14 +47,7 @@ namespace RogueEssence.Menu
                 case 0:
                     {//trigger
                         MenuManager.Instance.ClearMenus();
-                        if (danger)
-                        {
-                            MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("MSG_DANGER_CONFIRM"),
-                                    () => { MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None)); },
-                                    () => { }), false);
-                        }
-                        else
-                            MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None));
+                        MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None));
                     }
                     break;
                 case 1:

@@ -204,7 +204,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -242,7 +250,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -298,7 +314,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -360,7 +384,15 @@ namespace RogueEssence.Dev.ViewModels
             OpenFolderDialog openFileDialog = new OpenFolderDialog();
             openFileDialog.Directory = folderName;
 
-            string folder = await openFileDialog.ShowAsync(parent);
+            string folder = "";
+            try
+            {
+                folder = await openFileDialog.ShowAsync(parent);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, true);
+            }
 
             if (!String.IsNullOrEmpty(folder))
             {
@@ -410,6 +442,8 @@ namespace RogueEssence.Dev.ViewModels
                 CharaIndexNode charaNode = GetIndexNode();
                 for (int ii = 0; ii < monsterKeys.Count; ii++)
                 {
+                    if (monsterKeys[ii] == null) // in case of non continuous index of Dex numbers
+                        continue;
                     MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                     CharID dexID = new CharID(ii, -1, -1, -1);

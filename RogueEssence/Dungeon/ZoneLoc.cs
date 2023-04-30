@@ -9,6 +9,7 @@ namespace RogueEssence.Dungeon
     public struct ZoneLoc
     {
         [JsonConverter(typeof(DungeonConverter))]
+        [DataType(0, DataManager.DataType.Zone, false)]
         public string ID;
         public SegLoc StructID;
         public int EntryPoint;
@@ -42,6 +43,11 @@ namespace RogueEssence.Dungeon
         public bool IsValid()
         {
             return (!String.IsNullOrEmpty(ID)) && StructID.IsValid();
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} {1} {2}", ID, StructID.ToString(), EntryPoint);
         }
     }
 }

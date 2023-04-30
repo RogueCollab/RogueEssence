@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public MapTabEntitiesViewModel()
         {
+            //Teams = new TeamBoxViewModel(DiagManager.Instance.DevEditor.MapEditor.Edits);
+
             MonsterTeam team = new MonsterTeam();
             SelectedEntity = new Character(new CharData());
             SelectedEntity.Level = 1;
@@ -97,7 +99,8 @@ namespace RogueEssence.Dev.ViewModels
 
             speciesChanged();
 
-            Statuses = new CollectionBoxViewModel(new StringConv(typeof(StatusEffect), new object[0]));
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            Statuses = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
         }
@@ -113,6 +116,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public TeamBoxViewModel Teams { get; set; }
 
         public ObservableCollection<string> Directions { get; }
 
@@ -123,6 +127,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 SelectedEntity.CharDir = (Dir8)value;
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -164,6 +169,7 @@ namespace RogueEssence.Dev.ViewModels
                 this.RaisePropertyChanged();
                 speciesChanged();
                 updateStats();
+                animChanged();
             }
         }
 
@@ -186,6 +192,7 @@ namespace RogueEssence.Dev.ViewModels
                     updateStats();
                 }
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -204,6 +211,7 @@ namespace RogueEssence.Dev.ViewModels
                 SelectedEntity.BaseForm.Skin = skinKeys[value];
                 SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -220,6 +228,7 @@ namespace RogueEssence.Dev.ViewModels
                 SelectedEntity.BaseForm.Gender = (Gender)value;
                 SelectedEntity.RestoreForm();
                 this.RaisePropertyChanged();
+                animChanged();
             }
         }
 
@@ -436,6 +445,12 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaisePropertyChanged(); }
         }
 
+        public bool Unrecruitable
+        {
+            get { return SelectedEntity.Unrecruitable; }
+            set { this.RaiseAndSet(ref SelectedEntity.Unrecruitable, value); }
+        }
+
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
@@ -444,7 +459,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (entMode == EntEditMode.SelectEntity)
             {
-                //do nothing
+                DungeonEditScene.Instance.CharacterInProgress = null;
             }
             else
             {
@@ -453,8 +468,20 @@ namespace RogueEssence.Dev.ViewModels
                 Character clone = SelectedEntity.Clone(team);
                 team.Players.Add(clone);
                 setEntity(clone);
+                animChanged();
             }
         }
+
+        public void TabbedIn()
+        {
+            animChanged();
+        }
+
+        public void TabbedOut()
+        {
+            DungeonEditScene.Instance.CharacterInProgress = null;
+        }
+
 
         public void ProcessUndo()
         {
@@ -464,19 +491,21 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ProcessInput(InputManager input)
         {
-            if (!Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc))
-                return;
+            bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
 
             Loc mapCoords = DungeonEditScene.Instance.ScreenCoordsToMapCoords(input.MouseLoc);
 
-            if (!Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords))
-                return;
+            bool inBounds = Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapCoords);
+
 
             switch (EntMode)
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        DungeonEditScene.Instance.CharacterInProgress.CharLoc = mapCoords;
+                        if (!inBounds)
+                            return;
+                        if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                             PlaceEntity(mapCoords);
                         else if (input.JustPressed(FrameInput.InputType.RightMouse))
                             RemoveEntityAt(mapCoords);
@@ -484,7 +513,9 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 case EntEditMode.SelectEntity:
                     {
-                        if (input.JustPressed(FrameInput.InputType.LeftMouse))
+                        if (!inBounds)
+                            return;
+                        if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                             SelectEntityAt(mapCoords);
                         else if (input[FrameInput.InputType.LeftMouse])
                             MoveEntity(mapCoords);
@@ -602,6 +633,14 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void PreviewEntity(Loc position)
+        {
+            MonsterTeam team = new MonsterTeam();
+            Character placeableEntity = SelectedEntity.Clone(team);
+            placeableEntity.CharLoc = position;
+            DungeonEditScene.Instance.CharacterInProgress = placeableEntity;
+        }
+
         public void PlaceEntity(Loc position)
         {
             RemoveEntityAt(position);
@@ -669,10 +708,18 @@ namespace RogueEssence.Dev.ViewModels
             MDefBonus = MDefBonus;
             SpeedBonus = SpeedBonus;
 
+            Unrecruitable = Unrecruitable;
+
             List<StatusEffect> states = new List<StatusEffect>();
             foreach (StatusEffect state in SelectedEntity.StatusEffects.Values)
                 states.Add(state);
             Statuses.LoadFromList(states);
+        }
+
+        private void animChanged()
+        {
+            if (entMode == EntEditMode.PlaceEntity)
+                PreviewEntity(Loc.Zero);
         }
 
         private void updateStats()

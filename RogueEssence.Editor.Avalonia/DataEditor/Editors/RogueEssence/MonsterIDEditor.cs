@@ -159,7 +159,7 @@ namespace RogueEssence.Dev
                 List<string> items = new List<string>();
                 if (dataAtt.InvalidGender)
                 {
-                    items.Add("**EMPTY**");
+                    items.Add(Gender.Unknown.ToLocal());
                     chosenIndex++;
                 }
 

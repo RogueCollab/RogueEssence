@@ -32,6 +32,7 @@ namespace RogueEssence.LevelGen
 
         public ScriptGenStep() { Script = ""; ArgTable = "{}"; }
         public ScriptGenStep(string script) { Script = script; ArgTable = "{}"; }
+        public ScriptGenStep(string script, string argTable) { Script = script; ArgTable = argTable; }
 
         public override void Apply(T map)
         {
@@ -46,7 +47,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0}: {1}", this.GetType().Name, Script);
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), Script);
         }
     }
 }

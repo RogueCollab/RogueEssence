@@ -22,6 +22,11 @@ namespace RogueEssence.Data
         public string RecordDir;
         public Version RecordVersion;
         public string RecordLang;
+
+        //TODO: remove the need for these variables when gameprogress is saved on quicksave
+        public long SessionTime;
+        public long SessionStartTime;
+
         public long QuicksavePos;
         public long GroundsavePos;
         public int CurrentState;

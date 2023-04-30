@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace RogueEssence.Ground
 {
     [Serializable]
-    public class GroundAnim : IDrawableSprite
+    public class GroundAnim : IDrawableSprite, IPreviewable
     {
         public IPlaceableAnimData ObjectAnim;
         
@@ -38,14 +38,20 @@ namespace RogueEssence.Ground
         }
 
         public void DrawDebug(SpriteBatch spriteBatch, Loc offset) { }
+
         public void Draw(SpriteBatch spriteBatch, Loc offset)
+        {
+            DrawPreview(spriteBatch, offset, 1f);
+        }
+
+        public void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
         {
             if (ObjectAnim.AnimIndex != "")
             {
                 Loc drawLoc = GetDrawLoc(offset);
 
                 DirSheet sheet = GraphicsManager.GetDirSheet(ObjectAnim.AssetType, ObjectAnim.AnimIndex);
-                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha / 255), ObjectAnim.AnimFlip);
+                sheet.DrawDir(spriteBatch, drawLoc.ToVector2(), ObjectAnim.GetCurrentFrame(GraphicsManager.TotalFrameTick, sheet.TotalFrames), ObjectAnim.GetDrawDir(Dir8.None), Color.White * ((float)ObjectAnim.Alpha * alpha / 255), ObjectAnim.AnimFlip);
             }
         }
 

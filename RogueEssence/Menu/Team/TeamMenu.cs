@@ -61,9 +61,12 @@ namespace RogueEssence.Menu
                         disabled |= DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge && !character.Dead;
                 }
 
-                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), disabled ? Color.Red : Color.White);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, disabled ? Color.Red : Color.White);
-                team.Add(new MenuElementChoice(() => { choose(teamIndex); }, !disabled, memberName, memberLv));
+                Color color = disabled ? Color.Red : Color.White;
+                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), color);
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1), DirV.Up, DirH.Right, color);
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
+
+                team.Add(new MenuElementChoice(() => { choose(teamIndex); }, !disabled, memberName, memberLvLabel, memberLv));
             }
 
             summaryMenu = new TeamMiniSummary(Rect.FromPoints(new Loc(16,

@@ -60,6 +60,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private Window parent;
 
+        public bool ConfirmDelete;
+
         public DictionaryBoxViewModel(Window parent, StringConv conv)
         {
             StringConv = conv;
@@ -93,6 +95,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             int index = getIndexFromKey(key);
             Collection[index] = new DictionaryElement(StringConv, Collection[index].Key, element);
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
         private async void editKey(object oldKey, object key, object element)
@@ -106,6 +109,7 @@ namespace RogueEssence.Dev.ViewModels
 
             int index = getIndexFromKey(oldKey);
             Collection[index] = new DictionaryElement(StringConv, key, element);
+            SelectedIndex = index;
             OnMemberChanged?.Invoke();
         }
 
@@ -123,6 +127,7 @@ namespace RogueEssence.Dev.ViewModels
         private void insertItem(object oldKey, object key, object element)
         {
             Collection.Add(new DictionaryElement(StringConv, key, element));
+            SelectedIndex = Collection.Count-1;
             OnMemberChanged?.Invoke();
         }
 
@@ -165,10 +170,18 @@ namespace RogueEssence.Dev.ViewModels
             OnEditKey?.Invoke(newKey, element, insertKey);
         }
 
-        public void btnDelete_Click()
+        public async void btnDelete_Click()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
+                if (ConfirmDelete)
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
+                    MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
+
                 Collection.RemoveAt(SelectedIndex);
                 OnMemberChanged?.Invoke();
             }

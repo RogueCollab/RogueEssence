@@ -107,10 +107,25 @@ namespace RogueEssence
             GenContextDebug.OnStep += logRogueElements;
         }
 
+        private List<string> logMsgs = new List<string>();
         private void logRogueElements(string msg)
         {
             if (ListenGen)
-                LogInfo(String.Format("Mapgen: {0}", msg));
+            {
+                logMsgs.Add(String.Format("[{1}] Mapgen: {0}", msg, String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now)));
+            }
+        }
+
+        public void FlushRogueElements()
+        {
+            StringBuilder builder = new StringBuilder("Steps:\n");
+            foreach (string msg in logMsgs)
+            {
+                builder.Append(msg);
+                builder.Append("\n");
+            }
+            LogInfo(builder.ToString());
+            logMsgs.Clear();
         }
 
         public void Unload()
@@ -361,6 +376,7 @@ namespace RogueEssence
                     settings.DefaultSkills = Enum.Parse<Settings.SkillDefault>(xmldoc.SelectSingleNode("Config/DefaultSkills").InnerText);
                     settings.Minimap = Int32.Parse(xmldoc.SelectSingleNode("Config/Minimap").InnerText);
 
+                    settings.TextSpeed = Int32.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
@@ -502,6 +518,7 @@ namespace RogueEssence
                 docNode.AppendInnerTextChild(xmldoc, "DefaultSkills", settings.DefaultSkills.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Minimap", settings.Minimap.ToString());
 
+                docNode.AppendInnerTextChild(xmldoc, "TextSpeed", settings.TextSpeed.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Border", settings.Border.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Window", settings.Window.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Language", settings.Language.ToString());

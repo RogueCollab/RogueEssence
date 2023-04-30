@@ -9,7 +9,7 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class MoneyDivSpawner<T> : IStepSpawner<T, MoneySpawn> 
+    public class MoneyDivSpawner<T> : IStepSpawner<T, MoneySpawn>, IDivSpawner
         where T : ISpawningGenContext<MoneySpawn>
     {
         //amounts cannot be over this % greater or less than the base value
@@ -18,7 +18,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The number of pickups to split the total sum of money into.
         /// </summary>
-        public RandRange DivAmount;
+        public RandRange DivAmount { get; set; }
 
         public MoneyDivSpawner() { }
 
@@ -52,7 +52,12 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}: Div:{1}", this.GetType().Name, this.DivAmount.ToString());
+            return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), this.DivAmount.ToString());
         }
+    }
+
+    public interface IDivSpawner
+    {
+        RandRange DivAmount { get; set; }
     }
 }

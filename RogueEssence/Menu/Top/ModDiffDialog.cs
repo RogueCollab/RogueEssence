@@ -11,10 +11,10 @@ namespace RogueEssence.Menu
     {
         ModDiffSummary summaryMenu;
 
-        public ModDiffDialog(string message, List<ModDiff> diff, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
+        public ModDiffDialog(string message, string title, List<ModDiff> diff, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
             : base(message, sound, false, false, choices, defaultChoice, cancelChoice)
         {
-            summaryMenu = new ModDiffSummary();
+            summaryMenu = new ModDiffSummary(title);
             summaryMenu.SetDiff(diff);
         }
         

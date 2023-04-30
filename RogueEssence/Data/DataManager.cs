@@ -6,9 +6,11 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using RogueEssence.Ground;
+using RogueEssence.Dev;
 using RogueEssence.Script;
 using RogueEssence.Content;
 using System.Xml;
+using System.Threading;
 
 namespace RogueEssence.Data
 {
@@ -138,6 +140,8 @@ namespace RogueEssence.Data
         private const int MAP_STATUS_CACHE_SIZE = 50;
 
 
+        private Thread preLoadZoneThread;
+        private LRUCache<string, ZoneData> zoneCache;
         private LRUCache<string, ItemData> itemCache;
         private LRUCache<string, StatusData> statusCache;
         private LRUCache<string, IntrinsicData> intrinsicCache;
@@ -157,12 +161,7 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
-        public List<(MonsterID mon, string name)> StartChars;
-        public List<string> StartTeams;
-        public int StartLevel;
-        public int MaxLevel;
-        public int StartPersonality;
-        public ZoneLoc StartMap;
+        public StartParams Start;
 
         public MonsterID DefaultMonsterID { get { return new MonsterID(DefaultMonster, 0, DefaultSkin, Gender.Genderless); } }
         public string DefaultMonster;
@@ -234,6 +233,7 @@ namespace RogueEssence.Data
 
             MsgLog = new List<string>();
 
+            zoneCache = new LRUCache<string, ZoneData>(1);
             itemCache = new LRUCache<string, ItemData>(ITEM_CACHE_SIZE);
             statusCache = new LRUCache<string, StatusData>(STATUS_CACHE_SIZE);
             intrinsicCache = new LRUCache<string, IntrinsicData>(INSTRINSIC_CACHE_SIZE);
@@ -398,14 +398,15 @@ namespace RogueEssence.Data
 
         private void LoadStartParams()
         {
+            Start = new StartParams();
             string path = PathMod.ModPath(DATA_PATH + "StartParams.xml");
             //try to load from file
             if (File.Exists(path))
             {
                 try
                 {
-                    StartChars = new List<(MonsterID, string)>();
-                    StartTeams = new List<string>();
+                    Start.Chars = new List<StartChar>();
+                    Start.Teams = new List<string>();
 
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.Load(path);
@@ -425,21 +426,21 @@ namespace RogueEssence.Data
                         XmlNode startName = startChar.SelectSingleNode("Name");
                         string name = startName.InnerText;
 
-                        StartChars.Add((new MonsterID(species, form, skin, gender), name));
+                        Start.Chars.Add(new StartChar(new MonsterID(species, form, skin, gender), name));
                     }
 
                     XmlNode startTeams = xmldoc.DocumentElement.SelectSingleNode("StartTeams");
                     foreach (XmlNode startTeam in startTeams.SelectNodes("StartTeam"))
-                        StartTeams.Add(startTeam.InnerText);
+                        Start.Teams.Add(startTeam.InnerText);
 
                     XmlNode startLevel = xmldoc.DocumentElement.SelectSingleNode("StartLevel");
-                    StartLevel = Int32.Parse(startLevel.InnerText);
+                    Start.Level = Int32.Parse(startLevel.InnerText);
 
                     XmlNode maxLevel = xmldoc.DocumentElement.SelectSingleNode("MaxLevel");
-                    MaxLevel = Int32.Parse(maxLevel.InnerText);
+                    Start.MaxLevel = Int32.Parse(maxLevel.InnerText);
 
                     XmlNode startPersonality = xmldoc.DocumentElement.SelectSingleNode("StartPersonality");
-                    StartPersonality = Int32.Parse(startPersonality.InnerText);
+                    Start.Personality = Int32.Parse(startPersonality.InnerText);
 
                     DefaultZone = xmldoc.DocumentElement.SelectSingleNode("DefaultZone").InnerText;
                     DefaultRank = xmldoc.DocumentElement.SelectSingleNode("DefaultRank").InnerText;
@@ -453,7 +454,7 @@ namespace RogueEssence.Data
                     DefaultMonster = xmldoc.DocumentElement.SelectSingleNode("DefaultMonster").InnerText;
 
                     XmlNode startMap = xmldoc.DocumentElement.SelectSingleNode("StartMap");
-                    StartMap = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
+                    Start.Map = new ZoneLoc(startMap.SelectSingleNode("Zone").InnerText,
                         new SegLoc(Int32.Parse(startMap.SelectSingleNode("Segment").InnerText), Int32.Parse(startMap.SelectSingleNode("ID").InnerText)),
                         Int32.Parse(startMap.SelectSingleNode("Entry").InnerText));
 
@@ -465,12 +466,77 @@ namespace RogueEssence.Data
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex);
+                    Start = new StartParams();
                 }
             }
-            StartChars = new List<(MonsterID, string)>();
-            StartTeams = new List<string>();
         }
 
+        public void SaveStartParams()
+        {
+            string path = PathMod.HardMod(DATA_PATH + "StartParams.xml");
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+
+                XmlNode docNode = xmldoc.CreateElement("root");
+                xmldoc.AppendChild(docNode);
+
+                XmlNode charsNode = xmldoc.CreateElement("StartChars");
+                docNode.AppendChild(charsNode);
+
+                foreach (StartChar startChar in Start.Chars)
+                {
+                    XmlNode charNode = xmldoc.CreateElement("StartChar");
+                    charsNode.AppendChild(charNode);
+
+                    charNode.AppendInnerTextChild(xmldoc, "Species", startChar.ID.Species.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Form", startChar.ID.Form.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Skin", startChar.ID.Skin.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Gender", startChar.ID.Gender.ToString());
+                    charNode.AppendInnerTextChild(xmldoc, "Name", startChar.Name);
+                }
+
+                XmlNode teamsNode = xmldoc.CreateElement("StartTeams");
+                docNode.AppendChild(teamsNode);
+
+                foreach (string startTeam in Start.Teams)
+                    teamsNode.AppendInnerTextChild(xmldoc, "StartTeam", startTeam);
+
+                docNode.AppendInnerTextChild(xmldoc, "StartLevel", Start.Level.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "MaxLevel", Start.MaxLevel.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "StartPersonality", Start.Personality.ToString());
+
+                docNode.AppendInnerTextChild(xmldoc, "DefaultZone", DefaultZone.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultRank", DefaultRank.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultSkin", DefaultSkin.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultAI", DefaultAI.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultTile", DefaultTile.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultElement", DefaultElement.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultMapStatus", DefaultMapStatus.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultIntrinsic", DefaultIntrinsic.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultSkill", DefaultSkill.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "DefaultMonster", DefaultMonster.ToString());
+
+
+                XmlNode mapNode = xmldoc.CreateElement("StartMap");
+                docNode.AppendChild(mapNode);
+
+                mapNode.AppendInnerTextChild(xmldoc, "Zone", Start.Map.ID.ToString());
+                mapNode.AppendInnerTextChild(xmldoc, "Segment", Start.Map.StructID.Segment.ToString());
+                mapNode.AppendInnerTextChild(xmldoc, "ID", Start.Map.StructID.ID.ToString());
+                mapNode.AppendInnerTextChild(xmldoc, "Entry", Start.Map.EntryPoint.ToString());
+
+                docNode.AppendInnerTextChild(xmldoc, "GenFloor", GenFloor.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "GenWall", GenWall.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "GenUnbreakable", GenUnbreakable.ToString());
+
+                xmldoc.Save(path);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
 
         public void Unload()
         {
@@ -587,13 +653,18 @@ namespace RogueEssence.Data
         public static T LoadNamespacedData<T>(string namespacedNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
             string[] components = namespacedNum.Split(':');
+            T result;
             if (components.Length > 1)
             {
                 ModHeader mod = PathMod.GetModFromNamespace(components[0]);
-                return LoadModData<T>(mod, components[1], subPath, ext);
+                result = LoadModData<T>(mod, components[1], subPath, ext);
             }
             else
-                return LoadData<T>(components[0], subPath, ext);
+                result = LoadData<T>(components[0], subPath, ext);
+            
+            if (result == null)
+                throw new FileNotFoundException(String.Format("Could not find {0} ID: '{1}'", subPath, namespacedNum));
+            return result;
         }
 
         public static T LoadModData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
@@ -619,12 +690,17 @@ namespace RogueEssence.Data
 
         public static object LoadData(string path, Type t)
         {
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            try
             {
-                //using (BinaryReader reader = new BinaryReader(stream))
-                //{
+                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
                     return Serializer.DeserializeData(stream);
-                //}
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(new FileLoadException("Could not deserialize file", path, ex));
+                return null;
             }
         }
 
@@ -663,12 +739,44 @@ namespace RogueEssence.Data
                 File.Delete(path);
         }
 
+        public void PreLoadZone(string index)
+        {
+#if !NO_THREADING
+            preLoadZoneThread = new Thread(() => PreLoadZoneInBackground(index));
+            preLoadZoneThread.IsBackground = true;
+            //thread.CurrentCulture = Thread.CurrentThread.CurrentCulture;
+            //thread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture;
+            preLoadZoneThread.Start();
+#endif
+        }
+
+        void PreLoadZoneInBackground(string index)
+        {
+            ZoneData data = LoadNamespacedData<ZoneData>(index, DataType.Zone.ToString());
+            zoneCache.Add(index, data);
+        }
+
         public ZoneData GetZone(string index)
         {
             ZoneData data = null;
 
+            //wait for any preloading to finish
+            if (preLoadZoneThread != null)
+            {
+                preLoadZoneThread.Join();
+                preLoadZoneThread = null;
+            }
+
+            if (zoneCache.TryGetValue(index, out data))
+            {
+                zoneCache.Clear();
+                return data;
+            }
+            zoneCache.Clear();
+
             try
             {
+
                 data = LoadNamespacedData<ZoneData>(index, DataType.Zone.ToString());
                 return data;
             }
@@ -685,6 +793,7 @@ namespace RogueEssence.Data
             try
             {
                 mapData = LoadNamespacedData<Map>(name, MAP_FOLDER, ".rsmap");
+                mapData.AssetName = name;
                 return mapData;
             }
             catch (Exception ex)
@@ -701,6 +810,7 @@ namespace RogueEssence.Data
             try
             {
                 mapData = LoadData<GroundMap>(name, GROUND_FOLDER, ".rsground");
+                mapData.AssetName = name;
                 return mapData;
             }
             catch (Exception ex)
@@ -923,6 +1033,8 @@ namespace RogueEssence.Data
 
         public void ClearCache(DataType conversionFlags)
         {
+            if ((conversionFlags & DataType.Zone) != DataType.None)
+                zoneCache.Clear();
             if ((conversionFlags & DataType.Item) != DataType.None)
                 itemCache.Clear();
             if ((conversionFlags & DataType.Status) != DataType.None)
@@ -967,7 +1079,8 @@ namespace RogueEssence.Data
         /// <param name="zoneId"></param>
         /// <param name="rogue"></param>
         /// <param name="seeded"></param>
-        public void BeginPlay(string filePath, string zoneId, bool rogue, bool seeded)
+        /// <param name="sessionStart"></param>
+        public void BeginPlay(string filePath, string zoneId, bool rogue, bool seeded, DateTime sessionStart)
         {
             try
             {
@@ -984,6 +1097,8 @@ namespace RogueEssence.Data
                 replayWriter.Write(version.Build);
                 replayWriter.Write(version.Revision);
                 replayWriter.Write(0L);//pointer to epitaph location, 0 for now
+                replayWriter.Write(0L);//final time, 0 for now
+                replayWriter.Write(sessionStart.Ticks);//session start time
                 replayWriter.Write(0);//final score, 0 for now
                 replayWriter.Write(0);//final result, 0 for now
                 replayWriter.Write(zoneId);
@@ -1008,7 +1123,8 @@ namespace RogueEssence.Data
         /// The quicksave file is loaded and the stream position is set to the end, so that it can continue writing the replay.
         /// </summary>
         /// <param name="replay">The quicksave replay to resume from.</param>
-        public void ResumePlay(ReplayData replay)
+        /// <param name="sessionResumeTime"></param>
+        public void ResumePlay(ReplayData replay, DateTime sessionResumeTime)
         {
             try
             {
@@ -1024,7 +1140,13 @@ namespace RogueEssence.Data
                     replayWriter.Flush();
                 }
                 else
+                {
+                    //TODO: remove this logic when save data is used for quicksaves
+                    replayWriter.BaseStream.Seek(sizeof(Int32) * 4 + sizeof(Int64) * 2, SeekOrigin.Begin);
+                    replayWriter.Write(sessionResumeTime.Ticks);
+
                     replayWriter.BaseStream.Seek(0, SeekOrigin.End);
+                }
             }
             catch (Exception ex)
             {
@@ -1228,6 +1350,8 @@ namespace RogueEssence.Data
                         //pointers and score
                         replayWriter.BaseStream.Seek(sizeof(Int32) * 4, SeekOrigin.Begin);
                         replayWriter.Write(epitaphPos);
+                        replayWriter.Write(epitaph.SessionTime.Ticks);
+                        replayWriter.Write(epitaph.SessionStartTime.Ticks);
                         replayWriter.Write(epitaph.GetTotalScore());
                         replayWriter.Write((int)epitaph.Outcome);
                     }
@@ -1272,13 +1396,34 @@ namespace RogueEssence.Data
             return Text.GetNonConflictingName(fileName, savePathExists);
         }
 
+        //TODO: remove this when LogQuicksave is working
+        /// <summary>
+        /// Saves the current session time
+        /// </summary>
+        /// <param name="sessionTime"></param>
+        public void SaveSessionTime(TimeSpan sessionTime)
+        {
+            try
+            {
+                if (replayWriter != null)
+                {
+                    replayWriter.BaseStream.Seek(sizeof(Int32) * 4 + sizeof(Int64), SeekOrigin.Begin);
+                    replayWriter.Write(sessionTime.Ticks);
+                    replayWriter.Write(0L);
+                    replayWriter.BaseStream.Seek(0, SeekOrigin.End);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
         /// <summary>
         /// Called when an adventure is suspended.  Closes the replay writing stream to allow for clean exit.
         /// Note how nothing else is done aside form closing the stream.
         /// Quicksaves already save every action from the player as it happens, so even if they closed the game there is no lost data.
         /// </summary>
-        /// <param name="epitaph"></param>
-        /// <param name="outFile"></param>
         /// <returns></returns>
         public void SuspendPlay()
         {
@@ -1289,7 +1434,6 @@ namespace RogueEssence.Data
                     replayWriter.Close();
                     replayWriter = null;
                 }
-
             }
             catch (Exception ex)
             {
@@ -1358,6 +1502,10 @@ namespace RogueEssence.Data
                         Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                         //epitaph location
                         long endPos = reader.ReadInt64();
+                        //read time
+                        reader.ReadInt64();
+                        //read session start time
+                        reader.ReadInt64();
                         //read score
                         record.Score = reader.ReadInt32();
                         //read result
@@ -1452,6 +1600,10 @@ namespace RogueEssence.Data
                         writer.Write(reader.ReadInt32());
                         //read the pointer for location of epitaph
                         writer.Write(reader.ReadInt64());
+                        //read time
+                        writer.Write(reader.ReadInt64());
+                        //read session time
+                        writer.Write(reader.ReadInt64());
                         //read score
                         writer.Write(reader.ReadInt32());
                         //read result
@@ -1499,6 +1651,10 @@ namespace RogueEssence.Data
                         long endPos = reader.ReadInt64();
                         if (endPos > 0 && quickload)
                             throw new Exception("Cannot quickload a completed file!");
+                        //read time
+                        replay.SessionTime = reader.ReadInt64();
+                        //read session time
+                        replay.SessionStartTime = reader.ReadInt64();
                         //read score
                         reader.ReadInt32();
                         //read result
@@ -1610,6 +1766,10 @@ namespace RogueEssence.Data
                         //read the pointer for location of epitaph
                         reader.ReadInt64();
                         writer.Write(0L);
+                        //read time
+                        writer.Write(reader.ReadInt64());
+                        //read session time
+                        writer.Write(reader.ReadInt64());
                         //read score
                         writer.Write(reader.ReadInt32());
                         //read result
@@ -1863,6 +2023,30 @@ namespace RogueEssence.Data
             return null;
         }
 
+        public GameState CopyMainGameState()
+        {
+            GameState state = new GameState();
+            state.Save = Save;
+            state.Zone = ZoneManager.Instance;
+
+            //notify script engine
+            LuaEngine.Instance.SaveData(state.Save);
+
+            using (MemoryStream tempStream = new MemoryStream())
+            {
+                //saves scene, zone, and ground, if there will be one...
+                using (BinaryWriter writer = new BinaryWriter(tempStream))
+                {
+                    SaveGameState(writer, state);
+
+                    tempStream.Seek(0, SeekOrigin.Begin);
+                    //loads dungeon, zone, and ground, if there will be one...
+                    using (BinaryReader reader = new BinaryReader(tempStream))
+                        return ReadGameState(reader, false);
+                }
+            }
+        }
+
         public void SaveMainGameState()
         {
             GameState state = new GameState();
@@ -2013,7 +2197,7 @@ namespace RogueEssence.Data
                         if (player.Tactic != null)
                             ai = GetAITactic(player.Tactic.ID);
                         else
-                        ai = GetAITactic(DataManager.Instance.DefaultAI);
+                            ai = GetAITactic(DataManager.Instance.DefaultAI);
                         player.Tactic = new AITactic(ai);
                     }
                     foreach (Character player in state.Save.ActiveTeam.Assembly)
@@ -2022,7 +2206,7 @@ namespace RogueEssence.Data
                         if (player.Tactic != null)
                             ai = GetAITactic(player.Tactic.ID);
                         else
-                        ai = GetAITactic(DataManager.Instance.DefaultAI);
+                            ai = GetAITactic(DataManager.Instance.DefaultAI);
                         player.Tactic = new AITactic(ai);
                     }
                 }
@@ -2156,4 +2340,5 @@ namespace RogueEssence.Data
                 yield return MsgLog[ii];
         }
     }
+
 }

@@ -73,5 +73,10 @@ namespace RogueEssence.LevelGen
         public override bool Equals(object obj) => (obj is RandDecay) && this.Equals((RandDecay)obj);
 
         public override int GetHashCode() => unchecked(191 + (this.Min.GetHashCode() * 313) ^ (this.Max.GetHashCode() * 739));
+
+        public override string ToString()
+        {
+            return string.Format("{0}+{1}%^{2}", this.Min, this.Rate, this.Max - this.Min);
+        }
     }
 }

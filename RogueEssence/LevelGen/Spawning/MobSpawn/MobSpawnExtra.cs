@@ -50,11 +50,11 @@ namespace RogueEssence.LevelGen
         public override string ToString()
         {
             if (Statuses.Count != 1)
-                return string.Format("{0}[{1}]", this.GetType().Name, Statuses.Count.ToString());
+                return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), Statuses.Count.ToString());
             else
             {
                 EntrySummary summary = DataManager.Instance.DataIndices[DataManager.DataType.Status].Get(Statuses.GetSpawn(0).ID);
-                return string.Format("{0}: {1}", this.GetType().Name, summary.Name.ToLocal());
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), summary.Name.ToLocal());
             }
         }
     }

@@ -14,7 +14,7 @@ namespace RogueEssence.Dungeon
         Trap
     }
 
-    public class BattleContext : GameContext, IActionContext
+    public class BattleContext : UserTargetGameContext, IActionContext
     {
         public const int DEFAULT_ATTACK_SLOT = -1;
         public const int FAKE_ATTACK_SLOT = -2;

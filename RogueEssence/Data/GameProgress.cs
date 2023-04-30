@@ -128,6 +128,17 @@ namespace RogueEssence.Data
         public int StartLevel;
         public int RescuesLeft;
 
+        /// <summary>
+        /// The total play time from past sessions.
+        /// </summary>
+        public TimeSpan SessionTime;
+
+        /// <summary>
+        /// The time when the current session was started.
+        /// </summary>
+        public DateTime SessionStartTime;
+
+
         //these values update and never clear
         public string EndDate;
         public string Location;
@@ -201,6 +212,20 @@ namespace RogueEssence.Data
             }
         }
 
+        public string GetDungeonTimeDisplay()
+        {
+            TimeSpan totalSessionTime = SessionTime;
+            //add the time elapsed since current session start, if we have a session start
+            if (SessionStartTime.Ticks > 0)
+                totalSessionTime += (DateTime.Now - SessionStartTime);
+
+            string display = "99:59:59";
+            int totalHours = totalSessionTime.Hours;
+            if (totalHours < 100)
+                display = String.Format("{0:D2}", totalHours) + totalSessionTime.ToString(@"\:mm\:ss");
+
+            return display;
+        }
         public bool GetDefaultEnable(string moveIndex)
         {
             if (String.IsNullOrEmpty(moveIndex))
@@ -306,9 +331,43 @@ namespace RogueEssence.Data
         public abstract IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
         public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
 
+        /// <summary>
+        /// Begin counting play time for session
+        /// </summary>
+        public void BeginSession()
+        {
+            SessionTime = TimeSpan.Zero;
+            SessionStartTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Stops counting play time for the end of an adventure or suspending via quicksave
+        /// </summary>
+        public void EndSession()
+        {
+            SessionTime = SessionTime + (DateTime.Now - SessionStartTime);
+            SessionStartTime = new DateTime(0);
+        }
+
+        /// <summary>
+        /// Loads play time from replay data
+        /// resume counting play time by setting the sesion start
+        /// </summary>
+        public void ResumeSession(ReplayData replay)
+        {
+            SessionTime = new TimeSpan(replay.SessionTime);
+            if (replay.SessionStartTime > 0L)
+            {
+                //special case: use dirty value from forcequitted session
+                SessionStartTime = new DateTime(replay.SessionStartTime);
+            }
+            else
+                SessionStartTime = DateTime.Now;
+        }
+
         public abstract int GetTotalScore();
 
-        public IEnumerator<YieldInstruction> RestrictTeam(ZoneData zone, bool silent)
+        public IEnumerator<YieldInstruction> RestrictTeam(ZoneEntrySummary zone, bool silent)
         {
             List<string> teamRestrictions = new List<string>();
             List<string> bagRestrictions = new List<string>();
@@ -365,7 +424,7 @@ namespace RogueEssence.Data
                             {
                                 removedItems = true;
                                 itemsToStore.Add(player.EquippedItem);
-                                player.DequipItem();
+                                player.SilentDequipItem();
                                 heldSlots--;
                                 break;
                             }
@@ -405,22 +464,53 @@ namespace RogueEssence.Data
             }
         }
 
-        public void ClearDefeatDest()
+        public void PrepAdventureStates()
         {
+            MidAdventure = true;
+
+            //clear defeat destinations, set absentee status, reload tactics
             for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
             {
+                ActiveTeam.Players[ii].Absentee = false;
                 ActiveTeam.Players[ii].DefeatAt = "";
                 ActiveTeam.Players[ii].DefeatLoc = ZoneLoc.Invalid;
+                ActiveTeam.Players[ii].Tactic = new AITactic(ActiveTeam.Players[ii].Tactic);
             }
             for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
             {
+                ActiveTeam.Guests[ii].Absentee = false;
                 ActiveTeam.Guests[ii].DefeatAt = "";
                 ActiveTeam.Guests[ii].DefeatLoc = ZoneLoc.Invalid;
+                ActiveTeam.Guests[ii].Tactic = new AITactic(ActiveTeam.Guests[ii].Tactic);
             }
             for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
             {
+                ActiveTeam.Assembly[ii].Absentee = true;
                 ActiveTeam.Assembly[ii].DefeatAt = "";
                 ActiveTeam.Assembly[ii].DefeatLoc = ZoneLoc.Invalid;
+                ActiveTeam.Assembly[ii].Tactic = new AITactic(ActiveTeam.Assembly[ii].Tactic);
+            }
+        }
+
+        /// <summary>
+        /// Executed when the save file is loaded without a quicksave.  Check and clear all quicksave-related variables.
+        /// </summary>
+        public IEnumerator<YieldInstruction> LoadedWithoutQuicksave()
+        {
+            //Remove any dangling rescues
+            if (Rescue != null)
+                Rescue = null;
+            //should never be mid-adventure; we backed out of a dungeon attempt
+            if (MidAdventure)
+            {
+                //give loss penalty if we entered at Risk
+                if (Outcome != ResultType.Unknown)
+                {
+                    if (Stakes == DungeonStakes.Risk)
+                        yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnLossPenalty(this));
+                    //retain the outcome as the last adventure's outcome
+                }
+                MidAdventure = false;
             }
         }
 
@@ -432,27 +522,21 @@ namespace RogueEssence.Data
         /// <param name="permanent"></param>
         /// <param name="silent"></param>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> RestrictLevel(ZoneData zone, bool capOnly, bool permanent, bool silent)
+        public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent)
         {
-            StartLevel = zone.Level;
+            StartLevel = level;
             try
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], zone.Level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly);
                     if (!permanent)
                         ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], zone.Level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly);
                     //no backref for guests
-                }
-                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
-                {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], zone.Level, capOnly);
-                    if (!permanent)
-                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
                 }
             }
             catch (Exception ex)
@@ -559,7 +643,7 @@ namespace RogueEssence.Data
                     }
                 }
                 //add the EXP to the character
-                if (character.Level < DataManager.Instance.MaxLevel)
+                if (character.Level < DataManager.Instance.Start.MaxLevel)
                 {
                     character.EXP += removedEXP;
 
@@ -568,7 +652,7 @@ namespace RogueEssence.Data
                         character.EXP -= growthData.GetExpToNext(character.Level);
                         character.Level++;
 
-                        if (character.Level >= DataManager.Instance.MaxLevel)
+                        if (character.Level >= DataManager.Instance.Start.MaxLevel)
                         {
                             character.EXP = 0;
                             break;
@@ -669,7 +753,7 @@ namespace RogueEssence.Data
             {
                 using (MemoryStream classStream = new MemoryStream())
                 {
-                    Serializer.SerializeData(classStream, save);
+                    Serializer.SerializeData(classStream, save, true);
                     writer.Write(classStream.Position);
 
                     classStream.WriteTo(writer.BaseStream);
@@ -702,7 +786,7 @@ namespace RogueEssence.Data
         }
 
 
-        public void FullRestore()
+        public void FullStateRestore()
         {
             foreach (Character character in ActiveTeam.EnumerateChars())
                 character.FullRestore();
@@ -860,90 +944,49 @@ namespace RogueEssence.Data
             ItemsToStore = new List<InvItem>();
             StorageToStore = new Dictionary<string, int>();
         }
-
-
-        public static void LossPenalty(GameProgress save)
-        {
-            try
-            {
-                //remove money
-                save.ActiveTeam.Money = 0;
-                //remove bag items
-                for (int ii = save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
-                {
-                    ItemData entry = DataManager.Instance.GetItem(save.ActiveTeam.GetInv(ii).ID);
-                    if (!entry.CannotDrop)
-                        save.ActiveTeam.RemoveFromInv(ii);
-                }
-
-                //remove equips
-                foreach (Character player in save.ActiveTeam.EnumerateChars())
-                {
-                    if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                    {
-                        ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
-                        if (!entry.CannotDrop)
-                            player.DequipItem();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-        }
-
+        
         public override int GetTotalScore() { return 0; }
 
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
-            ZoneData zone = DataManager.Instance.GetZone(zoneID);
+            ZoneEntrySummary zone = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zoneID);
+
             //restrict team size/bag size/etc
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
-
-            MidAdventure = true;
+            
             Stakes = stakes;
 
-            //reset location defeated
-            ClearDefeatDest();
+            PrepAdventureStates();
 
-            //create a copy (from save and load) of the current state to ensure that no nonserialized variables linger
+            //pre-save with a GiveUp outcome
+            Outcome = ResultType.GaveUp;
             DataManager.Instance.SaveMainGameState();
-
-            GameState state = DataManager.Instance.LoadMainGameState(false);
-
-            DataManager.Instance.SetProgress(state.Save);
-            LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save);
-            ZoneManager.LoadFromState(state.Zone);
-            LuaEngine.Instance.UpdateZoneInstance();
-
-            //and load another copy to mark it with loss
-            state = DataManager.Instance.LoadMainGameState(false);
-            if (Stakes == DungeonStakes.Risk)
-                LossPenalty(state.Save);
-            DataManager.Instance.SaveGameState(state);
+            Outcome = ResultType.Unknown;
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.RestrictLevel(zone, true, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false));
 
-            DataManager.Instance.Save.RestartLogs(seed);
-            DataManager.Instance.Save.RescuesLeft = zone.Rescues;
+            RestartLogs(seed);
+            RescuesLeft = zone.Rescues;
+            BeginSession();
 
             if (recorded)
-                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false);
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false, SessionStartTime);
         }
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
         {
+            EndSession();
+
             Outcome = result;
             bool recorded = DataManager.Instance.RecordingReplay;
             string recordFile = null;
-            try
+            if (result == ResultType.Rescue)
             {
-                if (result == ResultType.Rescue)
+                try
                 {
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -963,9 +1006,16 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = DataManager.Instance.StartMap;
+                        NextDest = DataManager.Instance.Start.Map;
                 }
-                else if (result != ResultType.Cleared)
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
+            else if (result != ResultType.Cleared)
+            {
+                try
                 {
                     if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                         Location = ZoneManager.Instance.CurrentGround.GetColoredName();
@@ -975,20 +1025,25 @@ namespace RogueEssence.Data
                     DataManager.Instance.MsgLog.Clear();
                     //end the game with a recorded ending
                     recordFile = DataManager.Instance.EndPlay(this, StartDate);
-
-                    if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
-                        LossPenalty(this);
-
-                    if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
-                        NextDest = nextArea;
-                    else
-                        NextDest = DataManager.Instance.StartMap;
-
                 }
-                else
+                catch (Exception ex)
                 {
-                    string completedZone = ZoneManager.Instance.CurrentZoneID;
-                    CompleteDungeon(completedZone);
+                    DiagManager.Instance.LogError(ex);
+                }
+
+                if (Outcome != ResultType.Escaped && Stakes == DungeonStakes.Risk) //remove all items
+                    yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnLossPenalty(this));
+
+                if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
+                    NextDest = nextArea;
+                else
+                    NextDest = DataManager.Instance.Start.Map;
+            }
+            else
+            {
+                try
+                {
+                    CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
 
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -999,18 +1054,17 @@ namespace RogueEssence.Data
                     if (nextArea.IsValid()) //  if an exit is specified, go to the exit.
                         NextDest = nextArea;
                     else
-                        NextDest = DataManager.Instance.StartMap;
-
+                        NextDest = DataManager.Instance.Start.Map;
                 }
-
-                TotalAdventures++;
-
-                FullRestore();
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
             }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
+
+            TotalAdventures++;
+
+            FullStateRestore();
 
             bool mergeDataBack = (Stakes != DungeonStakes.None);
             try
@@ -1038,6 +1092,7 @@ namespace RogueEssence.Data
             {
                 if (mainSave != null)
                     DataManager.Instance.SetProgress(mainSave);
+                DataManager.Instance.Save.CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 
@@ -1069,6 +1124,7 @@ namespace RogueEssence.Data
             if (this != destProgress)
                 MergeDexTo(destProgress, true);
 
+            //for merging data imported from roguelocke
             foreach (CharData charData in CharsToStore)
             {
                 Character chara = new Character(charData);
@@ -1092,6 +1148,54 @@ namespace RogueEssence.Data
             destProgress.ActiveTeam.Bank += MoneyToStore;
             MoneyToStore = 0;
         }
+
+        public void DeleteOutdatedAssets(DataManager.DataType assetType)
+        {
+            //illegal items:
+            if ((assetType & DataManager.DataType.Item) != DataManager.DataType.None)
+            {
+                //delete from inv
+                for (int ii = ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
+                {
+                    ItemData entry = DataManager.Instance.GetItem(ActiveTeam.GetInv(ii).ID);
+                    if (entry == null)
+                        ActiveTeam.RemoveFromInv(ii, true);
+                }
+
+                //remove equips
+                foreach (Character player in ActiveTeam.EnumerateChars())
+                {
+                    if (!String.IsNullOrEmpty(player.EquippedItem.ID))
+                    {
+                        ItemData entry = DataManager.Instance.GetItem(player.EquippedItem.ID);
+                        if (entry == null)
+                            player.EquippedItem = new InvItem();
+                    }
+                }
+
+                //delete from storage
+                List<string> removeKeys = new List<string>();
+                foreach (string key in ActiveTeam.Storage.Keys)
+                {
+                    ItemData entry = DataManager.Instance.GetItem(key);
+                    if (entry == null)
+                        removeKeys.Add(key);
+
+                }
+                foreach (string key in removeKeys)
+                    ActiveTeam.Storage.Remove(key);
+
+                //delete from boxstorage
+                for (int ii = ActiveTeam.BoxStorage.Count - 1; ii >= 0; ii--)
+                {
+                    ItemData entry = DataManager.Instance.GetItem(ActiveTeam.BoxStorage[ii].ID);
+                    if (entry == null)
+                        ActiveTeam.BoxStorage.RemoveAt(ii);
+                }
+            }
+
+            //TODO: delete skills, intrinsics, and monsters
+        }
     }
 
 
@@ -1100,12 +1204,15 @@ namespace RogueEssence.Data
     {
         public bool Seeded { get; set; }
 
+        public RogueConfig Config;
+        
         [JsonConstructor]
         public RogueProgress()
         { }
-        public RogueProgress(ulong seed, string uuid, bool seeded) : base(seed, uuid)
+        public RogueProgress(string uuid,  RogueConfig config) : base(config.Seed, uuid)
         {
-            Seeded = seeded;
+            Seeded = !config.SeedRandomized;
+            Config = config;
         }
         public override int GetTotalScore()
         {
@@ -1114,18 +1221,21 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict)
         {
-            ZoneData zone = DataManager.Instance.GetZone(zoneID);
-
+            ZoneEntrySummary zone = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zoneID);
+            
             MidAdventure = true;
             Stakes = stakes;
+            Outcome = ResultType.Unknown;
 
-            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone, false, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, false, true, true));
+
+            BeginSession();
 
             if (recorded)
             {
                 if (!Directory.Exists(PathMod.ModSavePath(DataManager.ROGUE_PATH)))
                     Directory.CreateDirectory(PathMod.ModSavePath(DataManager.ROGUE_PATH));
-                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded);
+                DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.ROGUE_PATH, DataManager.Instance.Save.StartDate + DataManager.QUICKSAVE_EXTENSION), zoneID, true, Seeded, SessionStartTime);
             }
 
             yield break;
@@ -1133,6 +1243,8 @@ namespace RogueEssence.Data
 
         public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
         {
+            EndSession();
+
             bool recorded = DataManager.Instance.RecordingReplay;
             //if lose, end the play, display plaque, and go to title
             if (result != ResultType.Cleared)
@@ -1174,10 +1286,14 @@ namespace RogueEssence.Data
 
                     FinalResultsMenu menu = new FinalResultsMenu(ending);
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(menu));
-
+                    
                     Dictionary<string, List<RecordHeaderData>> scores = RecordHeaderData.LoadHighScores();
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
 
+                    // handle the case for seeded runs and there's currently no scores for the current zone
+                    if (scores.ContainsKey(ZoneManager.Instance.CurrentZoneID))
+                    {
+                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));   
+                    }
                 }
 
                 if (newRecruits.Count > 0)
@@ -1186,16 +1302,12 @@ namespace RogueEssence.Data
                     GameManager.Instance.Fanfare("Fanfare/NewArea");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_NEW_CHARS")));
                 }
-
-                yield return new WaitForFrames(20);
-
-                GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
             }
             else
             {
                 string completedZone = ZoneManager.Instance.CurrentZoneID;
 
-                MidAdventure = true;
+                MidAdventure = false;
                 ClearDungeonItems();
 
                 //  if there isn't a next area, end the play, display the plaque, return to title screen
@@ -1218,9 +1330,7 @@ namespace RogueEssence.Data
                     state.Save.CompleteDungeon(completedZone);
                     DataManager.Instance.SaveGameState(state);
                 }
-
-
-
+                
                 if (recorded)
                 {
                     GameProgress ending = DataManager.Instance.GetRecord(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile));
@@ -1285,14 +1395,130 @@ namespace RogueEssence.Data
                     if (allowTransfer)
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));
                 }
-
-
-
-                yield return new WaitForFrames(20);
             }
+            yield return new WaitForFrames(20);
         }
 
+        public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)
+        {
+            DataManager.Instance.PreLoadZone(config.Destination);
+            GameManager.Instance.BGM("", true);
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
+            GameProgress save = new RogueProgress(Guid.NewGuid().ToString().ToUpper(), config);
+            save.UnlockDungeon(config.Destination);
+            DataManager.Instance.SetProgress(save);
+            DataManager.Instance.Save.UpdateVersion();
+            DataManager.Instance.Save.UpdateOptions();
+            DataManager.Instance.Save.StartDate = String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now);
+            DataManager.Instance.Save.ActiveTeam = new ExplorerTeam();
+            DataManager.Instance.Save.ActiveTeam.Name = config.TeamName;
 
+            MonsterData monsterData = DataManager.Instance.GetMonster(config.Starter);
+
+            int formSlot = config.FormSetting;
+            List<int> forms = CharaDetailMenu.GetPossibleForms(monsterData);
+            if (formSlot >= forms.Count)
+                formSlot = forms.Count - 1;
+            if (formSlot == -1)
+                formSlot = MathUtils.Rand.Next(forms.Count);
+
+            int formIndex = forms[formSlot];
+
+            Gender gender = CharaDetailMenu.LimitGender(monsterData, formIndex, config.GenderSetting);
+            if (gender == Gender.Unknown)
+                gender = monsterData.Forms[formIndex].RollGender(MathUtils.Rand);
+            
+            int intrinsicSlot = CharaDetailMenu.LimitIntrinsic(monsterData, formIndex, config.IntrinsicSetting);
+            string intrinsic;
+            if (intrinsicSlot == -1)
+                intrinsic = monsterData.Forms[formIndex].RollIntrinsic(MathUtils.Rand, 3);
+            else if (intrinsicSlot == 0)
+                intrinsic = monsterData.Forms[formIndex].Intrinsic1;
+            else if (intrinsicSlot == 1)
+                intrinsic = monsterData.Forms[formIndex].Intrinsic2;
+            else
+                intrinsic = monsterData.Forms[formIndex].Intrinsic3;
+
+            Character newChar = DataManager.Instance.Save.ActiveTeam.CreatePlayer(MathUtils.Rand, new MonsterID(config.Starter, formIndex, config.SkinSetting, gender), DataManager.Instance.Start.Level, intrinsic, DataManager.Instance.Start.Personality);
+            newChar.Nickname = config.Nickname;
+            DataManager.Instance.Save.ActiveTeam.Players.Add(newChar);
+
+            try
+            {
+                LuaEngine.Instance.OnNewGame();
+                if (DataManager.Instance.Save.ActiveTeam.Players.Count == 0)
+                    throw new Exception("Script generated an invalid team!");
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+            
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(config.Destination, new SegLoc()), GameProgress.DungeonStakes.Risk, true, false));
+        }
     }
+    
+    public class RogueConfig
+    {
+        public string Destination;
+        public bool DestinationRandomized;
+        public string TeamName;
+        public bool TeamRandomized;
+        public string Starter;
+        public bool StarterRandomized;
+        public int IntrinsicSetting;
+        public int FormSetting;
+        public Gender GenderSetting;
+        public ulong Seed;
+        public bool SeedRandomized;
+        public string SkinSetting;
+        public string Nickname;
 
+        public RogueConfig()
+        {
+        }
+
+        public RogueConfig(RogueConfig other)
+        {
+            Destination = other.Destination;
+            DestinationRandomized = other.DestinationRandomized;
+            TeamName = other.TeamName;
+            TeamRandomized = other.TeamRandomized;
+            Starter = other.Starter;
+            StarterRandomized = other.StarterRandomized;
+            IntrinsicSetting = other.IntrinsicSetting;
+            FormSetting = other.FormSetting;
+            GenderSetting = other.GenderSetting;
+            Seed = other.Seed;
+            SeedRandomized = other.SeedRandomized;
+            SkinSetting = other.SkinSetting;
+            Nickname = other.Nickname;
+        }
+
+        public static RogueConfig RerollFromOther(RogueConfig oldConfig)
+        {
+            RogueConfig config = new RogueConfig(oldConfig);
+            if (config.TeamRandomized)
+                config.TeamName = DataManager.Instance.Start.Teams[MathUtils.Rand.Next(DataManager.Instance.Start.Teams.Count)];
+
+            if (config.SeedRandomized)
+                config.Seed = MathUtils.Rand.NextUInt64();
+
+            if (config.StarterRandomized)
+            {
+                List<string> starters = CharaChoiceMenu.GetStartersList();
+                string starter = starters[MathUtils.Rand.Next(starters.Count)];
+                config.Starter = starter;
+                config.IntrinsicSetting = -1;
+                config.FormSetting = -1;
+                config.GenderSetting = Gender.Unknown;
+            }
+            if (config.DestinationRandomized)
+            {
+                List<string> destinations = RogueDestMenu.GetDestinationsList();
+                config.Destination = destinations[MathUtils.Rand.Next(destinations.Count)];
+            }
+            return config;
+        }
+    }
 }

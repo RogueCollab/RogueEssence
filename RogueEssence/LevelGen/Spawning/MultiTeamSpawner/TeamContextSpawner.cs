@@ -10,7 +10,7 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class TeamContextSpawner<T> : IMultiTeamSpawner<T> 
+    public class TeamContextSpawner<T> : IMultiTeamSpawner<T>, ITeamContextSpawner
         where T : BaseMapGenContext
     {
         public TeamContextSpawner()
@@ -51,7 +51,12 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}", this.GetType().Name);
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), Amount.ToString());
         }
+    }
+
+    public interface ITeamContextSpawner
+    {
+        RandRange Amount { get; set; }
     }
 }

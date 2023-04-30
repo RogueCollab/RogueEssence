@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   <ItemGroup>
@@ -79,6 +79,12 @@
     <Compile Update="Views\DialogBoxes\ModConfigWindow.axaml.cs">
       <DependentUpon>ModConfigWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\GroundEditForm\Layers\GroundLayerWindow.axaml.cs">
+      <DependentUpon>GroundLayerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MapEditForm\Teams\TeamWindow.axaml.cs">
+      <DependentUpon>TeamWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Testing\TextTestForm.axaml.cs">
       <DependentUpon>TextTestForm.axaml</DependentUpon>
     </Compile>
@@ -153,6 +159,9 @@
     </Compile>
     <Compile Update="Views\GroundEditForm\GroundEditForm.axaml.cs">
       <DependentUpon>GroundEditForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\UserControls\TeamBox.axaml.cs">
+      <DependentUpon>TeamBox.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\UserControls\LayerBox.axaml.cs">
       <DependentUpon>LayerBox.axaml</DependentUpon>

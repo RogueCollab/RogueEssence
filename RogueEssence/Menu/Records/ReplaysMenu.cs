@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using RogueElements;
 using RogueEssence.Data;
 using System.IO;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -20,24 +21,30 @@ namespace RogueEssence.Menu
                 string fileName = Path.GetFileNameWithoutExtension(record.Path);
                 if (record.Name != "")
                 {
-                    string rogueSign = "";
-                    if (record.Result == GameProgress.ResultType.Escaped || record.Result == GameProgress.ResultType.Cleared)
-                        rogueSign += "\uE10A";
-                    else
-                        rogueSign += "\uE10B";
-                    if (record.IsRogue)
+                    try
                     {
-                        if (record.IsSeeded)
-                            rogueSign += "\uE10D";
+                        string rogueSign = "";
+                        if (record.Result == GameProgress.ResultType.Escaped || record.Result == GameProgress.ResultType.Cleared)
+                            rogueSign += "\uE10A";
                         else
-                            rogueSign += "\uE10C";
-                    }
+                            rogueSign += "\uE10B";
+                        if (record.IsRogue)
+                        {
+                            if (record.IsSeeded)
+                                rogueSign += "\uE10D";
+                            else
+                                rogueSign += "\uE10C";
+                        }
 
-                    //also include an indicator of the floors traversed, if possible
-                    flatChoices.Add(new MenuTextChoice(rogueSign + record.Name + ": " + record.LocationString, () => { choose(record.Path); }));
+                        //also include an indicator of the floors traversed, if possible
+                        fileName = rogueSign + record.Name + ": " + record.LocationString;
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex, false);
+                    }
                 }
-                else
-                    flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
+                flatChoices.Add(new MenuTextChoice(fileName, () => { choose(record.Path); }));
             }
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 

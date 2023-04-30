@@ -21,12 +21,119 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    [Serializable]
+    public class CombineGridRoomRandStep<T> : CombineGridRoomBaseStep<T> where T : class, IRoomGridGenContext
+    {
+        public CombineGridRoomRandStep()
+        {
+        }
+
+        public CombineGridRoomRandStep(RandRange mergeRate, List<BaseRoomFilter> filters) : base(mergeRate, filters)
+        {
+        }
+
+        protected override Loc? chooseViableGridLoc(IRandom rand, GridPlan floorPlan, GridCombo<T> combo)
+        {
+            Rect allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight) - combo.Size + new Loc(1));
+            if (floorPlan.Wrap)
+                allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight));
+
+            //attempt to place it
+            for (int ii = 0; ii < 10; ii++)
+            {
+                int xx = rand.Next(allowedRange.X, allowedRange.End.X);
+                int yy = rand.Next(allowedRange.Y, allowedRange.End.Y);
+
+                bool viable = true;
+                //check for room presence in all rooms (must be SINGLE and immutable)
+
+                for (int x2 = xx; x2 < xx + combo.Size.X; x2++)
+                {
+                    for (int y2 = yy; y2 < yy + combo.Size.Y; y2++)
+                    {
+                        if (!roomViable(floorPlan, x2, y2))
+                        {
+                            viable = false;
+                            break;
+                        }
+                    }
+                    if (!viable)
+                        break;
+                }
+                if (!viable)
+                    continue;
+
+                return new Loc(xx, yy);
+            }
+
+            return null;
+        }
+    }
+
+    [Serializable]
+    public class CombineGridRoomStep<T> : CombineGridRoomBaseStep<T> where T : class, IRoomGridGenContext
+    {
+        public CombineGridRoomStep()
+        {
+        }
+
+        public CombineGridRoomStep(RandRange mergeRate, List<BaseRoomFilter> filters) : base(mergeRate, filters)
+        {
+        }
+
+        protected override Loc? chooseViableGridLoc(IRandom rand, GridPlan floorPlan, GridCombo<T> combo)
+        {
+            List<Loc> viableLocs = new List<Loc>();
+
+            Rect allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight) - combo.Size + new Loc(1));
+            if (floorPlan.Wrap)
+                allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight));
+
+            //attempt to place it
+            for (int xx = allowedRange.X; xx < allowedRange.End.X; xx++)
+            {
+                for (int yy = allowedRange.Y; yy < allowedRange.End.Y; yy++)
+                {
+                    bool viable = true;
+                    //check for room presence in all rooms (must be SINGLE and immutable)
+
+                    for (int x2 = xx; x2 < xx + combo.Size.X; x2++)
+                    {
+                        for (int y2 = yy; y2 < yy + combo.Size.Y; y2++)
+                        {
+                            if (!roomViable(floorPlan, x2, y2))
+                            {
+                                viable = false;
+                                break;
+                            }
+                        }
+                        if (!viable)
+                            break;
+                    }
+                    if (!viable)
+                        continue;
+
+
+                    //TODO: check for connectivity: all constituent rooms must be connected to each other somehow
+                    //Check for connectivity within the whole map.
+
+                    viableLocs.Add(new Loc(xx, yy));
+                }
+            }
+
+            if (viableLocs.Count == 0)
+                return null;
+
+            return viableLocs[rand.Next(viableLocs.Count)];
+        }
+    }
+
     /// <summary>
     /// Merges single-cell rooms together into larger rooms, specified in Combos
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class CombineGridRoomStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
+    public abstract class CombineGridRoomBaseStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
     {
         /// <summary>
         /// The number of merges to add to the grid plan.
@@ -48,14 +155,14 @@ namespace RogueEssence.LevelGen
         /// </summary>
         public ComponentCollection RoomComponents { get; set; }
 
-        public CombineGridRoomStep()
+        public CombineGridRoomBaseStep()
         {
             Combos = new SpawnList<GridCombo<T>>();
             RoomComponents = new ComponentCollection();
             Filters = new List<BaseRoomFilter>();
         }
 
-        public CombineGridRoomStep(RandRange mergeRate, List<BaseRoomFilter> filters)
+        public CombineGridRoomBaseStep(RandRange mergeRate, List<BaseRoomFilter> filters)
         {
             MergeRate = mergeRate;
             Combos = new SpawnList<GridCombo<T>>();
@@ -63,6 +170,7 @@ namespace RogueEssence.LevelGen
             Filters = filters;
         }
 
+        protected abstract Loc? chooseViableGridLoc(IRandom rand, GridPlan floorPlan, GridCombo<T> combo);
 
         public override void ApplyToPath(IRandom rand, GridPlan floorPlan)
         {
@@ -71,48 +179,14 @@ namespace RogueEssence.LevelGen
             {
                 //roll a merge
                 GridCombo<T> combo = Combos.Pick(rand);
-                List<Loc> viableLocs = new List<Loc>();
 
-                Rect allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight) - combo.Size + new Loc(1));
-                if (floorPlan.Wrap)
-                    allowedRange = Rect.FromPoints(Loc.Zero, new Loc(floorPlan.GridWidth, floorPlan.GridHeight));
+                Loc? chosenLoc = chooseViableGridLoc(rand, floorPlan, combo);
 
-                //attempt to place it
-                for (int xx = allowedRange.X; xx < allowedRange.End.X; xx++)
-                {
-                    for (int yy = allowedRange.Y; yy < allowedRange.End.Y; yy++)
-                    {
-                        bool viable = true;
-                        //check for room presence in all rooms (must be SINGLE and immutable)
-
-                        for (int x2 = xx; x2 < xx + combo.Size.X; x2++)
-                        {
-                            for (int y2 = yy; y2 < yy + combo.Size.Y; y2++)
-                            {
-                                if (!roomViable(floorPlan, x2, y2))
-                                {
-                                    viable = false;
-                                    break;
-                                }
-                            }
-                            if (!viable)
-                                break;
-                        }
-                        if (!viable)
-                            continue;
-
-
-                        //TODO: check for connectivity: all constituent rooms must be connected to each other somehow
-                        //Check for connectivity within the whole map.
-
-                        viableLocs.Add(new Loc(xx, yy));
-                    }
-                }
-
-                if (viableLocs.Count == 0)
+                if (!chosenLoc.HasValue)
                     continue;
 
-                Loc destLoc = viableLocs[rand.Next(viableLocs.Count)];
+                Loc destLoc = chosenLoc.Value;
+
                 //erase the constituent rooms
                 for (int x2 = destLoc.X; x2 < destLoc.X + combo.Size.X; x2++)
                 {
@@ -131,7 +205,7 @@ namespace RogueEssence.LevelGen
             }
         }
 
-        private bool roomViable(GridPlan floorPlan, int xx, int yy)
+        protected bool roomViable(GridPlan floorPlan, int xx, int yy)
         {
             //must be PRESENT, SINGLE and immutable
             GridRoomPlan plan = floorPlan.GetRoomPlan(new Loc(xx, yy));
@@ -148,7 +222,7 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return string.Format("{0}[{1}]: Amount:{2}", this.GetType().Name, Combos.Count, MergeRate.ToString());
+            return string.Format("{0}[{1}]: Amount:{2}", this.GetType().GetFormattedTypeName(), Combos.Count, MergeRate.ToString());
         }
     }
 }

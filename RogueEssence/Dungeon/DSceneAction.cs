@@ -154,7 +154,7 @@ namespace RogueEssence.Dungeon
                     //reusable, do nothing.
                 }
                 else
-                    context.User.DequipItem();
+                    yield return CoroutineManager.Instance.StartCoroutine(context.User.DequipItem());
             }
             else if (context.UsageSlot == BattleContext.FLOOR_ITEM_SLOT)
             {
@@ -459,7 +459,7 @@ namespace RogueEssence.Dungeon
             {
                 //the animation
                 FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
-                fxEmitter.SetupEmit(target.CharLoc * GraphicsManager.TileSize, user.CharLoc * GraphicsManager.TileSize, user.CharDir);
+                fxEmitter.SetupEmit(target.CharLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.CharLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.CharDir);
                 CreateAnim(fxEmitter, DrawLayer.NoDraw);
                 SetScreenShake(new ScreenMover(fx.ScreenMovement));
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, target.CharLoc));
@@ -471,7 +471,7 @@ namespace RogueEssence.Dungeon
             GameManager.Instance.BattleSE(fx.Sound);
             //the animation
             FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
-            fxEmitter.SetupEmit(targetLoc * GraphicsManager.TileSize, userLoc * GraphicsManager.TileSize, userDir);
+            fxEmitter.SetupEmit(targetLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), userLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), userDir);
             CreateAnim(fxEmitter, DrawLayer.NoDraw);
             SetScreenShake(new ScreenMover(fx.ScreenMovement));
             yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, targetLoc));

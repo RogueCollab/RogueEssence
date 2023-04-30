@@ -24,11 +24,6 @@ namespace RogueEssence.LevelGen
             Name = new LocalText();
         }
 
-        public FloorNameIDZoneStep(Priority priority)
-        {
-            Priority = priority;
-            Name = new LocalText();
-        }
         public FloorNameIDZoneStep(Priority priority, LocalText name)
         {
             Priority = priority;
@@ -44,12 +39,12 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
-            queue.Enqueue(Priority, new MapNameIDStep<BaseMapGenContext>(zoneContext.CurrentID, LocalText.FormatLocalText(Name, (zoneContext.CurrentID + 1).ToString())));
+            queue.Enqueue(Priority, new MapNameIDStep<BaseMapGenContext>(Name, 1));
         }
 
         public override string ToString()
         {
-            return string.Format("{0}: \"{1}\"", this.GetType().Name, this.Name.DefaultText);
+            return string.Format("{0}: \"{1}\"", this.GetType().GetFormattedTypeName(), this.Name.DefaultText);
         }
     }
 }

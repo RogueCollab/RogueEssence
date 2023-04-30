@@ -37,6 +37,7 @@ namespace RogueEssence
             Skill4,
             SortItems,
             SelectItems,
+            SkillPreview,
             Wait,
             LeftMouse,
             //meta input here
@@ -174,7 +175,9 @@ namespace RogueEssence
 
                 if (DiagManager.Instance.CurSettings.Enter)
                     inputStates[(int)InputType.Confirm] |= keyboard.IsKeyDown(Keys.Enter);
-                inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
+
+                if (DiagManager.Instance.CurSettings.NumPad)
+                    inputStates[(int)InputType.Wait] = keyboard.IsKeyDown(Keys.NumPad5);
             }
 
             if (mouseActive)

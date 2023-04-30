@@ -53,10 +53,5 @@ namespace RogueEssence.LevelGen
 
             this.SpawnRandInCandRooms(map, spawningRooms, spawns, this.SuccessPercent);
         }
-
-        public override string ToString()
-        {
-            return string.Format("{0}<{1}>: MultOnSuccess:{2}%", this.GetType().Name, typeof(TSpawnable).Name, this.SuccessPercent);
-        }
     }
 }

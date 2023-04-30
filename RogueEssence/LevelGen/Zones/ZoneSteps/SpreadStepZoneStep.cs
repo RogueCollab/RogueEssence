@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dev;
@@ -12,48 +13,37 @@ namespace RogueEssence.LevelGen
     /// Spreads a map gen step randomly across the dungeon segment.
     /// </summary>
     [Serializable]
-    public class SpreadStepZoneStep : ZoneStep
+    public class SpreadStepZoneStep : SpreadZoneStep
     {
         /// <summary>
-        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// The priority to insert the step at.
         /// </summary>
-        public SpreadPlanBase SpreadPlan;
+        public Priority StepPriority;
 
         /// <summary>
         /// The steps to distribute.
         /// </summary>
-        public IRandPicker<IGenPriority> Spawns;
-
-        /// <summary>
-        /// Flags from the player's passives that will affect the appearance rate of the step.
-        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
-        /// The chance of the step appearing will be increased by the ModGenState's value.
-        /// </summary>
-        [StringTypeConstraint(1, typeof(ModGenState))]
-        public List<FlagType> ModStates;
+        public IRandPicker<IGenStep> Spawns;
 
         [NonSerialized]
-        public List<IGenPriority> DropItems;
+        public List<IGenStep> DropItems;
 
         public SpreadStepZoneStep()
         {
-            ModStates = new List<FlagType>();
         }
 
-        public SpreadStepZoneStep(SpreadPlanBase plan, IRandPicker<IGenPriority> spawns) : this()
+        public SpreadStepZoneStep(SpreadPlanBase plan, Priority priority, IRandPicker<IGenStep> spawns) : base(plan)
         {
-            SpreadPlan = plan;
+            StepPriority = priority;
             Spawns = spawns;
         }
 
-        protected SpreadStepZoneStep(SpreadStepZoneStep other, ulong seed) : this()
+        protected SpreadStepZoneStep(SpreadStepZoneStep other, ulong seed) : base(other, seed)
         {
+            StepPriority = other.StepPriority;
             Spawns = other.Spawns.CopyState();
-            SpreadPlan = other.SpreadPlan.Instantiate(seed);
-            ModStates.AddRange(other.ModStates);
 
-            DropItems = new List<IGenPriority>();
-
+            DropItems = new List<IGenStep>();
             //Other SpredStep classes choose which step to place on which floor on the fly, but this one needs care, due to the potential of CanPick changing state
             for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
             {
@@ -61,176 +51,114 @@ namespace RogueEssence.LevelGen
                     break;
 
                 ReRandom rand = new ReRandom(seed);
-                IGenPriority genStep = Spawns.Pick(rand);
+                IGenStep genStep = Spawns.Pick(rand);
                 DropItems.Add(genStep);
             }
         }
         public override ZoneStep Instantiate(ulong seed) { return new SpreadStepZoneStep(this, seed); }
 
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
+        protected override bool ApplyToFloor(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue, int dropIdx)
         {
-            bool added = false;
-            for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
+            if (dropIdx < -1)
             {
-                if (SpreadPlan.DropPoints[ii] != zoneContext.CurrentID)
-                    continue;
-                if (ii >= DropItems.Count)
-                    continue;
-                IGenPriority genStep = DropItems[ii];
-                queue.Enqueue(genStep.Priority, genStep.GetItem());
-                added = true;
+                //we don't know if changing the state of this step in a non-instantiation phase can lead to problems, stay on the safe side for now
+                if (Spawns.ChangesState || !Spawns.CanPick)
+                    return false;
+                IGenStep genStep = Spawns.Pick(context.Rand);
+                queue.Enqueue(StepPriority, genStep);
             }
-
-            if (added)
-                return;
-
-            GameProgress progress = DataManager.Instance.Save;
-            if (progress != null && progress.ActiveTeam != null)
+            else
             {
-                if (Spawns.CanPick)
-                {
-                    int totalMod = 0;
-                    foreach (Character chara in progress.ActiveTeam.Players)
-                    {
-                        foreach (FlagType state in ModStates)
-                        {
-                            CharState foundState;
-                            if (chara.CharStates.TryGet(state.FullType, out foundState))
-                                totalMod += ((ModGenState)foundState).Mod;
-                        }
-                    }
-                    if (context.Rand.Next(100) < totalMod)
-                    {
-                        IGenPriority genStep = Spawns.Pick(context.Rand);
-                        queue.Enqueue(genStep.Priority, genStep.GetItem());
-                        return;
-                    }
-                }
+                if (dropIdx >= DropItems.Count)
+                    return false;
+                IGenStep genStep = DropItems[dropIdx];
+                queue.Enqueue(StepPriority, genStep);
             }
+            return true;
         }
 
         public override string ToString()
         {
             int count = 0;
+            IGenStep singleGen = null;
             if (Spawns != null)
             {
-                foreach (IGenPriority gen in Spawns.EnumerateOutcomes())
+                foreach (IGenStep gen in Spawns.EnumerateOutcomes())
+                {
                     count++;
+                    singleGen = gen;
+                }
             }
-            return string.Format("{0}[{1}]", this.GetType().Name, count);
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
+
     }
 
     /// <summary>
     /// Spreads a map gen step randomly across the dungeon segment, allowing precise control over the spawn rate across different floors.
     /// </summary>
     [Serializable]
-    public class SpreadStepRangeZoneStep : ZoneStep
+    public class SpreadStepRangeZoneStep : SpreadZoneStep
     {
         /// <summary>
-        /// Determines how many floors to distribute the step to, and how spread apart they are.
+        /// The priority to insert the step at.
         /// </summary>
-        public SpreadPlanBase SpreadPlan;
+        public Priority StepPriority;
 
         /// <summary>
         /// The steps to distribute.  Probabilities can be customized across floors.
         /// </summary>
-        public SpawnRangeList<IGenPriority> Spawns;
+        [RangeBorder(0, true, true)]
+        public SpawnRangeList<IGenStep> Spawns;
 
-        /// <summary>
-        /// Flags from the player's passives that will affect the appearance rate of the step.
-        /// If a player enters a floor and is carrying an item, intrinsic, etc. that has a ModGenState listed here,
-        /// The chance of the step appearing will be increased by the ModGenState's value.
-        /// </summary>
-        [StringTypeConstraint(1, typeof(ModGenState))]
-        public List<FlagType> ModStates;
 
-        [NonSerialized]
-        public List<IGenPriority> DropItems;
-        //spreads an item through the floors
-        //ensures that the space in floors between occurrences is kept tame
         public SpreadStepRangeZoneStep()
         {
-            ModStates = new List<FlagType>();
         }
 
-        public SpreadStepRangeZoneStep(SpreadPlanBase plan, SpawnRangeList<IGenPriority> spawns) : this()
+        public SpreadStepRangeZoneStep(SpreadPlanBase plan, Priority priority, SpawnRangeList<IGenStep> spawns) : base(plan)
         {
-            SpreadPlan = plan;
+            StepPriority = priority;
             Spawns = spawns;
         }
 
-        protected SpreadStepRangeZoneStep(SpreadStepRangeZoneStep other, ulong seed) : this()
+        protected SpreadStepRangeZoneStep(SpreadStepRangeZoneStep other, ulong seed) : base(other, seed)
         {
+            StepPriority = other.StepPriority;
             Spawns = other.Spawns.CopyState();
-            SpreadPlan = other.SpreadPlan.Instantiate(seed);
-            ModStates.AddRange(other.ModStates);
-
-            DropItems = new List<IGenPriority>();
-
-            //Other SpredStep classes choose which step to place on which floor on the fly, but this one needs care, due to the potential of CanPick changing state
-            for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
-            {
-                int floor = SpreadPlan.DropPoints[ii];
-                SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(floor);
-                if (!spawnList.CanPick)
-                    continue;
-
-                ReRandom rand = new ReRandom(seed);
-                IGenPriority genStep = spawnList.Pick(rand);
-                DropItems.Add(genStep);
-            }
         }
         public override ZoneStep Instantiate(ulong seed) { return new SpreadStepRangeZoneStep(this, seed); }
 
 
-        public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
+        protected override bool ApplyToFloor(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue, int dropIdx)
         {
-            bool added = false;
-            for (int ii = 0; ii < SpreadPlan.DropPoints.Count; ii++)
-            {
-                if (SpreadPlan.DropPoints[ii] != zoneContext.CurrentID)
-                    continue;
-                if (ii >= DropItems.Count)
-                    continue;
-                IGenPriority genStep = DropItems[ii];
-                queue.Enqueue(genStep.Priority, genStep.GetItem());
-                added = true;
-            }
-
-            if (added)
-                return;
-
-            GameProgress progress = DataManager.Instance.Save;
-            if (progress != null && progress.ActiveTeam != null)
-            {
-                SpawnList<IGenPriority> spawnList = Spawns.GetSpawnList(zoneContext.CurrentID);
-                if (spawnList.CanPick)
-                {
-                    int totalMod = 0;
-                    foreach (Character chara in progress.ActiveTeam.Players)
-                    {
-                        foreach (FlagType state in ModStates)
-                        {
-                            CharState foundState;
-                            if (chara.CharStates.TryGet(state.FullType, out foundState))
-                                totalMod += ((ModGenState)foundState).Mod;
-                        }
-                    }
-                    if (context.Rand.Next(100) < totalMod)
-                    {
-                        IGenPriority genStep = spawnList.Pick(context.Rand);
-                        queue.Enqueue(genStep.Priority, genStep.GetItem());
-                        return;
-                    }
-                }
-            }
+            SpawnList<IGenStep> spawnList = Spawns.GetSpawnList(zoneContext.CurrentID);
+            if (!spawnList.CanPick)
+                return false;
+            IGenStep genStep = spawnList.Pick(context.Rand);
+            queue.Enqueue(StepPriority, genStep);
+            return true;
         }
 
         public override string ToString()
         {
-            return string.Format("{0}[{1}]", this.GetType().Name, Spawns.Count.ToString());
+            int count = 0;
+            IGenStep singleGen = null;
+            if (Spawns != null)
+            {
+                foreach (IGenStep gen in Spawns.EnumerateOutcomes())
+                {
+                    count++;
+                    singleGen = gen;
+                }
+            }
+            if (count == 1)
+                return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), singleGen.ToString());
+            return string.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), count);
         }
+
     }
 }

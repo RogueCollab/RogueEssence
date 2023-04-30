@@ -9,7 +9,6 @@ using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
-using QuadTrees;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
 
@@ -57,7 +56,7 @@ namespace RogueEssence.Dungeon
         /// the internal name of the map, no spaces or special characters, never localized.
         /// Used to refer to map data and script data for this map!
         /// </summary>
-        public string AssetName { get; set; }
+        public string AssetName;
 
         public Dictionary<LuaEngine.EDungeonMapCallbacks, ScriptEvent> ScriptEvents;
 
@@ -88,6 +87,8 @@ namespace RogueEssence.Dungeon
 
         public Loc? ViewCenter;
         public Loc ViewOffset;
+
+        public bool HideMinimap;
 
         [NonSerialized]
         private ExplorerTeam activeTeam;
@@ -469,8 +470,14 @@ namespace RogueEssence.Dungeon
                 {
                     if (!character.Dead)
                     {
-                        Loc seenBounds = Character.GetSightDims();
-                        if (Collides(modifiedRect, new Rect(character.CharLoc - seenBounds, seenBounds * 2 + new Loc(1))))
+                        Loc seen = Character.GetSightDims();
+                        Rect sightBounds = new Rect(character.CharLoc - seen, seen * 2 + Loc.One);
+                        sightBounds = ZoneManager.Instance.CurrentMap.GetClampedSight(sightBounds);
+
+                        if (EdgeView == BaseMap.ScrollEdge.Clamp)
+                            return;
+
+                        if (Collides(modifiedRect, sightBounds))
                             UpdateExploration(character);
                     }
                 }
@@ -912,6 +919,22 @@ namespace RogueEssence.Dungeon
         //  Script Stuff
         //========================
 
+
+        public void OnEditorInit()
+        {
+            if (AssetName != "")
+                LuaEngine.Instance.RunDungeonMapScript(AssetName);
+
+            //Reload the map events
+            LoadScriptEvents();
+
+            foreach (var ev in ScriptEvents)
+                ev.Value.ReloadEvent();
+
+            //!TODO: Handle entity callbacks maybe?
+
+        }
+
         /// <summary>
         /// Called before the map is displayed to run script events and etc.
         /// </summary>
@@ -922,11 +945,13 @@ namespace RogueEssence.Dungeon
             if (AssetName != "")
                 LuaEngine.Instance.RunDungeonMapScript(AssetName);
 
+            //Reload the map events
+            LoadScriptEvents();
+
             //Check for floor specific events in the current dungeon's package.
             //Reload the map events
             foreach (var ev in ScriptEvents)
                 ev.Value.ReloadEvent();
-
 
             //!TODO: Handle entity callbacks maybe?
 
@@ -958,7 +983,7 @@ namespace RogueEssence.Dungeon
         {
             foreach (var ev in LuaEngine.EnumerateDungeonFloorCallbackTypes())
             {
-                string cbackn = LuaEngine.MakeDungeonMapScriptCallbackName(AssetName, ev);
+                string cbackn = LuaEngine.MakeDungeonMapScriptCallbackName(LuaEngine.DungeonMapCurrentScriptSym, ev);
                 if (LuaEngine.Instance.DoesFunctionExists(cbackn))
                     ScriptEvents[ev] = new ScriptEvent(cbackn);
             }
@@ -978,6 +1003,7 @@ namespace RogueEssence.Dungeon
 
         public void LuaEngineReload()
         {
+            LoadScriptEvents();
             LoadLua();
         }
 

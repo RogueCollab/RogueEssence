@@ -11,6 +11,7 @@ using System.IO;
 using System.Collections;
 using Newtonsoft.Json;
 using System.Text;
+using RogueEssence.Dev;
 /*
 * LuaEngine.cs
 * 2017/06/24
@@ -78,7 +79,22 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EZoneCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeZoneScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", ZoneCurrentScriptSym, callback.ToString());
+            return String.Format("{0}.{1}", zonename, callback.ToString());
+        }
+
+
+        public static string MakeZoneCallbackDef(string zonename, EZoneCallbacks type)
+        {
+            string args = "";
+            if (type == EZoneCallbacks.Init)
+                args = "zone";
+            else if (type == EZoneCallbacks.Rescued)
+                args = "zone, name, mail";
+            else if (type == EZoneCallbacks.EnterSegment)
+                args = "zone, rescuing, segmentID, mapID";
+            else if (type == EZoneCallbacks.ExitSegment)
+                args = "zone, result, rescue, segmentID, mapID";
+            return String.Format("{0}({1})", MakeZoneScriptCallbackName(zonename, type), args);
         }
 
         #endregion
@@ -98,6 +114,8 @@ namespace RogueEssence.Script
             GameLoad,
             Invalid
         }
+
+
         //Name for common map callback functions
         public static readonly string MapCurrentScriptSym = "CURMAPSCR";
         //The last one is optional, and is called before the map script is unloaded, so the script may do any needed cleanup
@@ -121,13 +139,21 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="callbackformat"></param>
         /// <param name="mapname"></param>
+        /// <param name="callback"></param>
         /// <returns></returns>
         public static string MakeMapScriptCallbackName(string mapname, EMapCallbacks callback)
         {
             if (callback < 0 && callback >= EMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeMapScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", MapCurrentScriptSym, callback.ToString());
+            return String.Format("{0}.{1}", mapname, callback.ToString());
         }
+
+
+        public static string MakeGroundMapCallbackDef(string mapname, EMapCallbacks type)
+        {
+            return String.Format("{0}(map)", MakeMapScriptCallbackName(mapname, type));
+        }
+
         #endregion
 
 
@@ -177,7 +203,12 @@ namespace RogueEssence.Script
         {
             if (callback < 0 && callback >= EDungeonMapCallbacks.Invalid)
                 throw new Exception("LuaEngine.MakeDungeonMapScriptCallbackName(): Unknown callback!");
-            return String.Format("{0}.{1}", DungeonMapCurrentScriptSym, callback.ToString());
+            return String.Format("{0}.{1}", floorname, callback.ToString());
+        }
+
+        public static string MakeDungeonMapCallbackDef(string floorname, EDungeonMapCallbacks type)
+        {
+            return String.Format("{0}(map)", MakeDungeonMapScriptCallbackName(floorname, type));
         }
 
         /// <summary>
@@ -236,7 +267,15 @@ namespace RogueEssence.Script
                 throw new Exception("LuaEngine.MakeLuaEntityCallbackName(): Invalid Lua entity event type!");
             return String.Format("{2}.{0}_{1}", entname, type.ToString(), MapCurrentScriptSym);
         }
-#endregion
+
+        public static string MakeEntLuaEventDef(string mapname, string entname, EEntLuaEventTypes type)
+        {
+            if (type < 0 && type >= EEntLuaEventTypes.Invalid)
+                throw new Exception("LuaEngine.MakeLuaEntityCallbackName(): Invalid Lua entity event type!");
+            string callback = String.Format("{2}.{0}_{1}", entname, type.ToString(), mapname);
+            return String.Format("{0}(obj, activator)", callback);
+        }
+        #endregion
 
 
         #region SERVICES_EVENTS
@@ -248,11 +287,14 @@ namespace RogueEssence.Script
             Deinit,
             GraphicsLoad,
             GraphicsUnload,
+            MenuButtonPressed,
             NewGame,
+            LossPenalty,
             UpgradeSave,
             Restart,
             Update,
 
+            MusicChange,
             GroundEntityInteract,
 
             DungeonModeBegin,
@@ -274,7 +316,7 @@ namespace RogueEssence.Script
             GroundMapExit,
 
             //Keep last
-            _NBEvents,
+            _NBEvents
         };
 
         private IEnumerator<EServiceEvents> IterateServiceEvents()
@@ -317,7 +359,7 @@ namespace RogueEssence.Script
         public const string ZONE_SCRIPT_ENTRY_POINT = "init"; //filename of the zone's main script file that the engine will run when the zone is loaded (by default lua package entrypoints are init.lua)
 
         //Global lua symbol names
-        private const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
+        public const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -394,6 +436,8 @@ namespace RogueEssence.Script
         /// </summary>
         public void Reset()
         {
+            if (LuaState != null)
+                LuaState.Close();
             //init lua
             LuaState = new Lua();
             //LuaState.UseTraceback = true;
@@ -452,9 +496,13 @@ namespace RogueEssence.Script
             if (ZoneManager.Instance != null)
             {
                 ZoneManager.Instance.LuaEngineReload();
-                if (ZoneManager.Instance.CurrentZone != null && 
-                    (GameManager.Instance.CurrentScene == GroundScene.Instance || GameManager.Instance.CurrentScene == DungeonScene.Instance))
-                    GameManager.Instance.SceneOutcome = ReInitZone();
+                if (ZoneManager.Instance.CurrentZone != null)
+                {
+                    if (GameManager.Instance.CurrentScene == GroundScene.Instance || GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                        GameManager.Instance.SceneOutcome = ReInitZone();
+                    else if (GameManager.Instance.CurrentScene == GroundEditScene.Instance || GameManager.Instance.CurrentScene == DungeonEditScene.Instance)
+                        ReInitZoneEditor();
+                }
             }
 
         }
@@ -464,16 +512,25 @@ namespace RogueEssence.Script
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             if (ZoneManager.Instance.CurrentGround != null)
             {
-                OnGroundMapInit(ZoneManager.Instance.CurrentGround.AssetName, ZoneManager.Instance.CurrentGround);
                 OnGroundModeBegin();
-
-                //process events before the map fades in
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentGround.OnInit());
             }
             else if (ZoneManager.Instance.CurrentMap != null)
             {
-                //!#FIXME : We'll need to call the method on map entry too if a map is running!
-                //OnDungeonFloorInit();
+                OnDungeonModeBegin();
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentMap.OnInit());
+            }
+        }
+
+        public void ReInitZoneEditor()
+        {
+            if (ZoneManager.Instance.CurrentGround != null)
+            {
+                ZoneManager.Instance.CurrentGround.OnEditorInit();
+            }
+            else if (ZoneManager.Instance.CurrentMap != null)
+            {
+                ZoneManager.Instance.CurrentMap.OnEditorInit();
             }
         }
 
@@ -688,7 +745,6 @@ namespace RogueEssence.Script
             LuaState["TASK"] = m_scripttask;
             LuaState["AI"] = m_scriptai;
             LuaState["XML"] = m_scriptxml;
-
         }
 
         public void UpdateZoneInstance()
@@ -1268,8 +1324,8 @@ namespace RogueEssence.Script
                         //Insert the default map functions and comment header
                         foreach (EMapCallbacks fn in EnumerateCallbackTypes())
                         {
-                            string callbackname = MakeMapScriptCallbackName(mapassetname, fn);
-                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}(map)\n", callbackname);
+                            string callbackname = MakeGroundMapCallbackDef(mapassetname, fn);
+                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}\n", callbackname);
                             if (fn == EMapCallbacks.Init)
                             {
                                 //Add the map string loader
@@ -1350,18 +1406,9 @@ namespace RogueEssence.Script
                         //Insert the default map functions and comment header
                         foreach (EZoneCallbacks fn in EnumerateZoneCallbackTypes())
                         {
-                            string callbackname = MakeZoneScriptCallbackName(zoneassetname, fn);
-                            string args = "";
-                            if (fn == EZoneCallbacks.Init)
-                                args = "zone";
-                            else if (fn == EZoneCallbacks.Rescued)
-                                args = "zone, name, mail";
-                            else if (fn == EZoneCallbacks.EnterSegment)
-                                args = "zone, rescuing, segmentID, mapID";
-                            else if (fn == EZoneCallbacks.ExitSegment)
-                                args = "zone, result, rescue, segmentID, mapID";
+                            string callbackname = MakeZoneCallbackDef(zoneassetname, fn);
 
-                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}({1})\n", callbackname, args);
+                            fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}\n", callbackname);
                             // put comments for each function here
                             fstream.WriteLine("\nend\n");
                         }
@@ -1738,6 +1785,16 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("LuaEngine.OnGraphicsUnload()..");
             m_scrsvc.Publish(EServiceEvents.GraphicsUnload.ToString());
         }
+        
+        
+        /// <summary>
+        /// Called when the menu button is pressed!
+        /// </summary>
+        public IEnumerator<YieldInstruction> OnMenuButtonPressed()
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnMenuButtonPressed()...");
+            yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.MenuButtonPressed.ToString()));
+        }
 
         public void OnNewGame()
         {
@@ -1749,6 +1806,23 @@ namespace RogueEssence.Script
             m_scrsvc.Publish(EServiceEvents.UpgradeSave.ToString());
         }
 
+        /// <summary>
+        /// Called when the music changes!
+        /// </summary>
+        public void OnMusicChange(string name, string originName, string album, string artist, string spoiler)
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnMusicChange()..");
+            m_scrsvc.Publish(EServiceEvents.MusicChange.ToString(), name, originName, album, artist, spoiler);
+        }
+        
+        /// <summary>
+        /// Called after failing a dungeon in main progress!
+        /// </summary>
+        public IEnumerator<YieldInstruction> OnLossPenalty(GameProgress save)
+        {
+            DiagManager.Instance.LogInfo("LuaEngine.OnLossPenalty()..");
+            yield return CoroutineManager.Instance.StartCoroutine(m_scrsvc.PublishCoroutine(EServiceEvents.LossPenalty.ToString(), save));
+        }
         /// <summary>
         /// Called when the game mode switches to GroundMode!
         /// </summary>
@@ -1771,7 +1845,6 @@ namespace RogueEssence.Script
             m_scriptUI.Reset();
             DiagManager.Instance.LogInfo("LuaEngine.OnGroundMapInit()..");
             m_scrsvc.Publish(EServiceEvents.GroundMapInit.ToString(), mapname, map);
-
         }
 
         /// <summary>

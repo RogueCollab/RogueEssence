@@ -69,7 +69,15 @@ namespace RogueEssence.LevelGen
 
         protected bool canDrawBlob(T map, Map mapBlob, Loc offset)
         {
-            if (!this.TerrainStencil.Test(map, new Rect(offset, new Loc(mapBlob.Width, mapBlob.Height))))
+            bool IsBlobValid(Loc loc)
+            {
+                Loc srcLoc = loc - offset;
+                if (Collision.InBounds(Loc.Zero, mapBlob.Size, srcLoc))
+                    return mapBlob.TileBlocked(srcLoc);
+                return false;
+            }
+
+            if (!this.TerrainStencil.Test(map, new Rect(offset, new Loc(mapBlob.Width, mapBlob.Height)), IsBlobValid))
                 return false;
 
             for (int xx = 0; xx < mapBlob.Width; xx++)

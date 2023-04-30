@@ -13,6 +13,8 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public abstract class Team
     {
+        public string Name;
+
         public EventedList<Character> Players { get; set; }
         public EventedList<Character> Guests { get; set; }
 
@@ -36,6 +38,7 @@ namespace RogueEssence.Dungeon
 
         public Team()
         {
+            Name = "";
             Players = new EventedList<Character>();
             Guests = new EventedList<Character>();
             inventory = new List<InvItem>();
@@ -43,6 +46,7 @@ namespace RogueEssence.Dungeon
 
         protected Team(Team other) : this()
         {
+            Name = other.Name;
             foreach (Character chara in other.Players)
                 Players.Add(chara.Clone(this));
             foreach (Character chara in other.Guests)
@@ -270,6 +274,13 @@ namespace RogueEssence.Dungeon
             return invValue;
         }
 
+        public Character CharAtIndex(bool guest, int index)
+        {
+            if (guest)
+                return Guests[index];
+            else
+                return Players[index];
+        }
 
         public CharIndex GetCharIndex(Character character)
         {
@@ -319,6 +330,13 @@ namespace RogueEssence.Dungeon
             foreach (Character player in Guests)
                 player.LoadLua();
         }
+
+        public override string ToString()
+        {
+            if (!String.IsNullOrEmpty(Name))
+                return Name;
+            return "[EMPTY]";
+        }
     }
 
     [Serializable]
@@ -346,11 +364,10 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class ExplorerTeam : Team
     {
-        public const int MAX_TEAM_SLOTS = 4;
+        public static int MAX_TEAM_SLOTS = 4;
 
         public int MaxInv;
 
-        public string Name;
         public EventedList<Character> Assembly;
 
         [JsonConverter(typeof(ItemStorageConverter))]
@@ -369,7 +386,6 @@ namespace RogueEssence.Dungeon
         [JsonConstructor]
         public ExplorerTeam(bool initEvents) : base()
         {
-            Name = "";
             Assembly = new EventedList<Character>();
             BoxStorage = new List<InvItem>();
             Storage = new Dictionary<string, int>();
@@ -381,7 +397,6 @@ namespace RogueEssence.Dungeon
         protected ExplorerTeam(ExplorerTeam other) : base(other)
         {
             MaxInv = other.MaxInv;
-            Name = other.Name;
 
             Assembly = new EventedList<Character>();
             foreach (Character chara in other.Assembly)
@@ -554,18 +569,6 @@ namespace RogueEssence.Dungeon
                 }
             }
             return invValue;
-        }
-
-        public void AddToSortedAssembly(Character chara)
-        {
-            int idx = 0;
-            while (idx < Assembly.Count)
-            {
-                if (!Assembly[idx].IsFavorite)
-                    break;
-                idx++;
-            }
-            Assembly.Insert(idx, chara);
         }
 
         public Character CreatePlayer(IRandom rand, MonsterID form, int level, string intrinsic, int personality)

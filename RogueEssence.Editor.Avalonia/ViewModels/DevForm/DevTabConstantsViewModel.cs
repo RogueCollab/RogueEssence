@@ -13,6 +13,13 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class DevTabConstantsViewModel : ViewModelBase
     {
+        public void btnEditStartParams_Click()
+        {
+            OpenList<StartParams>("Start Params", DataManager.Instance.Start, (obj) => {
+                DataManager.Instance.Start = obj;
+                DataManager.Instance.SaveStartParams();
+            });
+        }
 
         public void btnEditUniversal_Click()
         {

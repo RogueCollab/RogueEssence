@@ -38,8 +38,6 @@ namespace RogueEssence.Dungeon
 
         public int ID { get; set; }
 
-        public bool DropTitle;
-
         public List<MapLayer> Layers;
 
         public Tile[][] Tiles;
@@ -51,7 +49,15 @@ namespace RogueEssence.Dungeon
 
         //includes all start points
         public List<LocRay8> EntryPoints;
+
+        /// <summary>
+        /// Width in tiles
+        /// </summary>
         public int Width { get { return Tiles.Length; } }
+
+        /// <summary>
+        /// Height in tiles
+        /// </summary>
         public int Height { get { return Tiles[0].Length; } }
         public Loc Size { get { return new Loc(Width, Height); } }
 
@@ -260,6 +266,21 @@ namespace RogueEssence.Dungeon
                 origin);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        public Rect GetClampedSight(Rect rect)
+        {
+            if (EdgeView == ScrollEdge.Clamp)
+            {
+                Loc start = rect.Start;
+                rect.Start = new Loc(Math.Max(0, Math.Min(start.X, Width - rect.Width)), Math.Max(0, Math.Min(start.Y, Height - rect.Height)));
+                return rect;
+            }
+            return rect;
+        }
 
         /// <summary>
         /// Converts out of bounds coords to wrapped-around coords.

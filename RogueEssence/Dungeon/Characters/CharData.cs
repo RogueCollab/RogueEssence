@@ -87,7 +87,11 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public bool IsPartner;
 
+        public bool NameLocked;
+
         public bool IsFavorite;
+
+        public bool Unrecruitable;
 
         public List<BattleEvent> ActionEvents;
 
@@ -224,5 +228,10 @@ namespace RogueEssence.Dungeon
             }
         }
 
+
+        public override string ToString()
+        {
+            return BaseForm.Species;
+        }
     }
 }

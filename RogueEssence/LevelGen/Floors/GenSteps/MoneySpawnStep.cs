@@ -9,10 +9,11 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class MoneySpawnStep<T> : GenStep<T> where T : BaseMapGenContext
+    public class MoneySpawnStep<T> : GenStep<T>, IMoneySpawnStep
+        where T : BaseMapGenContext
     {
         [SubGroup]
-        public MoneySpawnRange MoneyRange;
+        public MoneySpawnRange MoneyRange { get; set; }
 
         public MoneySpawnStep() { }
         public MoneySpawnStep(RandRange moneyAmount) { MoneyRange = new MoneySpawnRange(moneyAmount); }
@@ -24,7 +25,12 @@ namespace RogueEssence.LevelGen
 
         public override string ToString()
         {
-            return String.Format("{0}: Amt:{1}", this.GetType().Name, MoneyRange.ToString());
+            return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), MoneyRange.ToString());
         }
+    }
+
+    public interface IMoneySpawnStep
+    {
+        MoneySpawnRange MoneyRange { get; set; }
     }
 }

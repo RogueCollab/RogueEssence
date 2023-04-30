@@ -395,6 +395,13 @@ namespace RogueEssence.Ground
             }
         }
 
+        public override void DrawPreview(SpriteBatch spriteBatch, Loc offset, float alpha)
+        {
+            CharSheet sheet = GraphicsManager.GetChara(CurrentForm.ToCharID());
+            Loc drawLoc = currentCharAction.GetDrawLoc(offset, sheet);
+            sheet.DrawChar(spriteBatch, GraphicsManager.IdleAction, false, CharDir, drawLoc.ToVector2(), CharSheet.DefaultFrame, Microsoft.Xna.Framework.Color.White * alpha);
+        }
+
 
         public void GetCurrentSprite(out CharID currentForm, out Loc currentOffset, out int currentHeight, out int currentAnim, out int currentTime, out int currentFrame)
         {

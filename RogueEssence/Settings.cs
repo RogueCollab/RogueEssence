@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using RogueEssence.Menu;
 
 namespace RogueEssence
 {
@@ -45,9 +46,33 @@ namespace RogueEssence
         public int BGMBalance;
         public int SEBalance;
         public BattleSpeed BattleFlow;
+
+
         public SkillDefault DefaultSkills;
         public int Minimap;
-        public int Border;
+
+        private double textSpeed;
+        public double TextSpeed
+        {
+            get { return textSpeed; }
+            set
+            {
+                textSpeed = value;
+                DialogueBox.TextSpeed = textSpeed;
+            }
+        }
+
+        private int border;
+        public int Border
+        {
+            get { return border; }
+            set
+            {
+                border = value;
+                MenuBase.BorderStyle = border;
+            }
+        }
+
         public int Window;
         public string Language;
 
@@ -113,12 +138,11 @@ namespace RogueEssence
             ActionConflicts.Add(FrameInput.InputType.Skill2);
             ActionConflicts.Add(FrameInput.InputType.Skill3);
             ActionConflicts.Add(FrameInput.InputType.Skill4);
+            ActionConflicts.Add(FrameInput.InputType.SkillPreview);
 
             ForbiddenKeys = new HashSet<Keys>();
             for (int ii = 0; ii < 24; ii++)
                 ForbiddenKeys.Add(Keys.F1 + ii);
-            for (int ii = 0; ii < 10; ii++)
-                ForbiddenKeys.Add(Keys.NumPad0 + ii);
             ForbiddenKeys.Add(Keys.LeftControl);
             ForbiddenKeys.Add(Keys.RightControl);
             ForbiddenKeys.Add(Keys.LeftAlt);
@@ -149,6 +173,7 @@ namespace RogueEssence
             BGMBalance = 5;
             SEBalance = 5;
             BattleFlow = BattleSpeed.Normal;
+            TextSpeed = 1.0;
             DefaultSkills = SkillDefault.Attacks;
             Language = "";
 
@@ -208,6 +233,7 @@ namespace RogueEssence
                 actionKeys[(int)FrameInput.InputType.Skill4] = Keys.X;
                 actionKeys[(int)FrameInput.InputType.SortItems] = Keys.S;
                 actionKeys[(int)FrameInput.InputType.SelectItems] = Keys.A;
+                actionKeys[(int)FrameInput.InputType.SkillPreview] = Keys.Back;
             }
 
             if (actionButtons != null)
@@ -230,6 +256,7 @@ namespace RogueEssence
                 actionButtons[(int)FrameInput.InputType.Skill4] = Buttons.B;
                 actionButtons[(int)FrameInput.InputType.SortItems] = Buttons.X;
                 actionButtons[(int)FrameInput.InputType.SelectItems] = Buttons.LeftTrigger;
+                actionButtons[(int)FrameInput.InputType.SkillPreview] = Buttons.RightTrigger;
             }
         }
 
@@ -262,6 +289,7 @@ namespace RogueEssence
                 case FrameInput.InputType.Skill4: return true;
                 case FrameInput.InputType.SortItems: return true;
                 case FrameInput.InputType.SelectItems: return true;
+                case FrameInput.InputType.SkillPreview: return true;
                 default: return false;
             }
         }
@@ -288,6 +316,7 @@ namespace RogueEssence
                 case FrameInput.InputType.Skill4: return true;
                 case FrameInput.InputType.SortItems: return true;
                 case FrameInput.InputType.SelectItems: return true;
+                case FrameInput.InputType.SkillPreview: return true;
                 default: return false;
             }
         }
@@ -318,7 +347,7 @@ namespace RogueEssence
             List<string> enumStrings = new List<string>();
             foreach (FrameInput.InputType t in Enums)
                 enumStrings.Add(DiagManager.Instance.GetControlString(t));
-            return String.Format(Key.ToLocal(), enumStrings.ToArray());
+            return Text.FormatGrammar(Key.ToLocal(), enumStrings.ToArray());
         }
     }
 }

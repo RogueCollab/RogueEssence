@@ -1,42 +1,53 @@
 ﻿using System;
 using RogueElements;
-
+using RogueEssence.Dev;
 
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Sets the ID and title of the floor.
+    /// Sets the Title of the floor, taking in an offset for ID substitutions.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public class MapNameIDStep<T> : GenStep<T> where T : BaseMapGenContext
     {
         /// <summary>
-        /// The floor ID.  This is typically the floor number and must be equal to the ID being requested.
+        /// The title of the map.
+        /// Can include one string format subtituion for floor number.
         /// </summary>
-        public int ID;
+        [SubGroup]
+        public LocalText Name;
 
         /// <summary>
-        /// The title of the map.
+        /// The amount to add to the map ID to get the floor number substituted into the title.
         /// </summary>
-        public LocalText Name;
+        public int IDOffset;
+
 
         public MapNameIDStep()
         {
             Name = new LocalText();
 
         }
-        public MapNameIDStep(int id, LocalText name)
+        public MapNameIDStep(LocalText name, int idOffset)
         {
-            ID = id;
+            Name = new LocalText(name);
+            IDOffset = idOffset;
+        }
+
+        public MapNameIDStep(LocalText name)
+        {
             Name = new LocalText(name);
         }
 
         public override void Apply(T map)
         {
-            map.Map.ID = ID;
-            map.Map.Name = new LocalText(Name);
-            map.DropTitle = true;
+            map.Map.Name = LocalText.FormatLocalText(Name, (map.Map.ID + IDOffset).ToString());
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), Name.ToLocal());
         }
     }
 

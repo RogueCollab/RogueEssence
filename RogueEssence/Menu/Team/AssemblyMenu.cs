@@ -12,6 +12,14 @@ namespace RogueEssence.Menu
 {
     public class AssemblyMenu : MultiPageMenu
     {
+        public enum AssemblySortMode
+        {
+            Recent,
+            Level,
+            Species,
+            Nickname
+        }
+
         public delegate void OnChooseTeam(List<int> slot);
         private const int SLOTS_PER_PAGE = 6;
 
@@ -20,10 +28,14 @@ namespace RogueEssence.Menu
         
         private Action teamChanged;
 
-        public AssemblyMenu(int defaultChoice, Action teamChanged)
+        private List<int> assemblyView;
+        private AssemblySortMode sortMode;
+
+        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
         {
             int menuWidth = 152;
             this.teamChanged = teamChanged;
+            sortMode = sort;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
@@ -32,19 +44,26 @@ namespace RogueEssence.Menu
                 Character character = DataManager.Instance.Save.ActiveTeam.Players[index];
                 bool enabled = !ChoosingLeader(ii);
                 MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), enabled ? Color.Lime : TextIndigo);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, enabled ? Color.Lime : TextIndigo);
-                flatChoices.Add(new MenuElementChoice(() => { Choose(index, false); }, true, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), 
+                    DirV.Up, DirH.Right, enabled ? Color.Lime : TextIndigo);
+                flatChoices.Add(new MenuElementChoice(() => { Choose(index, false); }, true, memberName, memberLvLabel, memberLv));
             }
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Assembly.Count; ii++)
+
+            assemblyView = getSortedAssembly();
+            for (int ii = 0; ii < assemblyView.Count; ii++)
             {
                 int index = ii;
-                Character character = DataManager.Instance.Save.ActiveTeam.Assembly[index];
+                Character character = DataManager.Instance.Save.ActiveTeam.Assembly[assemblyView[index]];
                 Color color = CanChooseAssembly(ii) ? (character.IsFavorite ? Color.Yellow : Color.White) : Color.Red;
                 MenuText memberName = new MenuText(character.BaseName, new Loc(2, 1), color);
-                MenuText memberLv = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT", character.Level), new Loc(menuWidth - 8 * 4, 1),
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1),
                     DirV.Up, DirH.Right, color);
-                flatChoices.Add(new MenuElementChoice(() => { Choose(index, true); }, true, memberName, memberLv));
+                MenuText memberLv = new MenuText(character.Level.ToString(), new Loc(menuWidth - 8 * 7 + 6 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 1), DirV.Up, DirH.Right, color);
+
+                int assemblyIndex = assemblyView[index];
+                flatChoices.Add(new MenuElementChoice(() => { Choose(assemblyIndex, true); }, true, memberName, memberLvLabel, memberLv));
             }
             IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);
@@ -61,6 +80,49 @@ namespace RogueEssence.Menu
 
         }
 
+        private List<int> getSortedAssembly()
+        {
+            List<int> sortedAssembly = new List<int>();
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Assembly.Count; ii++)
+                sortedAssembly.Add(ii);
+            sortedAssembly.Sort(assemblyCompare);
+            return sortedAssembly;
+        }
+
+        public int assemblyCompare(int key1, int key2)
+        {
+            CharData data1 = DataManager.Instance.Save.ActiveTeam.Assembly[key1];
+            CharData data2 = DataManager.Instance.Save.ActiveTeam.Assembly[key2];
+            if (data1.IsFavorite != data2.IsFavorite)
+            {
+                if (data1.IsFavorite)
+                    return -1;
+                else
+                    return 1;
+            }
+
+            switch (sortMode)
+            {
+                case AssemblySortMode.Level:
+                    return Math.Sign(-1 * (data1.Level - data2.Level));
+                case AssemblySortMode.Nickname:
+                    return String.Compare(data1.BaseName, data2.BaseName);
+                case AssemblySortMode.Species:
+                    {
+                        int dex1 = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(data1.BaseForm.Species).SortOrder;
+                        int dex2 = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(data2.BaseForm.Species).SortOrder;
+                        return Math.Sign(dex1 - dex2);
+                    }
+            }
+
+            return Math.Sign(key1 - key2);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index">Represents the true index, not the one on display</param>
+        /// <param name="assembly"></param>
         public void Choose(int index, bool assembly)
         {
             MenuManager.Instance.AddMenu(new AssemblyChosenMenu(index, assembly, this), true);
@@ -80,6 +142,11 @@ namespace RogueEssence.Menu
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="choice">Choice must be premapped.</param>
+        /// <returns></returns>
         public bool CanChooseAssembly(int choice)
         {
             Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
@@ -89,26 +156,37 @@ namespace RogueEssence.Menu
         public void ChooseLeader(int choice)
         {
             DataManager.Instance.Save.ActiveTeam.LeaderIndex = choice;
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged, sortMode));
             teamChanged();
         }
 
         public void ChooseTeam(int choice)
         {
             GroundScene.Instance.SilentSendHome(choice);
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged, sortMode));
             teamChanged();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="choice">Choice must be pre-mapped</param>
         public void ChooseAssembly(int choice)
         {
             GroundScene.Instance.SilentAddToTeam(choice);
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged, sortMode));
             teamChanged();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="choice">Choice must be premapped</param>
         public void ReleaseAssembly(int choice)
         {
             DataManager.Instance.Save.ActiveTeam.Assembly.RemoveAt(choice);
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
+            assemblyView.RemoveAt(choice);
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged, sortMode));
         }
         public void ConfirmRename(string name)
         {
@@ -120,8 +198,11 @@ namespace RogueEssence.Menu
                 teamChanged();
             }
             else
-                DataManager.Instance.Save.ActiveTeam.Assembly[currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count].Nickname = name;
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged));
+            {
+                int assemblyIndex = currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count;
+                DataManager.Instance.Save.ActiveTeam.Assembly[assemblyView[assemblyIndex]].Nickname = name;
+            }
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged, sortMode));
         }
         public void ToggleFave()
         {
@@ -131,12 +212,11 @@ namespace RogueEssence.Menu
                 DataManager.Instance.Save.ActiveTeam.Players[currentChoice].IsFavorite = !DataManager.Instance.Save.ActiveTeam.Players[currentChoice].IsFavorite;
             else
             {
-                Character chara = DataManager.Instance.Save.ActiveTeam.Assembly[currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count];
+                int assemblyIndex = currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count;
+                Character chara = DataManager.Instance.Save.ActiveTeam.Assembly[assemblyView[assemblyIndex]];
                 chara.IsFavorite = !chara.IsFavorite;
-                DataManager.Instance.Save.ActiveTeam.Assembly.RemoveAt(currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count);
-                DataManager.Instance.Save.ActiveTeam.AddToSortedAssembly(chara);
             }
-            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(DataManager.Instance.Save.ActiveTeam.Players.Count, teamChanged));
+            MenuManager.Instance.ReplaceMenu(new AssemblyMenu(CurrentChoiceTotal, teamChanged, sortMode));
         }
 
         protected override void UpdateKeys(InputManager input)
@@ -145,7 +225,7 @@ namespace RogueEssence.Menu
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
                 GameManager.Instance.SE("Menu/Sort");
-                //TODO: make it sort the team based on index or alphabet
+                MenuManager.Instance.ReplaceMenu(new AssemblyMenu(DataManager.Instance.Save.ActiveTeam.Players.Count, teamChanged, (AssemblySortMode)(((int)sortMode + 1) % 4)));
             }
             else if (input.JustPressed(FrameInput.InputType.SelectItems))
             {
@@ -158,19 +238,20 @@ namespace RogueEssence.Menu
                         GameManager.Instance.SE("Menu/Toggle");
                         GroundScene.Instance.SilentSendHome(currentChoice);
                         teamChanged();
-                        MenuManager.Instance.ReplaceMenu(new AssemblyMenu(currentChoice, teamChanged));
+                        MenuManager.Instance.ReplaceMenu(new AssemblyMenu(currentChoice, teamChanged, sortMode));
                     }
                     else
                         GameManager.Instance.SE("Menu/Cancel");
                 }
                 else
                 {
-                    if (CanChooseAssembly(currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count))
+                    int assemblyIndex = currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    if (CanChooseAssembly(assemblyView[assemblyIndex]))
                     {
                         GameManager.Instance.SE("Menu/Toggle");
-                        GroundScene.Instance.SilentAddToTeam(currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count);
+                        GroundScene.Instance.SilentAddToTeam(assemblyView[assemblyIndex]);
                         teamChanged();
-                        MenuManager.Instance.ReplaceMenu(new AssemblyMenu(currentChoice, teamChanged));
+                        MenuManager.Instance.ReplaceMenu(new AssemblyMenu(currentChoice, teamChanged, sortMode));
                     }
                     else
                         GameManager.Instance.SE("Menu/Cancel");
@@ -187,7 +268,10 @@ namespace RogueEssence.Menu
             if (currentChoice < DataManager.Instance.Save.ActiveTeam.Players.Count)
                 subjectChar = DataManager.Instance.Save.ActiveTeam.Players[currentChoice];
             else
-                subjectChar = DataManager.Instance.Save.ActiveTeam.Assembly[currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count];
+            {
+                int assemblyIndex = currentChoice - DataManager.Instance.Save.ActiveTeam.Players.Count;
+                subjectChar = DataManager.Instance.Save.ActiveTeam.Assembly[assemblyView[assemblyIndex]];
+            }
                 
             summaryMenu.SetMember(subjectChar);
 

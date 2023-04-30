@@ -70,6 +70,12 @@ namespace RogueEssence.LevelGen
             }
         }
         public override SpreadPlanBase Instantiate(ulong seed) { return new SpreadPlanChance(this, seed); }
+
+
+        public override string ToString()
+        {
+            return string.Format("{0}% Per Floor", Chance);
+        }
     }
 
     /// <summary>
@@ -108,6 +114,11 @@ namespace RogueEssence.LevelGen
             }
         }
         public override SpreadPlanBase Instantiate(ulong seed) { return new SpreadPlanSpaced(this, seed); }
+
+        public override string ToString()
+        {
+            return string.Format("Every {0} Floors", FloorSpacing);
+        }
     }
 
     /// <summary>
@@ -159,6 +170,11 @@ namespace RogueEssence.LevelGen
             }
         }
         public override SpreadPlanBase Instantiate(ulong seed) { return new SpreadPlanQuota(this, seed); }
+
+        public override string ToString()
+        {
+            return string.Format("At a quota of {0}", Quota);
+        }
     }
 
 }
