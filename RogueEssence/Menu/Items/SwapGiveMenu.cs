@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
                 itemPresence[key] = DataManager.Instance.Save.ActiveTeam.Storage[key];
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
-                itemPresence[DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID] = itemPresence.GetValueOrDefault(DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID, 0);
+                itemPresence[DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID] = itemPresence.GetValueOrDefault(DataManager.Instance.Save.ActiveTeam.GetInv(ii).ID, 0) + 1;
 
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
