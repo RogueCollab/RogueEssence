@@ -66,7 +66,9 @@ namespace RogueEssence.Menu
             
             int choice_width = CalculateChoiceLength(menu_choices, 0);
             
-            Loc loc = menuLoc != DialogueChoiceMenu.DefaultLoc ? menuLoc : new Loc(GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width, 188 - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2));
+            int x = menuLoc.X != -1 ? menuLoc.X : GraphicsManager.ScreenWidth - DialogueBox.SIDE_BUFFER - choice_width;
+            int y = menuLoc.Y != -1 ? menuLoc.Y : 188 - (choices.Length * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2);
+            Loc loc = new Loc(x, y);
             Initialize(loc, choice_width, menu_choices, defaultChoice);
 
             this.cancelChoice = cancelChoice;
