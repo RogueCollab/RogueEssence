@@ -486,6 +486,9 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new MapStatusEditor());
 
             DataEditor.AddEditor(new MoneySpawnZoneStepEditor());
+            DataEditor.AddEditor(new SpreadPlanSpacedEditor());
+            DataEditor.AddEditor(new SpreadPlanQuotaEditor());
+            DataEditor.AddEditor(new SpreadPlanBaseEditor());
 
             DataEditor.AddEditor(new AutoTileBaseEditor());
             DataEditor.AddEditor(new DataFolderEditor());
@@ -495,10 +498,13 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new EntryDataEditor());
             DataEditor.AddEditor(new FrameTypeEditor());
             DataEditor.AddEditor(new MapItemEditor());
+            DataEditor.AddEditor(new InvItemEditor());
 
             DataEditor.AddEditor(new MultiStepSpawnerEditor());
             DataEditor.AddEditor(new PickerSpawnerEditor());
+            DataEditor.AddEditor(new TeamContextSpawnerEditor());
             DataEditor.AddEditor(new ContextSpawnerEditor());
+            DataEditor.AddEditor(new MoneyDivSpawnerEditor());
             DataEditor.AddEditor(new TeamStepSpawnerEditor());
             DataEditor.AddEditor(new StepSpawnerEditor());
 
@@ -509,6 +515,10 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new AddDisconnectedRoomsStepEditor());
             DataEditor.AddEditor(new ConnectRoomStepEditor());
             DataEditor.AddEditor(new FloorPathBranchEditor());
+
+            DataEditor.AddEditor(new BaseSpawnStepEditor());
+            DataEditor.AddEditor(new MoneySpawnStepEditor());
+            DataEditor.AddEditor(new PlaceMobsStepEditor());
 
             DataEditor.AddEditor(new RoomGenCrossEditor());
             DataEditor.AddEditor(new SizedRoomGenEditor());
@@ -534,7 +544,7 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new ColumnAnimEditor());
             DataEditor.AddEditor(new StaticAnimEditor());
             DataEditor.AddEditor(new TypeDictEditor());
-            DataEditor.AddEditor(new CategorySpawnEditor());
+            DataEditor.AddEditor(new CategorySpawnEditor(true));
             DataEditor.AddEditor(new DictSpawnEditor());
             DataEditor.AddEditor(new RangeDictEditor(false, true));
             DataEditor.AddEditor(new SpawnListEditor());
@@ -543,6 +553,9 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new PriorityEditor());
             DataEditor.AddEditor(new SegLocEditor());
             DataEditor.AddEditor(new LocEditor());
+            DataEditor.AddEditor(new LoopedRandEditor());
+            DataEditor.AddEditor(new PresetMultiRandEditor());
+            DataEditor.AddEditor(new MoneySpawnRangeEditor(false, true));
             DataEditor.AddEditor(new RandRangeEditor(false, true));
             DataEditor.AddEditor(new RandPickerEditor());
             DataEditor.AddEditor(new MultiRandPickerEditor());
@@ -552,6 +565,8 @@ namespace RogueEssence.Examples
             DataEditor.AddEditor(new TypeEditor());
             DataEditor.AddEditor(new AliasDataEditor());
 
+            //TODO: there is no parameterless interface for hashset
+            //so instead we have to do the painful process of manually adding every hashset of every type we actually use.  ugh
             DataEditor.AddEditor(new HashSetEditor<int>());
 
             DataEditor.AddEditor(new ArrayEditor());
