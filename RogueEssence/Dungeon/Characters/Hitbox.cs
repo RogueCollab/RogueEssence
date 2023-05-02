@@ -698,8 +698,8 @@ namespace RogueEssence.Dungeon
             DirSheet sheet = getAnimSheet();
             if (sheet == null)
                 return MapLoc - offset;
-            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
-                MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) - offset;
+            return new Loc(MapLoc.X - sheet.TileWidth / 2,
+                MapLoc.Y - sheet.TileHeight / 2) - offset;
         }
 
         public override Loc GetDrawSize()
@@ -833,7 +833,7 @@ namespace RogueEssence.Dungeon
             if (Anim.AnimIndex == "")
                 return;
             //draw the beam
-            Loc start = MapLoc - offset + new Loc(GraphicsManager.TileSize / 2);
+            Loc start = MapLoc - offset;
             GraphicsManager.GetBeam(Anim.AnimIndex).DrawBeam(spriteBatch, start.ToVector2(), Anim.GetCurrentFrame(time, GraphicsManager.GetBeam(Anim.AnimIndex).TotalFrames), Anim.GetDrawDir(Dir), GraphicsManager.TileSize, DistanceTraveled - GraphicsManager.TileSize / 2, Color.White * ((float)Anim.Alpha / 255));
         }
 
@@ -1101,8 +1101,8 @@ namespace RogueEssence.Dungeon
         {
             if (Anim.AnimIndex == "")
                 return MapLoc - offset;
-            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileWidth / 2,
-                MapLoc.Y + GraphicsManager.TileSize / 2 - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileHeight / 2) - offset;
+            return new Loc(MapLoc.X - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileWidth / 2,
+                MapLoc.Y - GraphicsManager.GetAttackSheet(Anim.AnimIndex).TileHeight / 2) - offset;
         }
 
         public override Loc GetDrawSize()
