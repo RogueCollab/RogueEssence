@@ -44,7 +44,7 @@ namespace RogueEssence.Dungeon
         //redundant, but no need to remove from serialization...
         [Dev.NonEdited]
         public Loc TileLoc { get; private set; }
-        public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize; } }
+        public Loc MapLoc { get { return TileLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2); } }
         public int LocHeight { get { return 0; } }
 
         public EffectTile()
@@ -140,8 +140,8 @@ namespace RogueEssence.Dungeon
             TileData entry = DataManager.Instance.GetTile(ID);
             DirSheet sheet = GraphicsManager.GetObject(entry.Anim.AnimIndex);
 
-            return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
-            MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) + entry.Offset - offset;
+            return new Loc(MapLoc.X - sheet.TileWidth / 2,
+            MapLoc.Y - sheet.TileHeight / 2) + entry.Offset - offset;
         }
 
         public Loc GetDrawSize()
