@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 
 namespace RogueEssence
@@ -50,7 +51,8 @@ namespace RogueEssence
 
         public SkillDefault DefaultSkills;
         public int Minimap;
-
+        public bool DetailedMinimap;
+        
         private double textSpeed;
         public double TextSpeed
         {

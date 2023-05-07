@@ -133,6 +133,7 @@ namespace RogueEssence.Dungeon
                 ShownHotkeys[ii] = new HotkeyMenu(ii);
             Preview = new PreviewSkillMenu();
 
+            //For ShowMap, MinimapState.Clear is the default.
             ShowMap = MinimapState.Clear;
             Loc drawSight = getDrawSight();
             charSightValues = new float[drawSight.X][];
@@ -1086,7 +1087,7 @@ namespace RogueEssence.Dungeon
 
                     Vector2 mapStart = new Vector2(0, 16);
                     TerrainData.Mobility mobility = TerrainData.Mobility.Passable;
-                    if (ShowMap == MinimapState.Detail)
+                    if (ShowMap == MinimapState.Detail || DiagManager.Instance.CurSettings.DetailedMinimap)
                     {
                         mobility |= TerrainData.Mobility.Water;
                         mobility |= TerrainData.Mobility.Lava;
@@ -1113,7 +1114,7 @@ namespace RogueEssence.Dungeon
                                 Vector2 destVector = mapStart + (new Vector2(ii, jj) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight);
                                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj];
                                 TerrainData terrain = tile.Data.GetData();
-                                if (ShowMap == MinimapState.Detail)
+                                if (ShowMap == MinimapState.Detail || DiagManager.Instance.CurSettings.DetailedMinimap)
                                 {
                                     if (terrain.MinimapColor != Color.White && terrain.MinimapColor != Color.Transparent)
                                         GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, terrain.MinimapColor * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
