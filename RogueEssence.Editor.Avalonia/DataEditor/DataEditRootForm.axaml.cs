@@ -27,7 +27,7 @@ namespace RogueEssence.Dev.Views
             await SaveChildren();
         }
 
-        public override void Window_Closing(object sender, CancelEventArgs e)
+        public override async void Window_Closing(object sender, CancelEventArgs e)
         {
             base.Window_Closing(sender, e);
 

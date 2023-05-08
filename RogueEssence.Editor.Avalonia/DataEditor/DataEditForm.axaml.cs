@@ -19,6 +19,8 @@ namespace RogueEssence.Dev.Views
     {
         public delegate Task<bool> OKEvent();
         public OKEvent SelectedOKEvent;
+
+        public bool Cancel;
         //public event Action SelectedCancelEvent;
 
         public StackPanel ControlPanel { get; }
@@ -61,12 +63,15 @@ namespace RogueEssence.Dev.Views
             this.Width = this.Width + 10;
         }
 
-        public virtual void Window_Closing(object sender, CancelEventArgs e)
+        public virtual async void Window_Closing(object sender, CancelEventArgs e)
         {
             if (Design.IsDesignMode)
                 return;
             
             CloseChildren();
+            
+            if(!Cancel)
+                await SaveChildren();
         }
 
         public async void btnOK_Click(object sender, RoutedEventArgs e)
@@ -81,6 +86,7 @@ namespace RogueEssence.Dev.Views
         public void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             //SelectedCancelEvent?.Invoke();
+            Cancel = true;
             Close();
         }
 
