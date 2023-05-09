@@ -11,7 +11,8 @@ using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using RogueEssence.Script;
 using RogueEssence.Dev;
-
+using RogueEssence.LevelGen;
+using System.Xml.Linq;
 
 namespace RogueEssence
 {
@@ -26,13 +27,6 @@ namespace RogueEssence
             Double = 1,
             Quadruple = 2,
             Octuple = 3
-        }
-        public enum FanfarePhase
-        {
-            None,
-            PhaseOut,
-            Wait,
-            PhaseIn
         }
 
         private static GameManager instance;
@@ -79,17 +73,31 @@ namespace RogueEssence
 
         public Dictionary<string, (float volume, float diff)> LoopingSE;
 
+        /// <summary>
+        /// Currently playing song
+        /// </summary>
         public string Song;
-        public string NextSong;
-        public FrameTick MusicFadeTime;
-        public int MusicFadeTotal;
+
+        /// <summary>
+        /// Songs that are playing in parallel but muted in wait for crossfade.
+        /// Includes the currently playing song
+        /// </summary>
+        public HashSet<string> BackupSongs;
+
+        public List<MusicEffect> MusicEffects;
+
+        /// <summary>
+        /// Next song to play
+        /// </summary>
+        //public string NextSong;
+
+        /// <summary>
+        /// Songs that will be playing in parallel but muted in wait for crossfade.
+        /// Includes the next song
+        /// </summary>
+        //public HashSet<string> NextBackupSongs;
+
         public const int MUSIC_FADE_TOTAL = 40;
-        public string QueuedFanfare;
-        public FanfarePhase CurrentFanfarePhase;
-        public FrameTick FanfareTime;
-        public const int FANFARE_FADE_START = 3;
-        public const int FANFARE_FADE_END = 40;
-        public const int FANFARE_WAIT_EXTRA = 20;
 
 
         public GameManager()
@@ -100,6 +108,9 @@ namespace RogueEssence
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
             TextPopUp = new TextPopUp();
+
+            BackupSongs = new HashSet<string>();
+            MusicEffects = new List<MusicEffect>();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
 
@@ -150,7 +161,7 @@ namespace RogueEssence
                 if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                     return;
 
-                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                if (File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
                 {
                     if (fadeTime > 0)
                         LoopingSE[newSE] = (0f, 1f / fadeTime);
@@ -192,7 +203,15 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
         {
-            yield return new WaitWhile(() => { return CurrentFanfarePhase != FanfarePhase.None; });
+            yield return new WaitWhile(() =>
+            {
+                foreach (MusicEffect effect in MusicEffects)
+                {
+                    if (effect is FanfareEffect)
+                        return true;
+                }
+                return false;
+            });
         }
 
         /// <summary>
@@ -208,7 +227,7 @@ namespace RogueEssence
             int pauseFrames = 0;
             try
             {
-                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                if (File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
                     pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
             }
             catch (Exception ex)
@@ -223,27 +242,33 @@ namespace RogueEssence
         {
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
-            if (Song == "" || NextSong == "")
-            {
-                SE(newSE);
+
+            if (String.IsNullOrEmpty(newSE))
                 return;
+
+            FanfareEffect oldFanfare = null;
+            //assume no fanfares happen within the same period
+            for(int ii = 0; ii < MusicEffects.Count; ii++)
+            {
+                if (MusicEffects[ii] is FanfareEffect)
+                {
+                    FanfareEffect fanfare = (FanfareEffect)MusicEffects[ii];
+                    if (fanfare.CurrentPhase == FanfareEffect.FanfarePhase.PhaseIn)
+                        oldFanfare = fanfare;
+                    else
+                        return;
+                }
             }
 
-            if (String.IsNullOrEmpty(QueuedFanfare))//assume no fanfares happen within the same period
+            if (oldFanfare != null)
             {
-                if (CurrentFanfarePhase == FanfarePhase.None)//begin the brief fade out if playing music as normal
-                {
-                    CurrentFanfarePhase = FanfarePhase.PhaseOut;
-                    FanfareTime = FrameTick.FromFrames(FANFARE_FADE_START);
-                    QueuedFanfare = newSE;
-                }
-                else if (CurrentFanfarePhase == FanfarePhase.PhaseIn)//fade from the partial progress
-                {
-                    CurrentFanfarePhase = FanfarePhase.PhaseOut;
-                    FanfareTime = FrameTick.FromFrames((FANFARE_FADE_END - FanfareTime.DivOf(FANFARE_FADE_END)) * FANFARE_FADE_START / FANFARE_FADE_END);
-                    QueuedFanfare = newSE;
-                }
+                oldFanfare.Fanfare = newSE;
+                FrameTick oldTime = oldFanfare.FanfareTime;
+                oldFanfare.FanfareTime = FrameTick.FromFrames((FanfareEffect.FANFARE_FADE_END - oldTime.DivOf(FanfareEffect.FANFARE_FADE_END)) * FanfareEffect.FANFARE_FADE_START / FanfareEffect.FANFARE_FADE_END);
+                oldFanfare.CurrentPhase = FanfareEffect.FanfarePhase.PhaseOut;
             }
+            else
+                MusicEffects.Add(new FanfareEffect(newSE));
         }
 
         public void BGM(string newBGM, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
@@ -251,53 +276,87 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
 
-            if (Song != newBGM || (Song == newBGM && NextSong != null && NextSong != newBGM))
+            if (String.IsNullOrEmpty(Song) || !fade) // if the current song is empty, or the game doesn't want to fade it
             {
-                if (String.IsNullOrEmpty(Song) || !fade)//if the current song is empty, or the game doesn't want to fade it
+                for (int ii = 0; ii < MusicEffects.Count; ii++)
                 {
-                    //immediately start
-                    MusicFadeTime = FrameTick.Zero;
+                    if (MusicEffects[ii] is MusicFadeEffect)
+                    {
+                        MusicEffects.RemoveAt(ii);
+                        break;
+                    }
                 }
-                else if (NextSong != null)
+
+                //immediately start
+                MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, FrameTick.Zero, 1);
+                MusicEffects.Add(newEffect);
+                return;
+            }
+
+            for (int ii = 0; ii < MusicEffects.Count; ii++)
+            {
+                if (MusicEffects[ii] is MusicFadeOutEffect)
                 {
-                    //do nothing, and watch it tick down
+                    MusicFadeOutEffect oldFade = (MusicFadeOutEffect)MusicEffects[ii];
+                    oldFade.NextSong = newBGM;
+                    return;
+                }
+                else if (MusicEffects[ii] is MusicFadeEffect)
+                {
+                    //just stop the existing other fades
+                    MusicEffects.RemoveAt(ii);
+                }
+            }
+
+            //do nothing this is already the same song
+            if (Song == newBGM)
+                return;
+
+            string oldFamily = getSongFamily(SoundManager.Song);
+
+            string newFamily = null;
+            string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+            if (File.Exists(fileName))
+            {
+                LoopedSong song = new LoopedSong(fileName);
+                newFamily = getSongFamily(song);
+            }
+
+            //if both the old song and new song share a family, cross-fade them
+            bool crossFade = (oldFamily == newFamily) && newFamily != null;
+
+            if (crossFade)
+            {
+                //normal case: create a new fade effect
+                if (File.Exists(fileName))
+                {
+                    MusicCrossFadeEffect newEffect = new MusicCrossFadeEffect(newBGM, FrameTick.FromFrames(fadeTime), fadeTime);
+                    SoundManager.SetCrossBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + newEffect.NextSong));
+                    MusicEffects.Add(newEffect);
                 }
                 else
                 {
-                    //otherwise, set up the tick-down
-                    MusicFadeTotal = fadeTime;
-                    MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
+                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect("", FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicEffects.Add(newEffect);
                 }
-                NextSong = newBGM;
-                onMusicChange(newBGM);
+            }
+            else
+            {
+                //normal case: create a new fade effect
+                {
+                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicEffects.Add(newEffect);
+                }
             }
         }
 
-        private void onMusicChange(string newBGM)
+        private string getSongFamily(LoopedSong song)
         {
-            if (NextSong.Length > 0)
-            {
-                string name = "";
-                string originName = "";
-                string origin = "";
-                string artist = "";
-                string spoiler = "";
-                string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
-                if (File.Exists(fileName))
-                {
-                    LoopedSong song = new LoopedSong(fileName);
-                    name = song.Name;
-                    if (song.Tags.ContainsKey("TITLE"))
-                        originName = song.Tags["TITLE"];
-                    if (song.Tags.ContainsKey("ALBUM"))
-                        origin = song.Tags["ALBUM"];
-                    if (song.Tags.ContainsKey("ARTIST"))
-                        artist = song.Tags["ARTIST"];
-                    if (song.Tags.ContainsKey("SPOILER"))
-                        spoiler = song.Tags["SPOILER"];
-                    LuaEngine.Instance.OnMusicChange(name, originName, origin, artist, spoiler);
-                }
-            }
+            if (song == null)
+                return null;
+            if (song.Tags.ContainsKey("FAMILY"))
+                return song.Tags["FAMILY"];
+            return null;
         }
 
         public void SetFade(bool faded, bool useWhite)
@@ -1211,60 +1270,15 @@ namespace RogueEssence
 
             //update music
             float musicFadeFraction = 1;
-            if (NextSong != null)
+            float crossFadeFraction = 0;
+            for (int ii = MusicEffects.Count - 1; ii >= 0; ii--)
             {
-                MusicFadeTime -= elapsedTime;
-                if (MusicFadeTime <= FrameTick.Zero)
-                {
-                    if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.MUSIC_PATH + NextSong)))
-                    {
-                        Song = NextSong;
-                        NextSong = null;
-                        SoundManager.PlayBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + Song));
-                    }
-                    else
-                    {
-                        Song = "";
-                        SoundManager.PlayBGM(Song);
-                    }
-                }
-                else
-                    musicFadeFraction *= MusicFadeTime.FractionOf(MusicFadeTotal);
-            }
-            if (CurrentFanfarePhase != FanfarePhase.None)
-            {
-                FanfareTime -= elapsedTime;
-                if (CurrentFanfarePhase == FanfarePhase.PhaseOut)
-                {
-                    musicFadeFraction *= FanfareTime.FractionOf(FANFARE_FADE_START);
-                    if (FanfareTime <= FrameTick.Zero)
-                    {
-                        int pauseFrames = 0;
-                        if (!String.IsNullOrEmpty(QueuedFanfare) && System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg")))
-                            pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg"), 1) + FANFARE_WAIT_EXTRA;
-                        CurrentFanfarePhase = FanfarePhase.Wait;
-                        if (FanfareTime < pauseFrames)
-                            FanfareTime = FrameTick.FromFrames(pauseFrames);
-                        QueuedFanfare = null;
-                    }
-                }
-                else if (CurrentFanfarePhase == FanfarePhase.Wait)
-                {
-                    musicFadeFraction *= 0;
-                    if (FanfareTime <= FrameTick.Zero)
-                    {
-                        CurrentFanfarePhase = FanfarePhase.PhaseIn;
-                        FanfareTime = FrameTick.FromFrames(FANFARE_FADE_END);
-                    }
-                }
-                else if (CurrentFanfarePhase == FanfarePhase.PhaseIn)
-                {
-                    musicFadeFraction *= (1f - FanfareTime.FractionOf(FANFARE_FADE_END));
-                    if (FanfareTime <= FrameTick.Zero)
-                        CurrentFanfarePhase = FanfarePhase.None;
-                }
+                MusicEffects[ii].Update(elapsedTime, ref musicFadeFraction, ref crossFadeFraction);
+                if (MusicEffects[ii].Finished)
+                    MusicEffects.RemoveAt(ii);
             }
             SoundManager.SetBGMVolume(musicFadeFraction);
+            SoundManager.SetBGMCrossVolume(crossFadeFraction);
 
             //update sounds
             List<string> seKeys = new List<string>();

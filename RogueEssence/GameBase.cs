@@ -197,7 +197,7 @@ namespace RogueEssence
 
                         lock (lockObj)
                         {
-                            SoundManager.NewFrame();
+                            SoundManager.NewFrame(gameTime);
 
                             FrameInput input = new FrameInput();
                             if (DiagManager.Instance.ActiveDebugReplay != null && DiagManager.Instance.DebugReplayIndex < DiagManager.Instance.ActiveDebugReplay.Count)

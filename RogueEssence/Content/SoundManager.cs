@@ -1,23 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
 namespace RogueEssence.Content
 {
     public static class SoundManager
     {
+        static TimeSpan currentTime;
+
         static float bgmVol;
+        static LoopedSong song;
+
+        public static LoopedSong Song { get { return song; } }
+
+        static TimeSpan songTime;
+
+        static float bgmCross;
+        static LoopedSong crossSong;
 
         static float bgmBalance;
-        static LoopedSong song;
         public static float BGMBalance
         {
             get { return bgmBalance; }
             set
             {
                 bgmBalance = value;
-                if (song != null)
-                    song.Volume = bgmVol * BGMBalance;
+                updateSongVolume();
             }
         }
         static float seBalance;
@@ -48,20 +57,87 @@ namespace RogueEssence.Content
                 song.Stop();
                 song = null;
             }
+            if (crossSong != null)
+            {
+                crossSong.Stop();
+                crossSong = null;
+                bgmCross = 0f;
+            }
+
             if (!String.IsNullOrWhiteSpace(fileName))
             {
                 song = new LoopedSong(fileName);
                 song.Play();
+                songTime = currentTime;
                 bgmVol = volume;
-                song.Volume = bgmVol * BGMBalance;
             }
+            updateSongVolume();
+        }
+
+        public static void SetCrossBGM(string fileName, float volume = 0f)
+        {
+            if (song == null)
+                return;
+
+            if (crossSong != null)
+            {
+                crossSong.Stop();
+                crossSong = null;
+            }
+
+            if (!String.IsNullOrWhiteSpace(fileName))
+            {
+                crossSong = new LoopedSong(fileName);
+                bgmCross = volume;
+
+                long gameTimeSamples = song.GetSampleFromTimeSpan(currentTime - songTime);
+                //long audioEngineSamples = song.GetSamplesPlayed();
+                //System.Diagnostics.Debug.WriteLine("{0}\n{1}\n---", gameTimeSamples, audioEngineSamples);
+                crossSong.PlayAt(gameTimeSamples);
+                songTime = currentTime;
+            }
+            else
+                bgmCross = 0f;
+            updateSongVolume();
+        }
+
+        public static void TransferCrossBGM()
+        {
+            if (song != null)
+            {
+                song.Stop();
+                song = null;
+            }
+            if (crossSong != null)
+            {
+                song = crossSong;
+                crossSong = null;
+            }
+            bgmCross = 0f;
+            updateSongVolume();
         }
 
         public static void SetBGMVolume(float volume)
         {
             bgmVol = volume;
+            updateSongVolume();
+        }
+
+        public static void SetBGMCrossVolume(float volume)
+        {
+            if (crossSong == null)
+                return;
+
+            bgmCross = volume;
+            updateSongVolume();
+        }
+
+        private static void updateSongVolume()
+        {
             if (song != null)
-                song.Volume = bgmVol * BGMBalance;
+                song.Volume = bgmVol * BGMBalance * (1f - bgmCross);
+            if (crossSong != null)
+                crossSong.Volume = bgmVol * BGMBalance * bgmCross;
         }
 
 
@@ -86,7 +162,6 @@ namespace RogueEssence.Content
             if (loopedSE.TryGetValue(fileName, out se))
             {
                 se.Stop();
-                //se.Dispose();
                 loopedSE.Remove(fileName);
             }
         }
@@ -98,7 +173,7 @@ namespace RogueEssence.Content
                 se.Volume = volume * SEBalance;
         }
 
-        public static void NewFrame()
+        public static void NewFrame(GameTime gameTime)
         {
             soundIndex = 0;
             for (int ii = sounds.Count - 1; ii >= 0; ii--)
@@ -109,9 +184,23 @@ namespace RogueEssence.Content
                     sounds.RemoveAt(ii);
                 }
             }
+            currentTime = gameTime.TotalGameTime;
+            //if (song != null && song.State == SoundState.Stopped)
+            //{
+            //    song.Play();
+            //    songTime = gameTime.TotalGameTime;
+            //}
+            //if (crossSong != null && crossSong.State == SoundState.Stopped)
+            //{
+            //    long gameTimeSamples = song.GetSampleFromTimeSpan(gameTime.TotalGameTime - songTime);
+            //    long audioEngineSamples = song.GetSamplesPlayed();
+            //    System.Diagnostics.Debug.WriteLine("{0}\n{1}\n---", gameTimeSamples, audioEngineSamples);
+            //    crossSong.PlayAt(gameTimeSamples);
+            //    songTime = gameTime.TotalGameTime;
+            //}
         }
 
-        
+
 
         public static int PlaySound(string fileName, float volume = 1.0f)
         {
