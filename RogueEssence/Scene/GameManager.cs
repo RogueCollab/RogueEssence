@@ -82,20 +82,9 @@ namespace RogueEssence
         /// Songs that are playing in parallel but muted in wait for crossfade.
         /// Includes the currently playing song
         /// </summary>
-        public HashSet<string> BackupSongs;
+        public Dictionary<string, string> SongFamily;
 
         public List<MusicEffect> MusicEffects;
-
-        /// <summary>
-        /// Next song to play
-        /// </summary>
-        //public string NextSong;
-
-        /// <summary>
-        /// Songs that will be playing in parallel but muted in wait for crossfade.
-        /// Includes the next song
-        /// </summary>
-        //public HashSet<string> NextBackupSongs;
 
         public const int MUSIC_FADE_TOTAL = 40;
 
@@ -109,7 +98,7 @@ namespace RogueEssence
             InputManager = new InputManager();
             TextPopUp = new TextPopUp();
 
-            BackupSongs = new HashSet<string>();
+            SongFamily = new Dictionary<string, string>();
             MusicEffects = new List<MusicEffect>();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
@@ -287,8 +276,16 @@ namespace RogueEssence
                     }
                 }
 
+                HashSet<string> instantFamily = new HashSet<string>();
+                string instantFileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+                if (File.Exists(instantFileName))
+                {
+                    LoopedSong song = new LoopedSong(instantFileName);
+                    instantFamily = getSongFamily(newBGM, song);
+                }
+
                 //immediately start
-                MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, FrameTick.Zero, 1);
+                MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, instantFamily, FrameTick.Zero, 1);
                 MusicEffects.Add(newEffect);
                 return;
             }
@@ -312,18 +309,20 @@ namespace RogueEssence
             if (Song == newBGM)
                 return;
 
-            string oldFamily = getSongFamily(SoundManager.Song);
+            HashSet<string> oldFamily = new HashSet<string>();
+            foreach(string key in SongFamily.Keys)
+                oldFamily.Add(key);
 
-            string newFamily = null;
+            HashSet<string> newFamily = new HashSet<string>();
             string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
             if (File.Exists(fileName))
             {
                 LoopedSong song = new LoopedSong(fileName);
-                newFamily = getSongFamily(song);
+                newFamily = getSongFamily(newBGM, song);
             }
 
             //if both the old song and new song share a family, cross-fade them
-            bool crossFade = (oldFamily == newFamily) && newFamily != null;
+            bool crossFade = (oldFamily.SetEquals(newFamily)) && (newFamily.Count > 0);
 
             if (crossFade)
             {
@@ -331,12 +330,11 @@ namespace RogueEssence
                 if (File.Exists(fileName))
                 {
                     MusicCrossFadeEffect newEffect = new MusicCrossFadeEffect(newBGM, FrameTick.FromFrames(fadeTime), fadeTime);
-                    SoundManager.SetCrossBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + newEffect.NextSong));
                     MusicEffects.Add(newEffect);
                 }
                 else
                 {
-                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect("", FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect("", newFamily, FrameTick.FromFrames(fadeTime), fadeTime);
                     MusicEffects.Add(newEffect);
                 }
             }
@@ -344,19 +342,21 @@ namespace RogueEssence
             {
                 //normal case: create a new fade effect
                 {
-                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, newFamily, FrameTick.FromFrames(fadeTime), fadeTime);
                     MusicEffects.Add(newEffect);
                 }
             }
         }
 
-        private string getSongFamily(LoopedSong song)
+        private HashSet<string> getSongFamily(string baseFile, LoopedSong song)
         {
             if (song == null)
-                return null;
-            if (song.Tags.ContainsKey("FAMILY"))
-                return song.Tags["FAMILY"];
-            return null;
+                return new HashSet<string>();
+            HashSet<string> result = new HashSet<string>();
+            result.Add(baseFile);
+            if (song.Tags.ContainsKey("RELATIVE"))
+                result.Add(song.Tags["RELATIVE"]);
+            return result;
         }
 
         public void SetFade(bool faded, bool useWhite)
@@ -1270,10 +1270,15 @@ namespace RogueEssence
 
             //update music
             float musicFadeFraction = 1;
-            float crossFadeFraction = 0;
+            Dictionary<string, float> crossFadeFraction = new Dictionary<string, float>();
+            foreach (string songName in SongFamily.Keys)
+            {
+                float defaultVol = (Song == songName) ? 1f : 0f;
+                crossFadeFraction[SongFamily[songName]] = defaultVol;
+            }
             for (int ii = MusicEffects.Count - 1; ii >= 0; ii--)
             {
-                MusicEffects[ii].Update(elapsedTime, ref musicFadeFraction, ref crossFadeFraction);
+                MusicEffects[ii].Update(elapsedTime, ref musicFadeFraction, crossFadeFraction);
                 if (MusicEffects[ii].Finished)
                     MusicEffects.RemoveAt(ii);
             }

@@ -135,12 +135,12 @@ namespace RogueEssence.Content
         /// <returns></returns>
         public long GetSamplesPlayed()
         {
-            long sample = sampleOffset + soundStream.GetSamplesPlayed();
-            sample -= loopStart;
-            sample %= loopEnd - loopStart;
-            sample += loopStart;
-            return sample;
-            //throw new NotImplementedException();
+            //long sample = sampleOffset + soundStream.GetSamplesPlayed();
+            //sample -= loopStart;
+            //sample %= loopEnd - loopStart;
+            //sample += loopStart;
+            //return sample;
+            throw new NotImplementedException();
         }
 
         private long sampleOffset;

@@ -5,19 +5,24 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace RogueEssence.Content
 {
+    public class SongSetting
+    {
+        public LoopedSong Song;
+        public float CrossVolume;
+
+        public SongSetting(LoopedSong song, float crossVolume)
+        {
+            Song = song;
+            CrossVolume = crossVolume;
+        }
+    }
     public static class SoundManager
     {
         static TimeSpan currentTime;
 
         static float bgmVol;
-        static LoopedSong song;
 
-        public static LoopedSong Song { get { return song; } }
-
-        static TimeSpan songTime;
-
-        static float bgmCross;
-        static LoopedSong crossSong;
+        static Dictionary<string, SongSetting> songs;
 
         static float bgmBalance;
         public static float BGMBalance
@@ -46,75 +51,32 @@ namespace RogueEssence.Content
         {
             bgmBalance = 1f;
             seBalance = 1f;
+            songs = new Dictionary<string, SongSetting>();
             loopedSE = new Dictionary<string, LoopedSong>();
             sounds = new List<DynamicSoundEffectInstance>();
         }
 
-        public static void PlayBGM(string fileName, float volume = 1.0f)
+        public static void PlayBGM(string baseFile, string[] family)
         {
-            if (song != null)
+            foreach(string oldFile in songs.Keys)
             {
+                LoopedSong song = songs[oldFile].Song;
                 song.Stop();
-                song = null;
             }
-            if (crossSong != null)
-            {
-                crossSong.Stop();
-                crossSong = null;
-                bgmCross = 0f;
-            }
+            songs.Clear();
 
-            if (!String.IsNullOrWhiteSpace(fileName))
+            foreach (string fileName in family)
             {
-                song = new LoopedSong(fileName);
-                song.Play();
-                songTime = currentTime;
-                bgmVol = volume;
+                LoopedSong song = new LoopedSong(fileName);
+                float volume = (fileName == baseFile) ? 1f : 0f;
+                songs.Add(fileName, new SongSetting(song, volume));
             }
             updateSongVolume();
-        }
 
-        public static void SetCrossBGM(string fileName, float volume = 0f)
-        {
-            if (song == null)
-                return;
-
-            if (crossSong != null)
+            foreach (SongSetting song in songs.Values)
             {
-                crossSong.Stop();
-                crossSong = null;
+                song.Song.Play();
             }
-
-            if (!String.IsNullOrWhiteSpace(fileName))
-            {
-                crossSong = new LoopedSong(fileName);
-                bgmCross = volume;
-
-                long gameTimeSamples = song.GetSampleFromTimeSpan(currentTime - songTime);
-                //long audioEngineSamples = song.GetSamplesPlayed();
-                //System.Diagnostics.Debug.WriteLine("{0}\n{1}\n---", gameTimeSamples, audioEngineSamples);
-                crossSong.PlayAt(gameTimeSamples);
-                songTime = currentTime;
-            }
-            else
-                bgmCross = 0f;
-            updateSongVolume();
-        }
-
-        public static void TransferCrossBGM()
-        {
-            if (song != null)
-            {
-                song.Stop();
-                song = null;
-            }
-            if (crossSong != null)
-            {
-                song = crossSong;
-                crossSong = null;
-            }
-            bgmCross = 0f;
-            updateSongVolume();
         }
 
         public static void SetBGMVolume(float volume)
@@ -123,21 +85,18 @@ namespace RogueEssence.Content
             updateSongVolume();
         }
 
-        public static void SetBGMCrossVolume(float volume)
+        public static void SetBGMCrossVolume(Dictionary<string, float> volumes)
         {
-            if (crossSong == null)
-                return;
+            foreach (string fileName in volumes.Keys)
+                songs[fileName].CrossVolume = volumes[fileName];
 
-            bgmCross = volume;
             updateSongVolume();
         }
 
         private static void updateSongVolume()
         {
-            if (song != null)
-                song.Volume = bgmVol * BGMBalance * (1f - bgmCross);
-            if (crossSong != null)
-                crossSong.Volume = bgmVol * BGMBalance * bgmCross;
+            foreach (SongSetting song in songs.Values)
+                song.Song.Volume = bgmVol * BGMBalance * (float)Math.Log10(song.CrossVolume * 9f + 1f);
         }
 
 

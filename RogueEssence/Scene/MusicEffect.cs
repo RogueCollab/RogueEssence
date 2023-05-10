@@ -11,14 +11,14 @@ using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using RogueEssence.Script;
 using RogueEssence.Dev;
-
+using System.Linq;
 
 namespace RogueEssence
 {
     public abstract class MusicEffect
     {
         public abstract bool Finished { get; }
-        public abstract void Update(FrameTick elapsedTime, ref float musicFadeFraction, ref float crossFadeFraction);
+        public abstract void Update(FrameTick elapsedTime, ref float musicFadeFraction, Dictionary<string, float> crossFadeFraction);
     }
 
     public abstract class MusicFadeEffect : MusicEffect
@@ -73,31 +73,49 @@ namespace RogueEssence
         {
         }
 
-        public override void Update(FrameTick elapsedTime, ref float musicFadeFraction, ref float crossFadeFraction)
+        public override void Update(FrameTick elapsedTime, ref float musicFadeFraction, Dictionary<string, float> crossFadeFraction)
         {
             if (NextSong != null)
             {
                 MusicFadeTime -= elapsedTime;
                 if (MusicFadeTime <= FrameTick.Zero)
                 {
-                    SoundManager.TransferCrossBGM();
                     GameManager.Instance.Song = NextSong;
                     NextSong = null;
+
+                    foreach (string songName in GameManager.Instance.SongFamily.Keys)
+                    {
+                        float defaultVol = (GameManager.Instance.Song == songName) ? 1f : 0f;
+                        crossFadeFraction[GameManager.Instance.SongFamily[songName]] = defaultVol;
+                    }
                 }
                 else
-                    crossFadeFraction = 1f - MusicFadeTime.FractionOf(MusicFadeTotal);
+                {
+                    foreach (string songName in GameManager.Instance.SongFamily.Keys)
+                    {
+                        float defaultVol = 0;
+                        if (GameManager.Instance.Song == songName)
+                            defaultVol = MusicFadeTime.FractionOf(MusicFadeTotal);
+                        else if (NextSong == songName)
+                            defaultVol = 1f - MusicFadeTime.FractionOf(MusicFadeTotal);
+                        crossFadeFraction[GameManager.Instance.SongFamily[songName]] = defaultVol;
+                    }
+                }
             }
         }
     }
 
     public class MusicFadeOutEffect : MusicFadeEffect
     {
-        public MusicFadeOutEffect(string newBGM, FrameTick fadeTime, int fadeTotal)
+        public HashSet<string> Family;
+
+        public MusicFadeOutEffect(string newBGM, HashSet<string> family, FrameTick fadeTime, int fadeTotal)
             : base(newBGM, fadeTime, fadeTotal)
         {
+            Family = family;
         }
 
-        public override void Update(FrameTick elapsedTime, ref float musicFadeFraction, ref float crossFadeFraction)
+        public override void Update(FrameTick elapsedTime, ref float musicFadeFraction, Dictionary<string, float> crossFadeFraction)
         {
             if (NextSong != null)
             {
@@ -107,15 +125,32 @@ namespace RogueEssence
                     if (File.Exists(PathMod.ModPath(GraphicsManager.MUSIC_PATH + NextSong)))
                     {
                         GameManager.Instance.Song = NextSong;
+                        Dictionary<string, string> family = new Dictionary<string, string>();
+                        List<string> fileList = new List<string>();
+                        foreach (string familyName in Family)
+                        {
+                            string file = PathMod.ModPath(GraphicsManager.MUSIC_PATH + familyName);
+                            fileList.Add(file);
+                            family.Add(familyName, file);
+                        }
+                        GameManager.Instance.SongFamily = family;
                         onMusicChange(NextSong);
-                        SoundManager.PlayBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + GameManager.Instance.Song));
+                        SoundManager.PlayBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + GameManager.Instance.Song), fileList.ToArray());
                     }
                     else
                     {
                         GameManager.Instance.Song = "";
-                        SoundManager.PlayBGM(GameManager.Instance.Song);
+                        GameManager.Instance.SongFamily = new Dictionary<string, string>();
+                        SoundManager.PlayBGM(GameManager.Instance.Song, new string[0]);
                     }
                     NextSong = null;
+
+                    crossFadeFraction.Clear();
+                    foreach (string songName in GameManager.Instance.SongFamily.Keys)
+                    {
+                        float defaultVol = (GameManager.Instance.Song == songName) ? 1f : 0f;
+                        crossFadeFraction[GameManager.Instance.SongFamily[songName]] = defaultVol;
+                    }
                 }
                 else
                     musicFadeFraction *= MusicFadeTime.FractionOf(MusicFadeTotal);
@@ -150,7 +185,7 @@ namespace RogueEssence
             Fanfare = fanfare;
         }
 
-        public override void Update(FrameTick elapsedTime, ref float musicFadeFraction, ref float crossFadeFraction)
+        public override void Update(FrameTick elapsedTime, ref float musicFadeFraction, Dictionary<string, float> crossFadeFraction)
         {
             if (CurrentPhase != FanfarePhase.None)
             {
