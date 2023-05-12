@@ -50,9 +50,14 @@ namespace RogueEssence.LevelGen
                         // place the rooms at the edge
                         floorPlan.AddRoom(this.TierAxis.CreateLoc(ii, jj), this.GenericRooms.Pick(rand), this.RoomComponents.Clone());
                         GenContextDebug.DebugProgress("Room");
+                        
+                        //Don't create a connection on the last tier of rooms!
+                        if (ii == scalar - 1)
+                            continue;
+                        
                         if (scalar > 0 || floorPlan.Wrap)
                         {
-                            this.PlaceOrientedHall(this.TierAxis, ii, jj, -1, floorPlan, this.GenericHalls.Pick(rand));
+                            this.PlaceOrientedHall(this.TierAxis, ii, jj, 1, floorPlan, this.GenericHalls.Pick(rand));
                             GenContextDebug.DebugProgress("Side Connection");
                         }
 
