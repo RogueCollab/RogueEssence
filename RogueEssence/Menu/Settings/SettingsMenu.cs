@@ -28,43 +28,54 @@ namespace RogueEssence.Menu
             List<string> musicChoices = new List<string>();
             for (int ii = 0; ii <= 10; ii++)
                 musicChoices.Add(ii.ToString());
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MUSIC"), 88, 72, musicChoices, DiagManager.Instance.CurSettings.BGMBalance, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MUSIC"), 95, 72, musicChoices, DiagManager.Instance.CurSettings.BGMBalance, confirmAction));
 
             List<string> soundChoices = new List<string>();
             for (int ii = 0; ii <= 10; ii++)
                 soundChoices.Add(ii.ToString());
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_SOUND"), 88, 72, soundChoices, DiagManager.Instance.CurSettings.SEBalance, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_SOUND"), 95, 72, soundChoices, DiagManager.Instance.CurSettings.SEBalance, confirmAction));
 
             List<string> speedChoices = new List<string>();
             for (int ii = 0; ii <= (int)Settings.BattleSpeed.VeryFast; ii++)
                 speedChoices.Add(((Settings.BattleSpeed)ii).ToLocal());
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BATTLE_SPEED"), 88, 72, speedChoices, (int)DiagManager.Instance.CurSettings.BattleFlow, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BATTLE_SPEED"), 95, 72, speedChoices, (int)DiagManager.Instance.CurSettings.BattleFlow, confirmAction));
             
             List<string> textSpeedChoices = new List<string>();
             for (int ii = 1; ii <= 6; ii++)
                 textSpeedChoices.Add((ii * 0.5).ToString(CultureInfo.InvariantCulture));
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_TEXT_SPEED"), 88, 72, textSpeedChoices, (int)(DiagManager.Instance.CurSettings.TextSpeed * 2) - 1, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_TEXT_SPEED"), 95, 72, textSpeedChoices, (int)(DiagManager.Instance.CurSettings.TextSpeed * 2) - 1, confirmAction));
             
             List<string> skillChoices = new List<string>();
             for (int ii = 0; ii <= (int)Settings.SkillDefault.All; ii++)
                 skillChoices.Add(((Settings.SkillDefault)ii).ToLocal());
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_SKILL_DEFAULT"), 88, 72, skillChoices, (int)DiagManager.Instance.CurSettings.DefaultSkills, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_SKILL_DEFAULT"), 95, 72, skillChoices, (int)DiagManager.Instance.CurSettings.DefaultSkills, confirmAction));
 
+            List<string> visibleMonsterHouseChoices = new List<string>();
+            visibleMonsterHouseChoices.Add((Text.FormatKey("DLG_CHOICE_YES")));
+            visibleMonsterHouseChoices.Add((Text.FormatKey("DLG_CHOICE_NO")));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_VISIBLE_HOUSES"), 95, 72, visibleMonsterHouseChoices, DiagManager.Instance.CurSettings.VisibleMonsterHouses ? 0 : 1, confirmAction));
+
+            List<string> noMonsterHouseEntranceChoices = new List<string>();
+            noMonsterHouseEntranceChoices.Add((Text.FormatKey("DLG_CHOICE_YES")));
+            noMonsterHouseEntranceChoices.Add((Text.FormatKey("DLG_CHOICE_NO")));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_NO_HOUSE_ENTRANCE"), 95, 72, noMonsterHouseEntranceChoices, DiagManager.Instance.CurSettings.NoMonsterHouseEntrances ? 0 : 1, confirmAction));
+
+            
             List<string> minimapChoices = new List<string>();
             for (int ii = 0; ii < 10; ii++)
                 minimapChoices.Add(String.Format("{0}%", (ii+1) * 10));
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MINIMAP_VISIBILITY"), 88, 72, minimapChoices, DiagManager.Instance.CurSettings.Minimap / 10 - 1, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MINIMAP_VISIBILITY"), 95, 72, minimapChoices, DiagManager.Instance.CurSettings.Minimap / 10 - 1, confirmAction));
 
             List<string> borderChoices = new List<string>();
             for (int ii = 0; ii < 5; ii++)
                 borderChoices.Add(ii.ToString());
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BORDER_STYLE"), 88, 72, borderChoices, DiagManager.Instance.CurSettings.Border, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_BORDER_STYLE"), 95, 72, borderChoices, DiagManager.Instance.CurSettings.Border, confirmAction));
 
             List<string> windowChoices = new List<string>();
             windowChoices.Add(Text.FormatKey("MENU_SETTINGS_FULL_SCREEN"));
             for (int ii = 1; ii < 9; ii++)
                 windowChoices.Add(String.Format("{0}x{1}", GraphicsManager.ScreenWidth * ii, GraphicsManager.ScreenHeight * ii));
-            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_WINDOW_SIZE"), 88, 72, windowChoices, DiagManager.Instance.CurSettings.Window, confirmAction));
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_WINDOW_SIZE"), 95, 72, windowChoices, DiagManager.Instance.CurSettings.Window, confirmAction));
 
             if (!inGame)
             {
@@ -77,7 +88,7 @@ namespace RogueEssence.Menu
                         langIndex = ii;
                 }
 
-                totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_LANGUAGE"), 88, 72, langChoices, langIndex, confirmAction));
+                totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_LANGUAGE"), 95, 72, langChoices, langIndex, confirmAction));
             }
 
             Initialize(new Loc(16, 16), 224, Text.FormatKey("MENU_SETTINGS_TITLE"), totalChoices.ToArray());
@@ -94,11 +105,13 @@ namespace RogueEssence.Menu
             DiagManager.Instance.CurSettings.BattleFlow = (Settings.BattleSpeed)TotalChoices[2].CurrentChoice;
             DiagManager.Instance.CurSettings.TextSpeed = (TotalChoices[3].CurrentChoice + 1) * 0.5;
             DiagManager.Instance.CurSettings.DefaultSkills = (Settings.SkillDefault)TotalChoices[4].CurrentChoice;
+            DiagManager.Instance.CurSettings.VisibleMonsterHouses = TotalChoices[5].CurrentChoice == 0;
+            DiagManager.Instance.CurSettings.NoMonsterHouseEntrances = TotalChoices[6].CurrentChoice == 0;
             if (this.inGame)
                 DataManager.Instance.Save.UpdateOptions();
-            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[5].CurrentChoice + 1) * 10;
-            DiagManager.Instance.CurSettings.Border = TotalChoices[6].CurrentChoice;
-            DiagManager.Instance.CurSettings.Window = TotalChoices[7].CurrentChoice;
+            DiagManager.Instance.CurSettings.Minimap = (TotalChoices[7].CurrentChoice + 1) * 10;
+            DiagManager.Instance.CurSettings.Border = TotalChoices[8].CurrentChoice;
+            DiagManager.Instance.CurSettings.Window = TotalChoices[9].CurrentChoice;
             GraphicsManager.SetWindowMode(DiagManager.Instance.CurSettings.Window);
 
 

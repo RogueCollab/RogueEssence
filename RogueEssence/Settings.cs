@@ -49,6 +49,8 @@ namespace RogueEssence
 
 
         public SkillDefault DefaultSkills;
+        public bool VisibleMonsterHouses;
+        public bool NoMonsterHouseEntrances;
         public int Minimap;
 
         private double textSpeed;
