@@ -146,6 +146,30 @@ namespace RogueEssence.Dev
                 groupBoxPanel.Children.Add(innerPanel);
             }
 
+            if (!member.IsMoney)
+            {
+                //Allow setting value of map items for shops
+                Avalonia.Controls.Grid innerPanelPrice = getSharedRowPanel(2);
+            
+                TextBlock lblPrice = new TextBlock();
+                lblPrice.Text = "Price:";
+                lblPrice.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+                lblPrice.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+            
+                NumericUpDown nudPrice = new NumericUpDown();
+                nudPrice.Margin = new Thickness(4, 0, 0, 0);
+                nudPrice.Minimum = 0;
+                nudPrice.Maximum = Int32.MaxValue;
+                nudPrice.Value = member.Price;
+            
+                innerPanelPrice.ColumnDefinitions[0].Width = new GridLength(70);
+                lblPrice.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
+                innerPanelPrice.Children.Add(lblPrice);
+                nudPrice.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
+                innerPanelPrice.Children.Add(nudPrice);
+                groupBoxPanel.Children.Add(innerPanelPrice);
+            }
+            
             CheckBox chkCursed = new CheckBox();
             chkCursed.Margin = new Thickness(0, 4, 0, 0);
             chkCursed.Content = "Cursed";
@@ -196,6 +220,11 @@ namespace RogueEssence.Dev
                     result.HiddenValue = txtHidden.Text;
                     controlIndex++;
                 }
+                
+                Avalonia.Controls.Grid innerControlPrice = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
+                NumericUpDown nudPrice = (NumericUpDown)innerControlPrice.Children[1];
+                result.Price = (int)nudPrice.Value;
+                controlIndex++;
 
                 CheckBox chkCursed = (CheckBox)adjustablePanel.Children[controlIndex];
                 result.Cursed = chkCursed.IsChecked.HasValue && chkCursed.IsChecked.Value;
