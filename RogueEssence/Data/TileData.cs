@@ -1,7 +1,9 @@
 ﻿using System;
 using RogueEssence.Dungeon;
+using RogueEssence.Dev;
 using RogueEssence.Content;
 using RogueElements;
+using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Data
@@ -22,7 +24,8 @@ namespace RogueEssence.Data
             Trap,
             Switch,
             Blocker,
-            Unlockable
+            Unlockable,
+            Destructible
         }
 
         public LocalText Name { get; set; }
@@ -53,6 +56,18 @@ namespace RogueEssence.Data
         public Loc MinimapIcon;
         public Color MinimapColor;
 
+        /// <summary>
+        /// Element for the tile- anything supereffective against this type will destroy it.  If this is none, any attack will destroy it.  Only used if TriggerType is Destructible.
+        /// </summary>
+        [JsonConverter(typeof(ElementConverter))]
+        [Dev.DataType(0, DataManager.DataType.Element, false)]
+        public string TileElement;
+        
+        /// <summary>
+        /// If true, only attacks of TileElement will destroy the tile, rather than supereffective attacks.  Only used if TriggerType is Destructible.
+        /// </summary>
+        public bool SpecificElementDestroysTile;
+
         public PriorityList<SingleCharEvent> LandedOnTiles;
         public PriorityList<SingleCharEvent> InteractWithTiles;
 
@@ -65,8 +80,7 @@ namespace RogueEssence.Data
             LandedOnTiles = new PriorityList<SingleCharEvent>();
             InteractWithTiles = new PriorityList<SingleCharEvent>();
         }
-
-
+        
         public string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
