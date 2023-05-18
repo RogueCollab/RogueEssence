@@ -232,6 +232,28 @@ namespace RogueEssence.Dungeon
                 actionContext.Target = charTarget;
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.HitTarget(actionContext, charTarget));//hit the character
             }
+
+            Tile tile = ZoneManager.Instance.CurrentMap.GetTile(actionContext.TargetTile);
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                TileData entry = DataManager.Instance.GetTile(tile.Effect.GetID());
+                if (entry != null && entry.Destructible && actionContext.ActionType == BattleActionType.Skill)
+                {
+                    BattleData data = actionContext.Data;
+                    if (data != null)
+                    {
+                        BasePowerState powerState = data.SkillStates.GetWithDefault<BasePowerState>();
+                        //Check if the attack is from the specific element or from no element, and deals enough damage
+                        if ((entry.EffectiveElements.Contains(data.Element) || entry.EffectiveElements.Count == 0)
+                            && powerState != null && powerState.Power >= entry.PowerNeededToDestroy)
+                        {
+                            yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.OnTileDestroyed(charTarget));
+                            tile.Effect = new EffectTile(tile.Effect.TileLoc);
+                        }
+                    }
+                }
+            }
+            
             //do thing to tile
             yield return CoroutineManager.Instance.StartCoroutine(actionContext.User.HitTile(actionContext));
         }
@@ -241,6 +263,28 @@ namespace RogueEssence.Dungeon
             BattleContext actionContext = new BattleContext(this, false);
             actionContext.TargetTile = loc;
 
+            Tile tile = ZoneManager.Instance.CurrentMap.GetTile(actionContext.TargetTile);
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                TileData entry = DataManager.Instance.GetTile(tile.Effect.GetID());
+                if (entry != null && entry.Destructible && actionContext.ActionType == BattleActionType.Skill)
+                {
+                    BattleData data = actionContext.Data;
+                    Character charTarget = actionContext.User;
+                    if (data != null && charTarget != null)
+                    {
+                        BasePowerState powerState = data.SkillStates.GetWithDefault<BasePowerState>();
+                        //Check if the attack is from the specific element or from no element, and deals enough damage
+                        if ((entry.EffectiveElements.Contains(data.Element) || entry.EffectiveElements.Count == 0)
+                            && powerState != null && powerState.Power >= entry.PowerNeededToDestroy)
+                        {
+                            yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.OnTileDestroyed(charTarget));
+                            tile.Effect = new EffectTile(tile.Effect.TileLoc);
+                        }
+                    }
+                }
+            }
+            
             //do thing to tile
             yield return CoroutineManager.Instance.StartCoroutine(actionContext.User.HitTile(actionContext));
         }

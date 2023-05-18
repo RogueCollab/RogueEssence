@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueEssence.Dungeon;
 using RogueEssence.Dev;
 using RogueEssence.Content;
@@ -24,8 +25,7 @@ namespace RogueEssence.Data
             Trap,
             Switch,
             Blocker,
-            Unlockable,
-            Destructible
+            Unlockable
         }
 
         public LocalText Name { get; set; }
@@ -55,21 +55,31 @@ namespace RogueEssence.Data
         public TriggerType StepType;
         public Loc MinimapIcon;
         public Color MinimapColor;
-
-        /// <summary>
-        /// Element for the tile- anything supereffective against this type will destroy it.  If this is none, any attack will destroy it.  Only used if TriggerType is Destructible.
-        /// </summary>
-        [JsonConverter(typeof(ElementConverter))]
-        [Dev.DataType(0, DataManager.DataType.Element, false)]
-        public string TileElement;
         
         /// <summary>
-        /// If true, only attacks of TileElement will destroy the tile, rather than supereffective attacks.  Only used if TriggerType is Destructible.
+        /// Allows the tile to be destroyed by certain attacks.
         /// </summary>
-        public bool SpecificElementDestroysTile;
+        public bool Destructible;
+
+        /// <summary>
+        /// Any supereffective move used against this tile will destroy it.  If this is none, any attack will destroy it.  Only used if Destructible is true.
+        /// </summary>
+        [JsonConverter(typeof(ElementListConverter))]
+        [Dev.DataType(0, DataManager.DataType.Element, false)]
+        public List<string> EffectiveElements;
+        
+        /// <summary>
+        /// The minimum damage needed to destroy the tile.  Only used if Destructible is true.
+        /// </summary>
+        public int PowerNeededToDestroy;
 
         public PriorityList<SingleCharEvent> LandedOnTiles;
         public PriorityList<SingleCharEvent> InteractWithTiles;
+        
+        /// <summary>
+        /// Triggers right before the tile is destroyed.  Only used if Destructible is true.
+        /// </summary>
+        public PriorityList<SingleCharEvent> OnTileDestroyed;
 
         public TileData()
         {
@@ -77,8 +87,10 @@ namespace RogueEssence.Data
             Desc = new LocalText();
             Comment = "";
             Anim = new ObjAnimData();
+            EffectiveElements = new List<string>();
             LandedOnTiles = new PriorityList<SingleCharEvent>();
             InteractWithTiles = new PriorityList<SingleCharEvent>();
+            OnTileDestroyed = new PriorityList<SingleCharEvent>();
         }
         
         public string GetColoredName()
