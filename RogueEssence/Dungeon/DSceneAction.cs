@@ -684,7 +684,7 @@ namespace RogueEssence.Dungeon
                 return true;
 
             TerrainData.Mobility mobility = TerrainData.Mobility.Lava | TerrainData.Mobility.Water | TerrainData.Mobility.Abyss;
-            if (ZoneManager.Instance.CurrentMap.TileBlocked(tile, mobility))
+            if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(tile, mobility))
                 return true;
             else
                 return false;

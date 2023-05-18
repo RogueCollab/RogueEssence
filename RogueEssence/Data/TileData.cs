@@ -25,7 +25,8 @@ namespace RogueEssence.Data
             Trap,
             Switch,
             Blocker,
-            Unlockable
+            Unlockable,
+            Object
         }
 
         public LocalText Name { get; set; }
@@ -92,7 +93,6 @@ namespace RogueEssence.Data
             InteractWithTiles = new PriorityList<SingleCharEvent>();
             OnTileDestroyed = new PriorityList<SingleCharEvent>();
         }
-        
         public string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());

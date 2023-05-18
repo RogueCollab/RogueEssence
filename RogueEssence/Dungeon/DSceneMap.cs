@@ -560,7 +560,7 @@ namespace RogueEssence.Dungeon
                 if (tile != null && !String.IsNullOrEmpty(tile.Effect.ID))
                 {
                     TileData entry = DataManager.Instance.GetTile(tile.Effect.ID);
-                    if (entry.StepType == TileData.TriggerType.Blocker || entry.StepType == TileData.TriggerType.Unlockable)
+                    if (entry.StepType == TileData.TriggerType.Blocker || entry.StepType == TileData.TriggerType.Unlockable || entry.StepType == TileData.TriggerType.Object)
                     {
                         yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.LandedOnTile(character));
                         yield return CoroutineManager.Instance.StartCoroutine(ActivateTraps(character));
@@ -1446,7 +1446,7 @@ namespace RogueEssence.Dungeon
                 for (int ii = 0; ii < range; ii++)
                 {
                     Loc nextLoc = endLoc + dir.GetLoc();
-                    if (ZoneManager.Instance.CurrentMap.TileBlocked(nextLoc, true))
+                    if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(nextLoc, true))
                         break;
                     endLoc = nextLoc;
                 }

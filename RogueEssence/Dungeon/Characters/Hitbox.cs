@@ -457,7 +457,7 @@ namespace RogueEssence.Dungeon
             tilesToHit.Enqueue(calculateTimeToHit(Origin) + delay, Origin);
 
             Loc backup = Origin;
-            if (MaxRadius > 0 && ZoneManager.Instance.CurrentMap.TileBlocked(Origin, true))
+            if (MaxRadius > 0 && ZoneManager.Instance.CurrentMap.TileAttackBlocked(Origin, true))
                 backup += Dir.Reverse().GetLoc();
 
             Grid.FloodFill(new Rect(Origin - new Loc(MaxRadius), new Loc(MaxRadius * 2 + 1)),
@@ -467,7 +467,7 @@ namespace RogueEssence.Dungeon
                     return true;
                 if (!IsInSquareHitbox(testLoc, Origin, MaxRadius, HitArea, Dir))
                     return true;
-                if (ZoneManager.Instance.CurrentMap.TileBlocked(testLoc, true))
+                if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(testLoc, true))
                     return true;
 
                 return false;
