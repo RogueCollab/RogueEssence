@@ -91,6 +91,24 @@ namespace RogueEssence
         public const int FANFARE_FADE_END = 40;
         public const int FANFARE_WAIT_EXTRA = 20;
 
+        /**
+         * This is always set to null except in a mod.
+         * If this is set, this tile will be used to display a warning for monster houses.
+         */
+        public string MonsterHouseWarningTile;
+        
+        /**
+         * This is always set to null except in a mod.
+         * If this is set, this tile will be used to replace the chest in a chest ambush.
+         */
+        public string ChestAmbushWarningTile;
+        
+        /**
+         * This is always set to false except in a mod.
+         * If this is set to true, you will not be able to spawn into a monster house upon entering a floor.
+         */
+        public bool NoMonsterHouseEntrances;
+
 
         public GameManager()
         {
@@ -104,6 +122,8 @@ namespace RogueEssence
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
 
             DiagManager.Instance.SetErrorListener(OnError, ErrorTrace);
+
+            MonsterHouseWarningTile = null;
 
             ZoomChanged();
         }
