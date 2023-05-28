@@ -307,7 +307,8 @@ namespace RogueEssence.Ground
                             continue;
                     }
 
-                    GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
+                    if (obj.TriggerType != EEntityTriggerTypes.None)
+                        GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
                     break;
                 }
 
