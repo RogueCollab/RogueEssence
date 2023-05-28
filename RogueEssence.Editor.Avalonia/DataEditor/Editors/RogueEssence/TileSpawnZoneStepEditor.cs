@@ -20,7 +20,7 @@ namespace RogueEssence.Dev
     {
         public override string GetString(TileSpawnZoneStep obj, Type type, object[] attributes)
         {
-            return String.Format("{0}: [{1}]", "Spawn Effect Tiles", obj.Spawns.Count.ToString());
+            return String.Format("{0} [{1}]", "Spawn Effect Tiles", obj.Spawns.Count.ToString());
         }
     }
 }
