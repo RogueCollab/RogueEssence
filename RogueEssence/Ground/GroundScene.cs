@@ -143,8 +143,9 @@ namespace RogueEssence.Ground
                 yield return CoroutineManager.Instance.StartCoroutine(PendingDevEvent);
                 PendingDevEvent = null;
             }
-            else
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+            
+            // Unlike dungeon scene, processinput must be processed every frame including when pending leader action or dev events occur
+            yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
 
             if (GameManager.Instance.SceneOutcome == null)
             {
