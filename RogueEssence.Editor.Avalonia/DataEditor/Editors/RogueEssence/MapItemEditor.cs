@@ -18,6 +18,12 @@ namespace RogueEssence.Dev
     {
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, MapItem member, Type[] subGroupStack)
         {
+            MapItemAttribute itemAtt = ReflectionExt.FindAttribute<MapItemAttribute>(attributes);
+            bool showPrice = false;
+            if (itemAtt != null)
+                showPrice = itemAtt.IncludePrice;
+
+
             Avalonia.Controls.Grid innerPanel1 = getSharedRowPanel(2);
 
             TextBlock lblItem = new TextBlock();
@@ -63,19 +69,19 @@ namespace RogueEssence.Dev
             cbItem.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
                 if (cbItem.SelectedIndex == 0)
-                    populateStack(groupBoxPanel, MapItem.CreateMoney(1));
+                    populateStack(groupBoxPanel, MapItem.CreateMoney(1), showPrice);
                 else
-                    populateStack(groupBoxPanel, new MapItem(itemKeys[cbItem.SelectedIndex - 1]));
+                    populateStack(groupBoxPanel, new MapItem(itemKeys[cbItem.SelectedIndex - 1]), showPrice);
             };
 
             if (String.IsNullOrEmpty(member.Value))
             {
                 MapItem other = new MapItem(member);
                 other.IsMoney = true;
-                populateStack(groupBoxPanel, other);
+                populateStack(groupBoxPanel, other, showPrice);
             }
             else
-                populateStack(groupBoxPanel, member);
+                populateStack(groupBoxPanel, member, showPrice);
         }
 
         private bool canShowAmount(MapItem member)
@@ -94,7 +100,7 @@ namespace RogueEssence.Dev
             return showAmount;
         }
 
-        private void populateStack(StackPanel groupBoxPanel, MapItem member)
+        private void populateStack(StackPanel groupBoxPanel, MapItem member, bool showPrice)
         {
             groupBoxPanel.Children.Clear();
 
@@ -146,22 +152,22 @@ namespace RogueEssence.Dev
                 groupBoxPanel.Children.Add(innerPanel);
             }
 
-            if (!member.IsMoney)
+            if (showPrice)
             {
                 //Allow setting value of map items for shops
                 Avalonia.Controls.Grid innerPanelPrice = getSharedRowPanel(2);
-            
+
                 TextBlock lblPrice = new TextBlock();
                 lblPrice.Text = "Price:";
                 lblPrice.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 lblPrice.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
-            
+
                 NumericUpDown nudPrice = new NumericUpDown();
                 nudPrice.Margin = new Thickness(4, 0, 0, 0);
                 nudPrice.Minimum = 0;
                 nudPrice.Maximum = Int32.MaxValue;
                 nudPrice.Value = member.Price;
-            
+
                 innerPanelPrice.ColumnDefinitions[0].Width = new GridLength(70);
                 lblPrice.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
                 innerPanelPrice.Children.Add(lblPrice);
@@ -169,7 +175,7 @@ namespace RogueEssence.Dev
                 innerPanelPrice.Children.Add(nudPrice);
                 groupBoxPanel.Children.Add(innerPanelPrice);
             }
-            
+
             CheckBox chkCursed = new CheckBox();
             chkCursed.Margin = new Thickness(0, 4, 0, 0);
             chkCursed.Content = "Cursed";
@@ -181,6 +187,12 @@ namespace RogueEssence.Dev
 
         public override MapItem SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
+            MapItemAttribute itemAtt = ReflectionExt.FindAttribute<MapItemAttribute>(attributes);
+            bool showPrice = false;
+            if (itemAtt != null)
+                showPrice = itemAtt.IncludePrice;
+
+
             MapItem result = new MapItem();
 
             int controlIndex = 0;
@@ -220,11 +232,14 @@ namespace RogueEssence.Dev
                     result.HiddenValue = txtHidden.Text;
                     controlIndex++;
                 }
-                
-                Avalonia.Controls.Grid innerControlPrice = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
-                NumericUpDown nudPrice = (NumericUpDown)innerControlPrice.Children[1];
-                result.Price = (int)nudPrice.Value;
-                controlIndex++;
+
+                if (showPrice)
+                {
+                    Avalonia.Controls.Grid innerControlPrice = (Avalonia.Controls.Grid)adjustablePanel.Children[controlIndex];
+                    NumericUpDown nudPrice = (NumericUpDown)innerControlPrice.Children[1];
+                    result.Price = (int)nudPrice.Value;
+                    controlIndex++;
+                }
 
                 CheckBox chkCursed = (CheckBox)adjustablePanel.Children[controlIndex];
                 result.Cursed = chkCursed.IsChecked.HasValue && chkCursed.IsChecked.Value;
