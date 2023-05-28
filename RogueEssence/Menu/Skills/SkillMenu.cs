@@ -35,7 +35,7 @@ namespace RogueEssence.Menu
                     if (!String.IsNullOrEmpty(skill.SkillNum))
                     {
                         SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                        string skillString = (skill.Enabled ? "\uE10A " : "") + data.GetColoredName();
+                        string skillString = (skill.Enabled ? "\uE10A " : "") + DiagManager.Instance.GetControlString((FrameInput.InputType)(jj + (int)FrameInput.InputType.Skill1)) + ": " + data.GetColoredName();
                         string skillCharges = skill.Charges + "/" + (data.BaseCharges + DataManager.Instance.Save.ActiveTeam.Players[ii].ChargeBoost);
                         bool disabled = (skill.Sealed || skill.Charges <= 0);
                         int index = jj;
