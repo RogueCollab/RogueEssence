@@ -12,6 +12,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace RogueEssence.Dev.Views
 {
@@ -20,7 +21,6 @@ namespace RogueEssence.Dev.Views
         public delegate Task<bool> OKEvent();
         public OKEvent SelectedOKEvent;
 
-        public bool Cancel;
         //public event Action SelectedCancelEvent;
 
         public StackPanel ControlPanel { get; }
@@ -51,6 +51,7 @@ namespace RogueEssence.Dev.Views
             }
             if (SelectedOKEvent != null)
                 await SelectedOKEvent.Invoke();
+            
         }
 
         //TODO: this is a workaround to a bug in text wrapping
@@ -68,10 +69,30 @@ namespace RogueEssence.Dev.Views
             if (Design.IsDesignMode)
                 return;
             
-            CloseChildren();
+            if (!Cancel)
+            {
+                if (OK)
+                {
+                    SaveChildren();
+                }
+                else if (children.Count > 0)
+                {
+                    //X button was clicked when there are children, cancel the close, popup the children, and add a warning message.
+                    e.Cancel = true;
+                    FocusChildren();
+                    MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "Are you sure you want to close all subwindows?  Your changes will not be saved.", "Confirm Close",
+                        MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.Yes)
+                    {
+                        Cancel = true;
+                        Close();
+                        return;
+                    }
+                }
+            }
             
-            if(!Cancel)
-                await SaveChildren();
+            if (!e.Cancel)
+                CloseChildren();
         }
 
         public async void btnOK_Click(object sender, RoutedEventArgs e)
@@ -80,7 +101,10 @@ namespace RogueEssence.Dev.Views
             if (SelectedOKEvent != null)
                 close = await SelectedOKEvent.Invoke();
             if (close)
+            {
+                OK = true;
                 Close();
+            }
         }
 
         public void btnCancel_Click(object sender, RoutedEventArgs e)
