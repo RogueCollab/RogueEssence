@@ -154,6 +154,11 @@ namespace RogueEssence.Ground
                 NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], new FrameTick());
         }
 
+        public void RestartAnim()
+        {
+            ActionTime = FrameTick.Zero;
+        }
+
         public override void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet)
         {
             Loc drawLoc = GetDrawLoc(offset, sheet);
