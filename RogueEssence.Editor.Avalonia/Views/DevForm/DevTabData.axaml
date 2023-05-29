@@ -19,6 +19,7 @@
       <RowDefinition/>
       <RowDefinition/>
       <RowDefinition/>
+      <RowDefinition/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -40,7 +41,8 @@
     <Button Name="btnEditSkillGroup" Command="{Binding btnEditSkillGroup_Click}" Margin="4" Grid.Row="6" Grid.Column="1" >Skill Groups</Button>
     <Button Name="btnEditRank" Command="{Binding btnEditRank_Click}" Margin="4" Grid.Row="7" Grid.Column="0" >Rank</Button>
     <Button Name="btnEditSkin" Command="{Binding btnEditSkin_Click}" Margin="4" Grid.Row="7" Grid.Column="1" >Skin</Button>
-    <Button Name="btnMapEditor" Command="{Binding btnMapEditor_Click}" Margin="4" Grid.Row="8" Grid.Column="0" >Edit Map</Button>
-    <Button Name="btnGroundEditor" Command="{Binding btnGroundEditor_Click}" Margin="4" Grid.Row="8" Grid.Column="1" >Edit Ground</Button>
+    <Button Name="btnEditAI" Command="{Binding btnEditAI_Click}" Margin="4" Grid.Row="8" Grid.Column="0" >Tactics</Button>
+    <Button Name="btnMapEditor" Command="{Binding btnMapEditor_Click}" Margin="4" Grid.Row="9" Grid.Column="0" >Edit Map</Button>
+    <Button Name="btnGroundEditor" Command="{Binding btnGroundEditor_Click}" Margin="4" Grid.Row="9" Grid.Column="1" >Edit Ground</Button>
   </Grid>
 </UserControl>
