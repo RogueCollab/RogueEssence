@@ -242,7 +242,7 @@ namespace RogueEssence
                 if (MusicEffects[ii] is FanfareEffect)
                 {
                     FanfareEffect fanfare = (FanfareEffect)MusicEffects[ii];
-                    if (fanfare.CurrentPhase == FanfareEffect.FanfarePhase.PhaseIn)
+                    if (fanfare.CurrentPhase == FanfareEffect.FanfarePhase.PhaseIn || fanfare.CurrentPhase == FanfareEffect.FanfarePhase.Wait)
                         oldFanfare = fanfare;
                     else
                         return;
@@ -253,7 +253,10 @@ namespace RogueEssence
             {
                 oldFanfare.Fanfare = newSE;
                 FrameTick oldTime = oldFanfare.FanfareTime;
-                oldFanfare.FanfareTime = FrameTick.FromFrames((FanfareEffect.FANFARE_FADE_END - oldTime.DivOf(FanfareEffect.FANFARE_FADE_END)) * FanfareEffect.FANFARE_FADE_START / FanfareEffect.FANFARE_FADE_END);
+                if (oldFanfare.CurrentPhase == FanfareEffect.FanfarePhase.Wait)
+                    oldFanfare.FanfareTime = FrameTick.Zero;
+                else
+                    oldFanfare.FanfareTime = FrameTick.FromFrames((FanfareEffect.FANFARE_FADE_END - oldTime.DivOf(FanfareEffect.FANFARE_FADE_END)) * FanfareEffect.FANFARE_FADE_START / FanfareEffect.FANFARE_FADE_END);
                 oldFanfare.CurrentPhase = FanfareEffect.FanfarePhase.PhaseOut;
             }
             else
@@ -269,11 +272,12 @@ namespace RogueEssence
             {
                 for (int ii = 0; ii < MusicEffects.Count; ii++)
                 {
-                    if (MusicEffects[ii] is MusicFadeEffect)
-                    {
+                    // remove all music effects, including fanfares, so that fade ins dont happen on transitions
+                    //if (MusicEffects[ii] is MusicFadeEffect)
+                    //{
                         MusicEffects.RemoveAt(ii);
-                        break;
-                    }
+                        //break;
+                    //}
                 }
 
                 HashSet<string> instantFamily = new HashSet<string>();
@@ -295,7 +299,17 @@ namespace RogueEssence
                 if (MusicEffects[ii] is MusicFadeOutEffect)
                 {
                     MusicFadeOutEffect oldFade = (MusicFadeOutEffect)MusicEffects[ii];
+
+                    HashSet<string> instantFamily = new HashSet<string>();
+                    string instantFileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+                    if (File.Exists(instantFileName))
+                    {
+                        LoopedSong song = new LoopedSong(instantFileName);
+                        instantFamily = getSongFamily(newBGM, song);
+                    }
+
                     oldFade.NextSong = newBGM;
+                    oldFade.Family = instantFamily;
                     return;
                 }
                 else if (MusicEffects[ii] is MusicFadeEffect)

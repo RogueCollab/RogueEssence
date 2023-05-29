@@ -122,7 +122,8 @@ namespace RogueEssence
                 MusicFadeTime -= elapsedTime;
                 if (MusicFadeTime <= FrameTick.Zero)
                 {
-                    if (File.Exists(PathMod.ModPath(GraphicsManager.MUSIC_PATH + NextSong)))
+                    string moddedPath = PathMod.ModPath(GraphicsManager.MUSIC_PATH + NextSong);
+                    if (File.Exists(moddedPath))
                     {
                         GameManager.Instance.Song = NextSong;
                         Dictionary<string, string> family = new Dictionary<string, string>();
@@ -135,7 +136,7 @@ namespace RogueEssence
                         }
                         GameManager.Instance.SongFamily = family;
                         onMusicChange(NextSong);
-                        SoundManager.PlayBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + GameManager.Instance.Song), fileList.ToArray());
+                        SoundManager.PlayBGM(moddedPath, fileList.ToArray());
                     }
                     else
                     {
