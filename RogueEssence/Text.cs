@@ -41,7 +41,7 @@ namespace RogueEssence
                                                 @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\] (?<a_anval>\w))" +
+        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" +
                                                 @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" +
                                                 @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" +
                                                 @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" +
@@ -232,9 +232,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["a_anval"].Value;
 
                                 if (Regex.IsMatch(vowelcheck, "[aeiou]", RegexOptions.IgnoreCase))
-                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "an "));
+                                    replacements.Add((match.Index, 6, "an"));
                                 else
-                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "a "));
+                                    replacements.Add((match.Index, 6, "a"));
                             }
                             break;
                         case "eun_neun":
