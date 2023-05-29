@@ -17,6 +17,8 @@ namespace RogueEssence.Dev.Views
     public class ParentForm : Window
     {
         protected List<Window> children;
+        protected bool OK;
+        protected bool Cancel;
 
         public ParentForm()
         {
@@ -32,10 +34,25 @@ namespace RogueEssence.Dev.Views
             };
         }
 
+        public void FocusChildren()
+        {
+            for (int ii = children.Count - 1; ii >= 0; ii--)
+                children[ii].Activate();
+        }
+
         public void CloseChildren()
         {
             for (int ii = children.Count - 1; ii >= 0; ii--)
+            {
+                DataEditForm dataEditor = children[ii] as DataEditForm;
+                if (dataEditor != null)
+                {
+                    dataEditor.OK = this.OK;
+                    dataEditor.Cancel = this.Cancel;
+                }
                 children[ii].Close();
+            }
+                
         }
 
     }
