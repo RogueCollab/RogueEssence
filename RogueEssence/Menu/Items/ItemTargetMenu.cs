@@ -17,11 +17,13 @@ namespace RogueEssence.Menu
 
         private int invSlot;
         private bool useItem;
+        private int commandIdx;
 
-        public ItemTargetMenu(int invSlot, bool useItem)
+        public ItemTargetMenu(int invSlot, bool useItem, int commandIdx)
         {
             this.invSlot = invSlot;
             this.useItem = useItem;
+            this.commandIdx = commandIdx;
 
             List<MenuTextChoice> team = new List<MenuTextChoice>();
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
@@ -55,7 +57,7 @@ namespace RogueEssence.Menu
             MenuManager.Instance.ClearMenus();
             //give the item at the inv slot to the given team slot
             if (useItem)
-                MenuManager.Instance.EndAction = (GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, invSlot, choice)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, invSlot, choice));
+                MenuManager.Instance.EndAction = (GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, invSlot, choice)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, invSlot, choice, commandIdx));
             else
                 MenuManager.Instance.EndAction = (GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Give, Dir8.None, invSlot, choice)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.Give, Dir8.None, invSlot, choice));
         }

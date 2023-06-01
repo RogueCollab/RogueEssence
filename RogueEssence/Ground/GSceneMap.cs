@@ -25,7 +25,7 @@ namespace RogueEssence.Ground
 
 
 
-        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, int teamSlot)
+        private IEnumerator<YieldInstruction> ProcessUseItem(GroundChar character, int invSlot, int teamSlot, int commandIdx)
         {
             InvItem invItem = null;
             if (invSlot < 0)
@@ -38,25 +38,14 @@ namespace RogueEssence.Ground
             Character target = teamSlot == -1 ? DataManager.Instance.Save.ActiveTeam.Leader : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
 
             ItemData itemEntry = (ItemData)invItem.GetData();
-
-            switch (itemEntry.UsageType)
+            if (commandIdx > -1)
             {
-                case ItemData.UseType.Learn:
-                    {
-                        ItemIDState effect = itemEntry.ItemStates.GetWithDefault<ItemIDState>();
-                        string skill = effect.ID;
-
-                        int learn = -1;
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(target, skill, (int slot) => { learn = slot; }, () => { }));
-
-                        if (learn > -1)
-                            yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(target, skill, learn));
-                        else
-                            yield break;
-                    }
-                    break;
+                GroundItemEvent groundEvent = itemEntry.GroundUseActions[commandIdx];
+                GroundContext context = new GroundContext(invItem, character, target);
+                yield return CoroutineManager.Instance.StartCoroutine(groundEvent.Apply(context));
+                if (context.CancelState.Cancel) yield break;
             }
-
+            
             if (invSlot < 0)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
