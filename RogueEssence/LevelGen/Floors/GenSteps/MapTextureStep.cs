@@ -158,7 +158,12 @@ namespace RogueEssence.LevelGen
                 if (terrain == DataManager.Instance.GenFloor)//assume ground
                     map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain]);
                 else
-                    map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain], TextureMap[DataManager.Instance.GenFloor]);
+                {
+                    if (IndependentGround || (terrain != DataManager.Instance.GenWall && terrain != DataManager.Instance.GenUnbreakable))
+                        map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain], TextureMap[DataManager.Instance.GenFloor]);
+                    else
+                        map.Map.TextureMap[terrain] = new AutoTile(TextureMap[terrain]);
+                }
             }
 
             map.Map.Element = GroundElement;
