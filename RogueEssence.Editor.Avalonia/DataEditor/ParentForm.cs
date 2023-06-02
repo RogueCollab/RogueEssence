@@ -37,14 +37,21 @@ namespace RogueEssence.Dev.Views
         public void FocusChildren()
         {
             for (int ii = children.Count - 1; ii >= 0; ii--)
+            {
                 children[ii].Activate();
+                ParentForm dataEditor = children[ii] as ParentForm;
+                if (dataEditor != null)
+                {
+                    dataEditor.FocusChildren();
+                }
+            }
         }
 
         public void CloseChildren()
         {
             for (int ii = children.Count - 1; ii >= 0; ii--)
             {
-                DataEditForm dataEditor = children[ii] as DataEditForm;
+                ParentForm dataEditor = children[ii] as ParentForm;
                 if (dataEditor != null)
                 {
                     dataEditor.OK = this.OK;

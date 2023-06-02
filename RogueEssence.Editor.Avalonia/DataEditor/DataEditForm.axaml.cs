@@ -47,11 +47,12 @@ namespace RogueEssence.Dev.Views
             {
                 DataEditForm dataEditor = children[ii] as DataEditForm;
                 if (dataEditor != null)
+                {
                     await dataEditor.SaveChildren();
+                    if (dataEditor.SelectedOKEvent != null)
+                        await dataEditor.SelectedOKEvent.Invoke();
+                }
             }
-            if (SelectedOKEvent != null)
-                await SelectedOKEvent.Invoke();
-            
         }
 
         //TODO: this is a workaround to a bug in text wrapping
@@ -71,17 +72,14 @@ namespace RogueEssence.Dev.Views
             
             if (!Cancel)
             {
-                if (OK)
-                {
-                    SaveChildren();
-                }
-                else if (children.Count > 0)
+                if (!OK && children.Count > 0)
                 {
                     //X button was clicked when there are children, cancel the close, popup the children, and add a warning message.
                     e.Cancel = true;
                     FocusChildren();
-                    MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "Are you sure you want to close all subwindows?  Your changes will not be saved.", "Confirm Close",
+                    Task<MessageBox.MessageBoxResult> task =  MessageBox.Show(this, "Are you sure you want to close all subwindows?  Your changes will not be saved.", "Confirm Close",
                         MessageBox.MessageBoxButtons.YesNo);
+                    MessageBox.MessageBoxResult result = await task;
                     if (result == MessageBox.MessageBoxResult.Yes)
                     {
                         Cancel = true;
@@ -99,7 +97,10 @@ namespace RogueEssence.Dev.Views
         {
             bool close = false;
             if (SelectedOKEvent != null)
+            {
+                await SaveChildren();
                 close = await SelectedOKEvent.Invoke();
+            }
             if (close)
             {
                 OK = true;
