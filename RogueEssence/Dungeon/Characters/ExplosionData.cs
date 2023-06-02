@@ -87,7 +87,7 @@ namespace RogueEssence.Dungeon
                 GameManager.Instance.BattleSE(fx.Sound);
                 //the animation
                 FiniteEmitter fxEmitter = (FiniteEmitter)fx.Emitter.Clone();
-                fxEmitter.SetupEmit(tile * GraphicsManager.TileSize, user.MapLoc, user.CharDir);
+                fxEmitter.SetupEmit(tile * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.MapLoc, user.CharDir);
                 DungeonScene.Instance.CreateAnim(fxEmitter, DrawLayer.NoDraw);
                 DungeonScene.Instance.SetScreenShake(new ScreenMover(fx.ScreenMovement));
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, tile));
@@ -95,7 +95,7 @@ namespace RogueEssence.Dungeon
 
             GameManager.Instance.BattleSE(ExplodeFX.Sound);
             FiniteEmitter emitter = (FiniteEmitter)ExplodeFX.Emitter.Clone();
-            emitter.SetupEmit(tile * GraphicsManager.TileSize, user.MapLoc, user.CharDir);
+            emitter.SetupEmit(tile * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.MapLoc, user.CharDir);
             DungeonScene.Instance.CreateAnim(emitter, DrawLayer.NoDraw);
             DungeonScene.Instance.SetScreenShake(new ScreenMover(ExplodeFX.ScreenMovement));
 
