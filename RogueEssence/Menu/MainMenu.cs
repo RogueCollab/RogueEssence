@@ -101,7 +101,7 @@ namespace RogueEssence.Menu
             MenuText title = new MenuText((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? ZoneManager.Instance.CurrentMap.GetColoredName() : ZoneManager.Instance.CurrentGround.GetColoredName(),
                 new Loc(TitleMenuBounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
             TitleElements.Add(title);
-            
+            Console.WriteLine("Testing");
             SummaryElements.Clear();
             SummaryMenuBounds = Rect.FromPoints(
                 new Loc(16, 32 + Choices.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2),
