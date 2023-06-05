@@ -159,9 +159,10 @@ namespace RogueEssence.Ground
                     {
                         //[0] = item slot to use (-1 for held item, -2 for the ground item)
                         //[1] = who to use it on (-1 for the user)
+                        //[2] = idx for the GroundUseActions list otherwise -1
                         //others: which slot to delete,
                         //which intrinsic to have, which team member/item to send in, etc.
-                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1]));
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessUseItem(character, action[0], action[1], action[2]));
                         break;
                     }
                 case GameAction.ActionType.ShiftTeam:
