@@ -2347,6 +2347,44 @@ namespace RogueEssence.Dev
         }
     }
 
+    public class UniversalEventConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException("We shouldn't be here.");
+        }
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
+            {
+                JObject jObject = JObject.Load(reader);
+                ActiveEffect container = new ActiveEffect();
+                serializer.Populate(jObject.CreateReader(), container);
+                universalActiveEffect.AddOther(container);
+            }
+            else
+            {
+                JObject jObject = JObject.Load(reader);
+                serializer.Populate(jObject.CreateReader(), universalActiveEffect);
+            }
+
+            return universalActiveEffect;
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(ActiveEffect);
+        }
+    }
 
     public class ItemStorageConverter : JsonConverter
     {

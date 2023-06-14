@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using RogueEssence.Content;
 using System.Xml;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
@@ -178,7 +179,9 @@ namespace RogueEssence.Data
         public string GenWall;
         public string GenUnbreakable;
 
-        public ActiveEffect UniversalEvent;
+        [JsonConverter(typeof(UniversalEventConverter))]
+        public UniversalActiveEffect UniversalEvent;
+        
         public TypeDict<BaseData> UniversalData;
 
         public BattleFX HealFX;
@@ -271,7 +274,11 @@ namespace RogueEssence.Data
             ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
 
 
-            UniversalEvent = LoadData<ActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            //TODO: Resolve the conversion here
+            //ActiveEffect activeEffect = LoadData<ActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            //UniversalEvent = new UniversalActiveEffect();
+            //UniversalEvent.AddOther(activeEffect);
+            LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
 
