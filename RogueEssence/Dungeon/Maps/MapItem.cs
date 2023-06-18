@@ -73,6 +73,7 @@ namespace RogueEssence.Dungeon
             HiddenValue = other.HiddenValue;
             Amount = other.Amount;
             Price = other.Price;
+            TileLoc = other.TileLoc;
         }
         public ISpawnable Copy() { return new MapItem(this); }
 
