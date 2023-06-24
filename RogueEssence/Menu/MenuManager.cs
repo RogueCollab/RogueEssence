@@ -58,6 +58,7 @@ namespace RogueEssence.Menu
             if (menuModeDepth == 0)
                 throw new Exception("Can't remove menu while not in menu mode");
 
+            menus[menus.Count - 1].Inactive = true;
             menus.RemoveAt(menus.Count - 1);
             if (menus.Count > 0)
                 menus[menus.Count - 1].Inactive = false;
@@ -148,15 +149,15 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
         
-        public IEnumerator<YieldInstruction> SetDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, params string[] msgs)
+        public IEnumerator<YieldInstruction> SetDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, object[] scripts, params string[] msgs)
         {
-            DialogueBox box = CreateDialogue(speaker, speakerName, emotion, speakerLoc, sound, finishAction, waitTime, autoFinish, centerH, centerV, bounds, msgs);
+            DialogueBox box = CreateDialogue(speaker, speakerName, emotion, speakerLoc, sound, finishAction, waitTime, autoFinish, centerH, centerV, bounds, scripts, msgs);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
 
-        public IEnumerator<YieldInstruction> SetTitleDialog(int holdTime, bool fadeIn, Rect bounds, Action finishAction, params string[] msgs)
+        public IEnumerator<YieldInstruction> SetTitleDialog(int holdTime, bool fadeIn, Rect bounds, object[] scripts, Action finishAction, params string[] msgs)
         {
-            TitleDialog box = CreateTitleDialog(holdTime, fadeIn, bounds, finishAction, msgs);
+            TitleDialog box = CreateTitleDialog(holdTime, fadeIn, bounds, scripts, finishAction, msgs);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
 
@@ -182,7 +183,7 @@ namespace RogueEssence.Menu
         {
             return CreateDialogue(speaker, speakerName, emotion, sound, () => { }, -1, false, false, false, msgs);
         }
-        public DialogueBox CreateDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, params string[] msgs)
+        public DialogueBox CreateDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, object[] scripts, params string[] msgs)
         {
             if (msgs.Length > 0)
             {
@@ -196,7 +197,7 @@ namespace RogueEssence.Menu
                 for (int ii = sep_msgs.Count - 1; ii >= 0; ii--)
                 {
                     DialogueBox prevBox = box;
-                    box = CreateBox(speaker, speakerName, emotion, speakerLoc, sound, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); }, waitTime, autoFinish, centerH, centerV, bounds, sep_msgs[ii]);
+                    box = CreateBox(speaker, speakerName, emotion, speakerLoc, sound, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); }, waitTime, autoFinish, centerH, centerV, bounds, scripts, sep_msgs[ii]);
                 }
                 return box;
             }
@@ -206,24 +207,24 @@ namespace RogueEssence.Menu
         public DialogueBox CreateDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, params string[] msgs)
         {
             return CreateDialogue(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, sound, finishAction, waitTime, autoFinish, centerH,
-                centerV, DialogueBox.DefaultBounds, msgs);
+                centerV, DialogueBox.DefaultBounds, new object[] {}, msgs);
         }
         
         public DialogueBox CreateBox(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound,
-             Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, string msg)
+             Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, object[] scripts, string msg)
         {
             DialogueBox box = null;
             if (waitTime > -1)
-                box = new TimedDialog(msg, sound, centerH, centerV, bounds, waitTime, finishAction);
+                box = new TimedDialog(msg, sound, centerH, centerV, bounds, scripts, waitTime, finishAction);
             else
-                box = new ClickedDialog(msg, sound, centerH, centerV, bounds, finishAction);
+                box = new ClickedDialog(msg, sound, centerH, centerV, bounds, scripts, finishAction);
             box.SetSpeaker(speaker, speakerName, emotion, speakerLoc);
             if (autoFinish)
                 box.FinishText();
             return box;
         }
 
-        public TitleDialog CreateTitleDialog(int holdTime, bool fadeIn, Rect bounds, Action finishAction, params string[] msgs)
+        public TitleDialog CreateTitleDialog(int holdTime, bool fadeIn, Rect bounds, object[] scripts, Action finishAction, params string[] msgs)
         {
             if (msgs.Length > 0)
             {
@@ -237,7 +238,7 @@ namespace RogueEssence.Menu
                 for (int ii = sep_msgs.Count - 1; ii >= 0; ii--)
                 {
                     TitleDialog prevBox = box;
-                    box = new TitleDialog(sep_msgs[ii], fadeIn, holdTime, bounds, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); });
+                    box = new TitleDialog(sep_msgs[ii], fadeIn, holdTime, bounds, scripts, (prevBox == null) ? finishAction : () => { AddMenu(prevBox, false); });
                 }
                 return box;
             }
@@ -289,7 +290,7 @@ namespace RogueEssence.Menu
         }
         
         public DialogueBox CreateQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc,
-            string msg, bool sound, bool autoFinish, bool centerH, bool centerV, Rect bounds, Loc menuLoc, Action yes, Action no, bool defaultNo)
+            string msg, bool sound, bool autoFinish, bool centerH, bool centerV, Rect bounds, object[] scripts, Loc menuLoc, Action yes, Action no, bool defaultNo)
         {
             string[] break_str = Regex.Split(msg, "\\[br\\]", RegexOptions.IgnoreCase);
 
@@ -297,7 +298,7 @@ namespace RogueEssence.Menu
             choices[0] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_YES"), yes);
             choices[1] = new DialogueChoice(Text.FormatKey("DLG_CHOICE_NO"), no);
 
-            DialogueBox box = new QuestionDialog(break_str[break_str.Length-1], sound, centerH, centerV, bounds, choices, defaultNo ? 1 : 0, 1, menuLoc);
+            DialogueBox box = new QuestionDialog(break_str[break_str.Length-1], sound, centerH, centerV, bounds, scripts, choices, defaultNo ? 1 : 0, 1, menuLoc);
             box.SetSpeaker(speaker, speakerName, emotion, speakerLoc);
             if (autoFinish)
                 box.FinishText();
@@ -315,7 +316,7 @@ namespace RogueEssence.Menu
         public DialogueBox CreateQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion,
             string msg, bool sound, bool autoFinish, bool centerH, bool centerV, Action yes, Action no, bool defaultNo)
         {
-            return CreateQuestion(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, msg, sound, autoFinish, centerH, centerV, DialogueBox.DefaultBounds, DialogueChoiceMenu.DefaultLoc, yes, no, defaultNo);
+            return CreateQuestion(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, msg, sound, autoFinish, centerH, centerV, DialogueBox.DefaultBounds, new object[] {}, DialogueChoiceMenu.DefaultLoc, yes, no, defaultNo);
         }
 
         public DialogueBox CreateMultiQuestion(string message, bool sound, List<DialogueChoice> choices, int defaultChoice, int cancelChoice)
@@ -329,11 +330,12 @@ namespace RogueEssence.Menu
         }
 
         public DialogueBox CreateMultiQuestion(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc,
-            string msg, bool sound, bool autoFinish, bool centerH, bool centerV, Rect bounds, Loc menuLoc, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
+            string msg, bool sound, bool autoFinish, bool centerH, bool centerV, Rect bounds, object[] scripts, Loc menuLoc, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
         {
             string[] break_str = Regex.Split(msg, "\\[br\\]", RegexOptions.IgnoreCase);
 
-            DialogueBox box = new QuestionDialog(break_str[break_str.Length - 1], sound, false, false, bounds, choices, defaultChoice, cancelChoice, menuLoc);
+            // TODO fix MultiQuestion
+            DialogueBox box = new QuestionDialog(break_str[break_str.Length - 1], sound, false, false, bounds, scripts, choices, defaultChoice, cancelChoice, menuLoc);
             box.SetSpeaker(speaker, speakerName, emotion, speakerLoc);
             if (autoFinish)
                 box.FinishText();
@@ -352,7 +354,7 @@ namespace RogueEssence.Menu
             string msg, bool sound, bool autoFinish, bool centerH, bool centerV, DialogueChoice[] choices,
             int defaultChoice, int cancelChoice)
         {
-            return CreateMultiQuestion(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, msg, sound, autoFinish, centerH, centerV, DialogueBox.DefaultBounds, DialogueChoiceMenu.DefaultLoc, choices, defaultChoice, cancelChoice);
+            return CreateMultiQuestion(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, msg, sound, autoFinish, centerH, centerV, DialogueBox.DefaultBounds, new object[] {}, DialogueChoiceMenu.DefaultLoc,  choices, defaultChoice, cancelChoice);
             
         }
         
