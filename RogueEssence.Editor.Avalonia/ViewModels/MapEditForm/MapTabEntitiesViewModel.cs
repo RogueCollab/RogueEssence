@@ -451,6 +451,13 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaiseAndSet(ref SelectedEntity.Unrecruitable, value); }
         }
 
+        public bool Ally
+        {
+            get;
+            set;
+        }
+
+
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
@@ -652,7 +659,14 @@ namespace RogueEssence.Dev.ViewModels
 
             DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
 
-            ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+            if (Ally)
+            {
+                ZoneManager.Instance.CurrentMap.AllyTeams.Add(team);
+            }
+            else
+            {
+                ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+            }
             placeableEntity.UpdateFrame();
         }
 
@@ -765,14 +779,30 @@ namespace RogueEssence.Dev.ViewModels
 
         public override EventedList<Team> GetState()
         {
-            return ZoneManager.Instance.CurrentMap.MapTeams;
+            EventedList<Team> allTeamMembers = ZoneManager.Instance.CurrentMap.MapTeams;
+            foreach (Team team in ZoneManager.Instance.CurrentMap.AllyTeams)
+            {
+                //Try to attach it to the team members list to be backwards compatible
+                team.Ally = true;
+                allTeamMembers.Add(team);
+            }
+            return allTeamMembers;
         }
 
         public override void SetState(EventedList<Team> state)
         {
             ZoneManager.Instance.CurrentMap.MapTeams.Clear();
-            foreach(Team item in state)
-                ZoneManager.Instance.CurrentMap.MapTeams.Add(item);
+            foreach (Team item in state)
+            {
+                if (item.Ally)
+                {
+                    ZoneManager.Instance.CurrentMap.AllyTeams.Add(item);
+                }
+                else
+                {
+                    ZoneManager.Instance.CurrentMap.MapTeams.Add(item);
+                }
+            }
         }
     }
 }
