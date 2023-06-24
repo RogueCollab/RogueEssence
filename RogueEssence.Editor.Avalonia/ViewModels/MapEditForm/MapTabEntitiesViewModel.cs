@@ -451,6 +451,7 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaiseAndSet(ref SelectedEntity.Unrecruitable, value); }
         }
 
+        public CollectionBoxViewModel SpawnFeatures { get; set; }
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
