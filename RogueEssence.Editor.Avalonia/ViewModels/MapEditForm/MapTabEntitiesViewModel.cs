@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RogueEssence.LevelGen;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -541,6 +542,14 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void SpawnFeatures_Changed()
+        {
+            Dictionary<string, MobSpawnExtra> spawnFeatures = new Dictionary<string, MobSpawnExtra>();
+            List<MobSpawnExtra> states = SpawnFeatures.GetList<List<MobSpawnExtra>>();
+            for (int ii = 0; ii < states.Count; ii++)
+                spawnFeatures[states[ii].ID] = states[ii];
+            SelectedEntity.StatusEffects = spawnFeatures;
+        }
 
         public void Statuses_Changed()
         {
