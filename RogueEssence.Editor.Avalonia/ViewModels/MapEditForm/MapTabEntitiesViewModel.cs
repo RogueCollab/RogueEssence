@@ -456,8 +456,7 @@ namespace RogueEssence.Dev.ViewModels
             get;
             set;
         }
-
-
+        
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
@@ -771,38 +770,41 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MapEntityStateUndo : StateUndo<EventedList<Team>>
+    public class MapEntityState
+    {
+        public EventedList<Team> AllyTeam
+        {
+            get;
+            set;
+        }
+        public EventedList<Team> EnemyTeam
+        {
+            get;
+            set;
+        }
+
+        public MapEntityState(EventedList<Team> allyTeam, EventedList<Team> enemyTeam)
+        {
+            AllyTeam = allyTeam;
+            EnemyTeam = enemyTeam;
+        }
+    }
+
+    public class MapEntityStateUndo : StateUndo<MapEntityState>
     {
         public MapEntityStateUndo()
         {
         }
 
-        public override EventedList<Team> GetState()
+        public override MapEntityState GetState()
         {
-            EventedList<Team> allTeamMembers = ZoneManager.Instance.CurrentMap.MapTeams;
-            foreach (Team team in ZoneManager.Instance.CurrentMap.AllyTeams)
-            {
-                //Try to attach it to the team members list to be backwards compatible
-                team.Ally = true;
-                allTeamMembers.Add(team);
-            }
-            return allTeamMembers;
+            return new MapEntityState(ZoneManager.Instance.CurrentMap.AllyTeams, ZoneManager.Instance.CurrentMap.MapTeams);
         }
 
-        public override void SetState(EventedList<Team> state)
+        public override void SetState(MapEntityState state)
         {
-            ZoneManager.Instance.CurrentMap.MapTeams.Clear();
-            foreach (Team item in state)
-            {
-                if (item.Ally)
-                {
-                    ZoneManager.Instance.CurrentMap.AllyTeams.Add(item);
-                }
-                else
-                {
-                    ZoneManager.Instance.CurrentMap.MapTeams.Add(item);
-                }
-            }
+            ZoneManager.Instance.CurrentMap.AllyTeams = state.AllyTeam;
+            ZoneManager.Instance.CurrentMap.MapTeams = state.EnemyTeam;
         }
     }
 }
