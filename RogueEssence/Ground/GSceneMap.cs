@@ -46,13 +46,22 @@ namespace RogueEssence.Ground
                 if (context.CancelState.Cancel) yield break;
             }
             
-            if (invSlot < 0)
+ 
+            if (itemEntry.MaxStack > 1 && invItem.Amount > 1)
+                invItem.Amount--;
+            else if (itemEntry.MaxStack < 0)
             {
-                Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
-                activeChar.SilentDequipItem();
+                //reusable, -1 do nothing.
             }
             else
-                DataManager.Instance.Save.ActiveTeam.RemoveFromInv(invSlot);
+            {
+                if (invSlot < 0)
+                {
+                    Character activeChar = DataManager.Instance.Save.ActiveTeam.Leader;
+                    activeChar.SilentDequipItem();
+                } else 
+                    DataManager.Instance.Save.ActiveTeam.RemoveFromInv(invSlot);
+            }
         }
 
         private IEnumerator<YieldInstruction> ProcessTrashItem(GroundChar character, int invSlot, bool held)
