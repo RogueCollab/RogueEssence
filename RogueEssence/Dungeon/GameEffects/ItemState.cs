@@ -21,6 +21,7 @@ namespace RogueEssence.Dungeon
     }
 
 
+    // TODO: Rename this to ItemSkillIDState, it's only used for skills!!
     [Serializable]
     public class ItemIDState : ItemState
     {
