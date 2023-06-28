@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
     {
         private static int defaultChoice;
 
-        private const int SLOTS_PER_PAGE = 12;
+        private const int SLOTS_PER_PAGE = 14;
 
         DungeonSummary summaryMenu;
         private List<string> dungeonIndices;
@@ -39,15 +39,15 @@ namespace RogueEssence.Menu
             if (box.Length == 1)
                 totalSlots = box[0].Length;
 
-            summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
+            summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(168, 8), new Loc(GraphicsManager.ScreenWidth - 8, 8 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
-            infoMenu = new SeedSummary(new Rect(new Loc(176, 128), new Loc(128, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
+            infoMenu = new SeedSummary(new Rect(new Loc(168, 128), new Loc(144, LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             UpdateExtraInfo("");
 
             int startPage = actualChoice / SLOTS_PER_PAGE;
             int startIndex = actualChoice % SLOTS_PER_PAGE;
 
-            Initialize(new Loc(16, 16), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, startIndex, startPage, totalSlots, false, -1);
+            Initialize(new Loc(), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), box, startIndex, startPage, totalSlots, false, -1);
         }
 
         protected override void ChoiceChanged()
