@@ -1387,7 +1387,7 @@ namespace RogueEssence.Data
 
                         mainSave.StorageToStore = ActiveTeam.Storage;
 
-                        mainSave.MoneyToStore = state.Save.ActiveTeam.Money + state.Save.ActiveTeam.Bank;
+                        mainSave.MoneyToStore = ActiveTeam.Money + ActiveTeam.Bank;
                     }
 
                     DataManager.Instance.SaveGameState(state);
