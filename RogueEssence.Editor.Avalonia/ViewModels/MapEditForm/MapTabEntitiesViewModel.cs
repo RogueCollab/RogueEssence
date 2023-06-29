@@ -452,7 +452,7 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaiseAndSet(ref SelectedEntity.Unrecruitable, value); }
         }
 
-        public CollectionBoxViewModel SpawnFeatures { get; set; }
+        public CollectionBoxViewModel ActionEvents { get; set; }
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
@@ -542,13 +542,10 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void SpawnFeatures_Changed()
+        public void ActionEvents_Changed()
         {
-            Dictionary<string, MobSpawnExtra> spawnFeatures = new Dictionary<string, MobSpawnExtra>();
-            List<MobSpawnExtra> states = SpawnFeatures.GetList<List<MobSpawnExtra>>();
-            for (int ii = 0; ii < states.Count; ii++)
-                spawnFeatures[states[ii].ID] = states[ii];
-            SelectedEntity.StatusEffects = spawnFeatures;
+            List<BattleEvent> states = ActionEvents.GetList<List<BattleEvent>>();
+            SelectedEntity.ActionEvents = states;
         }
 
         public void Statuses_Changed()

@@ -168,8 +168,8 @@
             <RowDefinition Height="20"/>
             <RowDefinition/>
           </Grid.RowDefinitions>
-          <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">SpawnFeatures</TextBlock>
-          <views:CollectionBox DataContext="{Binding SpawnFeatures}" Margin="4" Grid.Row="1"/>
+          <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Action Events</TextBlock>
+          <views:CollectionBox DataContext="{Binding ActionEvents}" Margin="4" Grid.Row="1"/>
         </Grid>
         <Grid Grid.RowSpan="8" Grid.Column="7">
           <Grid.RowDefinitions>
