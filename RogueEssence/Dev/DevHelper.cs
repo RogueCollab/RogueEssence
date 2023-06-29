@@ -15,7 +15,7 @@ namespace RogueEssence.Dev
     {
         public static Version StringAssetVersion = new Version(0, 6, 0);
 
-        private static Version GetVersion(string[] dirs)
+        public static Version GetVersion(params string[] dirs)
         {
             Version oldVersion = Versioning.GetVersion();
             if (dirs.Length > 0)
@@ -396,21 +396,9 @@ namespace RogueEssence.Dev
                 string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal.bin");
                 if (File.Exists(dir))
                 {
-                    Version oldVersion = GetVersion(new string[] { dir });
-                    
-                    object data;
-                    if (oldVersion < new Version(7, 13))
-                    {
-                        data = DataManager.LoadData<ActiveEffect>(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
-                        UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
-                        universalActiveEffect.AddOther((ActiveEffect) data);
-                        DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), universalActiveEffect);
-                    }
-                    else
-                    {
-                        data = DataManager.LoadData<UniversalActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));   
-                        DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), data);
-                    }
+                    object data = DataManager.LoadData<UniversalActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
+                    DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), data);
+
                     File.Delete(dir);
                 }
             }
@@ -420,8 +408,22 @@ namespace RogueEssence.Dev
                 string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
                 if (File.Exists(dir))
                 {
-                    object data = DataManager.LoadData<ActiveEffect>(dir);
-                    DataManager.SaveData(dir, data);
+
+                    Version oldVersion = GetVersion(dir);
+                    //TODO: Created v0.7.14, delete on v1.1
+                    if (oldVersion < new Version(7, 14))
+                    {
+                        object data = DataManager.LoadData<ActiveEffect>(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
+                        UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
+                        universalActiveEffect.AddOther((ActiveEffect)data);
+                        DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), universalActiveEffect);
+                    }
+                    else
+                    {
+                        object data = DataManager.LoadData<ActiveEffect>(dir);
+                        DataManager.SaveData(dir, data);
+                    }
+
                 }
             }
 

@@ -271,8 +271,20 @@ namespace RogueEssence.Data
             KnockbackFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Knockback" + DATA_EXT));
             JumpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Jump" + DATA_EXT));
             ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
-            
-            UniversalEvent = LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+
+
+            Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            //TODO: Created v0.7.14, delete on v1.1
+            if (oldVersion < new Version(7, 14))
+            {
+                object data = DataManager.LoadData<ActiveEffect>(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
+                UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
+                universalActiveEffect.AddOther((ActiveEffect)data);
+                UniversalEvent = universalActiveEffect;
+            }
+            else
+                UniversalEvent = LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
 
