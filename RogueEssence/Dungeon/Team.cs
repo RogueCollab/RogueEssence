@@ -35,6 +35,9 @@ namespace RogueEssence.Dungeon
 
         [NonSerialized]
         public int MapIndex;
+        
+        [NonSerialized]
+        public bool Ally;
 
         public Team()
         {

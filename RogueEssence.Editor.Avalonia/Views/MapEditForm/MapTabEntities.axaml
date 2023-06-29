@@ -161,8 +161,9 @@
         <NumericUpDown Value="{Binding MDefBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="6" Grid.Column="4"/>
         <TextBlock Margin="4,2" Text="{Binding MDefTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="5"/>
         <TextBlock Margin="4,2" Text="{Binding MDefTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="5"/>
-		<CheckBox Margin="4" IsChecked="{Binding Unrecruitable}" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">Unrecruitable</CheckBox>
-        
+		    <CheckBox Margin="4" IsChecked="{Binding Unrecruitable}" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">Unrecruitable</CheckBox>
+        <CheckBox Margin="4" IsChecked="{Binding Ally}" Grid.Row="7" Grid.Column="4" Grid.ColumnSpan="3">Ally</CheckBox>
+
         <Grid Grid.RowSpan="8" Grid.Column="6">
           <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
