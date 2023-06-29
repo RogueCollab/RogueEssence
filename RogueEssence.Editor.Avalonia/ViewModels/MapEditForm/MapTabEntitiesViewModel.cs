@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RogueEssence.LevelGen;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -100,6 +101,9 @@ namespace RogueEssence.Dev.ViewModels
             speciesChanged();
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            ActionEvents = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(BattleEvent), new object[0]));
+            ActionEvents.OnMemberChanged += ActionEvents_Changed;
+            ActionEvents.OnEditItem += ActionEvents_EditItem;
             Statuses = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
@@ -451,6 +455,13 @@ namespace RogueEssence.Dev.ViewModels
             set { this.RaiseAndSet(ref SelectedEntity.Unrecruitable, value); }
         }
 
+        public CollectionBoxViewModel ActionEvents { get; set; }
+        public bool Ally
+        {
+            get;
+            set;
+        }
+        
         public CollectionBoxViewModel Statuses { get; set; }
 
         public Character SelectedEntity;
@@ -540,6 +551,32 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        public void ActionEvents_Changed()
+        {
+            SelectedEntity.ActionEvents = ActionEvents.GetList<List<BattleEvent>>();
+        }
+
+        public void ActionEvents_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        {
+            string elementName = "Action Events[" + index + "]";
+            DataEditForm frmData = new DataEditRootForm();
+            frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(BattleEvent), new object[0]);
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(BattleEvent), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(BattleEvent));
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            frmData.SelectedOKEvent += async () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(BattleEvent), new object[0], true, new Type[0]);
+
+                op(index, element);
+                return true;
+            };
+
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
+        }
 
         public void Statuses_Changed()
         {
@@ -652,7 +689,14 @@ namespace RogueEssence.Dev.ViewModels
 
             DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapEntityStateUndo());
 
-            ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+            if (Ally)
+            {
+                ZoneManager.Instance.CurrentMap.AllyTeams.Add(team);
+            }
+            else
+            {
+                ZoneManager.Instance.CurrentMap.MapTeams.Add(team);
+            }
             placeableEntity.UpdateFrame();
         }
 
@@ -709,6 +753,8 @@ namespace RogueEssence.Dev.ViewModels
             SpeedBonus = SpeedBonus;
 
             Unrecruitable = Unrecruitable;
+            
+            ActionEvents.LoadFromList(SelectedEntity.ActionEvents);
 
             List<StatusEffect> states = new List<StatusEffect>();
             foreach (StatusEffect state in SelectedEntity.StatusEffects.Values)
@@ -757,22 +803,41 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MapEntityStateUndo : StateUndo<EventedList<Team>>
+    public class MapEntityState
+    {
+        public EventedList<Team> AllyTeam
+        {
+            get;
+            set;
+        }
+        public EventedList<Team> EnemyTeam
+        {
+            get;
+            set;
+        }
+
+        public MapEntityState(EventedList<Team> allyTeam, EventedList<Team> enemyTeam)
+        {
+            AllyTeam = allyTeam;
+            EnemyTeam = enemyTeam;
+        }
+    }
+
+    public class MapEntityStateUndo : StateUndo<MapEntityState>
     {
         public MapEntityStateUndo()
         {
         }
 
-        public override EventedList<Team> GetState()
+        public override MapEntityState GetState()
         {
-            return ZoneManager.Instance.CurrentMap.MapTeams;
+            return new MapEntityState(ZoneManager.Instance.CurrentMap.AllyTeams, ZoneManager.Instance.CurrentMap.MapTeams);
         }
 
-        public override void SetState(EventedList<Team> state)
+        public override void SetState(MapEntityState state)
         {
-            ZoneManager.Instance.CurrentMap.MapTeams.Clear();
-            foreach(Team item in state)
-                ZoneManager.Instance.CurrentMap.MapTeams.Add(item);
+            ZoneManager.Instance.CurrentMap.AllyTeams = state.AllyTeam;
+            ZoneManager.Instance.CurrentMap.MapTeams = state.EnemyTeam;
         }
     }
 }
