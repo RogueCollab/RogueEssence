@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using RogueEssence.Content;
 using System.Xml;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
@@ -177,8 +178,9 @@ namespace RogueEssence.Data
         public string GenFloor;
         public string GenWall;
         public string GenUnbreakable;
-
-        public ActiveEffect UniversalEvent;
+        
+        public UniversalActiveEffect UniversalEvent;
+        
         public TypeDict<BaseData> UniversalData;
 
         public BattleFX HealFX;
@@ -269,9 +271,8 @@ namespace RogueEssence.Data
             KnockbackFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Knockback" + DATA_EXT));
             JumpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Jump" + DATA_EXT));
             ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
-
-
-            UniversalEvent = LoadData<ActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            
+            UniversalEvent = LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
 

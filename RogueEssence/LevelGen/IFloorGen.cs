@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using RogueElements;
+using RogueEssence.Data;
 
 namespace RogueEssence.LevelGen
 {
@@ -200,6 +201,9 @@ namespace RogueEssence.LevelGen
             }
 
             foreach (ZoneStep zoneStep in zoneContext.ZoneSteps)
+                zoneStep.Apply(zoneContext, map, queue);
+            
+            foreach (ZoneStep zoneStep in DataManager.Instance.UniversalEvent.ZoneSteps)
                 zoneStep.Apply(zoneContext, map, queue);
 
             if (DiagManager.Instance.DevMode && DiagManager.Instance.ListenGen)
