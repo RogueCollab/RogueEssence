@@ -177,9 +177,119 @@ namespace RogueEssence.Ground
 
         //public void HandoutEXP()
 
-        //public IEnumerator<YieldInstruction> HandoutLevelUp()
+        public IEnumerator<YieldInstruction> LevelUpChar(Character character, int numLevels)
+        {
+            character.EXP = 0;
+            string growth = DataManager.Instance.GetMonster(character.BaseForm.Species).EXPTable;
+            GrowthData growthData = DataManager.Instance.GetGrowth(growth);
+            if (numLevels < 0)
+            {
+                int levelsChanged = 0;
+                while (levelsChanged > numLevels && character.Level + levelsChanged > 1)
+                {
+                    character.EXP -= growthData.GetExpToNext(character.Level + levelsChanged - 1);
+                    levelsChanged--;
+                }
+            }
+            else if (numLevels > 0)
+            {
+                int levelsChanged = 0;
+                while (levelsChanged < numLevels && character.Level + levelsChanged < DataManager.Instance.Start.MaxLevel)
+                {
+                    character.EXP += growthData.GetExpToNext(character.Level + levelsChanged);
+                    levelsChanged++;
+                }
+            }
+            
+            yield return CoroutineManager.Instance.StartCoroutine(HandoutLevelUp());
+        }
+        public IEnumerator<YieldInstruction> HandoutLevelUp()
+        {
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character character = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                string growth = DataManager.Instance.GetMonster(character.BaseForm.Species).EXPTable;
+                GrowthData growthData = DataManager.Instance.GetGrowth(growth);
+                int oldLevel = character.Level;
+                int oldHP = character.MaxHP;
+                int oldSpeed = character.BaseSpeed;
+                int oldAtk = character.BaseAtk;
+                int oldDef = character.BaseDef;
+                int oldMAtk = character.BaseMAtk;
+                int oldMDef = character.BaseMDef;
+
+                if (character.Level < DataManager.Instance.Start.MaxLevel &&
+                    character.EXP >= growthData.GetExpToNext(character.Level))
+                {
+                    while (character.EXP >= growthData.GetExpToNext(character.Level))
+                    {
+                        character.EXP -= growthData.GetExpToNext(character.Level);
+                        character.Level++;
+
+                        if (character.Level >= DataManager.Instance.Start.MaxLevel)
+                        {
+                            character.EXP = 0;
+                            break;
+                        }
+                    }
 
 
+                    GameManager.Instance.Fanfare("Fanfare/LevelUp");
+                    yield return CoroutineManager.Instance.StartCoroutine(
+                        GameManager.Instance.LogSkippableMsg(
+                            Text.FormatKey("DLG_LEVEL_UP", character.GetDisplayName(true), character.Level),
+                            character.MemberTeam));
+
+                    GameManager.Instance.SE("Menu/Confirm");
+                    yield return CoroutineManager.Instance.StartCoroutine(
+                        MenuManager.Instance.ProcessMenuCoroutine(new LevelUpMenu(character, oldLevel, oldHP, oldSpeed,
+                            oldAtk, oldDef, oldMAtk, oldMDef)));
+
+                    yield return CoroutineManager.Instance.StartCoroutine(CheckLevelSkills(character, oldLevel));
+                }
+                else if (character.EXP < 0)
+                {
+                    while (character.EXP < 0)
+                    {
+                        if (character.Level <= 1)
+                        {
+                            character.EXP = 0;
+                            break;
+                        }
+
+                        character.EXP += growthData.GetExpToNext(character.Level - 1);
+                        character.Level--;
+                    }
+
+                    //bound out max HP
+                    character.HP = Math.Min(character.MaxHP, character.HP);
+
+                    GameManager.Instance.Fanfare("Fanfare/LevelDown");
+                    yield return CoroutineManager.Instance.StartCoroutine(
+                        GameManager.Instance.LogSkippableMsg(
+                            Text.FormatKey("DLG_LEVEL_DOWN", character.GetDisplayName(true), character.Level),
+                            character.MemberTeam));
+                }
+            }
+        }
+        
+        public IEnumerator<YieldInstruction> CheckLevelSkills(Character player, int oldLevel)
+        {
+            foreach (string skill in DungeonScene.GetLevelSkills(player, oldLevel))
+            {
+                int learn = -1;
+
+                if (DataManager.Instance.CurrentReplay != null)
+                    learn = DataManager.Instance.CurrentReplay.ReadUI();
+                else
+                {
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.TryLearnSkill(player, skill, (int slot) => { learn = slot; }, () => { }));
+                    DataManager.Instance.LogUIPlay(learn);
+                }
+                if (learn > -1)
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.LearnSkillWithFanfare(player, skill, learn));
+            }
+        }
 
 
 
