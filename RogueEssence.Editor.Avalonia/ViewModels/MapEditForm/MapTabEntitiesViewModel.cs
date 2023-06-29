@@ -101,6 +101,9 @@ namespace RogueEssence.Dev.ViewModels
             speciesChanged();
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            ActionEvents = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(BattleEvent), new object[0]));
+            ActionEvents.OnMemberChanged += ActionEvents_Changed;
+            ActionEvents.OnEditItem += ActionEvents_EditItem;
             Statuses = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
@@ -544,8 +547,29 @@ namespace RogueEssence.Dev.ViewModels
 
         public void ActionEvents_Changed()
         {
-            List<BattleEvent> states = ActionEvents.GetList<List<BattleEvent>>();
-            SelectedEntity.ActionEvents = states;
+            SelectedEntity.ActionEvents = ActionEvents.GetList<List<BattleEvent>>();
+        }
+
+        public void ActionEvents_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        {
+            string elementName = "Action Events[" + index + "]";
+            DataEditForm frmData = new DataEditRootForm();
+            frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(BattleEvent), new object[0]);
+
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(BattleEvent), new object[0], element, true, new Type[0]);
+            DataEditor.TrackTypeSize(frmData, typeof(BattleEvent));
+
+            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            frmData.SelectedOKEvent += async () =>
+            {
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(BattleEvent), new object[0], true, new Type[0]);
+
+                op(index, element);
+                return true;
+            };
+
+            form.MapEditForm.RegisterChild(frmData);
+            frmData.Show();
         }
 
         public void Statuses_Changed()
@@ -716,6 +740,8 @@ namespace RogueEssence.Dev.ViewModels
             SpeedBonus = SpeedBonus;
 
             Unrecruitable = Unrecruitable;
+            
+            ActionEvents.LoadFromList(SelectedEntity.ActionEvents);
 
             List<StatusEffect> states = new List<StatusEffect>();
             foreach (StatusEffect state in SelectedEntity.StatusEffects.Values)
