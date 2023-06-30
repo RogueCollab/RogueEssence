@@ -257,7 +257,7 @@ namespace RogueEssence.Data
             UniversalData = new TypeDict<BaseData>();
         }
 
-        public void InitData()
+        public void InitBase()
         {
             HealFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Heal" + DATA_EXT));
             RestoreChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "RestoreCharge" + DATA_EXT));
@@ -287,7 +287,10 @@ namespace RogueEssence.Data
 
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
+        }
 
+        public void InitDataIndices()
+        {
             LoadConversions();
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -308,6 +311,13 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.Skin, skinCache);
             LoadUniversalIndices();
         }
+
+        public void InitData()
+        {
+            InitBase();
+            InitDataIndices();
+        }
+
 
 
         public static void InitDataDirs(string baseFolder)

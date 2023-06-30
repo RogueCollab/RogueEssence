@@ -151,8 +151,8 @@ namespace RogueEssence.Data
 
             HitRate = -1;
 
-            // TODO: Initialize to default element, when we can guarantee that DataManager.Instance.DefaultElement itself is initialized
-            Element = "";
+            // We must guarantee that DataManager.Instance.DefaultElement itself is initialized
+            Element = DataManager.Instance.DefaultElement;
 
             SkillStates = new StateCollection<SkillState>();
 
