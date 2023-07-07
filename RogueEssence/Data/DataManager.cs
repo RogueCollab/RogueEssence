@@ -277,7 +277,7 @@ namespace RogueEssence.Data
             //TODO: Created v0.7.14, delete on v1.1
             if (oldVersion < new Version(7, 14))
             {
-                object data = DataManager.LoadData<ActiveEffect>(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
+                object data = DataManager.LoadData<ActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
                 UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
                 universalActiveEffect.AddOther((ActiveEffect)data);
                 UniversalEvent = universalActiveEffect;
