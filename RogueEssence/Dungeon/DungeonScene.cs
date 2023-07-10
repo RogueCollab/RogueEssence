@@ -30,6 +30,7 @@ namespace RogueEssence.Dungeon
         {
             None,
             Clear,
+            Dark,
             Detail
         }
 
@@ -342,7 +343,7 @@ namespace RogueEssence.Dungeon
                 {
                     if (input.JustPressed(FrameInput.InputType.Minimap))
                     {
-                        ShowMap = (MinimapState)((int)(ShowMap + 1) % 3);
+                        ShowMap = (MinimapState)((int)(ShowMap + 1) % 4);
                         MinimapOffset = Loc.Zero;
                     }
 
@@ -466,7 +467,7 @@ namespace RogueEssence.Dungeon
                 {
                     if (input.JustPressed(FrameInput.InputType.Minimap) && !input[FrameInput.InputType.Skills])
                     {
-                        ShowMap = (MinimapState)((int)(ShowMap + 1) % 3);
+                        ShowMap = (MinimapState)((int)(ShowMap + 1) % 4);
                         MinimapOffset = Loc.Zero;
                     }
 
@@ -1080,7 +1081,7 @@ namespace RogueEssence.Dungeon
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                     float mapVis = 1f;
-                    if (ShowMap == MinimapState.Clear)
+                    if (ShowMap == MinimapState.Clear || ShowMap == MinimapState.Dark)
                         mapVis = (0.01f * DiagManager.Instance.CurSettings.Minimap);
                     TileSheet mapSheet = GraphicsManager.MapSheet;
 
@@ -1121,15 +1122,16 @@ namespace RogueEssence.Dungeon
 
                                 if (!ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), mobility))
                                 {
+                                    Color mapColor = ShowMap == MinimapState.Clear ? Color.White : Color.Black;
                                     //draw halls
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj - 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, (discovery == Map.DiscoveryState.Traversed ? mapColor : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj + 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, (discovery == Map.DiscoveryState.Traversed ? mapColor : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii - 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, (discovery == Map.DiscoveryState.Traversed ? mapColor : Color.DarkGray) * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii + 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, (discovery == Map.DiscoveryState.Traversed ? mapColor : Color.DarkGray) * mapVis);
                                 }
 
                                 if (discovery == Map.DiscoveryState.Traversed && !String.IsNullOrEmpty(tile.Effect.ID) && (tile.Effect.Exposed || SeeAll))
