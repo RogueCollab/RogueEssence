@@ -416,9 +416,14 @@ namespace RogueEssence.Content
             //Set graphics device
             BaseSheet.InitBase(graphics, defaultTex);
 
+            //load onepixel
+            Pixel = new BaseSheet(1, 1);
+            Pixel.BlitColor(Color.White, 1, 1, 0, 0);
+
             Splash = BaseSheet.Import(BASE_PATH + "Splash.png");
             MarkerShadow = BaseSheet.Import(BASE_PATH + "MarkerShadow.png");
-            SysFont = LoadFont("system");
+
+            SysFont = LoadFontFull(BASE_PATH + "system.font");
         }
 
         public static void loadStatic()
@@ -458,7 +463,9 @@ namespace RogueEssence.Content
             
             Title = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Title.png")));
             Subtitle = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Enter.png")));
-            
+
+            DiagManager.Instance.LoadMsg = "Loading Font";
+
             //load font
             TextFont = LoadFont("text");
             DungeonFont = LoadFont("banner");
@@ -470,10 +477,6 @@ namespace RogueEssence.Content
         {
             DiagManager.Instance.LoadMsg = "Loading Graphics";
 
-            //load onepixel
-            Pixel = new BaseSheet(1, 1);
-            Pixel.BlitColor(Color.White, 1, 1, 0, 0);
-            
             loadStatic();
 
             LoadContentParams();
@@ -521,6 +524,7 @@ namespace RogueEssence.Content
 
         private static void unloadStatic()
         {
+            DiagManager.Instance.LoadMsg = "Unloading Graphics";
             Subtitle.Dispose();
             Title.Dispose();
             MarkerShadow.Dispose();
@@ -577,7 +581,10 @@ namespace RogueEssence.Content
         public static void RunConversions(AssetType conversionFlags)
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
-                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH + "Font/", FONT_PATTERN);
+            {
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", BASE_PATH + "{0}.font", "system");
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "banner");
+            }
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
                 Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", PathMod.HardMod(CHARA_PATTERN));
@@ -747,7 +754,11 @@ namespace RogueEssence.Content
 
         private static FontSheet LoadFont(string prefix)
         {
-            using (FileStream fileStream = File.OpenRead(PathMod.ModPath(String.Format(FONT_PATTERN, prefix))))
+            return LoadFontFull(PathMod.ModPath(String.Format(FONT_PATTERN, prefix)));
+        }
+        private static FontSheet LoadFontFull(string path)
+        {
+            using (FileStream fileStream = File.OpenRead(path))
             {
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {

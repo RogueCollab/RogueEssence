@@ -549,16 +549,15 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void ImportAllFonts(string sourceDir, string cachePattern)
+        public static void ImportFonts(string sourceDir, string cachePattern, params string[] fonts)
         {
-            string[] fonts = new string[] { "system", "green", "blue", "yellow", "text", "banner" };
             //go through each font folder
             for (int ii = 0; ii < fonts.Length; ii++)
             {
                 using (FontSheet font = FontSheet.Import(Path.Combine(sourceDir, fonts[ii]) + "/"))
                 {
-                    //using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii] + ".png"), FileMode.Create, FileAccess.Write))
-                    //    font.Export(stream);
+                    using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii] + ".png"), FileMode.Create, FileAccess.Write))
+                        font.Export(stream);
 
                     using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii]), FileMode.Create, FileAccess.Write))
                     {
