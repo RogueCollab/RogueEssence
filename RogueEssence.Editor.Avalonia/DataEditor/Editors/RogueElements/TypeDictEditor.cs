@@ -40,19 +40,19 @@ namespace RogueEssence.Dev
             lbxValue.DataContext = vm;
 
             //add lambda expression for editing a single element
-            vm.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
 
                     bool itemExists = false;
 

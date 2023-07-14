@@ -85,20 +85,20 @@ namespace RogueEssence.Dev.ViewModels
 
         public CollectionBoxViewModel TileStates { get; set; }
 
-        public void TileStates_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void TileStates_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "TileStates[" + index + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle("Tile", elementName, element, typeof(TileState), new object[0]);
 
             //TODO: make this a member and reference it that way
-            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", null, elementName, typeof(TileState), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Tile", null, elementName, typeof(TileState), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(TileState));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(TileState), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(TileState), new object[0], true, new Type[0], advancedEdit);
 
                 bool itemExists = false;
 

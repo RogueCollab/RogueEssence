@@ -48,7 +48,7 @@ namespace RogueEssence.Dev.ViewModels
     public class SpawnListBoxViewModel : ViewModelBase
     {
         public delegate void EditElementOp(int index, object element);
-        public delegate void ElementOp(int index, object element, EditElementOp op);
+        public delegate void ElementOp(int index, object element, bool advancedEdit, EditElementOp op);
 
         public event ElementOp OnEditItem;
 
@@ -185,7 +185,8 @@ namespace RogueEssence.Dev.ViewModels
             if (index > -1)
             {
                 SpawnListElement element = Collection[index];
-                OnEditItem?.Invoke(index, element.Value, editItem);
+                bool advancedEdit = false;
+                OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
             }
         }
 
@@ -196,7 +197,8 @@ namespace RogueEssence.Dev.ViewModels
             if (index < 0)
                 index = Collection.Count;
             object element = null;
-            OnEditItem?.Invoke(index, element, insertItem);
+            bool advancedEdit = false;
+            OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }
 
         private async void btnDelete_Click()

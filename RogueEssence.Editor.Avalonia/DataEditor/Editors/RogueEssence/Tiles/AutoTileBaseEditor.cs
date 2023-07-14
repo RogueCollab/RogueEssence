@@ -22,17 +22,18 @@ namespace RogueEssence.Dev
             btnAssign.Content = "Mass Assign Sheet";
             btnAssign.Click += (object sender, RoutedEventArgs e) =>
             {
+                bool advancedEdit = false;
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = "Choose a Tilesheet";
 
                 object[] elementAttr = new object[1];
                 elementAttr[0] = new AnimAttribute(0, "Tile");
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, typeof(string), elementAttr, "", true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, typeof(string), elementAttr, "", true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, typeof(string));
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    object element = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(string), elementAttr, true, new Type[0]);
+                    object element = DataEditor.SaveClassControls(frmData.ControlPanel, name, typeof(string), elementAttr, true, new Type[0], advancedEdit);
                     string destSheet = (string)element;
                     //change all tiles of this object by first saving the object and then updating and then reloading?
                     AutoTileBase preTiles = SaveWindowControls(control, name, type, attributes, subGroupStack);

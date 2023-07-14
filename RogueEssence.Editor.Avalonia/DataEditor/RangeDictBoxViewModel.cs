@@ -150,7 +150,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public delegate void EditElementOp(IntRange key, object element);
-        public delegate void ElementOp(IntRange key, object element, EditElementOp op);
+        public delegate void ElementOp(IntRange key, object element, bool advancedEdit, EditElementOp op);
 
         public event ElementOp OnEditKey;
         public event ElementOp OnEditItem;
@@ -210,7 +210,8 @@ namespace RogueEssence.Dev.ViewModels
 
         private void insertKey(IntRange key, object element)
         {
-            OnEditItem(key, element, insertItem);
+            bool advancedEdit = false;
+            OnEditItem(key, element, advancedEdit, insertItem);
         }
 
         private void insertItem(IntRange key, object element)
@@ -289,7 +290,8 @@ namespace RogueEssence.Dev.ViewModels
             if (index > -1)
             {
                 RangeDictElement item = Collection[index];
-                OnEditItem?.Invoke(new IntRange(item.Start, item.End), item.Value, editItem);
+                bool advancedEdit = false;
+                OnEditItem?.Invoke(new IntRange(item.Start, item.End), item.Value, advancedEdit, editItem);
             }
         }
 
@@ -297,7 +299,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             IntRange newKey = new IntRange(0);
             object element = null;
-            OnEditKey?.Invoke(newKey, element, insertKey);
+            bool advancedEdit = false;
+            OnEditKey?.Invoke(newKey, element, advancedEdit, insertKey);
         }
 
         public async void btnDelete_Click()

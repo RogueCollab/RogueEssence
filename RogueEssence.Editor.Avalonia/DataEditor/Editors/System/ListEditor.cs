@@ -113,18 +113,18 @@ namespace RogueEssence.Dev
                 vm.ConfirmDelete = confirmAtt.ConfirmDelete;
 
             //add lambda expression for editing a single element
-            vm.OnEditItem += (int index, object element, CollectionBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(index, element);
                     return true;
                 };
