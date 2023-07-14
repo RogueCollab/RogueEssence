@@ -7,7 +7,14 @@ namespace RogueEssence.LevelGen
     [Serializable]
     public class GridCombo<T> where T : class, IFloorPlanGenContext
     {
+        /// <summary>
+        /// Size of the merge in cells
+        /// </summary>
         public Loc Size;
+
+        /// <summary>
+        /// The roomgen to use for the merged room.
+        /// </summary>
         public RoomGen<T> GiantRoom;
 
         public GridCombo()
@@ -21,6 +28,11 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// Merges adjacent single-cell rooms together into larger rooms, specified in Combos.
+    /// This is done by choosing randomly from the entire grid and checking to see if it works as a merge point.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class CombineGridRoomRandStep<T> : CombineGridRoomBaseStep<T> where T : class, IRoomGridGenContext
     {
@@ -70,6 +82,11 @@ namespace RogueEssence.LevelGen
         }
     }
 
+    /// <summary>
+    /// Merges adjacent single-cell rooms together into larger rooms, specified in Combos.
+    /// This is done by getting all possible merge points and then choosing randomly from them.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     public class CombineGridRoomStep<T> : CombineGridRoomBaseStep<T> where T : class, IRoomGridGenContext
     {
@@ -129,7 +146,7 @@ namespace RogueEssence.LevelGen
     }
 
     /// <summary>
-    /// Merges single-cell rooms together into larger rooms, specified in Combos
+    /// Merges adjacent single-cell rooms together into larger rooms, specified in Combos.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
@@ -142,6 +159,8 @@ namespace RogueEssence.LevelGen
 
         /// <summary>
         /// List of possible merges that can be done.
+        /// Maps a certain area of specifified size and merges it using a specified room gen.
+        /// Only merges of the specified sizes will be made.
         /// </summary>
         public SpawnList<GridCombo<T>> Combos;
 
