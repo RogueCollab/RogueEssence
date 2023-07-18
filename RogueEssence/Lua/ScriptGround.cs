@@ -886,6 +886,20 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Levels up a character a certain amount of times all at once.
+        /// Also handles learning new moves.
+        /// </summary>
+        /// <param name="character">The characters to level up.</param>
+        /// <param name="numLevelUps">The number of level ups.</param>
+       
+        public LuaFunction LevelUpChar;
+        
+        public Coroutine _LevelUpChar(Character character, int numLevelUps)
+        {
+            return new Coroutine(GroundScene.Instance.LevelUpChar(character, numLevelUps));
+        }
+
+        /// <summary>
         /// Adds a mapstatus to the ground map.  Map statuses only have an aesthetic effect in ground maps.
         /// </summary>
         /// <param name="statusIdx">The ID of the Map Status</param>
@@ -930,6 +944,7 @@ namespace RogueEssence.Script
             CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
 
             MoveObjectToPosition = state.RunString("return function(_, ent, x, y, speed) return coroutine.yield(GROUND:_MoveObjectToPosition(ent, x, y, speed)) end", "MoveObjectToPosition").First() as LuaFunction;
+            LevelUpChar = state.RunString("return function(_, character, numlevelups) return coroutine.yield(GROUND:_LevelUpChar(character, numlevelups)) end", "LevelUpChar").First() as LuaFunction;
         }
     }
 }

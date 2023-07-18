@@ -755,7 +755,7 @@ namespace RogueEssence.Script
                 }
                 if (existingStack > -1)
                 {
-                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).HiddenValue += item.HiddenValue;
+                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).Amount += item.Amount;
                     DataManager.Instance.Save.ActiveTeam.UpdateInv(DataManager.Instance.Save.ActiveTeam.GetInv(existingStack), DataManager.Instance.Save.ActiveTeam.GetInv(existingStack));
                 }
                 else

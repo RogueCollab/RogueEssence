@@ -43,18 +43,18 @@ namespace RogueEssence.Dev
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
-            vm.OnEditItem = (Priority priority, int index, object element, PriorityListBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem = (Priority priority, int index, object element, bool advancedEdit, PriorityListBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + priority.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0], advancedEdit);
                     op(priority, index, element);
                     return true;
                 };
@@ -62,18 +62,18 @@ namespace RogueEssence.Dev
                 control.GetOwningForm().RegisterChild(frmData);
                 frmData.Show();
             };
-            vm.OnEditPriority = (Priority priority, int index, PriorityListBoxViewModel.EditPriorityOp op) =>
+            vm.OnEditPriority = (Priority priority, int index, bool advancedEdit, PriorityListBoxViewModel.EditPriorityOp op) =>
             {
                 string elementName = name + "<Priority>";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, priority, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), priority, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), priority, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, typeof(Priority));
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    object priorityObj = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    object priorityObj = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(priority, index, (Priority)priorityObj);
                     return true;
                 };

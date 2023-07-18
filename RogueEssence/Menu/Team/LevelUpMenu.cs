@@ -16,11 +16,16 @@ namespace RogueEssence.Menu
         public MenuText[] MDef;
         public MenuDivider[] Divs;
 
-        public LevelUpMenu(int teamIndex, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef)
+        public LevelUpMenu(int teamIndex, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef) :
+            this(DungeonScene.Instance.ActiveTeam.Players[teamIndex], oldLevel, oldHP, oldSpeed, oldAtk, oldDef, oldMAtk, oldMDef)
+        {
+        }
+
+        public LevelUpMenu(Character player, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk,
+            int oldMDef)
         {
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 88, 24), new Loc(GraphicsManager.ScreenWidth / 2 + 88, 160));
 
-            Character player = DungeonScene.Instance.ActiveTeam.Players[teamIndex];
             Level = genMenuTier(GraphicsManager.MenuBG.TileHeight, Text.FormatKey("MENU_LABEL", Text.FormatKey("MENU_TEAM_LEVEL")), oldLevel, player.Level - oldLevel, player.Level);
             HP = genMenuTier(GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2, Text.FormatKey("MENU_LABEL", Data.Stat.HP.ToLocal("tiny")), oldHP, player.MaxHP - oldHP, player.MaxHP);
             Atk = genMenuTier(GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3, Text.FormatKey("MENU_LABEL", Data.Stat.Attack.ToLocal("tiny")), oldAtk, player.BaseAtk - oldAtk, player.BaseAtk);

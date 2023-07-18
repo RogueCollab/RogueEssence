@@ -33,6 +33,11 @@ namespace RogueEssence.Dev
         public virtual bool DefaultLabel => true;
         public virtual bool DefaultType => false;
 
+        /// <summary>
+        /// Denotes that this is a simple editor that will open by default if opened in its own window, but fallback to another editor if opened via CTRL+Click
+        /// </summary>
+        public virtual bool SimpleEditor => false;
+
         public static void LoadLabelControl(StackPanel control, string name, string desc)
         {
             TextBlock lblName = new TextBlock();
@@ -115,7 +120,7 @@ namespace RogueEssence.Dev
         //TODO: add the ability to tag- using attributes- a specific member with a specific editor
         public virtual void LoadMemberControl(string parent, T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
-            DataEditor.LoadClassControls(control, parent, obj.GetType(), name, type, attributes, member, isWindow, subGroupStack);
+            DataEditor.LoadClassControls(control, parent, obj.GetType(), name, type, attributes, member, isWindow, subGroupStack, false);
         }
 
         public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
@@ -180,7 +185,7 @@ namespace RogueEssence.Dev
 
         public virtual object SaveMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
-            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack);
+            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack, false);
         }
 
 
@@ -242,17 +247,17 @@ namespace RogueEssence.Dev
                 control.Children.Add(cbxValue);
 
                 //add lambda expression for editing a single element
-                mv.OnEditItem += (object element, ClassBoxViewModel.EditElementOp op) =>
+                mv.OnEditItem += (object element, bool advancedEdit, ClassBoxViewModel.EditElementOp op) =>
                 {
                     DataEditForm frmData = new DataEditForm();
                     frmData.Title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
 
-                    DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0]);
+                    DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0], advancedEdit);
                     DataEditor.TrackTypeSize(frmData, type);
 
                     frmData.SelectedOKEvent += async () =>
                     {
-                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0]);
+                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0], advancedEdit);
                         op(element);
                         return true;
                     };

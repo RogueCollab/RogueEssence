@@ -35,7 +35,7 @@ namespace RogueEssence.Dungeon
 
         [NonSerialized]
         public int MapIndex;
-
+        
         public Team()
         {
             Name = "";

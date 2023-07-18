@@ -1,4 +1,6 @@
 ﻿using System;
+using RogueEssence.Data;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -21,9 +23,11 @@ namespace RogueEssence.Dungeon
     }
 
 
+    // TODO: Rename this to ItemSkillIDState, it's only used for skills!!
     [Serializable]
     public class ItemIDState : ItemState
     {
+        [DataType(0, DataManager.DataType.Skill, false)]
         public string ID;
         public ItemIDState() { ID = ""; }
         public ItemIDState(string idx) { ID = idx; }

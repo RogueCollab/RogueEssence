@@ -76,7 +76,7 @@ namespace RogueEssence.Dev.ViewModels
     public class CategorySpawnBoxViewModel : ViewModelBase
     {
         public delegate void EditElementOp(int index, object element);
-        public delegate void ElementOp(int index, object element, EditElementOp op);
+        public delegate void ElementOp(int index, object element, bool advancedEdit, EditElementOp op);
 
         public event ElementOp OnEditItem;
         public event ElementOp OnEditKey;
@@ -253,13 +253,14 @@ namespace RogueEssence.Dev.ViewModels
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
+            bool advancedEdit = false;
             if (index > -1)
             {
                 CategorySpawnElement element = Collection[index];
                 if (isCategory(index))
-                    OnEditKey?.Invoke(index, element.Value, editCategory);
+                    OnEditKey?.Invoke(index, element.Value, advancedEdit, editCategory);
                 else
-                    OnEditItem?.Invoke(index, element.Value, editItem);
+                    OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
             }
         }
 
@@ -269,6 +270,7 @@ namespace RogueEssence.Dev.ViewModels
             if (index < 0)
                 index = Collection.Count;
             object element = null;
+            bool advancedEdit = false;
             if (index == Collection.Count)
             {
                 //we're fine, the insert will handle the edge case
@@ -282,7 +284,7 @@ namespace RogueEssence.Dev.ViewModels
                 //find the index of the owning category
                 index = getOwningCategoryIndex(index);
             }
-            OnEditKey?.Invoke(index, element, insertCategory);
+            OnEditKey?.Invoke(index, element, advancedEdit, insertCategory);
         }
 
         private async void btnAddItem_Click()
@@ -298,7 +300,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             object element = null;
-
+            bool advancedEdit = false;
             if (isCategory(index))
             {
                 //find the last index of the category
@@ -309,7 +311,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //we're fine, just insert at the index directly
             }
-            OnEditItem?.Invoke(index, element, insertItem);
+            OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }
 
         private async void btnDelete_Click()
