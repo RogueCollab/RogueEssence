@@ -46,13 +46,8 @@ namespace RogueEssence.Script
             get => _m_curdialogue;
             set
             {
-                if (_m_curdialogue == null || _m_curdialogue.Current.FinishedYield())
-                {
-                    if (_m_curchoice == null || _m_curchoice.Inactive)
-                    {
-                        _m_curdialogue = value;
-                    }
-                }
+                if (_m_curdialogue == null && _m_curchoice == null)
+                    _m_curdialogue = value;
             }
         }
 
@@ -61,13 +56,8 @@ namespace RogueEssence.Script
             get => _m_curchoice;
             set
             {
-                if (_m_curdialogue == null || _m_curdialogue.Current.FinishedYield())
-                {
-                    if (_m_curchoice == null || _m_curchoice.Inactive)
-                    {
-                        _m_curchoice = value;
-                    }
-                }
+                if (_m_curdialogue == null && _m_curchoice == null)
+                    _m_curchoice = value;
             }
         }
 
@@ -520,6 +510,16 @@ namespace RogueEssence.Script
                 return new Coroutine(_DummyWait());
 
             return new Coroutine(m_curdialogue);
+        }
+
+        /// <summary>
+        /// Wait for dialogue to finish and then CLEAN UP dialogue box
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator<YieldInstruction> __WaitDialog()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(m_curdialogue);
+            _m_curdialogue = null;
         }
 
         /// <summary>
@@ -1527,10 +1527,20 @@ namespace RogueEssence.Script
                 return new Coroutine(_DummyWait());
 
             if (m_curchoice != null)
-                return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
+                return new Coroutine(__WaitForChoice());
             else
                 return new Coroutine(_DummyWait());
 
+        }
+
+        /// <summary>
+        /// Wait for choice and then CLEAN UP m_curchoice
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator<YieldInstruction> __WaitForChoice()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
+            _m_curchoice = null;
         }
 
         //================================================================
