@@ -356,6 +356,13 @@ namespace RogueEssence.Dungeon
             return DirExt.ApproximateDir8(loc2 - loc1);
         }
 
+        /// <summary>
+        /// Checks if two characters are close together, accounting for wrapping
+        /// </summary>
+        /// <param name="loc1"></param>
+        /// <param name="loc2"></param>
+        /// <param name="range"></param>
+        /// <returns></returns>
         public bool InRange(Loc loc1, Loc loc2, int range)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)
