@@ -38,18 +38,18 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentMap.MapEffect = MapEffect.GetObject<ActiveEffect>();
         }
 
-        public void MapEffect_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        public void MapEffect_Edit(object element, bool advancedEdit, ClassBoxViewModel.EditElementOp op)
         {
             string elementName = "MapEffect";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(ActiveEffect), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(ActiveEffect), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(ActiveEffect));
 
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(ActiveEffect), new object[0], true, new Type[0], advancedEdit);
                 op(element);
                 return true;
             };
@@ -69,19 +69,19 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         //TODO: move these events into ListEditor; they were generic enough to warrant copy+pasting
-        public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void Statuses_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(MapStatus), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(MapStatus), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(MapStatus), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(MapStatus));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapStatus), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(MapStatus), new object[0], true, new Type[0], advancedEdit);
 
                 bool itemExists = false;
 
@@ -111,18 +111,18 @@ namespace RogueEssence.Dev.ViewModels
             frmData.Show();
         }
 
-        public void Events_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void Events_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Events[" + index + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(SingleCharEvent), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(SingleCharEvent), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(SingleCharEvent));
 
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(SingleCharEvent), new object[0], true, new Type[0], advancedEdit);
                 op(index, element);
                 return true;
             };

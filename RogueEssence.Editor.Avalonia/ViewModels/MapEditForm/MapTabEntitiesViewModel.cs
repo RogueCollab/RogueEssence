@@ -556,19 +556,19 @@ namespace RogueEssence.Dev.ViewModels
             SelectedEntity.ActionEvents = ActionEvents.GetList<List<BattleEvent>>();
         }
 
-        public void ActionEvents_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void ActionEvents_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Action Events[" + index + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(BattleEvent), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(BattleEvent), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(BattleEvent), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(BattleEvent));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(BattleEvent), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(BattleEvent), new object[0], true, new Type[0], advancedEdit);
 
                 op(index, element);
                 return true;
@@ -587,19 +587,19 @@ namespace RogueEssence.Dev.ViewModels
             SelectedEntity.StatusEffects = statuses;
         }
 
-        public void Statuses_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void Statuses_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(StatusEffect));
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true, new Type[0], advancedEdit);
 
                 bool itemExists = false;
 

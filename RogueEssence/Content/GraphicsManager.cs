@@ -90,7 +90,6 @@ namespace RogueEssence.Content
         }
 
         public static string BASE_PATH { get => PathMod.ASSET_PATH + "Base/"; }
-        public static string FONT_PATTERN { get => PathMod.ASSET_PATH + "Font/{0}.font"; }
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
@@ -107,6 +106,7 @@ namespace RogueEssence.Content
         public const string TILE_PATTERN = CONTENT_PATH + "Tile/{0}.tile";
         public const string OBJECT_PATTERN = CONTENT_PATH + "Object/{0}.dir";
         public const string BG_PATTERN = CONTENT_PATH + "BG/{0}.dir";
+        public const string FONT_PATTERN = CONTENT_PATH + "Font/{0}.font";
 
         /// <summary>
         /// All textures are multiples of 8, right?
@@ -416,62 +416,55 @@ namespace RogueEssence.Content
             //Set graphics device
             BaseSheet.InitBase(graphics, defaultTex);
 
+            //load onepixel
+            Pixel = new BaseSheet(1, 1);
+            Pixel.BlitColor(Color.White, 1, 1, 0, 0);
+
             Splash = BaseSheet.Import(BASE_PATH + "Splash.png");
             MarkerShadow = BaseSheet.Import(BASE_PATH + "MarkerShadow.png");
-            SysFont = LoadFont("system");
+
+            SysFont = LoadFontFull(BASE_PATH + "system.font");
         }
 
         public static void loadStatic()
         {
             //load menu data
-            MenuBG = TileSheet.Import(BASE_PATH + "MenuBG.png", 8, 8);
+            MenuBG = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "MenuBG.png")), 8, 8);
+               
+            //load menu data
+            MenuBorder = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "MenuBorder.png")), 8, 8);
 
             //load menu data
-            MenuBorder = TileSheet.Import(BASE_PATH + "MenuBorder.png", 8, 8);
+            PicBorder = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "PortraitBorder.png")), 4, 4);
+            Arrows = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Arrows.png")), 8, 8);
 
-            //load menu data
-            PicBorder = TileSheet.Import(BASE_PATH + "PortraitBorder.png", 4, 4);
+            Cursor = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Cursor.png")), 11, 11);
 
-            Arrows = TileSheet.Import(BASE_PATH + "Arrows.png", 8, 8);
+            BattleFactors = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "BattleFactors.png")), 16, 16);
 
-            Cursor = TileSheet.Import(BASE_PATH + "Cursor.png", 11, 11);
+            Tiling = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Tiling.png")), TileSize, TileSize);
 
-            BattleFactors = TileSheet.Import(BASE_PATH + "BattleFactors.png", 16, 16);
+            Darkness = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Dark.png")), 8, 8);
 
-            Tiling = TileSheet.Import(BASE_PATH + "Tiling.png", TileSize, TileSize);
+            Strip = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Strip.png")), 8, 8);
 
-            Darkness = TileSheet.Import(BASE_PATH + "Dark.png", 8, 8);
+            Buttons = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Buttons.png")), 16, 16);
 
-            Strip = TileSheet.Import(BASE_PATH + "Strip.png", 8, 8);
+            HPMenu = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "HP.png")), 8, 8);
 
-            Buttons = TileSheet.Import(BASE_PATH + "Buttons.png", 16, 16);
+            MiniHP = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "MiniHP.png")));
 
-            HPMenu = TileSheet.Import(BASE_PATH + "HP.png", 8, 8);
-
-            MiniHP = BaseSheet.Import(BASE_PATH + "MiniHP.png");
-
-            MapSheet = TileSheet.Import(BASE_PATH + "Map.png", 4, 4);
-
-            Shadows = TileSheet.Import(BASE_PATH + "Shadows.png", 32, 16);
-
-            Title = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Title.png")));
-            Subtitle = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Enter.png")));
-        }
-
-        public static void InitStatic()
-        {
-            DiagManager.Instance.LoadMsg = "Loading Graphics";
-
-            //load onepixel
-            Pixel = new BaseSheet(1, 1);
-            Pixel.BlitColor(Color.White, 1, 1, 0, 0);
+            MapSheet = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Map.png")), 4, 4);
+            
+            Shadows = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Shadows.png")), 32, 16);
 
             //Load divider texture
-            DivTex = BaseSheet.Import(BASE_PATH + "Divider.png");
+            DivTex = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Divider.png")));
+            
+            Title = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Title.png")));
+            Subtitle = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Enter.png")));
 
-            loadStatic();
-
-            LoadContentParams();
+            DiagManager.Instance.LoadMsg = "Loading Font";
 
             //load font
             TextFont = LoadFont("text");
@@ -479,7 +472,15 @@ namespace RogueEssence.Content
             DamageFont = LoadFont("yellow");
             HealFont = LoadFont("green");
             EXPFont = LoadFont("blue");
+        }
+        public static void InitStatic()
+        {
+            DiagManager.Instance.LoadMsg = "Loading Graphics";
 
+            loadStatic();
+
+            LoadContentParams();
+            
             DiagManager.Instance.LoadMsg = "Loading Headers";
 
             //initialize caches
@@ -523,6 +524,7 @@ namespace RogueEssence.Content
 
         private static void unloadStatic()
         {
+            DiagManager.Instance.LoadMsg = "Unloading Graphics";
             Subtitle.Dispose();
             Title.Dispose();
             MarkerShadow.Dispose();
@@ -532,6 +534,7 @@ namespace RogueEssence.Content
             HPMenu.Dispose();
             Buttons.Dispose();
             Shadows.Dispose();
+            DivTex.Dispose();
             Darkness.Dispose();
             BattleFactors.Dispose();
             Strip.Dispose();
@@ -540,6 +543,11 @@ namespace RogueEssence.Content
             PicBorder.Dispose();
             MenuBorder.Dispose();
             MenuBG.Dispose();
+            EXPFont.Dispose();
+            HealFont.Dispose();
+            DamageFont.Dispose();
+            DungeonFont.Dispose();
+            TextFont.Dispose();
         }
 
         public static void Unload()
@@ -555,15 +563,7 @@ namespace RogueEssence.Content
             vfxCache.Clear();
             portraitCache.Clear();
             spriteCache.Clear();
-
-            DivTex.Dispose();
-
-            EXPFont.Dispose();
-            HealFont.Dispose();
-            DamageFont.Dispose();
-            DungeonFont.Dispose();
-            TextFont.Dispose();
-
+            
             SysFont.Dispose();
 
             Pixel.Dispose();
@@ -581,7 +581,10 @@ namespace RogueEssence.Content
         public static void RunConversions(AssetType conversionFlags)
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
-                Dev.ImportHelper.ImportAllFonts(PathMod.DEV_PATH + "Font/", FONT_PATTERN);
+            {
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", BASE_PATH + "{0}.font", "system");
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "banner");
+            }
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
                 Dev.ImportHelper.ImportAllChars(PathMod.DEV_PATH + "Sprite/", PathMod.HardMod(CHARA_PATTERN));
@@ -597,18 +600,18 @@ namespace RogueEssence.Content
                 Dev.ImportHelper.ImportAllTiles(PathMod.DEV_PATH + "Tile/", PathMod.HardMod(TILE_PATTERN));
 
             if ((conversionFlags & AssetType.Item) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Item/", PathMod.HardMod(ITEM_PATTERN));
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Item/", PathMod.HardMod(ITEM_PATTERN));
             if ((conversionFlags & AssetType.Particle) != AssetType.None)
                 Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Particle/", PathMod.HardMod(PARTICLE_PATTERN));
             if ((conversionFlags & AssetType.Beam) != AssetType.None)
                 Dev.ImportHelper.ImportAllBeams(PathMod.DEV_PATH + "Beam/", PathMod.HardMod(BEAM_PATTERN));
 
             if ((conversionFlags & AssetType.Icon) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Icon/", PathMod.HardMod(ICON_PATTERN));
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Icon/", PathMod.HardMod(ICON_PATTERN));
             if ((conversionFlags & AssetType.Object) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"Object/", PathMod.HardMod(OBJECT_PATTERN));
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "Object/", PathMod.HardMod(OBJECT_PATTERN));
             if ((conversionFlags & AssetType.BG) != AssetType.None)
-                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH+"BG/", PathMod.HardMod(BG_PATTERN));
+                Dev.ImportHelper.ImportAllNameDirs(PathMod.DEV_PATH + "BG/", PathMod.HardMod(BG_PATTERN));
 
 
 
@@ -637,7 +640,7 @@ namespace RogueEssence.Content
             Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(TILE_PATTERN)));
             Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(OBJECT_PATTERN)));
             Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(BG_PATTERN)));
-
+            Directory.CreateDirectory(Path.Join(baseFolder, Path.GetDirectoryName(FONT_PATTERN)));
             Directory.CreateDirectory(Path.Join(baseFolder, MUSIC_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, SOUND_PATH));
             Directory.CreateDirectory(Path.Join(baseFolder, UI_PATH));
@@ -751,7 +754,11 @@ namespace RogueEssence.Content
 
         private static FontSheet LoadFont(string prefix)
         {
-            using (FileStream fileStream = File.OpenRead(String.Format(FONT_PATTERN, prefix)))
+            return LoadFontFull(PathMod.ModPath(String.Format(FONT_PATTERN, prefix)));
+        }
+        private static FontSheet LoadFontFull(string path)
+        {
+            using (FileStream fileStream = File.OpenRead(path))
             {
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {

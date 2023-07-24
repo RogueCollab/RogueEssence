@@ -99,19 +99,19 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentGround.Background = BG.GetObject<IBackgroundSprite>();
         }
 
-        public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        public void MapBG_Edit(object element, bool advancedEdit, ClassBoxViewModel.EditElementOp op)
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, null, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, null, elementName, type, new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, type);
 
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0], advancedEdit);
                 op(element);
                 return true;
             };

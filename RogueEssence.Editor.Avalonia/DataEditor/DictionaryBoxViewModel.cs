@@ -50,7 +50,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public delegate void EditElementOp(object oldKey, object newKey, object element);
-        public delegate void ElementOp(object key, object element, EditElementOp op);
+        public delegate void ElementOp(object key, object element, bool advancedEdit, EditElementOp op);
 
         public event ElementOp OnEditKey;
         public event ElementOp OnEditItem;
@@ -121,7 +121,8 @@ namespace RogueEssence.Dev.ViewModels
                 await MessageBox.Show(parent, "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
-            OnEditItem(key, element, insertItem);
+            bool advancedEdit = false;
+            OnEditItem(key, element, advancedEdit, insertItem);
         }
 
         private void insertItem(object oldKey, object key, object element)
@@ -145,10 +146,11 @@ namespace RogueEssence.Dev.ViewModels
 
         public void EditKey(int index)
         {
+            bool advancedEdit = false;
             if (index > -1)
             {
                 DictionaryElement item = Collection[index];
-                OnEditKey?.Invoke(item.Key, item.Value, editKey);
+                OnEditKey?.Invoke(item.Key, item.Value, advancedEdit, editKey);
             }
         }
 
@@ -156,10 +158,11 @@ namespace RogueEssence.Dev.ViewModels
         {
             //int index = lbxDictionary.IndexFromPoint(e.X, e.Y);
             int index = SelectedIndex;
+            bool advancedEdit = false;
             if (index > -1)
             {
                 DictionaryElement item = Collection[index];
-                OnEditItem?.Invoke(item.Key, item.Value, editItem);
+                OnEditItem?.Invoke(item.Key, item.Value, advancedEdit, editItem);
             }
         }
 
@@ -167,7 +170,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             object newKey = null;
             object element = null;
-            OnEditKey?.Invoke(newKey, element, insertKey);
+            bool advancedEdit = false;
+            OnEditKey?.Invoke(newKey, element, advancedEdit, insertKey);
         }
 
         public async void btnDelete_Click()

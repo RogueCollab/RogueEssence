@@ -59,10 +59,10 @@ namespace RogueEssence.Dev.ViewModels
 
 
         public delegate void EditElementOp(Priority priority, int index, object element);
-        public delegate void ElementOp(Priority priority, int index, object element, EditElementOp op);
+        public delegate void ElementOp(Priority priority, int index, object element, bool advancedEdit, EditElementOp op);
 
         public delegate void EditPriorityOp(Priority priority, int index, Priority newPriority);
-        public delegate void PriorityOp(Priority priority, int index, EditPriorityOp op);
+        public delegate void PriorityOp(Priority priority, int index, bool advancedEdit, EditPriorityOp op);
 
         public ElementOp OnEditItem;
         public PriorityOp OnEditPriority;
@@ -152,11 +152,12 @@ namespace RogueEssence.Dev.ViewModels
         {
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
             int boxIndex = SelectedIndex;
+            bool advancedEdit = false;
             if (boxIndex > -1)
             {
                 Priority priority = Collection[boxIndex].Priority;
                 object element = Collection[boxIndex].Value;
-                OnEditItem?.Invoke(priority, boxIndex, element, editItem);
+                OnEditItem?.Invoke(priority, boxIndex, element, advancedEdit, editItem);
             }
         }
 
@@ -170,7 +171,8 @@ namespace RogueEssence.Dev.ViewModels
                 index = SelectedIndex + 1;
             }
             object element = null;
-            OnEditItem(priority, index, element, insertItem);
+            bool advancedEdit = false;
+            OnEditItem(priority, index, element, advancedEdit, insertItem);
         }
 
         public async void btnDelete_Click()
@@ -265,7 +267,8 @@ namespace RogueEssence.Dev.ViewModels
             if (SelectedIndex > -1)
             {
                 Priority priority = Collection[SelectedIndex].Priority;
-                OnEditPriority(priority, SelectedIndex, changePriority);
+                bool advancedEdit = false;
+                OnEditPriority(priority, SelectedIndex, advancedEdit, changePriority);
             }
         }
 

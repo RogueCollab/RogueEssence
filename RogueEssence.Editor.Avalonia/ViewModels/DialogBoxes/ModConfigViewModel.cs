@@ -88,19 +88,19 @@ namespace RogueEssence.Dev.ViewModels
         public CollectionBoxViewModel Relationships { get; set; }
 
 
-        public void Relationships_EditItem(int index, object element, CollectionBoxViewModel.EditElementOp op)
+        public void Relationships_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Relationship[" + index + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle("Relationship", elementName, element, typeof(RelatedMod), new object[0]);
 
             //TODO: make this a member and reference it that way
-            DataEditor.LoadClassControls(frmData.ControlPanel, "Relationship", null, elementName, typeof(RelatedMod), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, "Relationship", null, elementName, typeof(RelatedMod), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(RelatedMod));
 
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(RelatedMod), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(RelatedMod), new object[0], true, new Type[0], advancedEdit);
 
                 bool itemExists = false;
 

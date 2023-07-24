@@ -22,7 +22,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public delegate void EditElementOp(object element);
-        public delegate void ElementOp(object element, EditElementOp op);
+        public delegate void ElementOp(object element, bool advancedEdit, EditElementOp op);
 
         public StringConv StringConv;
 
@@ -54,7 +54,8 @@ namespace RogueEssence.Dev.ViewModels
         private void btnEdit_Click()
         {
             object element = Object;
-            OnEditItem?.Invoke(element, updateSource);
+            bool advancedEdit = false;
+            OnEditItem?.Invoke(element, advancedEdit, updateSource);
         }
     }
 }

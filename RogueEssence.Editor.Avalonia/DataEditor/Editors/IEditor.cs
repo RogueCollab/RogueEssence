@@ -8,6 +8,7 @@ namespace RogueEssence.Dev
 {
     public interface IEditor
     {
+        bool SimpleEditor { get; }
         Type GetAttributeType();
         Type GetConvertingType();
 

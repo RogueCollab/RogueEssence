@@ -61,18 +61,18 @@ namespace RogueEssence.Dev
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
-            vm.OnEditItem += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0]);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0], advancedEdit);
                     op(key, key, element);
                     return true;
                 };
@@ -81,18 +81,18 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            vm.OnEditKey += (object key, object element, DictionaryBoxViewModel.EditElementOp op) =>
+            vm.OnEditKey += (object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "<Key>";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, keyType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    object newKey = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    object newKey = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(key, newKey, element);
                     return true;
                 };
@@ -217,18 +217,18 @@ namespace RogueEssence.Dev
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
-            vm.OnEditItem += (int index, object element, CategorySpawnBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (int index, object element, bool advancedEdit, CategorySpawnBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), true, new Type[0]);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), true, new Type[0], advancedEdit);
                     op(index, element);
                     return true;
                 };
@@ -237,18 +237,18 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            vm.OnEditKey += (int index, object key, CategorySpawnBoxViewModel.EditElementOp op) =>
+            vm.OnEditKey += (int index, object key, bool advancedEdit, CategorySpawnBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, keyType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(index, key);
                     return true;
                 };
