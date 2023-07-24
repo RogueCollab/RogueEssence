@@ -41,12 +41,20 @@ namespace RogueEssence.Data
         public bool BlockLight;
         public int ShadowType;
 
+
+        /// <summary>
+        /// Special variables that this terrain contains.
+        /// They are potentially checked against in a select number of battle events.
+        /// </summary>
+        public StateCollection<TerrainState> TerrainStates;
+
         public PriorityList<SingleCharEvent> LandedOnTiles;
 
         public TerrainData()
         {
             Name = new LocalText();
             Comment = "";
+            TerrainStates = new StateCollection<TerrainState>();
             LandedOnTiles = new PriorityList<SingleCharEvent>();
         }
 
