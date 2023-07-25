@@ -21,7 +21,7 @@ namespace RogueEssence.Dev
         public override string GetString(IPerlinWaterStep obj, Type type, object[] attributes)
         {
             PropertyInfo waterInfo = typeof(IPerlinWaterStep).GetProperty(nameof(obj.WaterPercent));
-            PropertyInfo terrainInfo = typeof(IPerlinWaterStep).GetProperty(nameof(obj.Terrain));
+            PropertyInfo terrainInfo = typeof(IWaterStep).GetProperty(nameof(obj.Terrain));
             return string.Format("{0}: {1}% {2}", obj.GetType().GetFormattedTypeName(),
                 DataEditor.GetString(obj.WaterPercent, waterInfo.GetMemberInfoType(), waterInfo.GetCustomAttributes(false)),
                 DataEditor.GetString(obj.Terrain, terrainInfo.GetMemberInfoType(), terrainInfo.GetCustomAttributes(false)));
