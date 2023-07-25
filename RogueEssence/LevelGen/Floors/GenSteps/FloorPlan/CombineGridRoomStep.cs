@@ -150,7 +150,7 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class CombineGridRoomBaseStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext
+    public abstract class CombineGridRoomBaseStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext, ICombinedGridRoomStep
     {
         /// <summary>
         /// The number of merges to add to the grid plan.
