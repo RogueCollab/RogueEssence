@@ -16,15 +16,14 @@ using System.Reflection;
 
 namespace RogueEssence.Dev
 {
-    public class CombinedGridRoomStepEditor : Editor<ICombinedGridRoomStep>
+    public class CombinedGridRoomStepEditor : Editor<ICombineGridRoomStep>
     {
-        public override string GetString(ICombinedGridRoomStep obj, Type type, object[] attributes)
+        public override string GetString(ICombineGridRoomStep obj, Type type, object[] attributes)
         {
-            PropertyInfo mergeRateInfo = typeof(ICombinedGridRoomStep).GetProperty(nameof(obj.MergeRate));
-            PropertyInfo combosInfo = typeof(ICombinedGridRoomStep).GetProperty(nameof(obj.Combos)).Count;
+            PropertyInfo mergeRateInfo = typeof(ICombineGridRoomStep).GetProperty(nameof(obj.MergeRate));
             return string.Format("{0}[{1}]: Amount:{2}", obj.GetType().GetFormattedTypeName(),
-                DataEditor.GetString(obj.MergeRate, mergeRateInfo.GetMemberInfoType(), mergeRateInfo.GetCustomAttributes(false)),
-                DataEditor.GetString(obj.Combos.Count, combosInfo.GetMemberInfoType(), combosInfo.GetCustomAttributes(false)));
+                obj.Combos.Count,
+                DataEditor.GetString(obj.MergeRate, mergeRateInfo.GetMemberInfoType(), mergeRateInfo.GetCustomAttributes(false)));
         }
     }
 }

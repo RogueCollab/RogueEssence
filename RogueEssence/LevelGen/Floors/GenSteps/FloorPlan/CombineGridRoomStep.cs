@@ -150,12 +150,13 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public abstract class CombineGridRoomBaseStep<T> : GridPlanStep<T> where T : class, IRoomGridGenContext, ICombinedGridRoomStep
+    public abstract class CombineGridRoomBaseStep<T> : GridPlanStep<T>, ICombineGridRoomStep
+        where T : class, IRoomGridGenContext
     {
         /// <summary>
         /// The number of merges to add to the grid plan.
         /// </summary>
-        public RandRange MergeRate;
+        public RandRange MergeRate { get; set; }
 
         /// <summary>
         /// List of possible merges that can be done.
@@ -163,6 +164,8 @@ namespace RogueEssence.LevelGen
         /// Only merges of the specified sizes will be made.
         /// </summary>
         public SpawnList<GridCombo<T>> Combos;
+
+        ISpawnList ICombineGridRoomStep.Combos { get { return Combos; } }
 
         /// <summary>
         /// Determines which rooms are eligible to be merged into a new room.
