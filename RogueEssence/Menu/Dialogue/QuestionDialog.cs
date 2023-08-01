@@ -11,13 +11,13 @@ namespace RogueEssence.Menu
     {
         private DialogueChoiceMenu dialogueChoices;
 
-        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, DialogueChoice[] choices, int defaultChoice, int cancelChoice, Loc menuLoc)
-            : base(message, sound, centerH, centerV, bounds)
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, object[] scripts, DialogueChoice[] choices, int defaultChoice, int cancelChoice, Loc menuLoc)
+            : base(message, sound, centerH, centerV, bounds, scripts)
         {
             dialogueChoices = new DialogueChoiceMenu(choices, defaultChoice, cancelChoice, menuLoc);
         }
 
-        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice, int cancelChoice) : this(message, sound, centerH, centerV, DialogueBox.DefaultBounds, choices, defaultChoice, cancelChoice, new Loc(-1, -1)) {}
+        public QuestionDialog(string message, bool sound, bool centerH, bool centerV, DialogueChoice[] choices, int defaultChoice, int cancelChoice) : this(message, sound, centerH, centerV, DialogueBox.DefaultBounds, new object[] {}, choices, defaultChoice, cancelChoice, new Loc(-1, -1)) {}
 
         public override void ProcessTextDone(InputManager input)
         {

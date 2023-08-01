@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System.Text.RegularExpressions;
+using NLua;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -39,6 +41,7 @@ namespace RogueEssence.Menu
 
         public List<List<TextScript>> ScriptCalls;
 
+        public object[] Scripts;
         protected List<TextScript> CurrentScript
         {
             get { return ScriptCalls[curTextIndex]; }
@@ -84,6 +87,9 @@ namespace RogueEssence.Menu
         private string message;
 
         private double currSpeed;
+        
+        private bool runningScript;
+        private bool startedScript;
 
         public bool IsCheckpoint { get { return false; } }
         
@@ -93,10 +99,28 @@ namespace RogueEssence.Menu
             new Loc(SIDE_BUFFER, GraphicsManager.ScreenHeight - (16 + TEXT_HEIGHT * MAX_LINES + VERT_PAD * 2)),
             new Loc(GraphicsManager.ScreenWidth - SIDE_BUFFER, GraphicsManager.ScreenHeight - 8)
         );
+        
+        public static object[] CreateScripts(LuaTable callbacks)
+        {
+            object[] scripts = new object[] {};
+            if (callbacks != null)
+            {
+                int scriptIdx = 0;
+                scripts = new object[callbacks.Values.Count];
+                foreach (object val in callbacks.Values)
+                {
+                    scripts[scriptIdx] = val;
+                    scriptIdx++;
+                }
+            }
 
-        public DialogueBox(string msg, bool sound, bool centerH, bool centerV, Rect bounds)
+            return scripts;
+        }
+        
+        public DialogueBox(string msg, bool sound, bool centerH, bool centerV, Rect bounds, object[] scripts)
         {
             Bounds = bounds;
+            Scripts = scripts;
             Pauses = new List<List<TextPause>>();
             ScriptCalls = new List<List<TextScript>>();
             Speeds = new List<List<TextSpeed>>();
@@ -132,9 +156,37 @@ namespace RogueEssence.Menu
                 TextScript textScript = getCurrentTextScript();
                 if (textScript != null)
                 {
-                    //TODO: execute callback and wait for its completion
-                    CurrentScript.RemoveAt(0);
+                    if (!startedScript && textScript.Script < Scripts.Length && textScript.Script >= 0)
+                    {
+                        object script = Scripts[textScript.Script];
+                        if (script is Coroutine)
+                        {
+                            MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine((Coroutine) script, true) ); 
+                            runningScript = true;
+                            startedScript = true;
+                        }
+                        else if (script is LuaFunction)
+                        {
+                            LuaFunction luaFun = script as LuaFunction;
+                            MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine(new Coroutine(LuaEngine.Instance.CallScriptFunction(luaFun)), true) );
+                            runningScript = true;
+                            startedScript = true;
+                        }
+                    }
+                    
+                    if (runningScript)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        startedScript = false;
+                        runningScript = false;
+                        CurrentScript.RemoveAt(0);      
+                        CurrentTextTime = new FrameTick();
+                    }
                 }
+                
                 TextSpeed textSpeed = getCurrentTextSpeed();
                 if (textSpeed != null)
                 {
@@ -340,6 +392,18 @@ namespace RogueEssence.Menu
             updateMessage();
         }
 
+        private IEnumerator<YieldInstruction> waitForTaskDone(Coroutine coroutine)
+        {
+            while (true)
+            {
+                if (coroutine.FinishedYield())
+                {
+                    runningScript = false;
+                    yield break;
+                }
+                yield return new WaitForFrames(1);
+            }
+        }
         public void FinishText()
         {
             foreach(DialogueText text in Texts)
@@ -530,7 +594,6 @@ namespace RogueEssence.Menu
             CurrentText.CurrentCharIndex = curCharIndex - startLag;
         }
     }
-
     public class TextPause
     {
         public int LetterIndex;
