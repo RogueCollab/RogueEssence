@@ -1356,27 +1356,32 @@ namespace RogueEssence.Data
                 if (state != null && Stakes != DungeonStakes.None && !Seeded)
                 {
                     bool allowTransfer = false;
-                    DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),
+                    ZoneData zoneData = DataManager.Instance.GetZone(completedZone);
+                    DialogueBox question = MenuManager.Instance.CreateQuestion(zoneData.Rogue == RogueStatus.AllTransfer ? Text.FormatKey("DLG_TRANSFER_ALL_ASK") : Text.FormatKey("DLG_TRANSFER_ITEM_ASK"),
                         () => { allowTransfer = true; }, () => { });
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
 
                     if (allowTransfer)
                     {
                         MainProgress mainSave = state.Save as MainProgress;
-                        //put the new recruits into assembly
-                        foreach (Character character in ActiveTeam.Players)
+
+                        if (zoneData.Rogue == RogueStatus.AllTransfer)
                         {
-                            if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
+                            //put the new recruits into assembly
+                            foreach (Character character in ActiveTeam.Players)
                             {
-                                if (!String.IsNullOrEmpty(character.EquippedItem.ID))
-                                    mainSave.ItemsToStore.Add(character.EquippedItem);
-                                mainSave.CharsToStore.Add(new CharData(character));
+                                if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
+                                {
+                                    if (!String.IsNullOrEmpty(character.EquippedItem.ID))
+                                        mainSave.ItemsToStore.Add(character.EquippedItem);
+                                    mainSave.CharsToStore.Add(new CharData(character));
+                                }
                             }
-                        }
-                        foreach (Character character in ActiveTeam.Assembly)
-                        {
-                            if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
-                                mainSave.CharsToStore.Add(new CharData(character));
+                            foreach (Character character in ActiveTeam.Assembly)
+                            {
+                                if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
+                                    mainSave.CharsToStore.Add(new CharData(character));
+                            }
                         }
 
                         //put the new items into the storage
