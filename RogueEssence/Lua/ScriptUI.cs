@@ -46,7 +46,7 @@ namespace RogueEssence.Script
             get => _m_curdialogue;
             set
             {
-                if (_m_curdialogue == null && _m_curchoice == null)
+                if ((_m_curdialogue == null || _m_curdialogue.Current.FinishedYield()) && (_m_curchoice == null || _m_curchoice.Inactive))
                     _m_curdialogue = value;
             }
         }
@@ -56,7 +56,7 @@ namespace RogueEssence.Script
             get => _m_curchoice;
             set
             {
-                if (_m_curdialogue == null && _m_curchoice == null)
+                if ((_m_curdialogue == null || _m_curdialogue.Current.FinishedYield()) && (_m_curchoice == null || _m_curchoice.Inactive))
                     _m_curchoice = value;
             }
         }
