@@ -62,7 +62,7 @@ namespace RogueEssence.Menu
                     isComplete = DataManager.Instance.Save.GetDungeonUnlock(dungeonIndices[choice]) == GameProgress.UnlockState.Completed;
 
                 ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(dungeonIndices[choice]) as ZoneEntrySummary;
-                summaryMenu.SetDungeon(zoneEntry.GetColoredName(), dungeonIndices[choice], isComplete, false);
+                summaryMenu.SetDungeon(zoneEntry.GetColoredName(), dungeonIndices[choice], isComplete, false, true);
             }
             else
                 summaryMenu.Visible = false;
@@ -133,7 +133,7 @@ namespace RogueEssence.Menu
                         continue;
                     if (summary == null)
                         continue;
-                    if (summary.Rogue != RogueStatus.AllTransfer)
+                    if (summary.Rogue != RogueStatus.AllTransfer && summary.Rogue != RogueStatus.ItemTransfer)
                         continue;
                 }
                 dungeonIndices.Add(key); 
