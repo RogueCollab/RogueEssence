@@ -34,6 +34,8 @@ namespace RogueEssence.Script
         private bool m_curautoFinish = false;
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
+        private string m_curspeakerSe = DialogueBox.SOUND_EFFECT;
+        private int m_curspeakTime = DialogueBox.SPEAK_FRAMES;
         private IEnumerator<YieldInstruction> _m_curdialogue;
         private Rect m_curbounds = DialogueBox.DefaultBounds;
         private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
@@ -131,7 +133,7 @@ namespace RogueEssence.Script
             {
                 object[] scripts = DialogueBox.CreateScripts(callbacks);
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, new string[] { text });
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, m_curspeakerSnd, m_curspeakerSe, m_curspeakTime, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, new string[] { text });
                 else
                 {
                     if (!String.IsNullOrEmpty(m_curspeakerName))
@@ -328,6 +330,8 @@ namespace RogueEssence.Script
             m_curspeakerName = null;
             m_curspeakerEmo = new EmoteStyle(0);
             m_curspeakerSnd = keysound;
+            m_curspeakerSe = DialogueBox.SOUND_EFFECT;
+            m_curspeakTime = DialogueBox.SPEAK_FRAMES;
             m_curautoFinish = false;
             m_curcenter_h = false;
             m_curcenter_v = false;
@@ -437,6 +441,53 @@ namespace RogueEssence.Script
             m_curbounds = new Rect(x, y, width, height);
         }
 
+        /// <summary>
+        /// Sets the speaker sound effect and speak frames played in the TextDialogue functions. 
+        /// </summary>
+        /// <param name="newSe">The sound effect of the box</param>
+        /// <param name="speakTime">The amount of frames to wait between each sound effect</param>
+        /// <example>
+        /// UI:SetSe("Battle/_UNK_DUN_Water_Drop", 3)
+        /// </example>
+        public void SetSe(string newSe, int speakTime)
+        {
+            m_curspeakerSe = newSe;
+            m_curspeakTime = speakTime;
+        }
+        
+        /// <summary>
+        /// Sets the speaker sound effect played in the TextDialogue functions. 
+        /// </summary>
+        /// <param name="newSe">The sound effect of the box</param>
+        /// <example>
+        /// UI:SetSe("Menu/Unknown-3")
+        /// </example>
+        public void SetSe(string newSe)
+        {
+            m_curspeakerSe = newSe;
+        }
+
+        /// <summary>
+        /// Sets the speak frames played in the TextDialogue functions. 
+        /// </summary>
+        /// <param name="speakTime">The amount of frames to wait between each sound effect</param>
+        /// <example>
+        /// UI:SetSpeakTime(10)
+        /// </example>
+        public void SetSpeakTime(int speakTime)
+        {
+            m_curspeakTime = speakTime;
+        }
+
+        /// <summary>
+        /// Resets to the default speaker sound effect and speaker frames.
+        /// </summary>
+        public void ResetSe()
+        {
+            m_curspeakerSe = DialogueBox.SOUND_EFFECT;
+            m_curspeakTime = DialogueBox.SPEAK_FRAMES;
+        }
+        
         /// <summary>
         /// Resets the position and size of the dialogue box.
         /// </summary>
@@ -568,7 +619,7 @@ namespace RogueEssence.Script
                                                                       m_curspeakerEmo,
                                                                       m_curspeakerLoc,
                                                                       message,
-                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
+                                                                      m_curspeakerSnd, m_curspeakerSe, m_curspeakTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
                                                                       () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                                                                       () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
@@ -576,7 +627,7 @@ namespace RogueEssence.Script
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), m_curspeakerLoc, message,
-                        m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
+                        m_curspeakerSnd, m_curspeakerSe, m_curspeakTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                         () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
@@ -1407,12 +1458,12 @@ namespace RogueEssence.Script
                 if (m_curspeakerName != null)
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, 
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                            message, m_curspeakerSnd, m_curspeakerSe, m_curspeakTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(MonsterID.Invalid, null, new EmoteStyle(0), m_curspeakerLoc,
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                            message, m_curspeakerSnd, m_curspeakerSe, m_curspeakTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
