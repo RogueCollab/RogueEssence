@@ -563,7 +563,7 @@ namespace RogueEssence.Script
 
                 m_curchoice = MenuManager.Instance.CreateQuestion(
                     m_curspeakerID,m_curspeakerName,m_curspeakerEmo,m_curspeakerLoc,message,
-                    m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc,
+                    m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
                     () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                     () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                     bdefaultstono);
@@ -1392,7 +1392,7 @@ namespace RogueEssence.Script
 
                 //Make a choice menu, and display a speaker despite not having a name
                 m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, 
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
             }
             catch (Exception e)
             {
