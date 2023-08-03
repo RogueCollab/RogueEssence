@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NLua;
 using RogueEssence.Content;
 using System.Text.RegularExpressions;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -24,6 +26,8 @@ namespace RogueEssence.Menu
         public List<List<TextPause>> Pauses;
         protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
         public List<List<TextScript>> ScriptCalls;
+        
+        public object[] Scripts;
         protected List<TextScript> CurrentScript { get { return ScriptCalls[curTextIndex]; } }
 
         public List<List<TextSpeed>> Speeds;
@@ -49,6 +53,8 @@ namespace RogueEssence.Menu
         private string message;
         private double currSpeed;
 
+        private bool runningScript;
+        private bool startedScript;
         public virtual bool IsCheckpoint { get { return false; } }
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
@@ -62,7 +68,7 @@ namespace RogueEssence.Menu
         AlphaTestEffect alphaTest;
 
 
-        public TitleDialog(string msg, bool fadeIn, int holdTime, Rect bounds, Action action)
+        public TitleDialog(string msg, bool fadeIn, int holdTime, Rect bounds, object[] scripts, Action action)
         {
             s1 = new DepthStencilState
             {
@@ -104,6 +110,7 @@ namespace RogueEssence.Menu
             ScriptCalls = new List<List<TextScript>>();
             message = msg;
             Bounds = bounds;
+            Scripts = scripts;
             Texts = new List<DialogueText>();
             updateMessage();
         }
@@ -265,8 +272,35 @@ namespace RogueEssence.Menu
                 TextScript textScript = getCurrentTextScript();
                 if (textScript != null)
                 {
-                    //TODO: execute callback and wait for its completion
-                    CurrentScript.RemoveAt(0);
+                    if (!startedScript && textScript.Script < Scripts.Length && textScript.Script >= 0)
+                    {
+                        object script = Scripts[textScript.Script];
+                        if (script is Coroutine)
+                        {
+                            MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine((Coroutine) script, true) ); 
+                            runningScript = true;
+                            startedScript = true;
+                        }
+                        else if (script is LuaFunction)
+                        {
+                            LuaFunction luaFun = script as LuaFunction;
+                            MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine(new Coroutine(LuaEngine.Instance.CallScriptFunction(luaFun)), true) );
+                            runningScript = true;
+                            startedScript = true;
+                        }
+                    }
+                    
+                    if (runningScript)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        startedScript = false;
+                        runningScript = false;
+                        CurrentScript.RemoveAt(0);      
+                        CurrentTextTime = new FrameTick();
+                    }
                 }
                 
                 TextSpeed textSpeed = getCurrentTextSpeed();
@@ -417,6 +451,19 @@ namespace RogueEssence.Menu
 
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
+        }
+        
+        private IEnumerator<YieldInstruction> waitForTaskDone(Coroutine coroutine)
+        {
+            while (true)
+            {
+                if (coroutine.FinishedYield())
+                {
+                    runningScript = false;
+                    yield break;
+                }
+                yield return new WaitForFrames(1);
+            }
         }
 
 
