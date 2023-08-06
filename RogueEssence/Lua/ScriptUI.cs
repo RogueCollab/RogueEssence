@@ -34,12 +34,32 @@ namespace RogueEssence.Script
         private bool m_curautoFinish = false;
         private EmoteStyle  m_curspeakerEmo = new EmoteStyle(0);
         private bool                m_curspeakerSnd = true;
-        private IEnumerator<YieldInstruction> m_curdialogue;
+        private IEnumerator<YieldInstruction> _m_curdialogue;
         private Rect m_curbounds = DialogueBox.DefaultBounds;
         private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
         private Loc m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
         
-        private IInteractable m_curchoice;
+        private IInteractable _m_curchoice;
+
+        private IEnumerator<YieldInstruction> m_curdialogue
+        {
+            get => _m_curdialogue;
+            set
+            {
+                if ((_m_curdialogue == null || _m_curdialogue.Current.FinishedYield()) && (_m_curchoice == null || _m_curchoice.Inactive))
+                    _m_curdialogue = value;
+            }
+        }
+
+        private IInteractable m_curchoice
+        {
+            get => _m_curchoice;
+            set
+            {
+                if ((_m_curdialogue == null || _m_curdialogue.Current.FinishedYield()) && (_m_curchoice == null || _m_curchoice.Inactive))
+                    _m_curchoice = value;
+            }
+        }
 
         public ScriptUI()
         {
@@ -52,6 +72,7 @@ namespace RogueEssence.Script
         }
 
 
+        
 
         //================================================================
         // Dialogue
@@ -81,6 +102,7 @@ namespace RogueEssence.Script
         /// Takes a string as an argument.
         /// </summary>
         /// <param name="text">The text to display.</param>
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
         /// <example>
         /// UI:WaitShowDialogue("Hello World!")
         /// </example>
@@ -91,6 +113,7 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="text">The text to display.</param>
         /// <param name="waitTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
         /// <example>
         /// UI:WaitShowTimedDialogue("Hello World!", 120)
         /// </example>
@@ -101,12 +124,14 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="text">The text to display.</param>
         /// <param name="waitTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
-        public void TextDialogue(string text, int waitTime = -1)
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
+        public void TextDialogue(string text, int waitTime = -1, LuaTable callbacks = null)
         {
             try
             {
+                object[] scripts = DialogueBox.CreateScripts(callbacks);
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, new string[] { text });
+                    m_curdialogue = MenuManager.Instance.SetDialogue(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, m_curspeakerSnd, () => { }, waitTime, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, new string[] { text });
                 else
                 {
                     if (!String.IsNullOrEmpty(m_curspeakerName))
@@ -130,6 +155,7 @@ namespace RogueEssence.Script
         /// <param name="y">The Y position of the box</param>
         /// <param name="width">Width of the box</param>
         /// <param name="height">Height of the box</param>
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
         /// <example>
         /// UI:WaitShowVoiceOver("Hello World!", 120)
         /// </example>
@@ -144,13 +170,15 @@ namespace RogueEssence.Script
         /// <param name="y">The Y position of the box</param>
         /// <param name="width">Width of the box</param>
         /// <param name="height">Height of the box</param>
-        public void TextVoiceOver(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1)
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
+        public void TextVoiceOver(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1, LuaTable callbacks = null)
         {
             try
             {
+                object[] scripts = DialogueBox.CreateScripts(callbacks);
                 Rect bounds = new Rect(x, y, width, height);
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, bounds, () => { }, text);
+                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, bounds, scripts, () => { }, text);
             }
             catch (Exception e)
             {
@@ -485,6 +513,16 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Wait for dialogue to finish and then CLEAN UP dialogue box
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator<YieldInstruction> __WaitDialog()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(m_curdialogue);
+            _m_curdialogue = null;
+        }
+
+        /// <summary>
         /// Instantly break. Used as default/invalid value when returning a yieldable value.
         /// </summary>
         private IEnumerator<YieldInstruction> _DummyWait()
@@ -506,7 +544,8 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="message">Question to be asked to the user.</param>
         /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
-        public void ChoiceMenuYesNo(string message, bool bdefaultstono = false)
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
+        public void ChoiceMenuYesNo(string message, bool bdefaultstono = false, LuaTable callbacks = null)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -516,6 +555,7 @@ namespace RogueEssence.Script
 
             try
             {
+                object[] scripts = DialogueBox.CreateScripts(callbacks);
                 m_choiceresult = null;
 
                 if (message == null)
@@ -528,7 +568,7 @@ namespace RogueEssence.Script
                                                                       m_curspeakerEmo,
                                                                       m_curspeakerLoc,
                                                                       message,
-                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc,
+                                                                      m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
                                                                       () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                                                                       () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
                                                                       bdefaultstono);
@@ -536,7 +576,7 @@ namespace RogueEssence.Script
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateQuestion(MonsterID.Invalid, null, new EmoteStyle(0), m_curspeakerLoc, message,
-                        m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc,
+                        m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
                         () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
                         () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); }, bdefaultstono);
                 }
@@ -1319,7 +1359,8 @@ namespace RogueEssence.Script
         /// <param name="choicesPairs">A table of choices.  Each choice can be either a string, or { string, bool } representing the text and enabled status.</param>
         /// <param name="defaultChoice">The cursor starts on this choice.</param>
         /// <param name="cancelChoice">This choice is chosen if the player presses the cancel button.</param>
-        public void BeginChoiceMenu(string message, LuaTable choicesPairs, object defaultChoice, object cancelChoice)
+        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
+        public void BeginChoiceMenu(string message, LuaTable choicesPairs, object defaultChoice, object cancelChoice, LuaTable callbacks = null)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -1329,6 +1370,7 @@ namespace RogueEssence.Script
 
             try
             {
+                object[] scripts = DialogueBox.CreateScripts(callbacks);
                 m_choiceresult = null;
                 int? mappedDefault = null;
                 int? mappedCancel = null;
@@ -1365,12 +1407,12 @@ namespace RogueEssence.Script
                 if (m_curspeakerName != null)
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, 
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
                 else
                 {
                     m_curchoice = MenuManager.Instance.CreateMultiQuestion(MonsterID.Invalid, null, new EmoteStyle(0), m_curspeakerLoc,
-                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
+                            message, m_curspeakerSnd, m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc, choices.ToArray(), mappedDefault.Value, mappedCancel.Value);
                 }
             }
             catch (Exception e)
@@ -1485,10 +1527,20 @@ namespace RogueEssence.Script
                 return new Coroutine(_DummyWait());
 
             if (m_curchoice != null)
-                return new Coroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
+                return new Coroutine(__WaitForChoice());
             else
                 return new Coroutine(_DummyWait());
 
+        }
+
+        /// <summary>
+        /// Wait for choice and then CLEAN UP m_curchoice
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator<YieldInstruction> __WaitForChoice()
+        {
+            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
+            _m_curchoice = null;
         }
 
         //================================================================
@@ -1524,24 +1576,24 @@ namespace RogueEssence.Script
             end", "WaitForChoice").First() as LuaFunction;
 
             WaitShowDialogue = state.RunString(@"
-            return function(_, text)
-                UI:TextDialogue(text)
+            return function(_, text, callbacks)
+                UI:TextDialogue(text, -1, callbacks)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowDialogue").First() as LuaFunction;
 
             WaitShowTimedDialogue = state.RunString(@"
-            return function(_, text, time)
-                UI:TextDialogue(text, time)
+            return function(_, text, time, callbacks)
+                UI:TextDialogue(text, time, callbacks)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowDialogue").First() as LuaFunction;
 
             WaitShowVoiceOver = state.RunString(@"
-            return function(_, text, expiretime, x, y, width, height)
+            return function(_, text, expiretime, x, y, width, height, callbacks)
                 x = x == nil and -1 or x
                 y = y == nil and -1 or y
                 width = width == nil and -1 or width
                 height = height == nil and -1 or height
-                UI:TextVoiceOver(text, expiretime, x, y, width, height)
+                UI:TextVoiceOver(text, expiretime, x, y, width, height, callbacks)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitShowVoiceOver").First() as LuaFunction;
 
