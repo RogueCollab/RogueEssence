@@ -12,6 +12,7 @@ using AABB;
 using System.Linq;
 using NLua;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace RogueEssence.Ground
 {
@@ -89,7 +90,15 @@ namespace RogueEssence.Ground
             this.Map.Update(this, orig);
         }
 
-        public override int LocHeight { get { return currentCharAction.LocHeight; } }
+        public override int LocHeight
+        {
+            get { return currentCharAction.LocHeight; }
+        }
+
+        public void SetLocHeight(int height)
+        {
+            currentCharAction.LocHeight = height;
+        }
 
         //determining direction
         public Dir8 CharDir
@@ -127,7 +136,7 @@ namespace RogueEssence.Ground
             //ThinkEvents = new List<GroundEvent>();
 
             IdleOverride = -1;
-            currentCharAction = new IdleGroundAction(newLoc, charDir);
+            currentCharAction = new IdleGroundAction(newLoc, 0, charDir);
             drawEffects = new HashSet<DrawEffect>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
             EntName = instancename;
@@ -158,7 +167,7 @@ namespace RogueEssence.Ground
             Data = new CharData(other.Data);
 
             IdleOverride = -1;
-            currentCharAction = new IdleGroundAction(Loc.Zero, Dir8.Down);
+            currentCharAction = new IdleGroundAction(Loc.Zero, 0, Dir8.Down);
             drawEffects = new HashSet<DrawEffect>();
             CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
 
@@ -285,6 +294,7 @@ namespace RogueEssence.Ground
         public void Collide()
         {
             //move the character with collision check
+            currentCharAction.LocHeight = currentCharAction.LocHeight + currentCharAction.HeightMove;
             IMovement move = Move(MapLoc.X + currentCharAction.Move.X, MapLoc.Y + currentCharAction.Move.Y, basicCollision);
 
             //process the collisions and determine if a new action is needed (here, it can be forced)
@@ -518,18 +528,20 @@ namespace RogueEssence.Ground
 
 
         private Loc serializationLoc;
+        private int serializationHeight;
         private Dir8 serializationDir;
 
 
         internal void ReloadPosition()
         {
             //restore idle position and direction
-            currentCharAction = new IdleGroundAction(serializationLoc, serializationDir);
+            currentCharAction = new IdleGroundAction(serializationLoc, serializationHeight, serializationDir);
         }
 
         internal void SavePosition()
         {
             serializationLoc = MapLoc;
+            serializationHeight = LocHeight;
             serializationDir = CharDir;
         }
 

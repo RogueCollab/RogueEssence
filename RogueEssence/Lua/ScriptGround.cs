@@ -370,7 +370,7 @@ namespace RogueEssence.Script
             if (turn == 0)
                 yield break;
             var oldact = curch.GetCurrentAction();
-            curch.StartAction(new IdleNoAnim(curch.MapLoc, curch.CharDir));
+            curch.StartAction(new IdleNoAnim(curch.MapLoc, curch.LocHeight, curch.CharDir));
             Dir8 destDir = (Dir8)((8 + turn + (int)curch.CharDir) % 8);
             if (framedur <= 0) //instant turn
             {
@@ -389,6 +389,7 @@ namespace RogueEssence.Script
                 }
                 oldact.MapLoc = curch.MapLoc;
                 oldact.CharDir = curch.CharDir;
+                oldact.LocHeight = curch.LocHeight;
                 curch.StartAction(oldact);
                 yield break;
             }
@@ -414,7 +415,7 @@ namespace RogueEssence.Script
         /// <param name="x">The X coordinate of the destination</param>
         /// <param name="y">The Y coordinate of the destination</param>
         /// <param name="direction">The direction to point the entity.  Defaults to Dir8.None, which leaves it untouched.</param>
-        public void TeleportTo(GroundEntity ent, int x, int y, Dir8 direction = Dir8.None)
+        public void TeleportTo(GroundEntity ent, int x, int y, Dir8 direction = Dir8.None, int height = 0)
         {
             try
             {
@@ -424,6 +425,7 @@ namespace RogueEssence.Script
                     if (gent != null)
                     {
                         gent.SetMapLoc(new Loc(x, y));
+                        gent.SetLocHeight(height);
                         gent.UpdateFrame();
                         gent.Direction = direction;
                     }
@@ -488,7 +490,9 @@ namespace RogueEssence.Script
                     if (approxDir == Dir8.None)
                         approxDir = ch.Direction;
 
-                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(GraphicsManager.WalkAction, ch.Position, approxDir, run ? 2 : 1, speed, prevTime, new Loc(x, y));
+                    IdleGroundAction baseAction = new IdleGroundAction(ch.Position, ch.LocHeight, approxDir);
+                    baseAction.Override = GraphicsManager.WalkAction;
+                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(baseAction, run ? 2 : 1, speed, prevTime, new Loc(x, y), ch.LocHeight);
                     ch.StartAction(newAction);
                     return new WaitUntil(() =>
                     {
@@ -576,7 +580,7 @@ namespace RogueEssence.Script
         public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, int speed)
         {
             Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
-            return _AnimateToPosition(chara, anim, animDir, endLoc.X, endLoc.Y, animSpeed, speed);
+            return _AnimateToPosition(chara, anim, animDir, endLoc.X, endLoc.Y, animSpeed, speed, 0);
         }
 
         /// <summary>
@@ -589,11 +593,12 @@ namespace RogueEssence.Script
         /// <param name="y">Y coordinate of the destination</param>
         /// <param name="animSpeed">Speed of animation, where 1.0 represents normal speed</param>
         /// <param name="speed">Speed movement, in pixels per frame</param>
+        /// <param name="height">Height of the destination</param>
         /// <example>
         /// GROUND:AnimateToPosition(player, "Hurt", Dir8.Down, 200, 240, 0.5, 2)
         /// </example>
         public LuaFunction AnimateToPosition;
-        public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, int speed)
+        public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, int speed, int height)
         {
             try
             {
@@ -611,7 +616,9 @@ namespace RogueEssence.Script
                         if (animIndex == prevAction.AnimFrameType)
                             prevTime = prevAction.ActionTime;
                     }
-                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(animIndex, ch.Position, animDir, animSpeed, speed, prevTime, new Loc(x, y));
+                    IdleGroundAction baseAction = new IdleGroundAction(ch.Position, ch.LocHeight, animDir);
+                    baseAction.Override = animIndex;
+                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(baseAction, animSpeed, speed, prevTime, new Loc(x, y), height);
                     ch.StartAction(newAction);
                     return new WaitUntil(() =>
                     {
@@ -628,6 +635,41 @@ namespace RogueEssence.Script
             return null;
         }
 
+
+        public LuaFunction ActionToPosition;
+        public YieldInstruction _ActionToPosition(GroundEntity ent, GroundAction baseAction, int x, int y, float animSpeed, int speed, int height)
+        {
+            try
+            {
+                if (speed < 1)
+                    throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
+
+                if (ent is GroundChar)
+                {
+                    GroundChar ch = (GroundChar)ent;
+                    FrameTick prevTime = new FrameTick();
+                    GroundAction prevAction = ch.GetCurrentAction();
+                    if (prevAction is AnimateToPositionGroundAction)
+                    {
+                        if (baseAction.AnimFrameType == prevAction.AnimFrameType)
+                            prevTime = prevAction.ActionTime;
+                    }
+                    AnimateToPositionGroundAction newAction = new AnimateToPositionGroundAction(baseAction, animSpeed, speed, prevTime, new Loc(x, y), height);
+                    ch.StartAction(newAction);
+                    return new WaitUntil(() =>
+                    {
+                        return newAction.Complete;
+                    });
+                }
+                throw new ArgumentException("Entity is not a valid type.");
+
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+            }
+            return null;
+        }
 
         //===================================
         //  Animation
@@ -681,6 +723,49 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Gets the fallback animation for the character.
+        /// </summary>
+        /// <param name="chara"></param>
+        /// <param name="anim">The anim to get the fallback anim of.</param>
+        /// <returns>The fallback animation, as a string.  Blank if there is none.  Will return anim if anim already exists.</returns>
+        public string CharGetAnimFallback(GroundChar chara, string anim)
+        {
+            int animIndex = GraphicsManager.GetAnimIndex(anim);
+            CharSheet sheet = GraphicsManager.GetChara(chara.CurrentForm.ToCharID());
+            int fallbackIndex = sheet.GetReferencedAnimIndex(animIndex);
+            if (fallbackIndex < 0)
+                return "";
+            return GraphicsManager.Actions[fallbackIndex].Name;
+        }
+
+
+        /// <summary>
+        /// Gets a character's current animation as a string.
+        /// </summary>
+        /// <param name="chara"></param>
+        public string CharGetAnim(GroundChar chara)
+        {
+            GroundAction charaAction = chara.GetCurrentAction();
+            int frameType = charaAction.AnimFrameType;
+            if (frameType < 0)
+                return "";
+            return GraphicsManager.Actions[frameType].Name;
+        }
+
+        /// <summary>
+        /// Gets the chosen action point of the character at this specific frame.
+        /// </summary>
+        /// <param name="chara"></param>
+        /// <param name="actionPoint">The ype of action point to retrieve the coordinates for.</param>
+        /// <returns>The location of the action point in absolute coordinates on the map.</returns>
+        public Loc CharGetAnimPoint(GroundChar chara, ActionPointType actionPoint)
+        {
+            GroundAction charaAction = chara.GetCurrentAction();
+            CharSheet sheet = GraphicsManager.GetChara(chara.CurrentForm.ToCharID());
+            return charaAction.GetActionPoint(sheet, actionPoint);
+        }
+
+        /// <summary>
         /// Set a character's animation.
         /// </summary>
         /// <param name="chara">Character to animate</param>
@@ -689,7 +774,7 @@ namespace RogueEssence.Script
         public void CharSetAnim(GroundChar chara, string anim, bool loop)
         {
             int animIndex = GraphicsManager.GetAnimIndex(anim);
-            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, animIndex, loop));
+            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.LocHeight, chara.Direction, animIndex, loop));
         }
 
         /// <summary>
@@ -698,7 +783,7 @@ namespace RogueEssence.Script
         /// <param name="chara">Character to stop animating</param>
         public void CharEndAnim(GroundChar chara)
         {
-            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
+            chara.StartAction(new IdleGroundAction(chara.Position, chara.LocHeight, chara.Direction));
         }
 
         /// <summary>
@@ -718,7 +803,7 @@ namespace RogueEssence.Script
                 {
                     GroundChar ch = (GroundChar)ent;
                     int animIndex = GraphicsManager.GetAnimIndex(anim);
-                    IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.Direction, animIndex, false);
+                    IdleAnimGroundAction action = new IdleAnimGroundAction(ch.Position, ch.LocHeight, ch.Direction, animIndex, false);
                     ch.StartAction(action);
                     return new WaitUntil(() =>
                     {
@@ -940,7 +1025,8 @@ namespace RogueEssence.Script
 
             MoveToMarker = state.RunString("return function(_, ent, mark, shouldrun, speed) return coroutine.yield(GROUND:_MoveToMarker(ent, mark, shouldrun, speed)) end", "MoveToMarker").First() as LuaFunction;
             MoveToPosition = state.RunString("return function(_, ent, x, y, shouldrun, speed) return coroutine.yield(GROUND:_MoveToPosition(ent, x, y, shouldrun, speed)) end", "MoveToPosition").First() as LuaFunction;
-            AnimateToPosition = state.RunString("return function(_, ent, anim, animdir, x, y, animspeed, speed) return coroutine.yield(GROUND:_AnimateToPosition(ent, anim, animdir, x, y, animspeed, speed)) end", "AnimateToPosition").First() as LuaFunction;
+            AnimateToPosition = state.RunString("return function(_, ent, anim, animdir, x, y, animspeed, speed, height) return coroutine.yield(GROUND:_AnimateToPosition(ent, anim, animdir, x, y, animspeed, speed, height)) end", "AnimateToPosition").First() as LuaFunction;
+            ActionToPosition = state.RunString("return function(_, ent, action, x, y, animspeed, speed, height) return coroutine.yield(GROUND:_ActionToPosition(ent, action, x, y, animspeed, speed, height)) end", "ActionToPosition").First() as LuaFunction;
             CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
 
             MoveObjectToPosition = state.RunString("return function(_, ent, x, y, speed) return coroutine.yield(GROUND:_MoveObjectToPosition(ent, x, y, speed)) end", "MoveObjectToPosition").First() as LuaFunction;

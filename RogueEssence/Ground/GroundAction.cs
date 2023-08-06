@@ -14,10 +14,11 @@ namespace RogueEssence.Ground
         public const int HITBOX_WIDTH = 16;
         public const int HITBOX_HEIGHT = 16;
         public abstract int AnimFrameType { get; }
-        protected virtual int FrameMethod(List<CharAnimFrame> frames) { return zeroFrame(frames); }
+        public virtual int FrameMethod(List<CharAnimFrame> frames) { return zeroFrame(frames); }
 
         public Loc MapLoc { get { return collider.Start; } set { collider.Start = value; } }
         public Loc Move { get; protected set; }
+        public int HeightMove { get; protected set; }
 
         protected Rect collider;
         public Rect Collider { get { return collider; } }
@@ -61,7 +62,7 @@ namespace RogueEssence.Ground
             ActionTime += elapsedTime;
         }
 
-        protected virtual void UpdateFrameInternal() { }
+        public virtual void UpdateFrameInternal() { }
         public void UpdateFrame()
         {
             drawOffset = new Loc();
@@ -130,7 +131,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class IdleGroundAction : GroundAction
     {
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
@@ -147,11 +148,19 @@ namespace RogueEssence.Ground
             Override = -1;
         }
 
+        public IdleGroundAction(Loc loc, int height, Dir8 dir)
+        {
+            MapLoc = loc;
+            LocHeight = height;
+            CharDir = dir;
+            Override = -1;
+        }
+
         public override void UpdateInput(GameAction action)
         {
             //trigger walk if ordered to
             if (action.Type == GameAction.ActionType.Move)
-                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], new FrameTick());
+                NextAction = new WalkGroundAction(MapLoc, LocHeight, action.Dir, action[0] != 0, action[1], new FrameTick());
         }
 
         public void RestartAnim()
@@ -177,7 +186,7 @@ namespace RogueEssence.Ground
     {
         private bool run;
         private int speed;
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
@@ -186,6 +195,15 @@ namespace RogueEssence.Ground
         public WalkGroundAction(Loc loc, Dir8 dir, bool run, int speed, FrameTick prevTime)
         {
             MapLoc = loc;
+            CharDir = dir;
+            this.run = run;
+            this.speed = speed;
+            ActionTime = prevTime;
+        }
+        public WalkGroundAction(Loc loc, int height, Dir8 dir, bool run, int speed, FrameTick prevTime)
+        {
+            MapLoc = loc;
+            LocHeight = height;
             CharDir = dir;
             this.run = run;
             this.speed = speed;
@@ -206,7 +224,7 @@ namespace RogueEssence.Ground
                 speed = action[1];
             }
             else if (action.Type == GameAction.ActionType.None)//start skid if ordered to
-                NextAction = new IdleGroundAction(MapLoc, CharDir);// new SkidGroundAction(MapLoc, CharDir, ActionTime);
+                NextAction = new IdleGroundAction(MapLoc, LocHeight, CharDir);// new SkidGroundAction(MapLoc, CharDir, ActionTime);
             // attempting to interact does not halt movement
             // but we don't want players to notice
             // so don't change direction or run state until the frame after
@@ -223,7 +241,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class IdleNoAnim : GroundAction
     {
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, 0, false); //Don't animate
         }
@@ -234,12 +252,18 @@ namespace RogueEssence.Ground
             MapLoc = loc;
             CharDir = dir;
         }
+        public IdleNoAnim(Loc loc, int height, Dir8 dir)
+        {
+            MapLoc = loc;
+            LocHeight = height;
+            CharDir = dir;
+        }
 
         public override void UpdateInput(GameAction action)
         {
             //trigger walk if ordered to
             if (action.Type == GameAction.ActionType.Move)
-                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], new FrameTick());
+                NextAction = new WalkGroundAction(MapLoc, LocHeight, action.Dir, action[0] != 0, action[1], new FrameTick());
         }
     }
 
@@ -249,7 +273,7 @@ namespace RogueEssence.Ground
     {
         private FrameTick skidTime;
 
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
         }
@@ -258,6 +282,14 @@ namespace RogueEssence.Ground
         public SkidGroundAction(Loc loc, Dir8 dir, FrameTick prevTime)
         {
             MapLoc = loc;
+            CharDir = dir;
+            ActionTime = prevTime;
+            skidTime = prevTime;
+        }
+        public SkidGroundAction(Loc loc, int height, Dir8 dir, FrameTick prevTime)
+        {
+            MapLoc = loc;
+            LocHeight = height;
             CharDir = dir;
             ActionTime = prevTime;
             skidTime = prevTime;
@@ -272,13 +304,13 @@ namespace RogueEssence.Ground
         public override void UpdateInput(GameAction action)
         {
             if (action.Type == GameAction.ActionType.Move)//start walk if ordered to
-                NextAction = new WalkGroundAction(MapLoc, action.Dir, action[0] != 0, action[1], ActionTime);
+                NextAction = new WalkGroundAction(MapLoc, LocHeight,action.Dir, action[0] != 0, action[1], ActionTime);
             else
             {
                 int prevTime = (skidTime / AnimTotalTime).ToFrames();
                 int newTime = (ActionTime / AnimTotalTime).ToFrames();
                 if (prevTime < newTime)//stop skid if timed out
-                    NextAction = new IdleGroundAction(MapLoc, CharDir);
+                    NextAction = new IdleGroundAction(MapLoc, LocHeight, CharDir);
             }
         }
 
@@ -298,7 +330,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class IdleAnimGroundAction : GroundAction
     {
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, ActionTime.Ticks, !Loop);
         }
@@ -317,17 +349,26 @@ namespace RogueEssence.Ground
             Loop = loop;
         }
 
+        public IdleAnimGroundAction(Loc pos, int height, Dir8 dir, int animid, bool loop)
+        {
+            MapLoc = pos;
+            LocHeight = height;
+            CharDir = dir;
+            AnimID = animid;
+            Loop = loop;
+        }
+
         public override void UpdateInput(GameAction action)
         {
             if (Complete)
-                NextAction = new IdleGroundAction(MapLoc, CharDir);
+                NextAction = new IdleGroundAction(MapLoc, LocHeight, CharDir);
         }
     }
 
     [Serializable]
     public class PoseGroundAction : GroundAction
     {
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, Math.Min(ActionTime.Ticks, FrameTick.FrameToTick(AnimReturnTime)), true);
         }
@@ -343,6 +384,14 @@ namespace RogueEssence.Ground
             AnimID = animid;
         }
 
+        public PoseGroundAction(Loc pos, int height, Dir8 dir, int animid)
+        {
+            MapLoc = pos;
+            LocHeight = height;
+            CharDir = dir;
+            AnimID = animid;
+        }
+
         public override void UpdateInput(GameAction action)
         {
 
@@ -352,7 +401,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class FrameGroundAction : GroundAction
     {
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return Math.Clamp(Frame, 0, frames.Count - 1);
         }
@@ -370,6 +419,15 @@ namespace RogueEssence.Ground
             Frame = frame;
         }
 
+        public FrameGroundAction(Loc pos, int height, Dir8 dir, int animid, int frame)
+        {
+            MapLoc = pos;
+            LocHeight = height;
+            CharDir = dir;
+            AnimID = animid;
+            Frame = frame;
+        }
+
         public override void UpdateInput(GameAction action)
         {
 
@@ -380,41 +438,51 @@ namespace RogueEssence.Ground
     [Serializable]
     public class AnimateToPositionGroundAction : GroundAction
     {
-        private int animType;
         private float animSpeed;
         private int moveRate;
         private Loc goalDiff;
         private Loc curDiff;
+        private int goalHeightDiff;
+        private int curHeightDiff;
         private int framesPassed;
+        private GroundAction baseAction;
 
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
-            return CharSheet.TrueFrame(frames, ActionTime.Ticks, false);
+            return baseAction.FrameMethod(frames);
         }
-        public override int AnimFrameType { get { return animType; } }
+        public override int AnimFrameType { get { return baseAction.AnimFrameType; } }
 
         public override bool Complete { get { return curDiff == goalDiff; } }
 
-        public AnimateToPositionGroundAction(int animType, Loc loc, Dir8 dir, float animSpeed, int moveRate, FrameTick prevTime, Loc destination)
+        public AnimateToPositionGroundAction(GroundAction animType, float animSpeed, int moveRate, FrameTick prevTime, Loc destination, int destHeight)
         {
-            this.animType = animType;
-            MapLoc = loc;
-            CharDir = dir;
+            this.baseAction = animType;
+            MapLoc = animType.MapLoc;
+            CharDir = animType.CharDir;
+            LocHeight = animType.LocHeight;
             this.animSpeed = animSpeed;
             ActionTime = prevTime;
             this.moveRate = moveRate;
             this.goalDiff = destination - MapLoc;
+            this.goalHeightDiff = destHeight - LocHeight;
+        }
+
+        public override void UpdateFrameInternal()
+        {
+            baseAction.UpdateFrameInternal();
         }
 
         public override void UpdateTime(FrameTick elapsedTime)
         {
             base.UpdateTime(new FrameTick((long)(elapsedTime.Ticks * animSpeed)));
+            baseAction.UpdateTime(new FrameTick((long)(elapsedTime.Ticks * animSpeed)));
         }
 
         public override void UpdateInput(GameAction action)
         {
             if (Complete)
-                NextAction = new IdleGroundAction(MapLoc, CharDir);
+                NextAction = new IdleGroundAction(MapLoc, LocHeight, CharDir);
         }
 
         public override void Update(FrameTick elapsedTime)
@@ -431,6 +499,11 @@ namespace RogueEssence.Ground
                 newDiff = goalDiff;
             Move = newDiff - curDiff;
             curDiff = newDiff;
+
+            int newHeightDiff = (int)Math.Abs(Math.Round((double)moveRate * framesPassed * goalHeightDiff / goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)));
+            HeightMove = newHeightDiff - curHeightDiff;
+            curHeightDiff = newHeightDiff;
+            baseAction.Update(elapsedTime);
         }
     }
 
@@ -438,7 +511,7 @@ namespace RogueEssence.Ground
     [Serializable]
     public class HopGroundAction : GroundAction
     {
-        protected override int FrameMethod(List<CharAnimFrame> frames)
+        public override int FrameMethod(List<CharAnimFrame> frames)
         {
             return CharSheet.TrueFrame(frames, 0, true);
         }
@@ -447,29 +520,40 @@ namespace RogueEssence.Ground
 
         int AnimID;
         int Height;
+        int StartHeight;
         int Duration;
 
-        public HopGroundAction(Loc pos, Dir8 dir, int animid, int height, int duration)
+        public HopGroundAction(Loc pos, Dir8 dir, int animid, int topHeight, int duration)
         {
             MapLoc = pos;
             CharDir = dir;
             AnimID = animid;
-            Height = height;
+            Height = topHeight;
+            Duration = duration;
+        }
+
+        public HopGroundAction(Loc pos, int startHeight, Dir8 dir, int animid, int topHeight, int duration)
+        {
+            MapLoc = pos;
+            CharDir = dir;
+            AnimID = animid;
+            StartHeight = startHeight;
+            Height = topHeight;
             Duration = duration;
         }
 
         public override void UpdateInput(GameAction action)
         {
             if (Complete)
-                NextAction = new IdleGroundAction(MapLoc, CharDir);
+                NextAction = new IdleGroundAction(MapLoc, LocHeight, CharDir);
         }
 
         public override void Update(FrameTick elapsedTime)
         {
             if (ActionTime < Duration / 2)
-                LocHeight = MathUtils.DivUp(Height * ActionTime.ToFrames() * 2, Duration);
+                LocHeight = MathUtils.DivUp(Height * ActionTime.ToFrames() * 2, Duration) + StartHeight;
             else
-                LocHeight = MathUtils.DivUp(Height * (Duration - ActionTime.ToFrames()) * 2, Duration);
+                LocHeight = MathUtils.DivUp(Height * (Duration - ActionTime.ToFrames()) * 2, Duration) + StartHeight;
         }
     }
 }
