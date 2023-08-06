@@ -136,7 +136,7 @@ namespace RogueEssence.Dungeon
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
                     item.Amount--;
-                else if (entry.MaxStack < 0)
+                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
@@ -149,7 +149,7 @@ namespace RogueEssence.Dungeon
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
                     item.Amount--;
-                else if (entry.MaxStack < 0)
+                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
@@ -163,7 +163,7 @@ namespace RogueEssence.Dungeon
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
                 if (entry.MaxStack > 1 && item.Amount > 1)
                     item.Amount--;
-                else if (entry.MaxStack < 0)
+                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }

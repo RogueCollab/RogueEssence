@@ -268,20 +268,20 @@ namespace RogueEssence.Dev.ViewModels
                     {
                         if (justMe)
                         {
-                            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.Direction, chosenAnim, false));
+                            chara.StartAction(new IdleAnimGroundAction(chara.Position, chara.LocHeight, chara.Direction, chosenAnim, false));
                             if (refreshOthers)
                             {
                                 foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
                                 {
                                     if (groundChar != chara)
-                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.LocHeight, groundChar.Direction));
                                 }
                             }
                         }
                         else
                         {
                             foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
-                                groundChar.StartAction(new IdleAnimGroundAction(groundChar.Position, groundChar.Direction, chosenAnim, false));
+                                groundChar.StartAction(new IdleAnimGroundAction(groundChar.Position, groundChar.LocHeight, groundChar.Direction, chosenAnim, false));
                         }
                     }
                     else
@@ -289,13 +289,13 @@ namespace RogueEssence.Dev.ViewModels
                         if (justMe)
                         {
                             chara.IdleOverride = chosenAnim;
-                            chara.StartAction(new IdleGroundAction(chara.Position, chara.Direction));
+                            chara.StartAction(new IdleGroundAction(chara.Position, chara.LocHeight, chara.Direction));
                             if (refreshOthers)
                             {
                                 foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
                                 {
                                     if (groundChar != chara)
-                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                        groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.LocHeight, groundChar.Direction));
                                 }
                             }
                         }
@@ -306,7 +306,7 @@ namespace RogueEssence.Dev.ViewModels
                             foreach (GroundChar groundChar in ZoneManager.Instance.CurrentGround.IterateCharacters())
                             {
                                 groundChar.IdleOverride = -1;
-                                groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.Direction));
+                                groundChar.StartAction(new IdleGroundAction(groundChar.Position, groundChar.LocHeight, groundChar.Direction));
                             }
                         }
                     }

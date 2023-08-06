@@ -667,12 +667,13 @@ namespace RogueEssence.Script
         /// <param name="character">The character to check</param>
         public bool CanForget(Character character)
         {
+            int count = 0;
             foreach (SlotSkill skill in character.BaseSkills)
             {
                 if (!String.IsNullOrEmpty(skill.SkillNum))
-                    return true;
+                    count++;
             }
-            return false;
+            return count > 1;
         }
 
         /// <summary>
