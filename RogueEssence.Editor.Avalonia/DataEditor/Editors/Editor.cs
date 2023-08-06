@@ -194,6 +194,11 @@ namespace RogueEssence.Dev
             return obj == null ? "NULL" : obj.ToString();
         }
 
+        public virtual string GetTypeString()
+        {
+            return null;
+        }
+
         void IEditor.LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
             //if you want a class that is by default isolated to a classbox but has a custom UI when opened on its own/overridden to render,
@@ -643,7 +648,7 @@ namespace RogueEssence.Dev
                 str.Append(parentType.Name.Substring(0, parentType.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
                 str.Append("<");
             }
-            str.Append(type.GetDisplayName());
+            str.Append(type.GetFriendlyTypeString());
             for (int ii = 0; ii < parentTemplateTypes.Length; ii++)
             {
                 str.Append(">");
@@ -713,11 +718,11 @@ namespace RogueEssence.Dev
             sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
             lblType.SetValue(Grid.ColumnProperty, 0);
 
-            ComboBox cbValue = new SearchComboBox();
-            cbValue.Margin = new Thickness(4, 0, 0, 0);
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-            sharedRowPanel.Children.Add(cbValue);
-            cbValue.SetValue(Grid.ColumnProperty, 1);
+            ComboBox cbType = new SearchComboBox();
+            cbType.Margin = new Thickness(4, 0, 0, 0);
+            cbType.VirtualizationMode = ItemVirtualizationMode.Simple;
+            sharedRowPanel.Children.Add(cbType);
+            cbType.SetValue(Grid.ColumnProperty, 1);
 
             typeContainer.Children.Add(sharedRowPanel);
 
@@ -786,23 +791,23 @@ namespace RogueEssence.Dev
                 throw new TargetException("Types do not match.");
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbType.Bind(ComboBox.ItemsProperty, subject);
             subject.OnNext(items);
-            cbValue.SelectedIndex = selection;
+            cbType.SelectedIndex = selection;
 
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].Type);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbType.SelectedIndex].Type);
+                ToolTip.SetTip(cbType, typeDesc);
             }
 
-            cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+            cbType.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].Type);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbType.SelectedIndex].Type);
+                ToolTip.SetTip(cbType, typeDesc);
 
                 // this will pass in an unconstructed generic type, if generic
                 // otherwise, if non-generic, just passes the type
-                PartialType childType = baseList[cbValue.SelectedIndex];
+                PartialType childType = baseList[cbType.SelectedIndex];
                 templateArgMethod(childType, null);
 
                 //the distinction lies in the triggering of the selected index callback.
@@ -819,7 +824,7 @@ namespace RogueEssence.Dev
             };
 
             //default to first selection
-            templateArgMethod(baseList[cbValue.SelectedIndex], chosenType);
+            templateArgMethod(baseList[cbType.SelectedIndex], chosenType);
         }
 
 
@@ -831,7 +836,7 @@ namespace RogueEssence.Dev
             {
                 if (ii > 0)
                     str.Append(",");
-                str.Append(args[ii].GetDisplayName());
+                str.Append(args[ii].GetFriendlyTypeString());
             }
             str.Append(">");
             return str.ToString();
@@ -852,11 +857,11 @@ namespace RogueEssence.Dev
             sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
             lblType.SetValue(Grid.ColumnProperty, 0);
 
-            ComboBox cbValue = new SearchComboBox();
-            cbValue.Margin = new Thickness(4, 0, 0, 0);
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-            sharedRowPanel.Children.Add(cbValue);
-            cbValue.SetValue(Grid.ColumnProperty, 1);
+            ComboBox cbArgType = new SearchComboBox();
+            cbArgType.Margin = new Thickness(4, 0, 0, 0);
+            cbArgType.VirtualizationMode = ItemVirtualizationMode.Simple;
+            sharedRowPanel.Children.Add(cbArgType);
+            cbArgType.SetValue(Grid.ColumnProperty, 1);
 
             templatePanel.Children.Add(sharedRowPanel);
 
@@ -879,19 +884,19 @@ namespace RogueEssence.Dev
 
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbArgType.Bind(ComboBox.ItemsProperty, subject);
             subject.OnNext(items);
-            cbValue.SelectedIndex = selection;
+            cbArgType.SelectedIndex = selection;
 
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].BaseType);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbArgType.SelectedIndex]);
+                ToolTip.SetTip(cbArgType, typeDesc);
             }
 
-            cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+            cbArgType.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].BaseType);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbArgType.SelectedIndex]);
+                ToolTip.SetTip(cbArgType, typeDesc);
 
                 initNewConstructedType();
             };

@@ -50,7 +50,7 @@ namespace RogueEssence.Dev
                 for (int ii = 0; ii < children.Length; ii++)
                 {
                     Type childType = children[ii];
-                    items.Add(childType.GetDisplayName());
+                    items.Add(childType.GetFriendlyTypeString());
 
                     if (childType == ((FlagType)member).FullType)
                         selection = ii;

@@ -27,29 +27,37 @@ namespace RogueEssence.Dev
 
         public static object clipboardObj;
 
+        private static Dictionary<Type, string> friendlyTypeNames;
+
         public static void Init()
         {
             clipboardObj = new object();
             editors = new List<IEditor>();
+            friendlyTypeNames = new Dictionary<Type, string>();
         }
 
         public static void AddEditor(IEditor editor)
         {
             //maintain inheritance order
+            Type convertingType = editor.GetConvertingType();
             for (int ii = 0; ii < editors.Count; ii++)
             {
-                if (editor.GetConvertingType().IsSubclassOf(editors[ii].GetConvertingType()))
+                if (convertingType.IsSubclassOf(editors[ii].GetConvertingType()))
                 {
                     editors.Insert(ii, editor);
                     return;
                 }
-                else if (editor.GetConvertingType() == editors[ii].GetConvertingType() && editor.GetAttributeType() != null && editors[ii].GetAttributeType() == null)
+                else if (convertingType == editors[ii].GetConvertingType() && convertingType != null && editors[ii].GetAttributeType() == null)
                 {
                     editors.Insert(ii, editor);
                     return;
                 }
             }
             editors.Add(editor);
+
+            string friendlyName = editor.GetTypeString();
+            if (friendlyName != null && !friendlyTypeNames.ContainsKey(convertingType))
+                friendlyTypeNames[convertingType] = friendlyName;
         }
 
         public static void LoadDataControls(string assetName, object obj, DataEditForm editor)
@@ -173,6 +181,14 @@ namespace RogueEssence.Dev
         public static void SetClipboardObj(object obj)
         {
             clipboardObj = ReflectionExt.SerializeCopy(obj);
+        }
+
+        public static string GetFriendlyTypeString(this Type type)
+        {
+            string displayName;
+            if (friendlyTypeNames.TryGetValue(type, out displayName))
+                return displayName;
+            return type.GetDisplayName();
         }
     }
 }

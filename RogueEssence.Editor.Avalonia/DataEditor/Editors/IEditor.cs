@@ -25,5 +25,7 @@ namespace RogueEssence.Dev
         object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack);
 
         string GetString(object obj, Type type, object[] attributes);
+
+        string GetTypeString();
     }
 }

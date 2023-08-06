@@ -277,7 +277,8 @@ namespace RogueEssence.Dev
         {
             if (type.IsGenericType)
             {
-                StringBuilder str = new StringBuilder(type.Name.Substring(0, type.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
+                string baseName = Text.GetMemberTitle(type.Name.Substring(0, type.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
+                StringBuilder str = new StringBuilder(baseName);
                 str.Append("<");
                 Type[] args = type.GetGenericArguments();
                 for (int ii = 0; ii < args.Length; ii++)
@@ -291,7 +292,7 @@ namespace RogueEssence.Dev
                 return str.ToString();
             }
             else
-                return type.Name;
+                return Text.GetMemberTitle(type.Name);
         }
 
         public static List<Assembly> GetDependentAssemblies(params Assembly[] assemblies)

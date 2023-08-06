@@ -510,6 +510,8 @@ namespace RogueEssence
                         space = true;
                     if (char.IsUpper(name[ii]) && char.IsLower(name[ii - 1]) || char.IsUpper(name[ii]) && char.IsDigit(name[ii - 1]))
                         space = true;
+                    if (char.IsUpper(name[ii]) && char.IsUpper(name[ii - 1]) && ii < name.Length - 1 && char.IsLower(name[ii + 1]))
+                        space = true;
                     if (space)
                         separatedName.Append(' ');
                 }
