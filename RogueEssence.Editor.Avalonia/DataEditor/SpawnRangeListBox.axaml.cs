@@ -42,6 +42,20 @@ namespace RogueEssence.Dev.Views
             viewModel.gridCollection_DoubleClick(sender, e);
         }
 
+        public void nudStart_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
+        {
+            ViewModels.SpawnRangeListBoxViewModel viewModel = (ViewModels.SpawnRangeListBoxViewModel)DataContext;
+            if (viewModel.CurrentEnd < e.NewValue)
+                viewModel.CurrentEnd = (int)e.NewValue;
+        }
+
+        public void nudEnd_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
+        {
+            ViewModels.SpawnRangeListBoxViewModel viewModel = (ViewModels.SpawnRangeListBoxViewModel)DataContext;
+            if (viewModel.CurrentStart > e.NewValue)
+                viewModel.CurrentStart = (int)e.NewValue;
+        }
+
         public void SetListContextMenu(ContextMenu menu)
         {
             DataGrid lbx = this.FindControl<DataGrid>("gridItems");
