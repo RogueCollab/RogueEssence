@@ -805,7 +805,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -821,7 +821,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
             }
 
             return mapData;
@@ -838,7 +838,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
             }
 
             return mapData;
@@ -858,7 +858,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -878,7 +878,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -896,7 +896,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -914,7 +914,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -932,7 +932,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -950,7 +950,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -968,7 +968,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
