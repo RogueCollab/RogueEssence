@@ -6,6 +6,7 @@ using System.Reflection;
 using System.IO;
 using RogueEssence.Data;
 using AABB;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dev
 {
@@ -13,16 +14,16 @@ namespace RogueEssence.Dev
     {
         public delegate string TypeStringConv(object member);
 
-        public static T SerializeCopy<T>(T obj)
+        public static T SerializeCopy<T>(T obj, params JsonConverter[] conv)
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                Serializer.Serialize(stream, obj);
+                Serializer.Serialize(stream, obj, conv);
 
                 stream.Flush();
                 stream.Position = 0;
 
-                return (T)Serializer.Deserialize(stream, obj.GetType());
+                return (T)Serializer.Deserialize(stream, obj.GetType(), conv);
             }
         }
 

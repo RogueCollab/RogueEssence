@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Newtonsoft.Json;
 using RogueEssence.Dev.ViewModels;
 using RogueEssence.Dev.Views;
 using System;
@@ -222,6 +223,7 @@ namespace RogueEssence.Dev
             if (subGroupStack.Contains(type))
                 subGroup = false;
 
+            JsonConverterAttribute jsonAttribute = ReflectionExt.FindAttribute<JsonConverterAttribute>(attributes);
             if (!subGroup)
             {
                 string desc = DevDataManager.GetMemberDoc(parentType, name);
@@ -287,7 +289,7 @@ namespace RogueEssence.Dev
 
                     copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                     {
-                        DataEditor.SetClipboardObj(mv.Object);
+                        DataEditor.SetClipboardObj(mv.Object, jsonAttribute?.ConverterType);
                     };
                     pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                     {
@@ -396,7 +398,7 @@ namespace RogueEssence.Dev
                             subGroupStack.CopyTo(newStack, 0);
                             newStack[newStack.Length-1] = type;
                             object obj = DataEditor.SaveWindowControls(controlParent, name, children[0], attributes, newStack);
-                            DataEditor.SetClipboardObj(obj);
+                            DataEditor.SetClipboardObj(obj, jsonAttribute?.ConverterType);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                         {
@@ -501,7 +503,7 @@ namespace RogueEssence.Dev
                             subGroupStack.CopyTo(newStack, 0);
                             newStack[newStack.Length - 1] = type;
                             object obj = DataEditor.SaveWindowControls(controlParent, name, getChosenType(typeArgsPanel), attributes, newStack);
-                            DataEditor.SetClipboardObj(obj);
+                            DataEditor.SetClipboardObj(obj, jsonAttribute?.ConverterType);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                         {

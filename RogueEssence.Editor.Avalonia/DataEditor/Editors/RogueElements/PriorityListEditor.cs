@@ -109,7 +109,7 @@ namespace RogueEssence.Dev
                 if (vm.SelectedIndex > -1)
                 {
                     object obj = vm.Collection[vm.SelectedIndex].Value;
-                    DataEditor.SetClipboardObj(obj);
+                    DataEditor.SetClipboardObj(obj, null);
                 }
                 else
                     await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);

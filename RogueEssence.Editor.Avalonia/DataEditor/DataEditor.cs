@@ -18,6 +18,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using Avalonia.Data.Converters;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dev
 {
@@ -178,9 +179,22 @@ namespace RogueEssence.Dev
             return String.Format("{0}: {1}", parentStr, nameStr);
         }
 
-        public static void SetClipboardObj(object obj)
+        public static void SetClipboardObj(object obj, Type converterType)
         {
-            clipboardObj = ReflectionExt.SerializeCopy(obj);
+            try
+            {
+                if (converterType == null)
+                    clipboardObj = ReflectionExt.SerializeCopy(obj);
+                else
+                {
+                    JsonConverter conv = (JsonConverter)Activator.CreateInstance(converterType);
+                    clipboardObj = ReflectionExt.SerializeCopy(obj, conv);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         public static string GetFriendlyTypeString(this Type type)
