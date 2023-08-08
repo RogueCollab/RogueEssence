@@ -687,21 +687,30 @@ namespace RogueEssence
             bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
             bool sameSegment = sameZone && (destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment);
 
-            yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
-
-            //switch location
-            if (sameZone && !forceNewZone)
-                ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+            // The only time a replay tries to move to a ground is when it ends its current segment.
+            // Do the same logic as EndSegment.
+            if (DataManager.Instance.CurrentReplay != null && newGround)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(handleReplayDungeonEnd(GameProgress.ResultType.Cleared));
+            }
             else
             {
-                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+                yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
+
+                //switch location
+                if (sameZone && !forceNewZone)
+                    ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+                else
+                {
+                    ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+                }
+
+                //switch in new scene
+                MoveToScene(destScene);
+
+                yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
             }
-
-            //switch in new scene
-            MoveToScene(destScene);
-
-            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
         }
 
         private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
@@ -863,6 +872,112 @@ namespace RogueEssence
             yield break;
         }
 
+        private IEnumerator<YieldInstruction> handleReplayDungeonEnd(GameProgress.ResultType result)
+        {
+            //try to get the game state.  if we can't get any states, then we must have quicksaved here
+            if (DataManager.Instance.CurrentReplay.CurrentState < DataManager.Instance.CurrentReplay.States.Count)
+            {
+                GameState state = DataManager.Instance.CurrentReplay.ReadState();
+                DataManager.Instance.SetProgress(state.Save);
+                LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
+                ZoneManager.LoadFromState(state.Zone);
+                LuaEngine.Instance.UpdateZoneInstance();
+
+                SceneOutcome = MoveToZone(DataManager.Instance.Save.NextDest);
+            }
+            else
+            {
+                //check for a rescue input
+                GameAction rescued = null;
+                if (DataManager.Instance.CurrentReplay.CurrentAction < DataManager.Instance.CurrentReplay.Actions.Count)
+                {
+                    GameAction nextAction = DataManager.Instance.CurrentReplay.ReadCommand();
+                    if (nextAction.Type == GameAction.ActionType.Rescue)
+                        rescued = nextAction;
+                    else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
+                    {
+                        // Change dialogue message depending on the LoadMode.
+                        DataManager.Instance.CurrentReplay.Desyncs++;
+                        if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                    }
+                }
+
+                if (rescued != null) //run the action
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, null));
+                else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
+                {
+                    //resuming a game that was just rescued
+                    DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                    DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
+                    DataManager.Instance.CurrentReplay = null;
+                    DataManager.Instance.Loading = DataManager.LoadMode.None;
+                    SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
+                    //and then run the action
+
+                    rescued = new GameAction(GameAction.ActionType.Rescue, Dir8.None);
+                    rescued.AddArg(mail.OfferedItem.IsMoney ? 1 : 0);
+                    rescued.AddArg(mail.OfferedItem.Value.Length);
+                    for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
+                        rescued.AddArg(mail.OfferedItem.Value[ii]);
+                    rescued.AddArg(mail.OfferedItem.HiddenValue.Length);
+                    for (int ii = 0; ii < mail.OfferedItem.HiddenValue.Length; ii++)
+                        rescued.AddArg(mail.OfferedItem.HiddenValue[ii]);
+                    rescued.AddArg(mail.OfferedItem.Amount);
+
+                    rescued.AddArg(mail.RescuedBy.Length);
+                    for (int ii = 0; ii < mail.RescuedBy.Length; ii++)
+                        rescued.AddArg(mail.RescuedBy[ii]);
+
+                    DataManager.Instance.LogPlay(rescued);
+                    DataManager.Instance.Save.UpdateOptions();
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, mail));
+                }
+                else
+                {
+                    if (DataManager.Instance.Loading == DataManager.LoadMode.Rescuing)
+                    {
+                        if (result == GameProgress.ResultType.Rescue)
+                        {
+                            //mark as verified
+                            RescueMenu menu = (RescueMenu)TitleScene.TitleMenuSaveState[TitleScene.TitleMenuSaveState.Count - 1];
+                            menu.Verified = true;
+                        }
+                        //default is failure to verify
+                        yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
+                    }
+                    else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
+                    {
+                        //the game accepts loading into a file that has been downed, or passed its section with nothing else
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
+                        DataManager.Instance.CurrentReplay = null;
+                        //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
+
+                        SetFade(true, false);
+
+                        DataManager.Instance.Loading = DataManager.LoadMode.None;
+
+
+                        bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                        //if failed, just show the death plaque
+                        //if succeeded, run the script that follows.
+                        SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
+                    }
+                    else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying)
+                    {
+                        if (DataManager.Instance.CurrentReplay.Desyncs > 0)
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                        else
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                        yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
+                    }
+                    else //we've reached the end of the replay
+                        yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
+                }
+            }
+        }
+
         public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result)
         {
             if (ZoneManager.Instance.InDevZone)
@@ -885,110 +1000,7 @@ namespace RogueEssence
             yield return new WaitForFrames(40);
 
             if (DataManager.Instance.CurrentReplay != null)
-            {
-                //try to get the game state.  if we can't get any states, then we must have quicksaved here
-                if (DataManager.Instance.CurrentReplay.CurrentState < DataManager.Instance.CurrentReplay.States.Count)
-                {
-                    GameState state = DataManager.Instance.CurrentReplay.ReadState();
-                    DataManager.Instance.SetProgress(state.Save);
-                    LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
-                    ZoneManager.LoadFromState(state.Zone);
-                    LuaEngine.Instance.UpdateZoneInstance();
-
-                    SceneOutcome = MoveToZone(DataManager.Instance.Save.NextDest);
-                }
-                else
-                {
-                    //check for a rescue input
-                    GameAction rescued = null;
-                    if (DataManager.Instance.CurrentReplay.CurrentAction < DataManager.Instance.CurrentReplay.Actions.Count)
-                    {
-                        GameAction nextAction = DataManager.Instance.CurrentReplay.ReadCommand();
-                        if (nextAction.Type == GameAction.ActionType.Rescue)
-                            rescued = nextAction;
-                        else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
-                        {
-                            // Change dialogue message depending on the LoadMode.
-                            DataManager.Instance.CurrentReplay.Desyncs++;
-                            if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
-                        }
-                    }
-
-                    if (rescued != null) //run the action
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, null));
-                    else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
-                    {
-                        //resuming a game that was just rescued
-                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
-                        DataManager.Instance.CurrentReplay = null;
-                        DataManager.Instance.Loading = DataManager.LoadMode.None;
-                        SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
-                        //and then run the action
-
-                        rescued = new GameAction(GameAction.ActionType.Rescue, Dir8.None);
-                        rescued.AddArg(mail.OfferedItem.IsMoney ? 1 : 0);
-                        rescued.AddArg(mail.OfferedItem.Value.Length);
-                        for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
-                            rescued.AddArg(mail.OfferedItem.Value[ii]);
-                        rescued.AddArg(mail.OfferedItem.HiddenValue.Length);
-                        for (int ii = 0; ii < mail.OfferedItem.HiddenValue.Length; ii++)
-                            rescued.AddArg(mail.OfferedItem.HiddenValue[ii]);
-                        rescued.AddArg(mail.OfferedItem.Amount);
-
-                        rescued.AddArg(mail.RescuedBy.Length);
-                        for (int ii = 0; ii < mail.RescuedBy.Length; ii++)
-                            rescued.AddArg(mail.RescuedBy[ii]);
-
-                        DataManager.Instance.LogPlay(rescued);
-                        DataManager.Instance.Save.UpdateOptions();
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, mail));
-                    }
-                    else
-                    {
-                        if (DataManager.Instance.Loading == DataManager.LoadMode.Rescuing)
-                        {
-                            if (result == GameProgress.ResultType.Rescue)
-                            {
-                                //mark as verified
-                                RescueMenu menu = (RescueMenu)TitleScene.TitleMenuSaveState[TitleScene.TitleMenuSaveState.Count - 1];
-                                menu.Verified = true;
-                            }
-                            //default is failure to verify
-                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
-                        }
-                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
-                        {
-                            //the game accepts loading into a file that has been downed, or passed its section with nothing else
-                            DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
-                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
-                            DataManager.Instance.CurrentReplay = null;
-                            //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
-
-                            SetFade(true, false);
-
-                            DataManager.Instance.Loading = DataManager.LoadMode.None;
-
-
-                            bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
-                            //if failed, just show the death plaque
-                            //if succeeded, run the script that follows.
-                            SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
-                        }
-                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) 
-                        {
-                            if (DataManager.Instance.CurrentReplay.Desyncs > 0)
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
-                            else
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
-                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
-                        }
-                        else //we've reached the end of the replay
-                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
-                    }
-                }
-            }
+                yield return CoroutineManager.Instance.StartCoroutine(handleReplayDungeonEnd(result));
             else
             {
                 string dateDefeated = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
