@@ -1198,9 +1198,8 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void DeleteSkill(int slot)
+        public void DeleteSkill(int slot, bool refresh=true)
         {
-
             BaseSkills.RemoveAt(slot);
             BaseSkills.Add(new SlotSkill());
 
@@ -1227,10 +1226,11 @@ namespace RogueEssence.Dungeon
 
                 OnSkillsChanged(skillIndices.ToArray());
             }
-            RefreshTraits();
+            if (refresh)
+                RefreshTraits();
         }
 
-        public void LearnSkill(string skillNum, bool enabled)
+        public void LearnSkill(string skillNum, bool enabled, bool refresh = true)
         {
             int newSlot = 0;
             foreach (SlotSkill skill in BaseSkills)
@@ -1239,15 +1239,16 @@ namespace RogueEssence.Dungeon
                     newSlot++;
             }
             if (newSlot < MAX_SKILL_SLOTS)
-                ReplaceSkill(skillNum, newSlot, enabled);
+                ReplaceSkill(skillNum, newSlot, enabled, refresh);
         }
-        public void ReplaceSkill(string skillNum, int newSlot, bool enabled)
+        public void ReplaceSkill(string skillNum, int newSlot, bool enabled, bool refresh = true)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
 
             OnSkillsChanged(skillIndices.ToArray());
 
-            RefreshTraits();
+            if (refresh)
+                RefreshTraits();
         }
 
         private List<int> baseReplaceSkill(string skillNum, int newSlot, bool enabled)
