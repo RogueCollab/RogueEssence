@@ -25,7 +25,7 @@ namespace RogueEssence.Ground
         public int LocHeight { get; set; }
         public Dir8 CharDir { get; set; }
 
-        public FrameTick ActionTime { get; protected set; }
+        public FrameTick ActionTime { get; set; }
         public abstract bool Complete { get; }
 
         protected Dir8 dirOffset;
@@ -463,6 +463,7 @@ namespace RogueEssence.Ground
             LocHeight = animType.LocHeight;
             this.animSpeed = animSpeed;
             ActionTime = prevTime;
+            baseAction.ActionTime = prevTime;
             this.moveRate = moveRate;
             this.goalDiff = destination - MapLoc;
             this.goalHeightDiff = destHeight - LocHeight;
