@@ -501,6 +501,7 @@ namespace RogueEssence.Ground
             curDiff = newDiff;
 
             int newHeightDiff = (int)Math.Abs(Math.Round((double)moveRate * framesPassed * goalHeightDiff / goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)));
+            newHeightDiff = newHeightDiff * Math.Sign(goalHeightDiff);
             HeightMove = newHeightDiff - curHeightDiff;
             curHeightDiff = newHeightDiff;
             baseAction.Update(elapsedTime);
@@ -545,7 +546,7 @@ namespace RogueEssence.Ground
         public override void UpdateInput(GameAction action)
         {
             if (Complete)
-                NextAction = new IdleGroundAction(MapLoc, LocHeight, CharDir);
+                NextAction = new IdleGroundAction(MapLoc, StartHeight, CharDir);
         }
 
         public override void Update(FrameTick elapsedTime)
