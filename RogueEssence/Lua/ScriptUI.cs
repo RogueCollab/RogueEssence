@@ -36,32 +36,13 @@ namespace RogueEssence.Script
         private bool                m_curspeakerSnd = true;
         private string m_curspeakerSe = DialogueBox.SOUND_EFFECT;
         private int m_curspeakTime = DialogueBox.SPEAK_FRAMES;
-        private IEnumerator<YieldInstruction> _m_curdialogue;
         private Rect m_curbounds = DialogueBox.DefaultBounds;
         private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
         private Loc m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
         
-        private IInteractable _m_curchoice;
+        private IEnumerator<YieldInstruction> m_curdialogue;
 
-        private IEnumerator<YieldInstruction> m_curdialogue
-        {
-            get => _m_curdialogue;
-            set
-            {
-                if ((_m_curdialogue == null || _m_curdialogue.Current.FinishedYield()) && (_m_curchoice == null || _m_curchoice.Inactive))
-                    _m_curdialogue = value;
-            }
-        }
-
-        private IInteractable m_curchoice
-        {
-            get => _m_curchoice;
-            set
-            {
-                if ((_m_curdialogue == null || _m_curdialogue.Current.FinishedYield()) && (_m_curchoice == null || _m_curchoice.Inactive))
-                    _m_curchoice = value;
-            }
-        }
+        private IInteractable m_curchoice;
 
         public ScriptUI()
         {
@@ -561,16 +542,6 @@ namespace RogueEssence.Script
                 return new Coroutine(_DummyWait());
 
             return new Coroutine(m_curdialogue);
-        }
-
-        /// <summary>
-        /// Wait for dialogue to finish and then CLEAN UP dialogue box
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator<YieldInstruction> __WaitDialog()
-        {
-            yield return CoroutineManager.Instance.StartCoroutine(m_curdialogue);
-            _m_curdialogue = null;
         }
 
         /// <summary>
@@ -1570,7 +1541,6 @@ namespace RogueEssence.Script
         private IEnumerator<YieldInstruction> __WaitForChoice()
         {
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
-            _m_curchoice = null;
         }
 
         //================================================================
