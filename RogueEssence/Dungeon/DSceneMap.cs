@@ -578,7 +578,9 @@ namespace RogueEssence.Dungeon
             BattleContext context = new BattleContext(BattleActionType.None);
             context.User = character;
             context.Target = target;
-            foreach (BattleEvent effect in target.ActionEvents)
+            List<BattleEvent> fullEvents = new List<BattleEvent>();
+            fullEvents.AddRange(target.ActionEvents);
+            foreach (BattleEvent effect in fullEvents)
                 yield return CoroutineManager.Instance.StartCoroutine(effect.Apply(null, target, context));
 
             if (!context.CancelState.Cancel)
