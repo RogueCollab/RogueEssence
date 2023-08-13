@@ -415,6 +415,7 @@ namespace RogueEssence.Script
         /// <param name="x">The X coordinate of the destination</param>
         /// <param name="y">The Y coordinate of the destination</param>
         /// <param name="direction">The direction to point the entity.  Defaults to Dir8.None, which leaves it untouched.</param>
+        /// <param name="height"></param>
         public void TeleportTo(GroundEntity ent, int x, int y, Dir8 direction = Dir8.None, int height = 0)
         {
             try

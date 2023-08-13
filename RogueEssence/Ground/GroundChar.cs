@@ -559,6 +559,11 @@ namespace RogueEssence.Ground
             if (AI != null)
                 AI.EntityPointer = this;
         }
+
+        public override string ToString()
+        {
+            return String.Format("GroundChar: {0}", EntName);
+        }
     }
 }
 
