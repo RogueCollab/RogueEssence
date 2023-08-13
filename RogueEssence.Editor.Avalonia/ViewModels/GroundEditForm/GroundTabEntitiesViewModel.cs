@@ -139,6 +139,10 @@ namespace RogueEssence.Dev.ViewModels
                                 diff *= 8;
                             MoveEntity(EntBrowser.SelectedEntity.MapLoc + diff);
                         }
+                        else if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Delete))
+                        {
+                            RemoveEntity(EntBrowser.SelectedEntity);
+                        }
                         break;
                     }
             }

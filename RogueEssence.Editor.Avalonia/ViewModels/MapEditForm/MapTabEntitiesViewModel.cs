@@ -532,6 +532,8 @@ namespace RogueEssence.Dev.ViewModels
                             MoveEntity(mapCoords);
                         else if (input.Direction != input.PrevDirection)
                             MoveEntity(SelectedEntity.CharLoc + input.Direction.GetLoc());
+                        else if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Delete))
+                            RemoveEntity(SelectedEntity);
                         break;
                     }
             }
