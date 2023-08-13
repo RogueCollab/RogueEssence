@@ -275,7 +275,7 @@ namespace RogueEssence.Data
 
             Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
             //TODO: Created v0.7.14, delete on v1.1
-            if (oldVersion < new Version(7, 14))
+            if (oldVersion < new Version(0, 7, 14))
             {
                 object data = DataManager.LoadData<ActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
                 UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
