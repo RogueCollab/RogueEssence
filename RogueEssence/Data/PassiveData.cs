@@ -24,6 +24,12 @@ namespace RogueEssence.Data
         public PriorityList<StatusGivenEvent> BeforeStatusAdds;
 
         /// <summary>
+        /// Occurs before a status condition is being added to another player.
+        /// Can be used to cancel the operation.
+        /// </summary>
+        public PriorityList<StatusGivenEvent> BeforeStatusAddings;
+
+        /// <summary>
         /// Occurs after a status condition is added to the player.
         /// </summary>
         public PriorityList<StatusGivenEvent> OnStatusAdds;
@@ -154,6 +160,7 @@ namespace RogueEssence.Data
             OnPickups = new PriorityList<ItemGivenEvent>();
 
             BeforeStatusAdds = new PriorityList<StatusGivenEvent>();
+            BeforeStatusAddings = new PriorityList<StatusGivenEvent>();
             OnStatusAdds = new PriorityList<StatusGivenEvent>();
             OnStatusRemoves = new PriorityList<StatusGivenEvent>();
             OnMapStatusAdds = new PriorityList<MapStatusGivenEvent>();
