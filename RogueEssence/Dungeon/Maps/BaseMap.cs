@@ -9,6 +9,7 @@ using RogueEssence.LevelGen;
 using Microsoft.Xna.Framework;
 using System.Runtime.Serialization;
 using RogueEssence.Script;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Dungeon
 {
@@ -39,6 +40,8 @@ namespace RogueEssence.Dungeon
         public int ID { get; set; }
 
         public List<MapLayer> Layers;
+
+        public List<AnimLayer> Decorations;
 
         public Tile[][] Tiles;
 
@@ -76,6 +79,7 @@ namespace RogueEssence.Dungeon
             EntryPoints = new List<LocRay8>();
 
             Layers = new List<MapLayer>();
+            Decorations = new List<AnimLayer>();
 
             Items = new List<MapItem>();
             MapTeams = new EventedList<Team>();
@@ -101,6 +105,9 @@ namespace RogueEssence.Dungeon
             MapLayer layer = new MapLayer("New Layer");
             layer.CreateNew(width, height);
             Layers.Add(layer);
+
+            Decorations.Clear();
+            Decorations.Add(new AnimLayer("New Deco"));
         }
 
         public Tile GetTile(Loc loc)

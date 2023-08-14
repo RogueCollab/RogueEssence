@@ -46,6 +46,9 @@
         <TabItem Name="tabTextures" Header="Textures" >
           <views:MapTabTextures DataContext="{Binding Textures}"/>
         </TabItem>
+        <TabItem Name="tabDecorations" Header="Decorations" >
+          <views:MapTabDecorations DataContext="{Binding Decorations}"/>
+        </TabItem>
         <TabItem Name="tabTerrain" Header="Terrain" >
           <views:MapTabTerrain DataContext="{Binding Terrain}"/>
         </TabItem>

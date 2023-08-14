@@ -289,13 +289,13 @@ namespace RogueEssence.Dev
                 {
                     if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, new Loc(ii, jj)))
                     {
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), (int)(tileSize * windowScale * scale), 1), null, Color.White * 0.5f);
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), 1, (int)(tileSize * windowScale * scale)), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), (int)(tileSize * WindowScale * scale), 1), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), 1, (int)(tileSize * WindowScale * scale)), null, Color.White * 0.5f);
                     }
                     else if (ii == ZoneManager.Instance.CurrentGround.Width && Collision.InBounds(ZoneManager.Instance.CurrentGround.Height, jj))
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), 1, (int)(tileSize * windowScale * scale)), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), 1, (int)(tileSize * WindowScale * scale)), null, Color.White * 0.5f);
                     else if (jj == ZoneManager.Instance.CurrentGround.Height && Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ii))
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), (int)(tileSize * windowScale * scale), 1), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), (int)(tileSize * WindowScale * scale), 1), null, Color.White * 0.5f);
                 }
             }
 

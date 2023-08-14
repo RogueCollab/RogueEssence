@@ -27,6 +27,7 @@ namespace RogueEssence.Dev.ViewModels
         public MapEditViewModel()
         {
             Textures = new MapTabTexturesViewModel();
+            Decorations = new MapTabDecorationsViewModel();
             Terrain = new MapTabTerrainViewModel();
             Tiles = new MapTabTilesViewModel();
             Items = new MapTabItemsViewModel();
@@ -39,6 +40,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public MapTabTexturesViewModel Textures { get; set; }
+        public MapTabDecorationsViewModel Decorations { get; set; }
         public MapTabTerrainViewModel Terrain { get; set; }
         public MapTabTilesViewModel Tiles { get; set; }
         public MapTabItemsViewModel Items { get; set; }
@@ -341,6 +343,7 @@ namespace RogueEssence.Dev.ViewModels
             Textures.AutotileBrowser.TileSize = GraphicsManager.TileSize;
             Terrain.TileBrowser.TileSize = GraphicsManager.TileSize;
             Terrain.AutotileBrowser.TileSize = GraphicsManager.TileSize;
+            Decorations.Layers.LoadLayers();
 
             Terrain.SetupLayerVisibility();
             Entrances.SetupLayerVisibility();
@@ -520,30 +523,36 @@ namespace RogueEssence.Dev.ViewModels
                 case 0://Textures
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Texture;
                     break;
-                case 1://Terrain
+                case 1://Decorations
+                    DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Decoration;
+                    Decorations.TabbedIn();
+                    break;
+                case 2://Terrain
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Terrain;
                     break;
-                case 2://Tiles
+                case 3://Tiles
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Tile;
                     break;
-                case 3://Items
+                case 4://Items
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Item;
                     Items.TabbedIn();
                     break;
-                case 4://Entities
+                case 5://Entities
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entity;
                     Entities.TabbedIn();
                     break;
-                case 5://Entrances
+                case 6://Entrances
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Entrance;
                     break;
                 default:
                     DungeonEditScene.Instance.EditMode = DungeonEditScene.EditorMode.Other;
                     break;
             }
-            if (selectedTabIndex != 3)
-                Items.TabbedOut();
+            if (selectedTabIndex != 1)
+                Decorations.TabbedOut();
             if (selectedTabIndex != 4)
+                Items.TabbedOut();
+            if (selectedTabIndex != 5)
                 Entities.TabbedOut();
         }
 
@@ -570,19 +579,22 @@ namespace RogueEssence.Dev.ViewModels
                     case 0://Textures
                         Textures.ProcessInput(input);
                         break;
-                    case 1://Terrain
+                    case 1://Decorations
+                        Decorations.ProcessInput(input);
+                        break;
+                    case 2://Terrain
                         Terrain.ProcessInput(input);
                         break;
-                    case 2://Tiles
+                    case 3://Tiles
                         Tiles.ProcessInput(input);
                         break;
-                    case 3://Items
+                    case 4://Items
                         Items.ProcessInput(input);
                         break;
-                    case 4://Entities
+                    case 5://Entities
                         Entities.ProcessInput(input);
                         break;
-                    case 5://Entrances
+                    case 6://Entrances
                         Entrances.ProcessInput(input);
                         break;
                 }

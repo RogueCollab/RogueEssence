@@ -10,7 +10,7 @@ namespace RogueEssence.Ground
     /// <summary>
     /// Class with handy methods for drawing debug and editor stuff.
     /// </summary>
-    class GroundDebug
+    public class GroundDebug
     {
         public Color DrawColor { get; set; }
         public SpriteBatch Batch { get; set; }
@@ -25,15 +25,15 @@ namespace RogueEssence.Ground
 
         Vector2 ProjectToScreen( Vector2 pos )
         {
-            Rect viewRect = GroundEditScene.Instance.GetViewRectangle();
-            float windowScale = GroundEditScene.Instance.GetWindowScale();
+            Rect viewRect = GameManager.Instance.CurrentScene.ViewRect;
+            float windowScale = GameManager.Instance.CurrentScene.WindowScale;
             return new Vector2(((pos.X - viewRect.X) * windowScale), (pos.Y - viewRect.Y) * windowScale);
         }
 
         Vector2 ProjectToScreen(int X, int Y)
         {
-            Rect viewRect = GroundEditScene.Instance.GetViewRectangle();
-            float windowScale = GroundEditScene.Instance.GetWindowScale();
+            Rect viewRect = GameManager.Instance.CurrentScene.ViewRect;
+            float windowScale = GameManager.Instance.CurrentScene.WindowScale;
             return new Vector2(((X - viewRect.X) * windowScale), (Y - viewRect.Y) * windowScale);
         }
 
@@ -49,8 +49,8 @@ namespace RogueEssence.Ground
 
         Rectangle ProjectToScreen(int x, int y, int w, int h)
         {
-            Rect viewRect = GroundEditScene.Instance.GetViewRectangle();
-            float windowScale = GroundEditScene.Instance.GetWindowScale();
+            Rect viewRect = GameManager.Instance.CurrentScene.ViewRect;
+            float windowScale = GameManager.Instance.CurrentScene.WindowScale;
             return new Rectangle((int)((x - viewRect.X) /** windowScale*/),
                                   (int)((y - viewRect.Y) /** windowScale*/),
                                   (int)(w /** windowScale*/),

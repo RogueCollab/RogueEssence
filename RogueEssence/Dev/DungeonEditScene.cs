@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
         {
             None = -1,
             Texture,
+            Decoration,
             Terrain,
             Tile,
             Item,
@@ -48,9 +49,14 @@ namespace RogueEssence.Dev
         public CanvasStroke<EffectTile> TileInProgress;
         public MapItem ItemInProgress;
         public Character CharacterInProgress;
+        public GroundAnim DecorationInProgress;
+        public bool PendingStroke;
 
         public bool ShowTerrain;
         public bool ShowEntrances;
+        public bool ShowObjectBoxes;
+
+        public GroundAnim SelectedDecoration;
 
         public override void UpdateMeta()
         {
@@ -234,6 +240,41 @@ namespace RogueEssence.Dev
                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(entrance.Loc.X * GraphicsManager.TileSize - ViewRect.X, entrance.Loc.Y * GraphicsManager.TileSize - ViewRect.Y, GraphicsManager.TileSize, GraphicsManager.TileSize), null, showColor * 0.75f);
                 }
             }
+            if (ShowObjectBoxes)
+            {
+                //Draw Entity bounds
+                GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
+                foreach (GroundAnim entity in ZoneManager.Instance.CurrentMap.IterateDecorations())
+                {
+                    Rect bounds = entity.GetBounds();
+                    if (SelectedDecoration == entity)
+                    {
+                        //Invert the color of selected entities
+                        dbg.LineThickness = 1.0f;
+                        dbg.DrawColor = Color.BlueViolet;
+                        dbg.DrawFilledBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1), 92);
+                    }
+                    else
+                    {
+                        //Draw boxes around other entities with graphics using low opacity
+                        dbg.DrawColor = new Color(Color.BlueViolet.R, Color.BlueViolet.G, Color.BlueViolet.B, 92);
+                        dbg.LineThickness = 1.0f;
+                        dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
+                    }
+                }
+            }
+            if (DecorationInProgress != null)
+            {
+                DecorationInProgress.DrawPreview(spriteBatch, ViewRect.Start, PendingStroke ? 1f : 0.75f);
+                if (ShowObjectBoxes)
+                {
+                    Rect bounds = DecorationInProgress.GetBounds();
+                    GroundDebug dbg = new GroundDebug(spriteBatch, Color.White);
+                    dbg.DrawColor = new Color(255, 255, 255, 92);
+                    dbg.LineThickness = 1.0f;
+                    dbg.DrawBox(new Rect(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1));
+                }
+            }
 
             for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
             {
@@ -292,17 +333,31 @@ namespace RogueEssence.Dev
                 {
                     if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, new Loc(ii, jj)))
                     {
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), (int)(tileSize * windowScale * scale), 1), null, Color.White * 0.5f);
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), 1, (int)(tileSize * windowScale * scale)), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), (int)(tileSize * WindowScale * scale), 1), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), 1, (int)(tileSize * WindowScale * scale)), null, Color.White * 0.5f);
                     }
                     else if (ii == ZoneManager.Instance.CurrentMap.Width && Collision.InBounds(ZoneManager.Instance.CurrentMap.Height, jj))
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), 1, (int)(tileSize * windowScale * scale)), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), 1, (int)(tileSize * WindowScale * scale)), null, Color.White * 0.5f);
                     else if (jj == ZoneManager.Instance.CurrentMap.Height && Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ii))
-                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * windowScale * scale), (int)((jj * tileSize - ViewRect.Y) * windowScale * scale), (int)(tileSize * windowScale * scale), 1), null, Color.White * 0.5f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((ii * tileSize - ViewRect.X) * WindowScale * scale), (int)((jj * tileSize - ViewRect.Y) * WindowScale * scale), (int)(tileSize * WindowScale * scale), 1), null, Color.White * 0.5f);
                 }
             }
 
             base.DrawDev(spriteBatch);
+        }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+
+            if (ZoneManager.Instance.CurrentMap != null)
+            {
+                if (EditMode == EditorMode.Decoration)
+                {
+                    if (SelectedDecoration != null)
+                        GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 82, String.Format("Obj X:{0:D3} Y:{1:D3}", SelectedDecoration.MapLoc.X, SelectedDecoration.MapLoc.Y), null, DirV.Up, DirH.Right, Color.White);
+                }
+            }
         }
 
         public void EnterMapEdit(int entryPoint)

@@ -368,18 +368,18 @@ namespace RogueEssence.Ground
             ZoneManager.Instance.CurrentGround.DrawDebug(ViewRect.X, ViewRect.Y, ViewRect.Width, ViewRect.Height,
                 (int x, int y, int w, int h, float alpha) =>
                 {
-                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), (int)(w * windowScale * scale), 1), null, Color.White * alpha);
-                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), 1, (int)(h * windowScale * scale)), null, Color.White * alpha);
+                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * WindowScale * scale), (int)((y - ViewRect.Y) * WindowScale * scale), (int)(w * WindowScale * scale), 1), null, Color.White * alpha);
+                    blank.Draw(spriteBatch, new Rectangle((int)((x - ViewRect.X) * WindowScale * scale), (int)((y - ViewRect.Y) * WindowScale * scale), 1, (int)(h * WindowScale * scale)), null, Color.White * alpha);
                 },
                 (AABB.IObstacle box) =>
                 {
                     if (box is GroundWall)
-                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * windowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * windowScale * scale), (int)(box.Bounds.Width * windowScale * scale), (int)(box.Bounds.Height * windowScale * scale)), null, Color.Red * 0.3f);
+                        blank.Draw(spriteBatch, new Rectangle((int)((box.Bounds.X - ViewRect.X) * WindowScale * scale), (int)((box.Bounds.Y - ViewRect.Y) * WindowScale * scale), (int)(box.Bounds.Width * WindowScale * scale), (int)(box.Bounds.Height * WindowScale * scale)), null, Color.Red * 0.3f);
                     
                 }, (string message, int x, int y, float alpha) =>
                 {
                     int size = GraphicsManager.SysFont.SubstringWidth(message);
-                    GraphicsManager.SysFont.DrawText(spriteBatch, (int)((x - ViewRect.X) * windowScale * scale), (int)((y - ViewRect.Y) * windowScale * scale), message, null, DirV.None, DirH.None);
+                    GraphicsManager.SysFont.DrawText(spriteBatch, (int)((x - ViewRect.X) * WindowScale * scale), (int)((y - ViewRect.Y) * WindowScale * scale), message, null, DirV.None, DirH.None);
                 });
 
             base.DrawDebug(spriteBatch);

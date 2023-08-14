@@ -12,13 +12,13 @@ using System.Text;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class GroundTabDecorationsViewModel : ViewModelBase
+    public class MapTabDecorationsViewModel : ViewModelBase
     {
         public delegate void EntityOp(GroundAnim ent);
 
-        public GroundTabDecorationsViewModel()
+        public MapTabDecorationsViewModel()
         {
-            Layers = new AnimLayerBoxViewModel(true);
+            Layers = new AnimLayerBoxViewModel(false);
             Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             SelectedEntity = new GroundAnim();
 
@@ -56,11 +56,11 @@ namespace RogueEssence.Dev.ViewModels
         {
             get
             {
-                return GroundEditScene.Instance.ShowObjectBoxes;
+                return DungeonEditScene.Instance.ShowObjectBoxes;
             }
             set
             {
-                GroundEditScene.Instance.ShowObjectBoxes = value;
+                DungeonEditScene.Instance.ShowObjectBoxes = value;
                 this.RaisePropertyChanged();
             }
         }
@@ -188,15 +188,15 @@ namespace RogueEssence.Dev.ViewModels
             if (entMode == EntEditMode.SelectEntity)
             {
                 //set pending to null
-                GroundEditScene.Instance.DecorationInProgress = null;
+                DungeonEditScene.Instance.DecorationInProgress = null;
             }
             else
             {
                 //copy the selection
-                if (GroundEditScene.Instance.SelectedDecoration != null)
+                if (DungeonEditScene.Instance.SelectedDecoration != null)
                 {
-                    setEntity(new GroundAnim(GroundEditScene.Instance.SelectedDecoration));
-                    GroundEditScene.Instance.SelectedDecoration = null;
+                    setEntity(new GroundAnim(DungeonEditScene.Instance.SelectedDecoration));
+                    DungeonEditScene.Instance.SelectedDecoration = null;
                 }
                 animChanged();
             }
@@ -209,14 +209,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public void TabbedOut()
         {
-            GroundEditScene.Instance.DecorationInProgress = null;
+            DungeonEditScene.Instance.DecorationInProgress = null;
         }
 
         public void ProcessInput(InputManager input)
         {
             bool inWindow = Collision.InBounds(GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, input.MouseLoc);
 
-            Loc groundCoords = GroundEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
+            Loc groundCoords = DungeonEditScene.Instance.ScreenCoordsToGroundCoords(input.MouseLoc);
 
             bool snapGrid = input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl) || input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
             if (snapGrid)
@@ -227,13 +227,13 @@ namespace RogueEssence.Dev.ViewModels
             {
                 case EntEditMode.PlaceEntity:
                     {
-                        GroundEditScene.Instance.DecorationInProgress.MapLoc = groundCoords;
-                        if (!GroundEditScene.Instance.PendingStroke)
+                        DungeonEditScene.Instance.DecorationInProgress.MapLoc = groundCoords;
+                        if (!DungeonEditScene.Instance.PendingStroke)
                         {
                             if (inWindow && input.JustPressed(FrameInput.InputType.LeftMouse))
                             {
                                 PreviewEntity(groundCoords);
-                                GroundEditScene.Instance.PendingStroke = true;
+                                DungeonEditScene.Instance.PendingStroke = true;
                             }
                             else if (!input[FrameInput.InputType.LeftMouse] && input.JustReleased(FrameInput.InputType.RightMouse))
                                 RemoveEntityAt(groundCoords);
@@ -243,7 +243,7 @@ namespace RogueEssence.Dev.ViewModels
                             if (input.JustReleased(FrameInput.InputType.LeftMouse))
                             {
                                 PlaceEntity();
-                                GroundEditScene.Instance.PendingStroke = false;
+                                DungeonEditScene.Instance.PendingStroke = false;
                                 PreviewEntity(groundCoords);
                             }
                         }
@@ -292,21 +292,21 @@ namespace RogueEssence.Dev.ViewModels
             if (ent == null)
                 return;
 
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapDecorationStateUndo(Layers.ChosenLayer));
 
-            ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
+            ZoneManager.Instance.CurrentMap.Decorations[Layers.ChosenLayer].Anims.Remove(ent);
         }
 
         public void PreviewEntity(Loc position)
         {
             GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), position);
-            GroundEditScene.Instance.DecorationInProgress = placeableEntity;
+            DungeonEditScene.Instance.DecorationInProgress = placeableEntity;
         }
         public void PlaceEntity()
         {
-            GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), GroundEditScene.Instance.DecorationInProgress.MapLoc);
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
-            ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
+            GroundAnim placeableEntity = new GroundAnim((IPlaceableAnimData)SelectedEntity.ObjectAnim.Clone(), DungeonEditScene.Instance.DecorationInProgress.MapLoc);
+            DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapDecorationStateUndo(Layers.ChosenLayer));
+            ZoneManager.Instance.CurrentMap.Decorations[Layers.ChosenLayer].Anims.Add(placeableEntity);
         }
 
 
@@ -314,13 +314,13 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (ent != null)
             {
-                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new GroundDecorationStateUndo(Layers.ChosenLayer));
-                GroundEditScene.Instance.SelectedDecoration = ent;
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Apply(new MapDecorationStateUndo(Layers.ChosenLayer));
+                DungeonEditScene.Instance.SelectedDecoration = ent;
                 setEntity(ent);
             }
             else
             {
-                GroundEditScene.Instance.SelectedDecoration = ent;
+                DungeonEditScene.Instance.SelectedDecoration = ent;
                 setEntity(new GroundAnim(new ObjAnimData(ObjectAnims[0], 1, Dir8.Down), Loc.Zero));
             }
         }
@@ -349,7 +349,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void OperateOnEntityAt(Loc position, EntityOp op)
         {
-            List<GroundAnim> found = ZoneManager.Instance.CurrentGround.Decorations[Layers.ChosenLayer].FindAnimsAtPosition(position);
+            List<GroundAnim> found = ZoneManager.Instance.CurrentMap.Decorations[Layers.ChosenLayer].FindAnimsAtPosition(position);
             if (found.Count > 0)
                 op(found.First());
             else
@@ -393,22 +393,22 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class GroundDecorationStateUndo : StateUndo<AnimLayer>
+    public class MapDecorationStateUndo : StateUndo<AnimLayer>
     {
         private int layer;
-        public GroundDecorationStateUndo(int layer)
+        public MapDecorationStateUndo(int layer)
         {
             this.layer = layer;
         }
 
         public override AnimLayer GetState()
         {
-            return ZoneManager.Instance.CurrentGround.Decorations[layer];
+            return ZoneManager.Instance.CurrentMap.Decorations[layer];
         }
 
         public override void SetState(AnimLayer state)
         {
-            ZoneManager.Instance.CurrentGround.Decorations[layer] = state;
+            ZoneManager.Instance.CurrentMap.Decorations[layer] = state;
         }
     }
 }
