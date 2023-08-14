@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueElements;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
+using RogueEssence.Ground;
 
 namespace RogueEssence.LevelGen
 {
@@ -143,6 +145,23 @@ namespace RogueEssence.LevelGen
                         }
                     }
                 }
+            }
+
+            //place decorations
+            foreach (AnimLayer layer in mapBlob.Decorations)
+            {
+                if (!layer.Visible)
+                    continue;
+
+                AnimLayer layerCopy = new AnimLayer(layer.Name);
+                layerCopy.Layer = layer.Layer;
+                foreach (GroundAnim anim in layer.Anims)
+                {
+                    GroundAnim animCopy = new GroundAnim(anim);
+                    animCopy.MapLoc = anim.MapLoc + offset * GraphicsManager.TileSize;
+                    layerCopy.Anims.Add(animCopy);
+                }
+                map.Map.Decorations.Add(layerCopy);
             }
 
             //place items

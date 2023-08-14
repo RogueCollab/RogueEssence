@@ -5,6 +5,8 @@ using RogueEssence.Dungeon;
 using RogueEssence.Dev;
 using RogueEssence.LevelGen;
 using RogueEssence.Data;
+using RogueEssence.Content;
+using RogueEssence.Ground;
 
 namespace RogueEssence.LevelGen
 {
@@ -134,6 +136,17 @@ namespace RogueEssence.LevelGen
                         }
                     }
                 }
+            }
+
+            //place decorations
+            foreach (AnimLayer layer in this.roomMap.Decorations)
+            {
+                if (!layer.Visible)
+                    continue;
+
+                foreach (GroundAnim anim in layer.Anims)
+                    anim.MapLoc = anim.MapLoc + this.Draw.Start * GraphicsManager.TileSize;
+                map.Map.Decorations.Add(layer);
             }
 
             //place items

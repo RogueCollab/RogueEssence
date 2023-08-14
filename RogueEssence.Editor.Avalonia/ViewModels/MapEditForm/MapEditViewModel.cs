@@ -489,13 +489,24 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (layer.Layer == DrawLayer.Top)
                 {
-                    //Add layers marked "under", using DrawLayer.Bottom
+                    //Add layers marked "Top", using DrawLayer.Top
                     MapLayer newLayer = new MapLayer(layer.Name);
                     newLayer.Layer = DrawLayer.Top;
                     newLayer.Visible = layer.Visible;
                     newLayer.Tiles = layer.Tiles;
                     curgrnd.Layers.Add(newLayer);
                 }
+            }
+
+            //Add decorations
+            curgrnd.Decorations.Clear();
+            foreach (AnimLayer layer in curmap.Decorations)
+            {
+                AnimLayer newLayer = new AnimLayer(layer.Name);
+                newLayer.Layer = layer.Layer;
+                newLayer.Visible = layer.Visible;
+                newLayer.Anims = layer.Anims;
+                curgrnd.Decorations.Add(newLayer);
             }
 
             curgrnd.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
