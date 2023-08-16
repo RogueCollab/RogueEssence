@@ -453,7 +453,7 @@ namespace RogueEssence.Ground
         }
         public override int AnimFrameType { get { return baseAction.AnimFrameType; } }
 
-        public override bool Complete { get { return curDiff == goalDiff; } }
+        public override bool Complete { get { return (curDiff == goalDiff) && (curHeightDiff == goalHeightDiff); } }
 
         public AnimateToPositionGroundAction(GroundAction animType, float animSpeed, int moveRate, FrameTick prevTime, Loc destination, int destHeight)
         {
@@ -489,20 +489,27 @@ namespace RogueEssence.Ground
         public override void Update(FrameTick elapsedTime)
         {
             framesPassed++;
-            if (goalDiff == Loc.Zero)
+            if (goalDiff == Loc.Zero && goalHeightDiff == 0)
                 return;
 
-            bool vertical = Math.Abs(goalDiff.Y) > Math.Abs(goalDiff.X);
+            int highestScalar = Math.Abs(goalHeightDiff);
+            if (highestScalar < Math.Abs(goalDiff.X))
+                highestScalar = Math.Abs(goalDiff.X);
+            if (highestScalar < Math.Abs(goalDiff.Y))
+                highestScalar = Math.Abs(goalDiff.Y);
+
             int mainMove = moveRate * framesPassed;
-            int subMove = (int)Math.Abs(Math.Round((double)moveRate * framesPassed * goalDiff.GetScalar(vertical ? Axis4.Horiz : Axis4.Vert) / goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)));
-            Loc newDiff = new Loc((vertical ? subMove : mainMove) * Math.Sign(goalDiff.X), (vertical ? mainMove : subMove) * Math.Sign(goalDiff.Y));
-            if (mainMove >= Math.Abs(goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)))
+            int moveX = (int)Math.Round((double)mainMove * goalDiff.X / highestScalar);
+            int moveY = (int)Math.Round((double)mainMove * goalDiff.Y / highestScalar);
+            Loc newDiff = new Loc(moveX, moveY);
+            if (mainMove >= highestScalar)
                 newDiff = goalDiff;
             Move = newDiff - curDiff;
             curDiff = newDiff;
 
-            int newHeightDiff = (int)Math.Abs(Math.Round((double)moveRate * framesPassed * goalHeightDiff / goalDiff.GetScalar(vertical ? Axis4.Vert : Axis4.Horiz)));
-            newHeightDiff = newHeightDiff * Math.Sign(goalHeightDiff);
+            int newHeightDiff = (int)Math.Round((double)mainMove * goalHeightDiff / highestScalar);
+            if (mainMove >= highestScalar)
+                newHeightDiff = goalHeightDiff;
             HeightMove = newHeightDiff - curHeightDiff;
             curHeightDiff = newHeightDiff;
             baseAction.Update(elapsedTime);
