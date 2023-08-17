@@ -129,27 +129,37 @@ namespace RogueEssence.Dungeon
             return FinishTurn(character, advanceTurn, true, false);
         }
 
+        public IEnumerator<YieldInstruction> CheckMobilityViolations()
+        {
+            //check for mobility violation at the end of anyone's turn
+            //only do this when someone has changed location, or when someone has changed mobility
+            while (ZoneManager.Instance.CurrentMap.DisplacedChars.Count > 0)
+            {
+                List<Character> displaced = new List<Character>();
+                displaced.AddRange(ZoneManager.Instance.CurrentMap.DisplacedChars);
+                ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
+                foreach (Character standChar in displaced)
+                {
+                    if (!standChar.Dead)
+                    {
+                        HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
+                        while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
+                        {
+                            iterWarpHistory.Add(standChar.CharLoc);
+                            yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
+                        }
+                    }
+                }
+            }
+        }
+
         public IEnumerator<YieldInstruction> FinishTurn(Character character, bool advanceTurn, bool action, bool walked)
         {
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
 
             LogMsg(Text.DIVIDER_STR);
 
-            //check for mobility violation at the end of anyone's turn
-            //only do this when someone has changed location, or when someone has changed mobility
-            foreach (Character standChar in ZoneManager.Instance.CurrentMap.DisplacedChars)
-            {
-                if (!standChar.Dead)
-                {
-                    HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
-                    while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
-                    {
-                        iterWarpHistory.Add(standChar.CharLoc);
-                        yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
-                    }
-                }
-            }
-            ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
+            yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolations());
 
             //end turn
             if (!character.Dead)
