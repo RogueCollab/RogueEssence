@@ -402,7 +402,8 @@ namespace RogueEssence.Ground
             if (currentEmote != null)
             {
                 Loc head = currentCharAction.GetActionPoint(sheet, ActionPointType.Head);
-                currentEmote.Draw(spriteBatch, offset - head - drawOffset);
+                Loc heightOffset = Loc.UnitY * LocHeight;
+                currentEmote.Draw(spriteBatch, offset - head - drawOffset + heightOffset);
             }
         }
 
