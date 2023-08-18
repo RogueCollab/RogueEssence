@@ -22,7 +22,7 @@ namespace RogueEssence.Menu
         public override bool CanMenu => canMenu;
         public override bool CanCancel => onCancel is not null;
 
-        public ChooseMonsterMenu(string title, List<StartChar> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true)
+        public ChooseMonsterMenu(string title, List<StartChar> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true, int slotsPerPage = SLOTS_PER_PAGE)
         {
             this.chooseAction = chooseAction;
             this.onCancel = onCancel;
@@ -40,9 +40,9 @@ namespace RogueEssence.Menu
                 int index = i;
                 return (MenuChoice)new MenuTextChoice(name, () => { this.chooseAction(index); });
             }).ToList();
-            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
+            IChoosable[][] box = SortIntoPages(flatChoices.ToArray(), slotsPerPage);
 
-            int totalSlots = SLOTS_PER_PAGE;
+            int totalSlots = slotsPerPage;
             if (box.Length == 1)
                 totalSlots = box[0].Length;
 

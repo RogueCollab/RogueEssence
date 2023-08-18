@@ -1303,7 +1303,8 @@ namespace RogueEssence.Script
         /// <param name="choices">A lua table of choices with each element being a MonsterID.</param>
         /// <param name="canMenu">If set to true, the Menu Button exits the menu if pressed.</param>
         /// <param name="canCancel">If set to true, the Cancel Button exits the menu if pressed.</param>
-        public void ChooseMonsterMenu(string title, LuaTable choices, bool canMenu = false, bool canCancel = false)
+        /// <param name="slotsPerPage">Slots to display per page</param>
+        public void ChooseMonsterMenu(string title, LuaTable choices, bool canMenu = false, bool canCancel = false, int slotsPerPage = 12)
         {
             try
             {
@@ -1331,7 +1332,7 @@ namespace RogueEssence.Script
 
                 void cancelAction() { }
 
-                m_curchoice = new ChooseMonsterMenu(title, monsters, 0, chooseAction, canCancel ? cancelAction : null, canMenu);
+                m_curchoice = new ChooseMonsterMenu(title, monsters, 0, chooseAction, canCancel ? cancelAction : null, canMenu, slotsPerPage);
             }
             catch (Exception e)
             {
