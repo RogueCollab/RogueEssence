@@ -4,3 +4,6 @@
 [submodule "FNA"]
 	path = FNA
 	url = https://github.com/audinowho/FNA.git
+[submodule "NLua"]
+	path = NLua
+	url = https://github.com/audinowho/NLua.git

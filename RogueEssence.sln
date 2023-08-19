@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29409.12
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEssence", "RogueEssence\RogueEssence.csproj", "{F22CC8D0-B26B-458E-9F6E-A3AC20A57827}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEssence.Editor.Avalonia", "RogueEssence.Editor.Avalonia\RogueEssence.Editor.Avalonia.csproj", "{04BB699C-51C8-4775-A7A0-145F220EFA20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEssence.Examples", "RogueEssence.Examples\RogueEssence.Examples.csproj", "{9A88DA05-9713-4DFC-8BDB-9D7306128072}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLua.netstandard2.0", "NLua\build\netstandard2.0\NLua.netstandard2.0.csproj", "{1F6077AC-49F6-4310-912B-169AA8726D40}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeraLua.NetStandard20", "NLua\KeraLua\build\netstandard2.0\KeraLua.NetStandard20.csproj", "{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,11 +73,31 @@ Global
 		{04BB699C-51C8-4775-A7A0-145F220EFA20}.Release|Any CPU.Build.0 = Release|Any CPU
 		{04BB699C-51C8-4775-A7A0-145F220EFA20}.Release|x64.ActiveCfg = Release|Any CPU
 		{04BB699C-51C8-4775-A7A0-145F220EFA20}.Release|x64.Build.0 = Release|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|x64.Build.0 = Debug|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|x64.ActiveCfg = Release|Any CPU
+		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|x64.Build.0 = Release|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|x64.Build.0 = Debug|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|x64.ActiveCfg = Release|Any CPU
+		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {510959D5-23BD-467F-96CE-545BC112EC92}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		NLua\src\NLua.Shared.projitems*{1f6077ac-49f6-4310-912b-169aa8726d40}*SharedItemsImports = 5
+		NLua\KeraLua\src\KeraLua.Core.projitems*{20e38f61-bb0e-4ab1-83aa-ca9d6201fda8}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
