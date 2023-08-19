@@ -71,18 +71,18 @@ namespace RogueEssence.Dev
             lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
 
             //add lambda expression for editing a single element
-            vm.OnEditItem += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
+            vm.OnEditItem += (IntRange key, object element, bool advancedEdit, RangeDictBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "[" + key.ToString() + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0]);
+                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 
                 frmData.SelectedOKEvent += async () =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0]);
+                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(key, element);
                     return true;
                 };
@@ -91,7 +91,7 @@ namespace RogueEssence.Dev
                 frmData.Show();
             };
 
-            vm.OnEditKey += (IntRange key, object element, RangeDictBoxViewModel.EditElementOp op) =>
+            vm.OnEditKey += (IntRange key, object element, bool advancedEdit, RangeDictBoxViewModel.EditElementOp op) =>
             {
                 string elementName = name + "<Range>";
                 DataEditForm frmKey = new DataEditForm();
@@ -101,12 +101,12 @@ namespace RogueEssence.Dev
                     attrList.Add(rangeAtt);
                 frmKey.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, attrList.ToArray());
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, parent, null, elementName, keyType, attrList.ToArray(), key, true, new Type[0]);
+                DataEditor.LoadClassControls(frmKey.ControlPanel, parent, null, elementName, keyType, attrList.ToArray(), key, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmKey, keyType);
 
                 frmKey.SelectedOKEvent += async () =>
                 {
-                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true, new Type[0]);
+                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true, new Type[0], advancedEdit);
                     op(key, element);
                     return true;
                 };
@@ -141,7 +141,7 @@ namespace RogueEssence.Dev
                 if (vm.CurrentElement > -1)
                 {
                     object obj = vm.Collection[vm.CurrentElement].Value;
-                    DataEditor.SetClipboardObj(obj);
+                    DataEditor.SetClipboardObj(obj, null);
                 }
                 else
                     await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);

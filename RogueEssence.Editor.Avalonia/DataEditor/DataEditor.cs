@@ -18,6 +18,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using Avalonia.Data.Converters;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dev
 {
@@ -27,35 +28,43 @@ namespace RogueEssence.Dev
 
         public static object clipboardObj;
 
+        private static Dictionary<Type, string> friendlyTypeNames;
+
         public static void Init()
         {
             clipboardObj = new object();
             editors = new List<IEditor>();
+            friendlyTypeNames = new Dictionary<Type, string>();
         }
 
         public static void AddEditor(IEditor editor)
         {
             //maintain inheritance order
+            Type convertingType = editor.GetConvertingType();
             for (int ii = 0; ii < editors.Count; ii++)
             {
-                if (editor.GetConvertingType().IsSubclassOf(editors[ii].GetConvertingType()))
+                if (convertingType.IsSubclassOf(editors[ii].GetConvertingType()))
                 {
                     editors.Insert(ii, editor);
                     return;
                 }
-                else if (editor.GetConvertingType() == editors[ii].GetConvertingType() && editor.GetAttributeType() != null && editors[ii].GetAttributeType() == null)
+                else if (convertingType == editors[ii].GetConvertingType() && convertingType != null && editors[ii].GetAttributeType() == null)
                 {
                     editors.Insert(ii, editor);
                     return;
                 }
             }
             editors.Add(editor);
+
+            string friendlyName = editor.GetTypeString();
+            if (friendlyName != null && !friendlyTypeNames.ContainsKey(convertingType))
+                friendlyTypeNames[convertingType] = friendlyName;
         }
 
         public static void LoadDataControls(string assetName, object obj, DataEditForm editor)
         {
             Type editType = obj.GetType();
-            LoadClassControls(editor.ControlPanel, assetName, null, obj.ToString(), editType, new object[0], obj, true, new Type[0]);
+            LoadClassControls(editor.ControlPanel, assetName, null, obj.ToString(), editType, new object[0], obj, true, new Type[0], false);
             TrackTypeSize(editor, editType);
         }
 
@@ -76,10 +85,13 @@ namespace RogueEssence.Dev
             editor.GetObservable(TopLevel.ClientSizeProperty).Subscribe(editorWindow_SizeChanged);
         }
 
-        private static IEditor findEditor(Type objType, object[] attributes)
+        private static IEditor findEditor(Type objType, object[] attributes, bool noSimple)
         {
             foreach (IEditor editor in editors)
             {
+                if (noSimple && editor.SimpleEditor)
+                    continue;
+
                 Type editType = editor.GetConvertingType();
                 if (editType.IsAssignableFrom(objType))
                 {
@@ -99,46 +111,46 @@ namespace RogueEssence.Dev
             throw new ArgumentException("Unhandled type!");
         }
 
-        public static void LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
+        public static void LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack, bool advancedEdit)
         {
-            IEditor converter = findEditor(type, attributes);
+            IEditor converter = findEditor(type, attributes, advancedEdit);
             converter.LoadClassControls(control, parent, parentType, name, type, attributes, member, isWindow, subGroupStack);
         }
 
         public static void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
         {
-            IEditor converter = findEditor(type, attributes);
+            IEditor converter = findEditor(type, attributes, false);
             converter.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
         }
 
         public static void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
-            IEditor converter = findEditor(obj.GetType(), attributes);
+            IEditor converter = findEditor(obj.GetType(), attributes, false);
             converter.LoadMemberControl(parent, obj, control, name, type, attributes, member, isWindow, subGroupStack);
         }
 
         public static void SaveDataControls(ref object obj, StackPanel control, Type[] subGroupStack)
         {
-            obj = SaveClassControls(control, obj.ToString(), obj.GetType(), new object[0], true, subGroupStack);
+            obj = SaveClassControls(control, obj.ToString(), obj.GetType(), new object[0], true, subGroupStack, false);
         }
 
-        public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
+        public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack, bool advancedEdit)
         {
-            IEditor converter = findEditor(type, attributes);
+            IEditor converter = findEditor(type, attributes, advancedEdit);
             return converter.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack);
         }
 
 
         public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
-            IEditor converter = findEditor(type, attributes);
+            IEditor converter = findEditor(type, attributes, false);
             return converter.SaveWindowControls(control, name, type, attributes, subGroupStack);
         }
 
 
         public static object SaveMemberControl(object obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
-            IEditor converter = findEditor(obj.GetType(), attributes);
+            IEditor converter = findEditor(obj.GetType(), attributes, false);
             return converter.SaveMemberControl(obj, control, name, type, attributes, isWindow, subGroupStack);
         }
 
@@ -146,7 +158,7 @@ namespace RogueEssence.Dev
         {
             if (obj == null)
                 return "NULL";
-            IEditor editor = findEditor(obj.GetType(), attributes);
+            IEditor editor = findEditor(obj.GetType(), attributes, false);
             return editor.GetString(obj, type, attributes);
         }
 
@@ -167,9 +179,30 @@ namespace RogueEssence.Dev
             return String.Format("{0}: {1}", parentStr, nameStr);
         }
 
-        public static void SetClipboardObj(object obj)
+        public static void SetClipboardObj(object obj, Type converterType)
         {
-            clipboardObj = ReflectionExt.SerializeCopy(obj);
+            try
+            {
+                if (converterType == null)
+                    clipboardObj = ReflectionExt.SerializeCopy(obj);
+                else
+                {
+                    JsonConverter conv = (JsonConverter)Activator.CreateInstance(converterType);
+                    clipboardObj = ReflectionExt.SerializeCopy(obj, conv);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
+        }
+
+        public static string GetFriendlyTypeString(this Type type)
+        {
+            string displayName;
+            if (friendlyTypeNames.TryGetValue(type, out displayName))
+                return displayName;
+            return type.GetDisplayName();
         }
     }
 }

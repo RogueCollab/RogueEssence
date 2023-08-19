@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using RogueEssence.Script;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Dungeon
 {
@@ -690,6 +691,18 @@ namespace RogueEssence.Dungeon
             return result;
         }
 
+        public IEnumerable<GroundAnim> IterateDecorations()
+        {
+            foreach (AnimLayer layer in Decorations)
+            {
+                if (layer.Visible)
+                {
+                    foreach (GroundAnim v in layer.Anims)
+                        yield return v;
+                }
+            }
+        }
+
         public bool IsBlocked(Loc loc, TerrainData.Mobility mobility)
         {
             return IsBlocked(loc, mobility, true, false);
@@ -1051,6 +1064,13 @@ namespace RogueEssence.Dungeon
             ReconnectMapReference();
 
             setTeamEvents();
+
+            // TODO: Remove in v1.1
+            if (Serializer.OldVersion <= new Version(0, 7, 16))
+            {
+                Decorations.Clear();
+                Decorations.Add(new AnimLayer("New Deco"));
+            }
         }
 
         protected virtual void ReconnectMapReference()

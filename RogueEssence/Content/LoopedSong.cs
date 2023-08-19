@@ -22,6 +22,8 @@ namespace RogueEssence.Content
             set { soundStream.Volume = value; }
         }
 
+        public SoundState State { get { return soundStream.State; } }
+
         public int Channels { get; private set; }
         public int SampleRate { get; private set; }
         private int chunkSize { get { return Channels * SampleRate * 2; } }
@@ -116,6 +118,52 @@ namespace RogueEssence.Content
         internal void Play()
         {
             FAudio.stb_vorbis_seek_start(stbVorbisData);
+
+            queueBuffer();
+
+            soundStream.BufferNeeded += BufferNeeded;
+            soundStream.Play();
+        }
+
+        /// <summary>
+        // This method is actually more accurate than getting samples from timespan
+        // however there is no GetSamplesPlayed for DynamicSoundEffectInstance
+        // I would have to add it, and that would mean maintaining a fork of FNA for it
+        // too much trouble...
+        // For reference, this would be done by calling FAudioSourceVoice_GetState and get the SamplesPlayed from the result.
+        /// </summary>
+        /// <returns></returns>
+        public long GetSamplesPlayed()
+        {
+            //long sample = sampleOffset + soundStream.GetSamplesPlayed();
+            //sample -= loopStart;
+            //sample %= loopEnd - loopStart;
+            //sample += loopStart;
+            //return sample;
+            throw new NotImplementedException();
+        }
+
+        private long sampleOffset;
+
+        public long GetSampleFromTimeSpan(TimeSpan time)
+        {
+            long sample = sampleOffset + (long)((ulong)time.Ticks * (ulong)SampleRate / TimeSpan.TicksPerSecond);
+            sample -= loopStart;
+            sample %= loopEnd - loopStart;
+            sample += loopStart;
+            return sample;
+        }
+
+        internal void PlayAt(long sample)
+        {
+            //long sample = (long)((ulong)time.Ticks * (ulong)SampleRate / TimeSpan.TicksPerSecond);
+            sample -= loopStart;
+            sample %= loopEnd - loopStart;
+            sample += loopStart;
+
+            sampleOffset = sample;
+            FAudio.stb_vorbis_seek_frame(stbVorbisData, (uint)sample);
+            pcmPosition = sample;
 
             queueBuffer();
 

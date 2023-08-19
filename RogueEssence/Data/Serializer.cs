@@ -54,11 +54,37 @@ namespace RogueEssence.Data
             return obj;
         }
 
+        public static object Deserialize(Stream stream, Type type, params JsonConverter[] converters)
+        {
+            object obj;
+            Version pastVersion = OldVersion;
+            OldVersion = Versioning.GetVersion();
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+            {
+                JsonSerializerSettings settingsCopy = new JsonSerializerSettings(Settings);
+                settingsCopy.Converters = converters;
+                obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, settingsCopy);
+            }
+            OldVersion = pastVersion;
+            return obj;
+        }
+
         public static void Serialize(Stream stream, object entry)
         {
             using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
             {
                 string val = JsonConvert.SerializeObject(entry, Settings);
+                writer.Write(val);
+            }
+        }
+
+        public static void Serialize(Stream stream, object entry, params JsonConverter[] converters)
+        {
+            using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
+            {
+                JsonSerializerSettings settingsCopy = new JsonSerializerSettings(Settings);
+                settingsCopy.Converters = converters;
+                string val = JsonConvert.SerializeObject(entry, settingsCopy);
                 writer.Write(val);
             }
         }

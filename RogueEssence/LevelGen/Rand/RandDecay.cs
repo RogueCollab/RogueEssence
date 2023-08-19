@@ -51,7 +51,7 @@ namespace RogueEssence.LevelGen
         public IEnumerable<int> EnumerateOutcomes()
         {
             yield return this.Min;
-            for (int ii = this.Min + 1; ii < this.Max; ii++)
+            for (int ii = this.Min + 1; ii <= this.Max; ii++)
                 yield return ii;
         }
 

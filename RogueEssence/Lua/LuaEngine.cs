@@ -1854,7 +1854,7 @@ namespace RogueEssence.Script
         {
             //Do stuff..
             DiagManager.Instance.LogInfo("LuaEngine.OnGroundMapEnter()..");
-            m_scrsvc.Publish(EServiceEvents.GroundMapEnter.ToString(), mapname);
+            m_scrsvc.Publish(EServiceEvents.GroundMapEnter.ToString(), mapname, mapobj);
         }
 
         /// <summary>
@@ -1890,7 +1890,7 @@ namespace RogueEssence.Script
         {
             //Stop lua execution, and save stack or something?
             DiagManager.Instance.LogInfo("LuaEngine.OnDungeonMapInit()..");
-            m_scrsvc.Publish(EServiceEvents.DungeonMapInit.ToString());
+            m_scrsvc.Publish(EServiceEvents.DungeonMapInit.ToString(), mapname, mapobj);
         }
 
         /// <summary>
@@ -1899,7 +1899,7 @@ namespace RogueEssence.Script
         public void OnDungeonMapEnter(string mapname, Map mapobj)
         {
             DiagManager.Instance.LogInfo("LuaEngine.OnDungeonMapEnter()..");
-            m_scrsvc.Publish(EServiceEvents.DungeonFloorEnter.ToString(), mapname);
+            m_scrsvc.Publish(EServiceEvents.DungeonFloorEnter.ToString(), mapname, mapobj);
         }
 
         /// <summary>
@@ -1908,7 +1908,7 @@ namespace RogueEssence.Script
         /// <param name="floor">Floor on which was just exited</param>
         public void OnDungeonMapExit(string mapname, Map mapobj)
         {
-            m_scrsvc.Publish(EServiceEvents.DungeonFloorExit.ToString());
+            m_scrsvc.Publish(EServiceEvents.DungeonFloorExit.ToString(), mapname, mapobj);
         }
 
         public void OnZoneInit()
@@ -1932,7 +1932,7 @@ namespace RogueEssence.Script
         /// <param name="activator">The entity that activates the target</param>
         /// <param name="target">The entity that is being activated</param>
         /// <param name="info">The context of the activation</param>
-        public void OnActivate(GroundEntity activator, GroundEntity target )
+        public void OnActivate(GroundEntity activator, GroundEntity target)
         {
             //CallLuaMemberFun(MainScriptInstanceName, "OnActivate", activator, target, info);
             m_scrsvc.Publish(EServiceEvents.GroundEntityInteract.ToString(), activator, target);

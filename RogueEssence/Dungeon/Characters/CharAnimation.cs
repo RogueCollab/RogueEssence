@@ -181,7 +181,8 @@ namespace RogueEssence.Dungeon
         public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
             Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
-            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, true, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
+            Loc actionPointOffset = sheet.GetActionPoint(charFrameType, InPlace, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
+            return MapLoc + midTileOffset + drawOffset + actionPointOffset;
         }
 
         private int totalFrameTickFrame(List<CharAnimFrame> frames)
@@ -300,7 +301,8 @@ namespace RogueEssence.Dungeon
         public override Loc GetActionPoint(CharSheet sheet, ActionPointType pointType)
         {
             Loc midTileOffset = new Loc(GraphicsManager.TileSize / 2);
-            return MapLoc + midTileOffset + drawOffset + sheet.GetActionPoint(charFrameType, false, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
+            Loc actionPointOffset = sheet.GetActionPoint(charFrameType, false, DirExt.AddAngles(CharDir, dirOffset), pointType, determineFrame);
+            return MapLoc + midTileOffset + drawOffset + actionPointOffset;
         }
     }
 
@@ -384,6 +386,7 @@ namespace RogueEssence.Dungeon
         {
             MapLoc = VisualLoc * GraphicsManager.TileSize;
         }
+
     }
 
 

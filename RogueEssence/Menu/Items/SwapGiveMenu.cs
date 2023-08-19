@@ -41,15 +41,18 @@ namespace RogueEssence.Menu
             {
                 if (itemPresence[key] > 0)
                 {
-                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(key) as ItemEntrySummary;
-
-                    if (itemEntry.ContainsState<MaterialState>())
+                    if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(key))
                     {
-                        AllowedGoods.Add(key);
+                        ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(key) as ItemEntrySummary;
 
-                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
-                        MenuText menuCount = new MenuText("(" + itemPresence[key] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
-                        flatChoices.Add(new MenuElementChoice(() => { }, true, menuText, menuCount));
+                        if (itemEntry.ContainsState<MaterialState>())
+                        {
+                            AllowedGoods.Add(key);
+
+                            MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                            MenuText menuCount = new MenuText("(" + itemPresence[key] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
+                            flatChoices.Add(new MenuElementChoice(() => { }, true, menuText, menuCount));
+                        }
                     }
                 }
             }

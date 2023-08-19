@@ -50,9 +50,9 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
       <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0">Start:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" Maximum="{Binding CurrentEnd}" Margin="4" Grid.Row="0" Grid.Column="1"/>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" ValueChanged="nudStart_ValueChanged" Margin="4" Grid.Row="0" Grid.Column="1"/>
       <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="2">End:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentEnd}" Minimum="{Binding CurrentStart}" Margin="4" Grid.Row="0" Grid.Column="3"/>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentEnd}" ValueChanged="nudEnd_ValueChanged" Margin="4" Grid.Row="0" Grid.Column="3"/>
     </Grid>
     <Grid Grid.Row="2">
       <Grid.RowDefinitions>

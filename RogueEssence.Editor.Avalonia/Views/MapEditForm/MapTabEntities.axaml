@@ -20,7 +20,7 @@
       <RowDefinition/>
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="180"/>
+      <ColumnDefinition Width="50"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <!--<views:TeamBox DataContext="{Binding Teams}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/>-->
@@ -35,7 +35,7 @@
       </Grid.ColumnDefinitions>
       <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Mode</TextBlock>
       <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.SelectEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="0">Select/Move</RadioButton>
-      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.PlaceEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="1">Add New</RadioButton>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.PlaceEntity}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="1">Add/Delete</RadioButton>
     </Grid>
     <Grid Margin="4" Grid.Row="1" Grid.Column="1">
       <Grid.RowDefinitions>
@@ -127,7 +127,8 @@
           <ColumnDefinition Width="72"/>
           <ColumnDefinition/>
           <ColumnDefinition/>
-          <ColumnDefinition Width="240"/>
+          <ColumnDefinition Width="180"/>
+          <ColumnDefinition Width="180"/>
         </Grid.ColumnDefinitions>
         <TextBlock Margin="4,2" Text="Skill 1:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="0"/>
         <views:SearchComboBox Items="{Binding Skills}" SelectedIndex="{Binding ChosenSkill0}" VerticalAlignment="Center" Margin="4,2" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="4"/>
@@ -160,9 +161,18 @@
         <NumericUpDown Value="{Binding MDefBonus}" VerticalAlignment="Center" Margin="4,2" Grid.Row="6" Grid.Column="4"/>
         <TextBlock Margin="4,2" Text="{Binding MDefTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="5"/>
         <TextBlock Margin="4,2" Text="{Binding MDefTotal}" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="5"/>
-		<CheckBox Margin="4" IsChecked="{Binding Unrecruitable}" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">Unrecruitable</CheckBox>
-        
+		    <CheckBox Margin="4" IsChecked="{Binding Unrecruitable}" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3">Unrecruitable</CheckBox>
+        <CheckBox Margin="4" IsChecked="{Binding Ally}" Grid.Row="7" Grid.Column="4" Grid.ColumnSpan="3">Ally</CheckBox>
+
         <Grid Grid.RowSpan="8" Grid.Column="6">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition/>
+          </Grid.RowDefinitions>
+          <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Action Events</TextBlock>
+          <views:CollectionBox DataContext="{Binding ActionEvents}" Margin="4" Grid.Row="1"/>
+        </Grid>
+        <Grid Grid.RowSpan="8" Grid.Column="7">
           <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition/>

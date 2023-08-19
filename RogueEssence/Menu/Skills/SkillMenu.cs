@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
         public SkillMenu(int teamIndex) : this(teamIndex, -1) { }
         public SkillMenu(int teamIndex, int skillSlot)
         {
-            int menuWidth = 152;
+            int menuWidth = 160;
 
             List<Character> openPlayers = new List<Character>();
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
@@ -35,19 +35,21 @@ namespace RogueEssence.Menu
                     if (!String.IsNullOrEmpty(skill.SkillNum))
                     {
                         SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                        string skillString = (skill.Enabled ? "\uE10A " : "") + data.GetColoredName();
+                        string chkString = (skill.Enabled ? "\uE10A " : "");
+                        string skillString = DiagManager.Instance.GetControlString((FrameInput.InputType)(jj + (int)FrameInput.InputType.Skill1)) + ": " + data.GetColoredName();
                         string skillCharges = skill.Charges + "/" + (data.BaseCharges + DataManager.Instance.Save.ActiveTeam.Players[ii].ChargeBoost);
                         bool disabled = (skill.Sealed || skill.Charges <= 0);
                         int index = jj;
-                        MenuText menuText = new MenuText(skillString, new Loc(2, 1), disabled ? Color.Red : Color.White);
+                        MenuText chkText = new MenuText(chkString, new Loc(0, 1), disabled ? Color.Red : Color.White);
+                        MenuText menuText = new MenuText(skillString, new Loc(8, 1), disabled ? Color.Red : Color.White);
                         MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, disabled ? Color.Red : Color.White);
                         if (jj < Character.MAX_SKILL_SLOTS-1)
                         {
                             MenuDivider div = new MenuDivider(new Loc(0, LINE_HEIGHT), menuWidth - 8 * 4);
-                            char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges, div));
+                            char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, chkText, menuText, menuCharges, div));
                         }
                         else
-                            char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, menuText, menuCharges));
+                            char_skills.Add(new MenuElementChoice(() => { choose(index); }, true, chkText, menuText, menuCharges));
                     }
                 }
                 skills[ii] = char_skills.ToArray();

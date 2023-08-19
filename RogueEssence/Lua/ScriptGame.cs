@@ -667,12 +667,13 @@ namespace RogueEssence.Script
         /// <param name="character">The character to check</param>
         public bool CanForget(Character character)
         {
+            int count = 0;
             foreach (SlotSkill skill in character.BaseSkills)
             {
                 if (!String.IsNullOrEmpty(skill.SkillNum))
-                    return true;
+                    count++;
             }
-            return false;
+            return count > 1;
         }
 
         /// <summary>
@@ -1241,7 +1242,34 @@ namespace RogueEssence.Script
         /// <param name="bon">If set to true, turns cutscene mode on. If set to false, turns it off.</param>
         public void CutsceneMode(bool bon)
         {
-            Content.GraphicsManager.GlobalIdle = bon ? 0 : Content.GraphicsManager.IdleAction;
+            int newIdle = bon ? 0 : Content.GraphicsManager.IdleAction;
+
+            //only if switching off non-anim
+            if (newIdle != Content.GraphicsManager.GlobalIdle && Content.GraphicsManager.GlobalIdle == 0)
+            {
+                //iterate all entities on the map that are in an idle anim, and reset their anim
+                if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    GroundMap map = ZoneManager.Instance.CurrentGround;
+                    foreach (GroundChar groundChar in map.IterateCharacters())
+                    {
+                        IdleGroundAction action = groundChar.GetCurrentAction() as IdleGroundAction;
+                        if (action != null)
+                            action.RestartAnim();
+                    }
+                }
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    Map map = ZoneManager.Instance.CurrentMap;
+                    foreach (Character dungeonChar in map.IterateCharacters())
+                    {
+                        //TODO: dungeonChar.StartAnim?
+                        //it's very protected right now.
+                    }
+                }
+            }
+
+            Content.GraphicsManager.GlobalIdle = newIdle;
             DataManager.Instance.Save.CutsceneMode = bon;
         }
 

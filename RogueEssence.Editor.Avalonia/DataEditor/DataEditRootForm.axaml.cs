@@ -25,9 +25,11 @@ namespace RogueEssence.Dev.Views
         public async void btnApply_Click(object sender, RoutedEventArgs e)
         {
             await SaveChildren();
+            if (SelectedOKEvent != null)
+                await SelectedOKEvent.Invoke();
         }
 
-        public override void Window_Closing(object sender, CancelEventArgs e)
+        public override async void Window_Closing(object sender, CancelEventArgs e)
         {
             base.Window_Closing(sender, e);
 

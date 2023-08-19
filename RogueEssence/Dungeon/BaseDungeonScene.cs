@@ -10,6 +10,7 @@ using RogueEssence.Menu;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Dungeon
 {
@@ -82,11 +83,11 @@ namespace RogueEssence.Dungeon
         protected void UpdateCam(Loc focusedLoc)
         {
             //update cam
-            windowScale = GraphicsManager.WindowZoom;
+            WindowScale = GraphicsManager.WindowZoom;
 
             scale = GraphicsManager.Zoom.GetScale();
 
-            matrixScale = windowScale;
+            matrixScale = WindowScale;
             drawScale = scale;
             while (matrixScale > 1 && drawScale < 1)
             {
@@ -293,6 +294,14 @@ namespace RogueEssence.Dungeon
             }
 
             //draw effects laid on ground
+            foreach (AnimLayer layer in ZoneManager.Instance.CurrentMap.Decorations)
+            {
+                if (layer.Visible)
+                {
+                    foreach (IDrawableSprite effect in layer.Anims)
+                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, wrapped, wrapSize, effect);
+                }
+            }
             foreach (IFinishableSprite effect in Anims[(int)DrawLayer.Bottom])
                 AddRelevantDraw(groundDraw, wrapped, wrapSize, effect);
 
@@ -423,8 +432,8 @@ namespace RogueEssence.Dungeon
 
         public Loc ScreenCoordsToGroundCoords(Loc loc)
         {
-            loc.X = (int)(loc.X / scale / windowScale);
-            loc.Y = (int)(loc.Y / scale / windowScale);
+            loc.X = (int)(loc.X / scale / WindowScale);
+            loc.Y = (int)(loc.Y / scale / WindowScale);
             loc += ViewRect.Start;
 
             return loc;
@@ -432,8 +441,8 @@ namespace RogueEssence.Dungeon
 
         public Loc ScreenCoordsToMapCoords(Loc loc)
         {
-            loc.X = (int)(loc.X / scale / windowScale);
-            loc.Y = (int)(loc.Y / scale / windowScale);
+            loc.X = (int)(loc.X / scale / WindowScale);
+            loc.Y = (int)(loc.Y / scale / WindowScale);
             loc += ViewRect.Start;
             loc = loc - (ViewRect.Start / GraphicsManager.TileSize * GraphicsManager.TileSize) + new Loc(GraphicsManager.TileSize);
             loc /= GraphicsManager.TileSize;

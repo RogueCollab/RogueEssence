@@ -33,6 +33,7 @@ namespace RogueEssence
         public static Dictionary<string, LanguageSetting> LangNames;
 
         public static Regex MsgTags = new Regex(@"(?<pause>\[pause=(?<pauseval>\d+)\])" +
+                                                @"|(?<sound>\[sound=(?<soundval>[A-Za-z\/0-9\-_]*),?(?<speaktime>\d*)?\])" +
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<scrollbreak>\[scroll\])" +
@@ -41,7 +42,7 @@ namespace RogueEssence
                                                 @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\] (?<a_anval>\w))" +
+        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" +
                                                 @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" +
                                                 @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" +
                                                 @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" +
@@ -232,9 +233,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["a_anval"].Value;
 
                                 if (Regex.IsMatch(vowelcheck, "[aeiou]", RegexOptions.IgnoreCase))
-                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "an "));
+                                    replacements.Add((match.Index, 6, "an"));
                                 else
-                                    replacements.Add((match.Index, match.Length - vowelcheck.Length, "a "));
+                                    replacements.Add((match.Index, 6, "a"));
                             }
                             break;
                         case "eun_neun":
@@ -388,10 +389,10 @@ namespace RogueEssence
             {
                 if (ii > 0)
                 {
-                    if (input.Length > 2)
-                        totalString.Append("ADD_SEPARATOR");
-                    else if (ii == input.Length - 1)
+                    if (ii == input.Length - 1)
                         totalString.Append(Text.FormatKey("ADD_END"));
+                    else
+                        totalString.Append(Text.FormatKey("ADD_SEPARATOR"));
                 }
                 totalString.Append(input[ii]);
             }
@@ -508,6 +509,8 @@ namespace RogueEssence
                     if (char.IsDigit(name[ii]) && char.IsLetter(name[ii - 1]))
                         space = true;
                     if (char.IsUpper(name[ii]) && char.IsLower(name[ii - 1]) || char.IsUpper(name[ii]) && char.IsDigit(name[ii - 1]))
+                        space = true;
+                    if (char.IsUpper(name[ii]) && char.IsUpper(name[ii - 1]) && ii < name.Length - 1 && char.IsLower(name[ii + 1]))
                         space = true;
                     if (space)
                         separatedName.Append(' ');

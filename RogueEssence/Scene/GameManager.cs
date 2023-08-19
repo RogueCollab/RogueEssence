@@ -11,7 +11,8 @@ using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using RogueEssence.Script;
 using RogueEssence.Dev;
-
+using RogueEssence.LevelGen;
+using System.Xml.Linq;
 
 namespace RogueEssence
 {
@@ -26,13 +27,6 @@ namespace RogueEssence
             Double = 1,
             Quadruple = 2,
             Octuple = 3
-        }
-        public enum FanfarePhase
-        {
-            None,
-            PhaseOut,
-            Wait,
-            PhaseIn
         }
 
         private static GameManager instance;
@@ -79,17 +73,20 @@ namespace RogueEssence
 
         public Dictionary<string, (float volume, float diff)> LoopingSE;
 
+        /// <summary>
+        /// Currently playing song
+        /// </summary>
         public string Song;
-        public string NextSong;
-        public FrameTick MusicFadeTime;
-        public int MusicFadeTotal;
+
+        /// <summary>
+        /// Songs that are playing in parallel but muted in wait for crossfade.
+        /// Includes the currently playing song
+        /// </summary>
+        public Dictionary<string, string> SongFamily;
+
+        public List<MusicEffect> MusicEffects;
+
         public const int MUSIC_FADE_TOTAL = 40;
-        public string QueuedFanfare;
-        public FanfarePhase CurrentFanfarePhase;
-        public FrameTick FanfareTime;
-        public const int FANFARE_FADE_START = 3;
-        public const int FANFARE_FADE_END = 40;
-        public const int FANFARE_WAIT_EXTRA = 20;
 
 
         public GameManager()
@@ -100,6 +97,9 @@ namespace RogueEssence
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
             TextPopUp = new TextPopUp();
+
+            SongFamily = new Dictionary<string, string>();
+            MusicEffects = new List<MusicEffect>();
 
             LoopingSE = new Dictionary<string, (float volume, float diff)>();
 
@@ -150,7 +150,7 @@ namespace RogueEssence
                 if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                     return;
 
-                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                if (File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
                 {
                     if (fadeTime > 0)
                         LoopingSE[newSE] = (0f, 1f / fadeTime);
@@ -192,7 +192,15 @@ namespace RogueEssence
 
         public IEnumerator<YieldInstruction> WaitFanfareEnds()
         {
-            yield return new WaitWhile(() => { return CurrentFanfarePhase != FanfarePhase.None; });
+            yield return new WaitWhile(() =>
+            {
+                foreach (MusicEffect effect in MusicEffects)
+                {
+                    if (effect is FanfareEffect)
+                        return true;
+                }
+                return false;
+            });
         }
 
         /// <summary>
@@ -208,7 +216,7 @@ namespace RogueEssence
             int pauseFrames = 0;
             try
             {
-                if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
+                if (File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
                     pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"));
             }
             catch (Exception ex)
@@ -223,27 +231,36 @@ namespace RogueEssence
         {
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
-            if (Song == "" || NextSong == "")
-            {
-                SE(newSE);
+
+            if (String.IsNullOrEmpty(newSE))
                 return;
+
+            FanfareEffect oldFanfare = null;
+            //assume no fanfares happen within the same period
+            for(int ii = 0; ii < MusicEffects.Count; ii++)
+            {
+                if (MusicEffects[ii] is FanfareEffect)
+                {
+                    FanfareEffect fanfare = (FanfareEffect)MusicEffects[ii];
+                    if (fanfare.CurrentPhase == FanfareEffect.FanfarePhase.PhaseIn || fanfare.CurrentPhase == FanfareEffect.FanfarePhase.Wait)
+                        oldFanfare = fanfare;
+                    else
+                        return;
+                }
             }
 
-            if (String.IsNullOrEmpty(QueuedFanfare))//assume no fanfares happen within the same period
+            if (oldFanfare != null)
             {
-                if (CurrentFanfarePhase == FanfarePhase.None)//begin the brief fade out if playing music as normal
-                {
-                    CurrentFanfarePhase = FanfarePhase.PhaseOut;
-                    FanfareTime = FrameTick.FromFrames(FANFARE_FADE_START);
-                    QueuedFanfare = newSE;
-                }
-                else if (CurrentFanfarePhase == FanfarePhase.PhaseIn)//fade from the partial progress
-                {
-                    CurrentFanfarePhase = FanfarePhase.PhaseOut;
-                    FanfareTime = FrameTick.FromFrames((FANFARE_FADE_END - FanfareTime.DivOf(FANFARE_FADE_END)) * FANFARE_FADE_START / FANFARE_FADE_END);
-                    QueuedFanfare = newSE;
-                }
+                oldFanfare.Fanfare = newSE;
+                FrameTick oldTime = oldFanfare.FanfareTime;
+                if (oldFanfare.CurrentPhase == FanfareEffect.FanfarePhase.Wait)
+                    oldFanfare.FanfareTime = FrameTick.Zero;
+                else
+                    oldFanfare.FanfareTime = FrameTick.FromFrames((FanfareEffect.FANFARE_FADE_END - oldTime.DivOf(FanfareEffect.FANFARE_FADE_END)) * FanfareEffect.FANFARE_FADE_START / FanfareEffect.FANFARE_FADE_END);
+                oldFanfare.CurrentPhase = FanfareEffect.FanfarePhase.PhaseOut;
             }
+            else
+                MusicEffects.Add(new FanfareEffect(newSE));
         }
 
         public void BGM(string newBGM, bool fade, int fadeTime = GameManager.MUSIC_FADE_TOTAL)
@@ -251,53 +268,109 @@ namespace RogueEssence
             if (DataManager.Instance.Loading != DataManager.LoadMode.None)
                 return;
 
-            if (Song != newBGM || (Song == newBGM && NextSong != null && NextSong != newBGM))
+            if (String.IsNullOrEmpty(Song) || !fade) // if the current song is empty, or the game doesn't want to fade it
             {
-                if (String.IsNullOrEmpty(Song) || !fade)//if the current song is empty, or the game doesn't want to fade it
+                for (int ii = 0; ii < MusicEffects.Count; ii++)
                 {
-                    //immediately start
-                    MusicFadeTime = FrameTick.Zero;
+                    // remove all music effects, including fanfares, so that fade ins dont happen on transitions
+                    //if (MusicEffects[ii] is MusicFadeEffect)
+                    //{
+                        MusicEffects.RemoveAt(ii);
+                        //break;
+                    //}
                 }
-                else if (NextSong != null)
+
+                HashSet<string> instantFamily = new HashSet<string>();
+                string instantFileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+                if (File.Exists(instantFileName))
                 {
-                    //do nothing, and watch it tick down
+                    LoopedSong song = new LoopedSong(instantFileName);
+                    instantFamily = getSongFamily(newBGM, song);
+                }
+
+                //immediately start
+                MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, instantFamily, FrameTick.Zero, 1);
+                MusicEffects.Add(newEffect);
+                return;
+            }
+
+            for (int ii = 0; ii < MusicEffects.Count; ii++)
+            {
+                if (MusicEffects[ii] is MusicFadeOutEffect)
+                {
+                    MusicFadeOutEffect oldFade = (MusicFadeOutEffect)MusicEffects[ii];
+
+                    HashSet<string> instantFamily = new HashSet<string>();
+                    string instantFileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+                    if (File.Exists(instantFileName))
+                    {
+                        LoopedSong song = new LoopedSong(instantFileName);
+                        instantFamily = getSongFamily(newBGM, song);
+                    }
+
+                    oldFade.NextSong = newBGM;
+                    oldFade.Family = instantFamily;
+                    return;
+                }
+                else if (MusicEffects[ii] is MusicFadeEffect)
+                {
+                    //just stop the existing other fades
+                    MusicEffects.RemoveAt(ii);
+                }
+            }
+
+            //do nothing this is already the same song
+            if (Song == newBGM)
+                return;
+
+            HashSet<string> oldFamily = new HashSet<string>();
+            foreach(string key in SongFamily.Keys)
+                oldFamily.Add(key);
+
+            HashSet<string> newFamily = new HashSet<string>();
+            string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
+            if (File.Exists(fileName))
+            {
+                LoopedSong song = new LoopedSong(fileName);
+                newFamily = getSongFamily(newBGM, song);
+            }
+
+            //if both the old song and new song share a family, cross-fade them
+            bool crossFade = (oldFamily.SetEquals(newFamily)) && (newFamily.Count > 0);
+
+            if (crossFade)
+            {
+                //normal case: create a new fade effect
+                if (File.Exists(fileName))
+                {
+                    MusicCrossFadeEffect newEffect = new MusicCrossFadeEffect(newBGM, FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicEffects.Add(newEffect);
                 }
                 else
                 {
-                    //otherwise, set up the tick-down
-                    MusicFadeTotal = fadeTime;
-                    MusicFadeTime = FrameTick.FromFrames(MusicFadeTotal);
+                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect("", newFamily, FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicEffects.Add(newEffect);
                 }
-                NextSong = newBGM;
-                onMusicChange(newBGM);
+            }
+            else
+            {
+                //normal case: create a new fade effect
+                {
+                    MusicFadeOutEffect newEffect = new MusicFadeOutEffect(newBGM, newFamily, FrameTick.FromFrames(fadeTime), fadeTime);
+                    MusicEffects.Add(newEffect);
+                }
             }
         }
 
-        private void onMusicChange(string newBGM)
+        private HashSet<string> getSongFamily(string baseFile, LoopedSong song)
         {
-            if (NextSong.Length > 0)
-            {
-                string name = "";
-                string originName = "";
-                string origin = "";
-                string artist = "";
-                string spoiler = "";
-                string fileName = PathMod.ModPath(GraphicsManager.MUSIC_PATH + newBGM);
-                if (File.Exists(fileName))
-                {
-                    LoopedSong song = new LoopedSong(fileName);
-                    name = song.Name;
-                    if (song.Tags.ContainsKey("TITLE"))
-                        originName = song.Tags["TITLE"];
-                    if (song.Tags.ContainsKey("ALBUM"))
-                        origin = song.Tags["ALBUM"];
-                    if (song.Tags.ContainsKey("ARTIST"))
-                        artist = song.Tags["ARTIST"];
-                    if (song.Tags.ContainsKey("SPOILER"))
-                        spoiler = song.Tags["SPOILER"];
-                    LuaEngine.Instance.OnMusicChange(name, originName, origin, artist, spoiler);
-                }
-            }
+            if (song == null)
+                return new HashSet<string>();
+            HashSet<string> result = new HashSet<string>();
+            result.Add(baseFile);
+            if (song.Tags.ContainsKey("RELATIVE"))
+                result.Add(song.Tags["RELATIVE"]);
+            return result;
         }
 
         public void SetFade(bool faded, bool useWhite)
@@ -505,7 +578,6 @@ namespace RogueEssence
             if (!Text.LangNames.ContainsKey(DiagManager.Instance.CurSettings.Language))
                 DiagManager.Instance.CurSettings.Language = "en";
             Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
-            GraphicsManager.ReloadStatic();
             reInit();
             TitleScene.TitleMenuSaveState = null;
             //clean up and reload all caches
@@ -615,21 +687,30 @@ namespace RogueEssence
             bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
             bool sameSegment = sameZone && (destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment);
 
-            yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
-
-            //switch location
-            if (sameZone && !forceNewZone)
-                ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+            // The only time a replay tries to move to a ground is when it ends its current segment.
+            // Do the same logic as EndSegment.
+            if (DataManager.Instance.CurrentReplay != null && newGround)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(handleReplayDungeonEnd(GameProgress.ResultType.Cleared));
+            }
             else
             {
-                ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+                yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
+
+                //switch location
+                if (sameZone && !forceNewZone)
+                    ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+                else
+                {
+                    ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+                }
+
+                //switch in new scene
+                MoveToScene(destScene);
+
+                yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
             }
-
-            //switch in new scene
-            MoveToScene(destScene);
-
-            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
         }
 
         private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
@@ -791,6 +872,112 @@ namespace RogueEssence
             yield break;
         }
 
+        private IEnumerator<YieldInstruction> handleReplayDungeonEnd(GameProgress.ResultType result)
+        {
+            //try to get the game state.  if we can't get any states, then we must have quicksaved here
+            if (DataManager.Instance.CurrentReplay.CurrentState < DataManager.Instance.CurrentReplay.States.Count)
+            {
+                GameState state = DataManager.Instance.CurrentReplay.ReadState();
+                DataManager.Instance.SetProgress(state.Save);
+                LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
+                ZoneManager.LoadFromState(state.Zone);
+                LuaEngine.Instance.UpdateZoneInstance();
+
+                SceneOutcome = MoveToZone(DataManager.Instance.Save.NextDest);
+            }
+            else
+            {
+                //check for a rescue input
+                GameAction rescued = null;
+                if (DataManager.Instance.CurrentReplay.CurrentAction < DataManager.Instance.CurrentReplay.Actions.Count)
+                {
+                    GameAction nextAction = DataManager.Instance.CurrentReplay.ReadCommand();
+                    if (nextAction.Type == GameAction.ActionType.Rescue)
+                        rescued = nextAction;
+                    else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
+                    {
+                        // Change dialogue message depending on the LoadMode.
+                        DataManager.Instance.CurrentReplay.Desyncs++;
+                        if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                    }
+                }
+
+                if (rescued != null) //run the action
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, null));
+                else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
+                {
+                    //resuming a game that was just rescued
+                    DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                    DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
+                    DataManager.Instance.CurrentReplay = null;
+                    DataManager.Instance.Loading = DataManager.LoadMode.None;
+                    SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
+                    //and then run the action
+
+                    rescued = new GameAction(GameAction.ActionType.Rescue, Dir8.None);
+                    rescued.AddArg(mail.OfferedItem.IsMoney ? 1 : 0);
+                    rescued.AddArg(mail.OfferedItem.Value.Length);
+                    for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
+                        rescued.AddArg(mail.OfferedItem.Value[ii]);
+                    rescued.AddArg(mail.OfferedItem.HiddenValue.Length);
+                    for (int ii = 0; ii < mail.OfferedItem.HiddenValue.Length; ii++)
+                        rescued.AddArg(mail.OfferedItem.HiddenValue[ii]);
+                    rescued.AddArg(mail.OfferedItem.Amount);
+
+                    rescued.AddArg(mail.RescuedBy.Length);
+                    for (int ii = 0; ii < mail.RescuedBy.Length; ii++)
+                        rescued.AddArg(mail.RescuedBy[ii]);
+
+                    DataManager.Instance.LogPlay(rescued);
+                    DataManager.Instance.Save.UpdateOptions();
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, mail));
+                }
+                else
+                {
+                    if (DataManager.Instance.Loading == DataManager.LoadMode.Rescuing)
+                    {
+                        if (result == GameProgress.ResultType.Rescue)
+                        {
+                            //mark as verified
+                            RescueMenu menu = (RescueMenu)TitleScene.TitleMenuSaveState[TitleScene.TitleMenuSaveState.Count - 1];
+                            menu.Verified = true;
+                        }
+                        //default is failure to verify
+                        yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
+                    }
+                    else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
+                    {
+                        //the game accepts loading into a file that has been downed, or passed its section with nothing else
+                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
+                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
+                        DataManager.Instance.CurrentReplay = null;
+                        //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
+
+                        SetFade(true, false);
+
+                        DataManager.Instance.Loading = DataManager.LoadMode.None;
+
+
+                        bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                        //if failed, just show the death plaque
+                        //if succeeded, run the script that follows.
+                        SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
+                    }
+                    else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying)
+                    {
+                        if (DataManager.Instance.CurrentReplay.Desyncs > 0)
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                        else
+                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                        yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
+                    }
+                    else //we've reached the end of the replay
+                        yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
+                }
+            }
+        }
+
         public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result)
         {
             if (ZoneManager.Instance.InDevZone)
@@ -813,110 +1000,7 @@ namespace RogueEssence
             yield return new WaitForFrames(40);
 
             if (DataManager.Instance.CurrentReplay != null)
-            {
-                //try to get the game state.  if we can't get any states, then we must have quicksaved here
-                if (DataManager.Instance.CurrentReplay.CurrentState < DataManager.Instance.CurrentReplay.States.Count)
-                {
-                    GameState state = DataManager.Instance.CurrentReplay.ReadState();
-                    DataManager.Instance.SetProgress(state.Save);
-                    LuaEngine.Instance.LoadSavedData(DataManager.Instance.Save); //notify script engine
-                    ZoneManager.LoadFromState(state.Zone);
-                    LuaEngine.Instance.UpdateZoneInstance();
-
-                    SceneOutcome = MoveToZone(DataManager.Instance.Save.NextDest);
-                }
-                else
-                {
-                    //check for a rescue input
-                    GameAction rescued = null;
-                    if (DataManager.Instance.CurrentReplay.CurrentAction < DataManager.Instance.CurrentReplay.Actions.Count)
-                    {
-                        GameAction nextAction = DataManager.Instance.CurrentReplay.ReadCommand();
-                        if (nextAction.Type == GameAction.ActionType.Rescue)
-                            rescued = nextAction;
-                        else if (result != GameProgress.ResultType.Unknown)//we shouldn't be hitting this point!  give an error notification!
-                        {
-                            // Change dialogue message depending on the LoadMode.
-                            DataManager.Instance.CurrentReplay.Desyncs++;
-                            if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
-                        }
-                    }
-
-                    if (rescued != null) //run the action
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, null));
-                    else if (DataManager.Instance.Save.Rescue != null && !DataManager.Instance.Save.Rescue.Rescuing)
-                    {
-                        //resuming a game that was just rescued
-                        DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
-                        DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
-                        DataManager.Instance.CurrentReplay = null;
-                        DataManager.Instance.Loading = DataManager.LoadMode.None;
-                        SOSMail mail = DataManager.Instance.Save.Rescue.SOS;
-                        //and then run the action
-
-                        rescued = new GameAction(GameAction.ActionType.Rescue, Dir8.None);
-                        rescued.AddArg(mail.OfferedItem.IsMoney ? 1 : 0);
-                        rescued.AddArg(mail.OfferedItem.Value.Length);
-                        for (int ii = 0; ii < mail.OfferedItem.Value.Length; ii++)
-                            rescued.AddArg(mail.OfferedItem.Value[ii]);
-                        rescued.AddArg(mail.OfferedItem.HiddenValue.Length);
-                        for (int ii = 0; ii < mail.OfferedItem.HiddenValue.Length; ii++)
-                            rescued.AddArg(mail.OfferedItem.HiddenValue[ii]);
-                        rescued.AddArg(mail.OfferedItem.Amount);
-
-                        rescued.AddArg(mail.RescuedBy.Length);
-                        for (int ii = 0; ii < mail.RescuedBy.Length; ii++)
-                            rescued.AddArg(mail.RescuedBy[ii]);
-
-                        DataManager.Instance.LogPlay(rescued);
-                        DataManager.Instance.Save.UpdateOptions();
-                        yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessRescue(rescued, mail));
-                    }
-                    else
-                    {
-                        if (DataManager.Instance.Loading == DataManager.LoadMode.Rescuing)
-                        {
-                            if (result == GameProgress.ResultType.Rescue)
-                            {
-                                //mark as verified
-                                RescueMenu menu = (RescueMenu)TitleScene.TitleMenuSaveState[TitleScene.TitleMenuSaveState.Count - 1];
-                                menu.Verified = true;
-                            }
-                            //default is failure to verify
-                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
-                        }
-                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Loading)
-                        {
-                            //the game accepts loading into a file that has been downed, or passed its section with nothing else
-                            DataManager.Instance.Save.ResumeSession(DataManager.Instance.CurrentReplay);
-                            DataManager.Instance.ResumePlay(DataManager.Instance.CurrentReplay, DataManager.Instance.Save.SessionStartTime);
-                            DataManager.Instance.CurrentReplay = null;
-                            //Normally DataManager.Instance.Save.UpdateOptions would be called, but this is just the end of the run.
-
-                            SetFade(true, false);
-
-                            DataManager.Instance.Loading = DataManager.LoadMode.None;
-
-
-                            bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
-                            //if failed, just show the death plaque
-                            //if succeeded, run the script that follows.
-                            SceneOutcome = ZoneManager.Instance.CurrentZone.OnExitSegment(result, rescuing);
-                        }
-                        else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying) 
-                        {
-                            if (DataManager.Instance.CurrentReplay.Desyncs > 0)
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
-                            else
-                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
-                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
-                        }
-                        else //we've reached the end of the replay
-                            yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
-                    }
-                }
-            }
+                yield return CoroutineManager.Instance.StartCoroutine(handleReplayDungeonEnd(result));
             else
             {
                 string dateDefeated = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
@@ -1211,60 +1295,20 @@ namespace RogueEssence
 
             //update music
             float musicFadeFraction = 1;
-            if (NextSong != null)
+            Dictionary<string, float> crossFadeFraction = new Dictionary<string, float>();
+            foreach (string songName in SongFamily.Keys)
             {
-                MusicFadeTime -= elapsedTime;
-                if (MusicFadeTime <= FrameTick.Zero)
-                {
-                    if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.MUSIC_PATH + NextSong)))
-                    {
-                        Song = NextSong;
-                        NextSong = null;
-                        SoundManager.PlayBGM(PathMod.ModPath(GraphicsManager.MUSIC_PATH + Song));
-                    }
-                    else
-                    {
-                        Song = "";
-                        SoundManager.PlayBGM(Song);
-                    }
-                }
-                else
-                    musicFadeFraction *= MusicFadeTime.FractionOf(MusicFadeTotal);
+                float defaultVol = (Song == songName) ? 1f : 0f;
+                crossFadeFraction[SongFamily[songName]] = defaultVol;
             }
-            if (CurrentFanfarePhase != FanfarePhase.None)
+            for (int ii = MusicEffects.Count - 1; ii >= 0; ii--)
             {
-                FanfareTime -= elapsedTime;
-                if (CurrentFanfarePhase == FanfarePhase.PhaseOut)
-                {
-                    musicFadeFraction *= FanfareTime.FractionOf(FANFARE_FADE_START);
-                    if (FanfareTime <= FrameTick.Zero)
-                    {
-                        int pauseFrames = 0;
-                        if (!String.IsNullOrEmpty(QueuedFanfare) && System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg")))
-                            pauseFrames = SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + QueuedFanfare + ".ogg"), 1) + FANFARE_WAIT_EXTRA;
-                        CurrentFanfarePhase = FanfarePhase.Wait;
-                        if (FanfareTime < pauseFrames)
-                            FanfareTime = FrameTick.FromFrames(pauseFrames);
-                        QueuedFanfare = null;
-                    }
-                }
-                else if (CurrentFanfarePhase == FanfarePhase.Wait)
-                {
-                    musicFadeFraction *= 0;
-                    if (FanfareTime <= FrameTick.Zero)
-                    {
-                        CurrentFanfarePhase = FanfarePhase.PhaseIn;
-                        FanfareTime = FrameTick.FromFrames(FANFARE_FADE_END);
-                    }
-                }
-                else if (CurrentFanfarePhase == FanfarePhase.PhaseIn)
-                {
-                    musicFadeFraction *= (1f - FanfareTime.FractionOf(FANFARE_FADE_END));
-                    if (FanfareTime <= FrameTick.Zero)
-                        CurrentFanfarePhase = FanfarePhase.None;
-                }
+                MusicEffects[ii].Update(elapsedTime, ref musicFadeFraction, crossFadeFraction);
+                if (MusicEffects[ii].Finished)
+                    MusicEffects.RemoveAt(ii);
             }
             SoundManager.SetBGMVolume(musicFadeFraction);
+            SoundManager.SetBGMCrossVolume(crossFadeFraction);
 
             //update sounds
             List<string> seKeys = new List<string>();

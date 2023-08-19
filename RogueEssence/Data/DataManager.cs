@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using RogueEssence.Content;
 using System.Xml;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
@@ -177,8 +178,9 @@ namespace RogueEssence.Data
         public string GenFloor;
         public string GenWall;
         public string GenUnbreakable;
-
-        public ActiveEffect UniversalEvent;
+        
+        public UniversalActiveEffect UniversalEvent;
+        
         public TypeDict<BaseData> UniversalData;
 
         public BattleFX HealFX;
@@ -255,7 +257,7 @@ namespace RogueEssence.Data
             UniversalData = new TypeDict<BaseData>();
         }
 
-        public void InitData()
+        public void InitBase()
         {
             HealFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Heal" + DATA_EXT));
             RestoreChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "RestoreCharge" + DATA_EXT));
@@ -271,10 +273,24 @@ namespace RogueEssence.Data
             ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
 
 
-            UniversalEvent = LoadData<ActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            //TODO: Created v0.7.14, delete on v1.1
+            if (oldVersion < new Version(0, 7, 14))
+            {
+                object data = DataManager.LoadData<ActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
+                UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
+                universalActiveEffect.AddOther((ActiveEffect)data);
+                UniversalEvent = universalActiveEffect;
+            }
+            else
+                UniversalEvent = LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
+        }
 
+        public void InitDataIndices()
+        {
             LoadConversions();
             LoadIndex(DataType.Item);
             LoadIndex(DataType.Skill);
@@ -295,6 +311,13 @@ namespace RogueEssence.Data
             LoadIndexFull(DataType.Skin, skinCache);
             LoadUniversalIndices();
         }
+
+        public void InitData()
+        {
+            InitBase();
+            InitDataIndices();
+        }
+
 
 
         public static void InitDataDirs(string baseFolder)
@@ -782,7 +805,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -798,7 +821,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
             }
 
             return mapData;
@@ -815,7 +838,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
             }
 
             return mapData;
@@ -835,7 +858,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -855,7 +878,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -873,7 +896,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -891,7 +914,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -909,7 +932,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -927,7 +950,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -945,7 +968,7 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(ex);
+                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }

@@ -36,20 +36,55 @@ namespace RogueEssence.Menu
             else
                 invItem = DataManager.Instance.Save.ActiveTeam.GetInv(slot);
             ItemData entry = DataManager.Instance.GetItem(invItem.ID);
-
+            
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             //able to use if an item is not held, or if an item is held, but the focused character is the holder
             if (!held || holder)
             {
                 if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                 {
-                    switch (entry.UsageType)
+                    for (int ii = 0; ii < entry.GroundUseActions.Count; ii++)
                     {
-                        case ItemData.UseType.Learn:
-                            {
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                        int idx = ii;
+                        GroundItemEvent groundEvent = entry.GroundUseActions[idx];
+                        Action action = () => UseSelfAction(idx);
+                        
+                        
+                        switch (groundEvent.Selection)
+                        {
+                            case SelectionType.Others:
+                                action = () => UseOtherAction(idx);
                                 break;
-                            }
+                        }
+
+                        // Note the hardcode for LearnItemAction
+                        if (groundEvent is LearnItemEvent)
+                        {
+                            action = () => TeachOtherAction(idx);
+                        }
+
+                        string actionName = "";
+                        switch (groundEvent.GroundUsageType)
+                        {
+                            case ItemData.UseType.Eat:
+                                actionName = Text.FormatKey("MENU_ITEM_EAT");
+                                break;
+                            case ItemData.UseType.Drink:
+                                actionName = Text.FormatKey("MENU_ITEM_DRINK");
+                                break;
+                            case ItemData.UseType.Use:
+                                actionName = Text.FormatKey("MENU_ITEM_USE");
+                                break;
+                            case ItemData.UseType.UseOther:
+                                actionName = Text.FormatKey("MENU_ITEM_USE");
+                                break;
+                            case ItemData.UseType.Learn:
+                                actionName = Text.FormatKey("MENU_ITEM_TEACH");
+                                break;
+                        }
+                        
+                        choices.Add(new MenuTextChoice(actionName, action, !invItem.Cursed,
+                            invItem.Cursed ? Color.Red : Color.White));
                     }
                 }
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -59,30 +94,30 @@ namespace RogueEssence.Menu
                         case ItemData.UseType.Eat:
                             {
                                 if (leader && !held)
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), () => UseOtherAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 else
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), () => UseSelfAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 break;
                             }
                         case ItemData.UseType.Drink:
                             {
                                 if (leader && !held)
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), () => UseOtherAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 else
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), () => UseSelfAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 break;
                             }
                         case ItemData.UseType.Use:
                             {
-                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), () => UseSelfAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 break;
                             }
                         case ItemData.UseType.UseOther:
                             {
                                 if (leader && !held)
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), () => UseOtherAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 else
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), () => UseSelfAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 break;
                             }
                         case ItemData.UseType.Learn:
@@ -96,9 +131,9 @@ namespace RogueEssence.Menu
                                 }
 
                                 if (leader && !held)
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), TeachOtherAction, !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_TEACH"), () => TeachOtherAction(), !invItem.Cursed, invItem.Cursed ? Color.Red : Color.White));
                                 else
-                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), UseSelfAction, canLearn && !invItem.Cursed, (canLearn && !invItem.Cursed) ? Color.White : Color.Red));
+                                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), () => UseSelfAction(), canLearn && !invItem.Cursed, (canLearn && !invItem.Cursed) ? Color.White : Color.Red));
                                 break;
                             }
                     }
@@ -175,24 +210,24 @@ namespace RogueEssence.Menu
                 return slot;
         }
 
-        private void TeachOtherAction()
+        private void TeachOtherAction(int commandIdx = -1)
         {
             //leader gets to choose who to use item on, with previews
-            MenuManager.Instance.AddMenu(new TeachMenu(slot, held), false);
+            MenuManager.Instance.AddMenu(new TeachMenu(slot, held, commandIdx), false);
         }
-        private void UseOtherAction()
+        private void UseOtherAction(int commandIdx = -1)
         {
             //leader gets to choose who to use item on
-            MenuManager.Instance.AddMenu(new ItemTargetMenu(getItemUseSlot(), true), false);
+            MenuManager.Instance.AddMenu(new ItemTargetMenu(getItemUseSlot(), true, commandIdx), false);
         }
-
-        private void UseSelfAction()
+        
+        private void UseSelfAction(int commandIdx = -1)
         {
             //character uses the item himself
             MenuManager.Instance.ClearMenus();
-            MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, getItemUseSlot(), -1));
+            MenuManager.Instance.EndAction = (GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, getItemUseSlot(), -1, commandIdx)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.UseItem, Dir8.None, getItemUseSlot(), -1, commandIdx));
         }
-
+        
         private void PutBackAction()
         {
             MenuManager.Instance.ClearMenus();
@@ -207,7 +242,7 @@ namespace RogueEssence.Menu
         {
             //leader gets to choose who to give the item to
             //called only when held is false
-            MenuManager.Instance.AddMenu(new ItemTargetMenu(slot, false), false);
+            MenuManager.Instance.AddMenu(new ItemTargetMenu(slot, false, -1), false);
         }
         private void HoldAction()
         {

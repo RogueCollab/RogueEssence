@@ -30,6 +30,7 @@ namespace RogueEssence.Menu
         private void endReplay()
         {
             MenuManager.Instance.ClearMenus();
+            DataManager.Instance.CurrentReplay.CurrentState = DataManager.Instance.CurrentReplay.States.Count;
             GameManager.Instance.SceneOutcome = GameManager.Instance.EndSegment(GameProgress.ResultType.Unknown);
         }
     }

@@ -193,9 +193,9 @@ namespace RogueEssence.Dev
                 unconstructedType = unconstructedType.GetGenericTypeDefinition();
             string key = unconstructedType.Assembly.GetName().Name + ":" + unconstructedType.FullName;
             if (typeDocs.TryGetValue(key, out desc))
-                return desc;
+                return String.Format("Full Name: {0}\n{1}", unconstructedType.FullName, desc);
 
-            return null;
+            return String.Format("Full Name: {0}", unconstructedType.FullName);
         }
 
         public static string GetMemberDoc(Type ownerType, string name)

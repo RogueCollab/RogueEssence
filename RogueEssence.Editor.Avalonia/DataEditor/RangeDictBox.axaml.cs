@@ -41,6 +41,20 @@ namespace RogueEssence.Dev.Views
             viewModel.lbxCollection_DoubleClick(sender, e);
         }
 
+        public void nudStart_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
+        {
+            ViewModels.RangeDictBoxViewModel viewModel = (ViewModels.RangeDictBoxViewModel)DataContext;
+            if (viewModel.CurrentEnd < e.NewValue)
+                viewModel.CurrentEnd = (int)e.NewValue;
+        }
+
+        public void nudEnd_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
+        {
+            ViewModels.RangeDictBoxViewModel viewModel = (ViewModels.RangeDictBoxViewModel)DataContext;
+            if (viewModel.CurrentStart > e.NewValue)
+                viewModel.CurrentStart = (int)e.NewValue;
+        }
+
         public void SetListContextMenu(ContextMenu menu)
         {
             DataGrid lbx = this.FindControl<DataGrid>("gridItems");

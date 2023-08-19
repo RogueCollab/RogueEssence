@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
 
         }
 
-        public void SetDungeon(string title, string index, bool isComplete, bool showRestrict)
+        public void SetDungeon(string title, string index, bool isComplete, bool showRestrict, bool rogue)
         {
             ZoneEntrySummary zoneEntry = DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(index) as ZoneEntrySummary;
             if (zoneEntry == null)
@@ -44,7 +44,7 @@ namespace RogueEssence.Menu
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_EXP"), Loc.Zero));
                 if (zoneEntry.Level > -1)
                 {
-                    if (zoneEntry.LevelCap)
+                    if (zoneEntry.LevelCap || rogue)
                         rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), Loc.Zero));
                     else
                         rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), Loc.Zero));
@@ -54,18 +54,27 @@ namespace RogueEssence.Menu
                 if (zoneEntry.TeamSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_TEAM", zoneEntry.TeamSize), Loc.Zero,
                         (showRestrict && save.ActiveTeam.Players.Count > zoneEntry.TeamSize) ? Color.Red : Color.White));
-                if (zoneEntry.TeamRestrict)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_ALONE"), Loc.Zero,
-                        (showRestrict && save.ActiveTeam.Players.Count > 1) ? Color.Red : Color.White));
-                if (zoneEntry.MoneyRestrict)
-                    rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), Loc.Zero,
-                        (showRestrict && save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
+                if (!rogue)
+                {
+                    if (zoneEntry.TeamRestrict)
+                        rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_ALONE"), Loc.Zero,
+                            (showRestrict && save.ActiveTeam.Players.Count > 1) ? Color.Red : Color.White));
+                    if (zoneEntry.MoneyRestrict)
+                        rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), Loc.Zero,
+                            (showRestrict && save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
+                    if (zoneEntry.BagRestrict > -1)
+                        rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), Loc.Zero,
+                            (showRestrict && save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                }
                 if (zoneEntry.BagSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), Loc.Zero,
                         (showRestrict && save.ActiveTeam.GetInvCount() > zoneEntry.BagSize) ? Color.Red : Color.White));
-                if (zoneEntry.BagRestrict > -1)
-                    rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), Loc.Zero,
-                        (showRestrict && save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                if (rogue)
+                {
+                    rules.Add(new MenuText(Text.FormatKey("ZONE_TRANSFER",
+                        zoneEntry.Rogue == RogueStatus.AllTransfer ? Text.FormatKey("TRANSFER_ALL") : Text.FormatKey("TRANSFER_ITEMS")),
+                        Loc.Zero, Color.White));
+                }
 
                 for (int ii = 0; ii < rules.Count; ii++)
                 {

@@ -2347,7 +2347,6 @@ namespace RogueEssence.Dev
         }
     }
 
-
     public class ItemStorageConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

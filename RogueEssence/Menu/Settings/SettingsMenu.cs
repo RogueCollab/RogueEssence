@@ -109,7 +109,6 @@ namespace RogueEssence.Menu
                 DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[8].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
-                GraphicsManager.ReloadStatic();
             }
 
             DiagManager.Instance.SaveSettings(DiagManager.Instance.CurSettings);
@@ -118,6 +117,7 @@ namespace RogueEssence.Menu
             {
                 //clear menu
                 MenuManager.Instance.ClearMenus();
+                GraphicsManager.ReloadStatic();
                 MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_LANGUAGE_SET", DiagManager.Instance.CurSettings.Language.ToName())), false);
             }
 

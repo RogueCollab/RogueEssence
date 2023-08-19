@@ -5,6 +5,7 @@ using RogueEssence.LevelGen;
 using RogueEssence.Ground;
 using RogueEssence.Data;
 using RogueEssence.Script;
+using System.Runtime.Serialization;
 
 namespace RogueEssence.Dungeon
 {
@@ -34,6 +35,7 @@ namespace RogueEssence.Dungeon
 
         private IRandom rand;
 
+        [NonSerialized]
         protected Dictionary<int, ZoneGenContext> structureContexts;
         protected Dictionary<SegLoc, Map> maps;
 
@@ -374,6 +376,14 @@ namespace RogueEssence.Dungeon
 
             if (!String.IsNullOrEmpty(ID))
                 LuaEngine.Instance.CleanZoneScript(assetName);
+        }
+
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //reinitialize empty lists
+            structureContexts = new Dictionary<int, ZoneGenContext>();
         }
     }
 }

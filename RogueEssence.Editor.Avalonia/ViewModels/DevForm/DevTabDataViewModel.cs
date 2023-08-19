@@ -229,6 +229,11 @@ namespace RogueEssence.Dev.ViewModels
             OpenList(DataManager.DataType.Skin, DataManager.Instance.GetSkin, () => { return new SkinData(); });
         }
 
+        public void btnEditAI_Click()
+        {
+            OpenList(DataManager.DataType.AI, DataManager.Instance.GetAITactic, () => { return new AITactic(); });
+        }
+
 
         private delegate string[] GetEntryNames();
         private delegate IEntryData GetEntry(string entryNum);

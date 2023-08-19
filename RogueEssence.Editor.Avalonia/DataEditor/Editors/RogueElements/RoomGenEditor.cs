@@ -16,6 +16,19 @@ using System.Reflection;
 
 namespace RogueEssence.Dev
 {
+    public class RoomGenDefaultEditor : Editor<IRoomGenDefault>
+    {
+        public override string GetString(IRoomGenDefault obj, Type type, object[] attributes)
+        {
+            return string.Format("Single-Tile Room");
+        }
+
+        public override string GetTypeString()
+        {
+            return string.Format("Single-Tile Room");
+        }
+    }
+
     public class SizedRoomGenEditor : Editor<ISizedRoomGen>
     {
         public override string GetString(ISizedRoomGen obj, Type type, object[] attributes)

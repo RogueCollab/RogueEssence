@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Newtonsoft.Json;
 using RogueEssence.Dev.ViewModels;
 using RogueEssence.Dev.Views;
 using System;
@@ -32,6 +33,11 @@ namespace RogueEssence.Dev
         /// </summary>
         public virtual bool DefaultLabel => true;
         public virtual bool DefaultType => false;
+
+        /// <summary>
+        /// Denotes that this is a simple editor that will open by default if opened in its own window, but fallback to another editor if opened via CTRL+Click
+        /// </summary>
+        public virtual bool SimpleEditor => false;
 
         public static void LoadLabelControl(StackPanel control, string name, string desc)
         {
@@ -115,7 +121,7 @@ namespace RogueEssence.Dev
         //TODO: add the ability to tag- using attributes- a specific member with a specific editor
         public virtual void LoadMemberControl(string parent, T obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
         {
-            DataEditor.LoadClassControls(control, parent, obj.GetType(), name, type, attributes, member, isWindow, subGroupStack);
+            DataEditor.LoadClassControls(control, parent, obj.GetType(), name, type, attributes, member, isWindow, subGroupStack, false);
         }
 
         public virtual T SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
@@ -180,13 +186,18 @@ namespace RogueEssence.Dev
 
         public virtual object SaveMemberControl(T obj, StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack)
         {
-            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack);
+            return DataEditor.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack, false);
         }
 
 
         public virtual string GetString(T obj, Type type, object[] attributes)
         {
             return obj == null ? "NULL" : obj.ToString();
+        }
+
+        public virtual string GetTypeString()
+        {
+            return null;
         }
 
         void IEditor.LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
@@ -212,6 +223,7 @@ namespace RogueEssence.Dev
             if (subGroupStack.Contains(type))
                 subGroup = false;
 
+            JsonConverterAttribute jsonAttribute = ReflectionExt.FindAttribute<JsonConverterAttribute>(attributes);
             if (!subGroup)
             {
                 string desc = DevDataManager.GetMemberDoc(parentType, name);
@@ -242,17 +254,17 @@ namespace RogueEssence.Dev
                 control.Children.Add(cbxValue);
 
                 //add lambda expression for editing a single element
-                mv.OnEditItem += (object element, ClassBoxViewModel.EditElementOp op) =>
+                mv.OnEditItem += (object element, bool advancedEdit, ClassBoxViewModel.EditElementOp op) =>
                 {
                     DataEditForm frmData = new DataEditForm();
                     frmData.Title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
 
-                    DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0]);
+                    DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0], advancedEdit);
                     DataEditor.TrackTypeSize(frmData, type);
 
                     frmData.SelectedOKEvent += async () =>
                     {
-                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0]);
+                        element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0], advancedEdit);
                         op(element);
                         return true;
                     };
@@ -277,7 +289,7 @@ namespace RogueEssence.Dev
 
                     copyToolStripMenuItem.Click += (object copySender, RoutedEventArgs copyE) =>
                     {
-                        DataEditor.SetClipboardObj(mv.Object);
+                        DataEditor.SetClipboardObj(mv.Object, jsonAttribute?.ConverterType);
                     };
                     pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                     {
@@ -386,7 +398,7 @@ namespace RogueEssence.Dev
                             subGroupStack.CopyTo(newStack, 0);
                             newStack[newStack.Length-1] = type;
                             object obj = DataEditor.SaveWindowControls(controlParent, name, children[0], attributes, newStack);
-                            DataEditor.SetClipboardObj(obj);
+                            DataEditor.SetClipboardObj(obj, jsonAttribute?.ConverterType);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                         {
@@ -491,7 +503,7 @@ namespace RogueEssence.Dev
                             subGroupStack.CopyTo(newStack, 0);
                             newStack[newStack.Length - 1] = type;
                             object obj = DataEditor.SaveWindowControls(controlParent, name, getChosenType(typeArgsPanel), attributes, newStack);
-                            DataEditor.SetClipboardObj(obj);
+                            DataEditor.SetClipboardObj(obj, jsonAttribute?.ConverterType);
                         };
                         pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
                         {
@@ -638,7 +650,7 @@ namespace RogueEssence.Dev
                 str.Append(parentType.Name.Substring(0, parentType.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
                 str.Append("<");
             }
-            str.Append(type.GetDisplayName());
+            str.Append(type.GetFriendlyTypeString());
             for (int ii = 0; ii < parentTemplateTypes.Length; ii++)
             {
                 str.Append(">");
@@ -708,11 +720,11 @@ namespace RogueEssence.Dev
             sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
             lblType.SetValue(Grid.ColumnProperty, 0);
 
-            ComboBox cbValue = new SearchComboBox();
-            cbValue.Margin = new Thickness(4, 0, 0, 0);
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-            sharedRowPanel.Children.Add(cbValue);
-            cbValue.SetValue(Grid.ColumnProperty, 1);
+            ComboBox cbType = new SearchComboBox();
+            cbType.Margin = new Thickness(4, 0, 0, 0);
+            cbType.VirtualizationMode = ItemVirtualizationMode.Simple;
+            sharedRowPanel.Children.Add(cbType);
+            cbType.SetValue(Grid.ColumnProperty, 1);
 
             typeContainer.Children.Add(sharedRowPanel);
 
@@ -781,23 +793,23 @@ namespace RogueEssence.Dev
                 throw new TargetException("Types do not match.");
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbType.Bind(ComboBox.ItemsProperty, subject);
             subject.OnNext(items);
-            cbValue.SelectedIndex = selection;
+            cbType.SelectedIndex = selection;
 
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].Type);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbType.SelectedIndex].Type);
+                ToolTip.SetTip(cbType, typeDesc);
             }
 
-            cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+            cbType.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].Type);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbType.SelectedIndex].Type);
+                ToolTip.SetTip(cbType, typeDesc);
 
                 // this will pass in an unconstructed generic type, if generic
                 // otherwise, if non-generic, just passes the type
-                PartialType childType = baseList[cbValue.SelectedIndex];
+                PartialType childType = baseList[cbType.SelectedIndex];
                 templateArgMethod(childType, null);
 
                 //the distinction lies in the triggering of the selected index callback.
@@ -814,7 +826,7 @@ namespace RogueEssence.Dev
             };
 
             //default to first selection
-            templateArgMethod(baseList[cbValue.SelectedIndex], chosenType);
+            templateArgMethod(baseList[cbType.SelectedIndex], chosenType);
         }
 
 
@@ -826,7 +838,7 @@ namespace RogueEssence.Dev
             {
                 if (ii > 0)
                     str.Append(",");
-                str.Append(args[ii].GetDisplayName());
+                str.Append(args[ii].GetFriendlyTypeString());
             }
             str.Append(">");
             return str.ToString();
@@ -847,11 +859,11 @@ namespace RogueEssence.Dev
             sharedRowPanel.ColumnDefinitions[0].Width = new GridLength(30);
             lblType.SetValue(Grid.ColumnProperty, 0);
 
-            ComboBox cbValue = new SearchComboBox();
-            cbValue.Margin = new Thickness(4, 0, 0, 0);
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
-            sharedRowPanel.Children.Add(cbValue);
-            cbValue.SetValue(Grid.ColumnProperty, 1);
+            ComboBox cbArgType = new SearchComboBox();
+            cbArgType.Margin = new Thickness(4, 0, 0, 0);
+            cbArgType.VirtualizationMode = ItemVirtualizationMode.Simple;
+            sharedRowPanel.Children.Add(cbArgType);
+            cbArgType.SetValue(Grid.ColumnProperty, 1);
 
             templatePanel.Children.Add(sharedRowPanel);
 
@@ -874,19 +886,19 @@ namespace RogueEssence.Dev
 
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbArgType.Bind(ComboBox.ItemsProperty, subject);
             subject.OnNext(items);
-            cbValue.SelectedIndex = selection;
+            cbArgType.SelectedIndex = selection;
 
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].BaseType);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbArgType.SelectedIndex]);
+                ToolTip.SetTip(cbArgType, typeDesc);
             }
 
-            cbValue.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
+            cbArgType.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
             {
-                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbValue.SelectedIndex].BaseType);
-                ToolTip.SetTip(cbValue, typeDesc);
+                string typeDesc = DevDataManager.GetTypeDoc(baseList[cbArgType.SelectedIndex]);
+                ToolTip.SetTip(cbArgType, typeDesc);
 
                 initNewConstructedType();
             };

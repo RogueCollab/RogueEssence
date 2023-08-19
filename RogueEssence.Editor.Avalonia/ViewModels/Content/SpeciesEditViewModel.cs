@@ -565,71 +565,63 @@ namespace RogueEssence.Dev.ViewModels
         {
             bool success = true;
             CharaIndexNode charaNode = GetIndexNode();
-            for (int ii = 0; ii < monsterKeys.Count; ii++)
+            foreach (int ii in charaNode.Nodes.Keys)
             {
-                MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
-
                 CharID dexID = new CharID(ii, -1, -1, -1);
-                if (hasSprite(charaNode, dexID))
+
+                try
                 {
+                    DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/", dexID, singleSheet); });
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    success = false;
+                }
+
+                CharaIndexNode formNode = charaNode.Nodes[ii];
+                foreach (int jj in formNode.Nodes.Keys)
+                {
+                    CharID formID = new CharID(ii, jj, -1, -1);
+
                     try
                     {
-                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/", dexID, singleSheet); });
+                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID, singleSheet); });
                     }
                     catch (Exception ex)
                     {
                         DiagManager.Instance.LogError(ex, false);
                         success = false;
                     }
-                }
-                for (int jj = 0; jj < dex.Forms.Count; jj++)
-                {
-                    CharID formID = new CharID(ii, jj, -1, -1);
-                    if (hasSprite(charaNode, formID))
+
+                    CharaIndexNode skinNode = formNode.Nodes[jj];
+                    foreach (int kk in skinNode.Nodes.Keys)
                     {
+                        CharID skinID = new CharID(ii, jj, kk, -1);
+
                         try
                         {
-                            DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID, singleSheet); });
+                            DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/", skinID, singleSheet); });
                         }
                         catch (Exception ex)
                         {
                             DiagManager.Instance.LogError(ex, false);
                             success = false;
                         }
-                    }
-                    for (int kk = 0; kk < skinKeys.Count; kk++)
-                    {
-                        SkinData skinData = DataManager.Instance.GetSkin(skinKeys[kk]);
-                        if (!skinData.Challenge)
+
+                        CharaIndexNode genderNode = skinNode.Nodes[kk];
+                        foreach (int mm in genderNode.Nodes.Keys)
                         {
-                            CharID skinID = new CharID(ii, jj, kk, -1);
-                            if (hasSprite(charaNode, skinID))
+                            CharID genderID = new CharID(ii, jj, kk, mm);
+
+                            try
                             {
-                                try
-                                {
-                                    DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/", skinID, singleSheet); });
-                                }
-                                catch (Exception ex)
-                                {
-                                    DiagManager.Instance.LogError(ex, false);
-                                    success = false;
-                                }
+                                DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet); });
                             }
-                            for (int mm = 0; mm < 3; mm++)
+                            catch (Exception ex)
                             {
-                                CharID genderID = new CharID(ii, jj, kk, mm);
-                                if (hasSprite(charaNode, genderID))
-                                {
-                                    try
-                                    {
-                                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet); });
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        DiagManager.Instance.LogError(ex, false);
-                                        success = false;
-                                    }
-                                }
+                                DiagManager.Instance.LogError(ex, false);
+                                success = false;
                             }
                         }
                     }

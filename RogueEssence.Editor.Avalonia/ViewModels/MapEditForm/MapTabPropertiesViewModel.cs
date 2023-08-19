@@ -139,19 +139,19 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentMap.Background = BG.GetObject<IBackgroundSprite>();
         }
 
-        public void MapBG_Edit(object element, ClassBoxViewModel.EditElementOp op)
+        public void MapBG_Edit(object element, bool advancedEdit, ClassBoxViewModel.EditElementOp op)
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, type, new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, type, new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, type);
 
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0], advancedEdit);
                 op(element);
                 return true;
             };
@@ -201,19 +201,19 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentMap.CalculateTerrainAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
         }
 
-        public void TextureMap_EditKey(object key, object element, DictionaryBoxViewModel.EditElementOp op)
+        public void TextureMap_EditKey(object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap<Key>";
             DataEditForm frmKey = new DataEditRootForm();
             frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(string), new object[0]);
 
             DataTypeAttribute attr = new DataTypeAttribute(1, DataManager.DataType.Terrain, false);
-            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(string), new object[1] { attr }, key, true, new Type[0]);
+            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(string), new object[1] { attr }, key, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmKey, typeof(int));
 
             frmKey.SelectedOKEvent += async () =>
             {
-                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(string), new object[1] { attr }, true, new Type[0]);
+                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(string), new object[1] { attr }, true, new Type[0], advancedEdit);
                 op(key, newKey, element);
                 return true;
             };
@@ -223,18 +223,18 @@ namespace RogueEssence.Dev.ViewModels
             frmKey.Show();
         }
 
-        public void TextureMap_EditItem(object key, object element, DictionaryBoxViewModel.EditElementOp op)
+        public void TextureMap_EditItem(object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap[" + key.ToString() + "]";
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(AutoTile), new object[0], element, true, new Type[0]);
+            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(AutoTile), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(AutoTile));
 
             frmData.SelectedOKEvent += async () =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true, new Type[0]);
+                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true, new Type[0], advancedEdit);
                 op(key, key, element);
                 return true;
             };

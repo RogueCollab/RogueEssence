@@ -6,6 +6,7 @@ using System.Reflection;
 using System.IO;
 using RogueEssence.Data;
 using AABB;
+using Newtonsoft.Json;
 
 namespace RogueEssence.Dev
 {
@@ -13,16 +14,16 @@ namespace RogueEssence.Dev
     {
         public delegate string TypeStringConv(object member);
 
-        public static T SerializeCopy<T>(T obj)
+        public static T SerializeCopy<T>(T obj, params JsonConverter[] conv)
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                Serializer.Serialize(stream, obj);
+                Serializer.Serialize(stream, obj, conv);
 
                 stream.Flush();
                 stream.Position = 0;
 
-                return (T)Serializer.Deserialize(stream, obj.GetType());
+                return (T)Serializer.Deserialize(stream, obj.GetType(), conv);
             }
         }
 
@@ -277,7 +278,8 @@ namespace RogueEssence.Dev
         {
             if (type.IsGenericType)
             {
-                StringBuilder str = new StringBuilder(type.Name.Substring(0, type.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
+                string baseName = Text.GetMemberTitle(type.Name.Substring(0, type.Name.LastIndexOf("`", StringComparison.InvariantCulture)));
+                StringBuilder str = new StringBuilder(baseName);
                 str.Append("<");
                 Type[] args = type.GetGenericArguments();
                 for (int ii = 0; ii < args.Length; ii++)
@@ -291,7 +293,7 @@ namespace RogueEssence.Dev
                 return str.ToString();
             }
             else
-                return type.Name;
+                return Text.GetMemberTitle(type.Name);
         }
 
         public static List<Assembly> GetDependentAssemblies(params Assembly[] assemblies)
@@ -476,13 +478,23 @@ namespace RogueEssence.Dev
             else
             {
                 List<Assembly> dependentAssemblies = GetDependentAssemblies(type.Assembly);
-                List<Type> types = getAssignableTypes(false, 3, limit, dependentAssemblies.ToArray(), type);
+                List<Type> types = getAssignableTypes(false, 3, limit, dependentAssemblies.ToArray(), true, type);
                 types.Sort((Type type1, Type type2) => { return String.CompareOrdinal(type1.Name + type1.FullName, type2.Name + type2.FullName); });
                 return types.ToArray();
             }
         }
 
-        private static List<Type> getAssignableTypes(bool allowAbstract, int recursionDepth, int limit, Assembly[] searchAssemblies, params Type[] constraints)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="allowAbstract"></param>
+        /// <param name="recursionDepth"></param>
+        /// <param name="limit"></param>
+        /// <param name="searchAssemblies"></param>
+        /// <param name="applyLimitToDirectReturn">Will short-circuit search when it reaches the limit of assignable types</param>
+        /// <param name="constraints"></param>
+        /// <returns></returns>
+        private static List<Type> getAssignableTypes(bool allowAbstract, int recursionDepth, int limit, Assembly[] searchAssemblies, bool applyLimitToDirectReturn, params Type[] constraints)
         {
             if (recursionDepth == 0)
                 return new List<Type>();
@@ -524,7 +536,7 @@ namespace RogueEssence.Dev
                     {
                         children.Add(checkType);
 
-                        if (limit > 0 && children.Count == limit)
+                        if (applyLimitToDirectReturn && limit > 0 && children.Count == limit)
                             return children;
                     }
                     else
@@ -566,7 +578,7 @@ namespace RogueEssence.Dev
                             typeIndex.Push(0);
                             defSpecifiedGenericParameter(children, recursionDepth, limit, searchAssemblies, checkType, checkArgs, chosenParams, pendingParams, typeIndex, new Stack<Type[]>(), new Stack<int>());
 
-                            if (limit > 0 && children.Count == limit)
+                            if (applyLimitToDirectReturn && limit > 0 && children.Count == limit)
                                 return children;
                         }
                     }
@@ -898,7 +910,7 @@ namespace RogueEssence.Dev
                 for (int kk = 0; kk < assemblies.Length; kk++)
                     assemblies[kk] = tpConstraints[kk].Assembly;
                 List<Assembly> dependentAssemblies = GetDependentAssemblies(assemblies);
-                possibleParams[jj] = getAssignableTypes(true, recursionDepth-1, limit, dependentAssemblies.ToArray(), tpConstraints).ToArray();
+                possibleParams[jj] = getAssignableTypes(true, recursionDepth-1, limit, dependentAssemblies.ToArray(), false, tpConstraints).ToArray();
             }
 
             recurseTypeParams(children, recursionDepth, limit, searchAssemblies, checkType, checkArgs, chosenParams, openTypes, possibleParams, 0);

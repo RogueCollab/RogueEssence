@@ -1056,11 +1056,11 @@ namespace RogueEssence.Dungeon
         //TODO: method overloads that call other method overloads should just use "return" instead of "yield return"
         public IEnumerator<YieldInstruction> AddStatusEffect(StatusEffect status)
         {
-            return AddStatusEffect(null, status, null, true);
+            return AddStatusEffect(null, status, true);
         }
-        public IEnumerator<YieldInstruction> AddStatusEffect(Character attacker, StatusEffect status, StateCollection<ContextState> parentStates, bool msg = true)
+        public IEnumerator<YieldInstruction> AddStatusEffect(Character attacker, StatusEffect status, bool msg = true)
         {
-            return AddStatusEffect(attacker, status, parentStates, msg, msg);
+            return AddStatusEffect(attacker, status, null, msg, msg);
         }
 
         public IEnumerator<YieldInstruction> AddStatusEffect(Character attacker, StatusEffect status, StateCollection<ContextState> parentStates, bool checkmsg, bool msg)
@@ -1198,9 +1198,8 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void DeleteSkill(int slot)
+        public void DeleteSkill(int slot, bool refresh=true)
         {
-
             BaseSkills.RemoveAt(slot);
             BaseSkills.Add(new SlotSkill());
 
@@ -1227,10 +1226,11 @@ namespace RogueEssence.Dungeon
 
                 OnSkillsChanged(skillIndices.ToArray());
             }
-            RefreshTraits();
+            if (refresh)
+                RefreshTraits();
         }
 
-        public void LearnSkill(string skillNum, bool enabled)
+        public void LearnSkill(string skillNum, bool enabled, bool refresh = true)
         {
             int newSlot = 0;
             foreach (SlotSkill skill in BaseSkills)
@@ -1239,15 +1239,16 @@ namespace RogueEssence.Dungeon
                     newSlot++;
             }
             if (newSlot < MAX_SKILL_SLOTS)
-                ReplaceSkill(skillNum, newSlot, enabled);
+                ReplaceSkill(skillNum, newSlot, enabled, refresh);
         }
-        public void ReplaceSkill(string skillNum, int newSlot, bool enabled)
+        public void ReplaceSkill(string skillNum, int newSlot, bool enabled, bool refresh = true)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
 
             OnSkillsChanged(skillIndices.ToArray());
 
-            RefreshTraits();
+            if (refresh)
+                RefreshTraits();
         }
 
         private List<int> baseReplaceSkill(string skillNum, int newSlot, bool enabled)
@@ -2120,9 +2121,16 @@ namespace RogueEssence.Dungeon
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.BeforeStatusAdds, this);
                 ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.BeforeStatusAdds, this);
                 //check pending status
+                context.Status.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Status.GetData().BeforeStatusAddings, this);
                 context.Status.AddEventsToQueue(queue, maxPriority, ref nextPriority, context.Status.GetData().BeforeStatusAdds, this);
 
-                foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                if (context.User != null)
+                {
+                    foreach (PassiveContext effectContext in context.User.IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
+                        effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeStatusAddings, this);
+                }
+
+                foreach (PassiveContext effectContext in context.Target.IteratePassives(GameEventPriority.TARGET_PORT_PRIORITY))
                     effectContext.AddEventsToQueue(queue, maxPriority, ref nextPriority, effectContext.EventData.BeforeStatusAdds, this);
             };
             foreach (EventQueueElement<StatusGivenEvent> effect in DungeonScene.IterateEvents(function))

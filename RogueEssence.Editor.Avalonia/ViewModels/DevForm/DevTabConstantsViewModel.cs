@@ -23,7 +23,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnEditUniversal_Click()
         {
-            OpenList<ActiveEffect>("Universal Event", DataManager.Instance.UniversalEvent, (obj) => {
+            OpenList<UniversalActiveEffect>("Universal Event", (UniversalActiveEffect) DataManager.Instance.UniversalEvent, (obj) => {
                 DataManager.Instance.UniversalEvent = obj;
                 DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), obj);
             });

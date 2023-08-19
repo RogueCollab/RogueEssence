@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueEssence.Dungeon;
 using RogueElements;
-using System.Runtime.Serialization;
+using RogueEssence.LevelGen;
 
 namespace RogueEssence.Data
 {
@@ -145,7 +146,6 @@ namespace RogueEssence.Data
                     list.Add(priority, step);
             }
         }
-
         public int GetTotalCount()
         {
             int total = 0;
@@ -185,6 +185,16 @@ namespace RogueEssence.Data
             total += InitActionData.Count;
 
             return total;
+        }
+    }
+
+    [Serializable]
+    public class UniversalActiveEffect : ActiveEffect
+    {
+        public List<ZoneStep> ZoneSteps;
+        public UniversalActiveEffect() : base()
+        {
+            this.ZoneSteps = new List<ZoneStep>();
         }
     }
 }

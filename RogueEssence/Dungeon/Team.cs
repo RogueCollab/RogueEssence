@@ -35,7 +35,7 @@ namespace RogueEssence.Dungeon
 
         [NonSerialized]
         public int MapIndex;
-
+        
         public Team()
         {
             Name = "";
@@ -159,12 +159,12 @@ namespace RogueEssence.Dungeon
             if (allDead)
             {
                 //add to DeadTeams
-                ContainingMap.DeadTeams.Add(teamIndex);
+                ContainingMap?.DeadTeams.Add(teamIndex);
             }
             else
             {
                 //remove from DeadTeams
-                ContainingMap.DeadTeams.Remove(teamIndex);
+                ContainingMap?.DeadTeams.Remove(teamIndex);
             }
 
             if (this.MapFaction != Faction.Player)
@@ -172,12 +172,12 @@ namespace RogueEssence.Dungeon
                 if (!allDead && this.Leader.Dead)
                 {
                     //add to TeamsWithDead
-                    ContainingMap.TeamsWithDead.Add(teamIndex);
+                    ContainingMap?.TeamsWithDead.Add(teamIndex);
                 }
                 else
                 {
                     //remove from TeamsWithDead
-                    ContainingMap.TeamsWithDead.Remove(teamIndex);
+                    ContainingMap?.TeamsWithDead.Remove(teamIndex);
                 }
             }
         }

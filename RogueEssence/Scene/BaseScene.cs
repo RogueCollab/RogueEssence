@@ -14,7 +14,7 @@ namespace RogueEssence
         
         public ScreenMover ScreenShake;
 
-        protected float windowScale;
+        public float WindowScale { get; protected set; }
         protected float matrixScale;
         protected float scale;
         protected float drawScale;

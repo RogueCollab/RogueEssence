@@ -1621,6 +1621,13 @@ namespace RogueEssence.Content
             return frames.Count - 1;
         }
 
+        /// <summary>
+        /// Sets the animation to a specific frame always
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <param name="frame"></param>
+        /// <param name="clamp"></param>
+        /// <returns></returns>
         public static int SpecFrame(List<CharAnimFrame> frames, int frame, bool clamp)
         {
             int adjFrame = clamp ? Math.Min(frame, frames.Count) : frame % frames.Count;

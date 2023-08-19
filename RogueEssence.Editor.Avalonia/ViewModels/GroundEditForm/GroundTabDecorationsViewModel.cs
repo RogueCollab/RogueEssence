@@ -18,7 +18,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public GroundTabDecorationsViewModel()
         {
-            Layers = new AnimLayerBoxViewModel(DiagManager.Instance.DevEditor.GroundEditor.Edits);
+            Layers = new AnimLayerBoxViewModel(true);
             Layers.SelectedLayerChanged += Layers_SelectedLayerChanged;
             SelectedEntity = new GroundAnim();
 
@@ -265,6 +265,10 @@ namespace RogueEssence.Dev.ViewModels
                             if (snapGrid)
                                 diff *= 8;
                             MoveEntity(SelectedEntity.MapLoc + diff);
+                        }
+                        else if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Delete))
+                        {
+                            RemoveEntity(SelectedEntity);
                         }
                         break;
                     }

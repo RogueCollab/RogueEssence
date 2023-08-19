@@ -190,8 +190,14 @@ namespace RogueEssence.Script
         /// <returns>The filename of the song, relative to the Content/Music folder</returns>
         public string GetCurrentSong()
         {
-            if (GameManager.Instance.NextSong != null)
-                return GameManager.Instance.NextSong;
+            for (int ii = 0; ii < GameManager.Instance.MusicEffects.Count; ii++)
+            {
+                if (GameManager.Instance.MusicEffects[ii] is MusicFadeEffect)
+                {
+                    MusicFadeEffect oldFade = (MusicFadeEffect)GameManager.Instance.MusicEffects[ii];
+                    return oldFade.NextSong;
+                }
+            }
             return GameManager.Instance.Song;
         }
 

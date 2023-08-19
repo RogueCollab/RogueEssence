@@ -2,6 +2,7 @@
 using RogueEssence.Dev;
 using RogueEssence.Dungeon;
 using System.Collections.Generic;
+using RogueEssence.Ground;
 
 namespace RogueEssence.Data
 {
@@ -87,7 +88,12 @@ namespace RogueEssence.Data
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
         public StateCollection<ItemState> ItemStates;
-
+        
+        /// <summary>
+        /// List of ground actions that can be used with that item.
+        /// </summary>
+        public List<GroundItemEvent> GroundUseActions;
+        
         /// <summary>
         /// The hitbox of the attack that comes out when the item is used.
         /// </summary>
@@ -135,6 +141,7 @@ namespace RogueEssence.Data
             Comment = "";
 
             ItemStates = new StateCollection<ItemState>();
+            GroundUseActions = new List<GroundItemEvent>();
 
             UseAction = new AttackAction();
             Explosion = new ExplosionData();

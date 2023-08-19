@@ -49,7 +49,7 @@ namespace RogueEssence.Menu
                 bool enable = !entry.CannotDrop || enableBound;
                 MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), new Loc(2, 1), !enable ? Color.Red : Color.White);
                 MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetPriceString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, !enable ? Color.Red : Color.White);
-                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, true, itemText, itemPrice));
+                flatChoices.Add(new MenuElementChoice(() => { choose(index); }, enable, itemText, itemPrice));
             }
 
             int actualChoice = Math.Min(Math.Max(0, defaultChoice), flatChoices.Count - 1);

@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using RogueEssence.Menu;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace RogueEssence.Data
 {
@@ -1246,6 +1247,7 @@ namespace RogueEssence.Data
             EndSession();
 
             bool recorded = DataManager.Instance.RecordingReplay;
+            string completedZone = ZoneManager.Instance.CurrentZoneID;
             //if lose, end the play, display plaque, and go to title
             if (result != ResultType.Cleared)
             {
@@ -1276,7 +1278,7 @@ namespace RogueEssence.Data
 
                     if (fanfare)
                     {
-                        if (result != ResultType.Cleared)
+                        if (result != ResultType.Escaped)
                             GameManager.Instance.Fanfare("Fanfare/MissionFail");
                         else
                             GameManager.Instance.Fanfare("Fanfare/MissionClear");
@@ -1296,7 +1298,9 @@ namespace RogueEssence.Data
                     }
                 }
 
-                if (newRecruits.Count > 0)
+                if (result == ResultType.Escaped)
+                    yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZone));
+                else if (newRecruits.Count > 0)
                 {
                     yield return new WaitForFrames(10);
                     GameManager.Instance.Fanfare("Fanfare/NewArea");
@@ -1305,8 +1309,6 @@ namespace RogueEssence.Data
             }
             else
             {
-                string completedZone = ZoneManager.Instance.CurrentZoneID;
-
                 MidAdventure = false;
                 ClearDungeonItems();
 
@@ -1336,12 +1338,7 @@ namespace RogueEssence.Data
                     GameProgress ending = DataManager.Instance.GetRecord(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile));
 
                     if (fanfare)
-                    {
-                        if (result != ResultType.Cleared)
-                            GameManager.Instance.Fanfare("Fanfare/MissionFail");
-                        else
-                            GameManager.Instance.Fanfare("Fanfare/MissionClear");
-                    }
+                        GameManager.Instance.Fanfare("Fanfare/MissionClear");
                     else
                         GameManager.Instance.SE("Menu/Skip");
 
@@ -1352,17 +1349,28 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
                 }
 
-                //ask to transfer if the dungeon records progress, and it is NOT a seeded run.
-                if (state != null && Stakes != DungeonStakes.None && !Seeded)
-                {
-                    bool allowTransfer = false;
-                    DialogueBox question = MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_TRANSFER_ASK"),
-                        () => { allowTransfer = true; }, () => { });
-                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
+                yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZone));
+            }
+            yield return new WaitForFrames(20);
+        }
 
-                    if (allowTransfer)
+        private IEnumerator<YieldInstruction> askTransfer(GameState state, string completedZone)
+        {
+            //ask to transfer if the dungeon records progress, and it is NOT a seeded run.
+            if (state != null && Stakes != DungeonStakes.None && !Seeded)
+            {
+                bool allowTransfer = false;
+                ZoneData zoneData = DataManager.Instance.GetZone(completedZone);
+                DialogueBox question = MenuManager.Instance.CreateQuestion(zoneData.Rogue == RogueStatus.AllTransfer ? Text.FormatKey("DLG_TRANSFER_ALL_ASK") : Text.FormatKey("DLG_TRANSFER_ITEM_ASK"),
+                    () => { allowTransfer = true; }, () => { });
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(question));
+
+                if (allowTransfer)
+                {
+                    MainProgress mainSave = state.Save as MainProgress;
+
+                    if (zoneData.Rogue == RogueStatus.AllTransfer)
                     {
-                        MainProgress mainSave = state.Save as MainProgress;
                         //put the new recruits into assembly
                         foreach (Character character in ActiveTeam.Players)
                         {
@@ -1378,25 +1386,24 @@ namespace RogueEssence.Data
                             if (!(character.Dead && DataManager.Instance.GetSkin(character.BaseForm.Skin).Challenge))
                                 mainSave.CharsToStore.Add(new CharData(character));
                         }
-
-                        //put the new items into the storage
-                        foreach (InvItem item in ActiveTeam.EnumerateInv())
-                            mainSave.ItemsToStore.Add(item);
-                        foreach (InvItem item in ActiveTeam.BoxStorage)
-                            mainSave.ItemsToStore.Add(item);
-
-                        mainSave.StorageToStore = ActiveTeam.Storage;
-
-                        mainSave.MoneyToStore = state.Save.ActiveTeam.Money + state.Save.ActiveTeam.Bank;
                     }
 
-                    DataManager.Instance.SaveGameState(state);
+                    //put the new items into the storage
+                    foreach (InvItem item in ActiveTeam.EnumerateInv())
+                        mainSave.ItemsToStore.Add(item);
+                    foreach (InvItem item in ActiveTeam.BoxStorage)
+                        mainSave.ItemsToStore.Add(item);
 
-                    if (allowTransfer)
-                        yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));
+                    mainSave.StorageToStore = ActiveTeam.Storage;
+
+                    mainSave.MoneyToStore = ActiveTeam.Money + ActiveTeam.Bank;
                 }
+
+                DataManager.Instance.SaveGameState(state);
+
+                if (allowTransfer)
+                    yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TRANSFER_COMPLETE")));
             }
-            yield return new WaitForFrames(20);
         }
 
         public static IEnumerator<YieldInstruction> StartRogue(RogueConfig config)

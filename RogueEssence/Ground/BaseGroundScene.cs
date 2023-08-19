@@ -65,11 +65,11 @@ namespace RogueEssence.Ground
         {
 
             //update cam
-            windowScale = GraphicsManager.WindowZoom;
+            WindowScale = GraphicsManager.WindowZoom;
 
             scale = GraphicsManager.Zoom.GetScale();
 
-            matrixScale = windowScale;
+            matrixScale = WindowScale;
             drawScale = scale;
             while (matrixScale > 1 && drawScale < 1)
             {
@@ -295,8 +295,8 @@ namespace RogueEssence.Ground
 
         public Loc ScreenCoordsToGroundCoords(Loc loc)
         {
-            loc.X = (int)(loc.X / scale / windowScale);
-            loc.Y = (int)(loc.Y / scale / windowScale);
+            loc.X = (int)(loc.X / scale / WindowScale);
+            loc.Y = (int)(loc.Y / scale / WindowScale);
             loc += ViewRect.Start;
 
             return loc;
@@ -304,8 +304,8 @@ namespace RogueEssence.Ground
 
         public Loc ScreenCoordsToMapCoords(Loc loc)
         {
-            loc.X = (int)(loc.X / scale / windowScale);
-            loc.Y = (int)(loc.Y / scale / windowScale);
+            loc.X = (int)(loc.X / scale / WindowScale);
+            loc.Y = (int)(loc.Y / scale / WindowScale);
             loc += ViewRect.Start;
             loc = loc - (ViewRect.Start / ZoneManager.Instance.CurrentGround.TileSize * ZoneManager.Instance.CurrentGround.TileSize) + new Loc(ZoneManager.Instance.CurrentGround.TileSize);
             loc /= ZoneManager.Instance.CurrentGround.TileSize;
@@ -319,8 +319,8 @@ namespace RogueEssence.Ground
         {
             int blockSize = GraphicsManager.TEX_SIZE;
 
-            loc.X = (int)(loc.X / scale / windowScale);
-            loc.Y = (int)(loc.Y / scale / windowScale);
+            loc.X = (int)(loc.X / scale / WindowScale);
+            loc.Y = (int)(loc.Y / scale / WindowScale);
             loc += ViewRect.Start;
             loc = loc - (ViewRect.Start / blockSize * blockSize) + new Loc(blockSize);
             loc /= blockSize;
@@ -361,17 +361,6 @@ namespace RogueEssence.Ground
                 return;
 
             DataManager.Instance.MsgLog.Add(msg);
-        }
-
-
-        public Rect GetViewRectangle()
-        {
-            return ViewRect;
-        }
-
-        public float GetWindowScale()
-        {
-            return windowScale;
         }
 
     }

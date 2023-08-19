@@ -11,8 +11,9 @@ namespace RogueEssence.Menu
 
         protected FrameTick FinishedTextTime;
 
-        public TimedDialog(string message, bool sound, bool centerH, bool centerV, Rect bounds, int time, Action action)
-            : base(message, sound, centerH, centerV, bounds)
+        
+        public TimedDialog(string message, bool sound, string soundEffect, int speakTime, bool centerH, bool centerV, Rect bounds, object[] scripts, int time, Action action)
+            : base(message, sound, soundEffect, speakTime, centerH, centerV, bounds, scripts)
         {
             this.time = time;
             this.action = action;

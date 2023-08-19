@@ -34,7 +34,7 @@ namespace RogueEssence.Menu
             }
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
-            summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(176, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
+            summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(168, 8), new Loc(GraphicsManager.ScreenWidth - 8, 8 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
             Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices, 0, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
         }
@@ -54,7 +54,7 @@ namespace RogueEssence.Menu
             else
             {
                 summaryMenu.Visible = true;
-                summaryMenu.SetDungeon(titles[choice], dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed, true);
+                summaryMenu.SetDungeon(titles[choice], dests[choice].ID, DataManager.Instance.Save.GetDungeonUnlock(dests[choice].ID) == GameProgress.UnlockState.Completed, true, false);
             }
             base.ChoiceChanged();
         }

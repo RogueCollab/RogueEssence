@@ -17,17 +17,31 @@ namespace RogueEssence.Dev.ViewModels
 
     public class AnimLayerBoxViewModel : LayerBoxViewModel<AnimLayer>
     {
-        public AnimLayerBoxViewModel(UndoStack edits) : base(edits)
-        { }
+        private bool groundMode;
+        public AnimLayerBoxViewModel(bool groundMode) : base(groundMode ? DiagManager.Instance.DevEditor.GroundEditor.Edits : DiagManager.Instance.DevEditor.MapEditor.Edits)
+        {
+            this.groundMode = groundMode;
+        }
         public override async Task EditLayer()
         {
-            AnimLayerWindow window = new AnimLayerWindow();
             AnimLayerViewModel vm = new AnimLayerViewModel(Layers[ChosenLayer]);
-            window.DataContext = vm;
-
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
+            bool result;
+            if (groundMode)
+            {
+                AnimLayerWindow window = new AnimLayerWindow();
+                window.DataContext = vm;
+
+                result = await window.ShowDialog<bool>(form.GroundEditForm);
+            }
+            else
+            {
+                AnimLayerWindow window = new AnimLayerWindow();
+                window.DataContext = vm;
+
+                result = await window.ShowDialog<bool>(form.MapEditForm);
+            }
 
             lock (GameBase.lockObj)
             {
@@ -39,7 +53,10 @@ namespace RogueEssence.Dev.ViewModels
                     newLayer.Visible = oldLayer.Visible;
                     newLayer.Anims = oldLayer.Anims;
 
-                    edits.Apply(new GroundDecorationStateUndo(ChosenLayer));
+                    if (groundMode)
+                        edits.Apply(new GroundDecorationStateUndo(ChosenLayer));
+                    else
+                        edits.Apply(new MapDecorationStateUndo(ChosenLayer));
 
                     SetLayer(ChosenLayer, newLayer);
                 }
@@ -54,7 +71,10 @@ namespace RogueEssence.Dev.ViewModels
 
         protected override void LoadLayersFromSource()
         {
-            Layers.LoadModels(ZoneManager.Instance.CurrentGround.Decorations);
+            if (groundMode)
+                Layers.LoadModels(ZoneManager.Instance.CurrentGround.Decorations);
+            else
+                Layers.LoadModels(ZoneManager.Instance.CurrentMap.Decorations);
         }
     }
 }
