@@ -1,7 +1,8 @@
 ﻿{
 "Version": "1.0.0.0",
 "Object": {
-"$type": "RogueEssence.Data.ActiveEffect, RogueEssence",
+"$type": "RogueEssence.Data.UniversalActiveEffect, RogueEssence",
+"ZoneSteps": [],
 "UniversalStates": [],
 "BeforeTryActions": [],
 "BeforeActions": [],

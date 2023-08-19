@@ -12,16 +12,29 @@
     <PublishTrimmed>false</PublishTrimmed>
     <PublishDir>..\publish\$(RuntimeIdentifier)\$(AssemblyName)</PublishDir>
   </PropertyGroup>
+  
   <ItemGroup Condition="'$(RuntimeIdentifier)' != ''">
     <Content Include="runtimes\$(RuntimeIdentifier)\native\*" Link="%(FileName)%(Extension)">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <Content Include="..\NLua\packages\KeraLua.1.0.29\runtimes\$(RuntimeIdentifier)\native\*" Link="%(FileName)%(Extension)">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  
   <ItemGroup Condition="'$(RuntimeIdentifier)' == ''">
     <Content Include="runtimes\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == ''">
+  <None Include="..\NLua\packages\KeraLua.1.0.29\runtimes\**\*" 
+        CopyToOutputDirectory="PreserveNewest"
+        LinkBase="runtimes\" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.Core.csproj" />
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
