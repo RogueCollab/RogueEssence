@@ -18,8 +18,13 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup Condition="'$(RuntimeIdentifier)' != ''">
+  <ItemGroup Condition="'$(RuntimeIdentifier)' != 'osx-x64'">
     <Content Include="..\NLua\packages\KeraLua.1.0.29\runtimes\$(RuntimeIdentifier)\native\*" Link="%(FileName)%(Extension)">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+    <Content Include="..\NLua\packages\KeraLua.1.0.29\runtimes\osx\native\*" Link="%(FileName)%(Extension)">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
