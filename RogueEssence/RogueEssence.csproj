@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="0.9.5.2" />
-    <PackageReference Include="NLua" Version="1.4.32" />
 	<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
 	<PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
     <PackageReference Include="System.Resources.Extensions" Version="4.6.0" />
@@ -18,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\NLua\build\netstandard2.0\NLua.netstandard2.0.csproj" />
     <ProjectReference Include="..\RogueElements\RogueElements\RogueElements.csproj">
       <Project>{a777bc3d-2635-401d-96d7-162178d8dfc4}</Project>
       <Name>RogueElements</Name>
