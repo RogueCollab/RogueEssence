@@ -14,6 +14,9 @@ namespace RogueEssence.Dungeon
         Trap
     }
 
+    /// <summary>
+    /// Represents a single turn-taking battle action, used for attacks, items, throws, trap triggers.
+    /// </summary>
     public class BattleContext : UserTargetGameContext, IActionContext
     {
         public const int DEFAULT_ATTACK_SLOT = -1;
@@ -56,20 +59,54 @@ namespace RogueEssence.Dungeon
 
 
         public BattleActionType ActionType { get; set; }
+        /// <summary>
+        /// For skills, the skill slot
+        /// For items, the item slot
+        /// </summary>
         public int UsageSlot;
-        public int StrikesMade;//current strikes
+        /// <summary>
+        /// Strikes that have currently been made in the BattleContext.
+        /// </summary>
+        public int StrikesMade;
+        /// <summary>
+        /// The total strikes that should be made in the BattleContext.
+        /// </summary>
         public int Strikes;//total strikes
+        /// <summary>
+        /// Determines the range and type of hitbox.
+        /// </summary>
         public CombatAction HitboxAction { get; set; }
+        /// <summary>
+        /// Determiens the size of splash effect.
+        /// </summary>
         public ExplosionData Explosion { get; set; }
+        /// <summary>
+        /// The effect of the skill, item, trap, etc. on the target.
+        /// </summary>
         public BattleData Data { get; set; }
-        public InvItem Item;//the item that is used, and most likely dropped
-        public string SkillUsedUp;//the skill whose last charge was used up
+        /// <summary>
+        /// The item that is used, and most likely dropped
+        /// </summary>
+        public InvItem Item;
+        /// <summary>
+        /// The skill whose last charge was used up
+        /// </summary>
+        public string SkillUsedUp;
+        /// <summary>
+        /// Determines if this action should trigger end-of-turn.
+        /// </summary>
         public AbortStatus TurnCancel;
 
         private bool actionSilent;
         private string actionMsg;
 
+        /// <summary>
+        /// Denotes whether the action hit its target.
+        /// </summary>
         public bool Hit;
+        /// <summary>
+        /// A number of be added to the Range argument for the hitbox, when it comes out.
+        /// </summary>
         public int RangeMod;
 
         public StateCollection<ContextState> GlobalContextStates;

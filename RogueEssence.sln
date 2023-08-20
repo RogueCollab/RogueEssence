@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEssence.Editor.Avaloni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEssence.Examples", "RogueEssence.Examples\RogueEssence.Examples.csproj", "{9A88DA05-9713-4DFC-8BDB-9D7306128072}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLua.netstandard2.0", "NLua\build\netstandard2.0\NLua.netstandard2.0.csproj", "{1F6077AC-49F6-4310-912B-169AA8726D40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLua.net6.0", "NLua\build\net6.0\NLua.net6.0.csproj", "{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeraLua.NetStandard20", "NLua\KeraLua\build\netstandard2.0\KeraLua.NetStandard20.csproj", "{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeraLua.net6.0", "NLua\KeraLua\build\net6.0\KeraLua.net6.0.csproj", "{D067E316-FBE3-4E98-99F6-0B15D997770A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,22 +73,22 @@ Global
 		{04BB699C-51C8-4775-A7A0-145F220EFA20}.Release|Any CPU.Build.0 = Release|Any CPU
 		{04BB699C-51C8-4775-A7A0-145F220EFA20}.Release|x64.ActiveCfg = Release|Any CPU
 		{04BB699C-51C8-4775-A7A0-145F220EFA20}.Release|x64.Build.0 = Release|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Debug|x64.Build.0 = Debug|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|x64.ActiveCfg = Release|Any CPU
-		{1F6077AC-49F6-4310-912B-169AA8726D40}.Release|x64.Build.0 = Release|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Debug|x64.Build.0 = Debug|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|x64.ActiveCfg = Release|Any CPU
-		{20E38F61-BB0E-4AB1-83AA-CA9D6201FDA8}.Release|x64.Build.0 = Release|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Debug|x64.Build.0 = Debug|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Release|x64.ActiveCfg = Release|Any CPU
+		{B9E406F5-72E3-4B65-97CD-79A7A9FA574F}.Release|x64.Build.0 = Release|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Debug|x64.Build.0 = Debug|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Release|x64.ActiveCfg = Release|Any CPU
+		{D067E316-FBE3-4E98-99F6-0B15D997770A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,7 +97,7 @@ Global
 		SolutionGuid = {510959D5-23BD-467F-96CE-545BC112EC92}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		NLua\src\NLua.Shared.projitems*{1f6077ac-49f6-4310-912b-169aa8726d40}*SharedItemsImports = 5
-		NLua\KeraLua\src\KeraLua.Core.projitems*{20e38f61-bb0e-4ab1-83aa-ca9d6201fda8}*SharedItemsImports = 5
+		NLua\src\NLua.Shared.projitems*{b9e406f5-72e3-4b65-97cd-79a7a9fa574f}*SharedItemsImports = 5
+		NLua\KeraLua\src\KeraLua.Core.projitems*{d067e316-fbe3-4e98-99f6-0b15d997770a}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
