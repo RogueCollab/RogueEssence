@@ -751,25 +751,24 @@ namespace RogueEssence.Script
             foreach (InvItem item in items)
             {
                 ItemData entry = DataManager.Instance.GetItem(item.ID);
-                int existingStack = -1;
                 if (entry.MaxStack > 1)
                 {
-                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
+                    foreach (InvItem inv in DataManager.Instance.Save.ActiveTeam.EnumerateInv())
                     {
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
+                        if (inv.ID == item.ID && inv.Cursed == item.Cursed && inv.Amount < entry.MaxStack)
                         {
-                            existingStack = jj;
-                            break;
+                            int addValue = Math.Min(entry.MaxStack - inv.Amount, item.Amount);
+                            inv.Amount += addValue;
+                            item.Amount -= addValue;
+                            if (item.Amount <= 0)
+                                break;
                         }
                     }
+                    //after this point, may be still some stacks left to take care of
+                    if (item.Amount <= 0)
+                        return;
                 }
-                if (existingStack > -1)
-                {
-                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).Amount += item.Amount;
-                    DataManager.Instance.Save.ActiveTeam.UpdateInv(DataManager.Instance.Save.ActiveTeam.GetInv(existingStack), DataManager.Instance.Save.ActiveTeam.GetInv(existingStack));
-                }
-                else
-                    DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
             }
         }
 
