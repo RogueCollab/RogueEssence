@@ -129,14 +129,18 @@ namespace RogueEssence.Dev.ViewModels
                 if (currentElement > -1)
                 {
                     CurrentWeight = Collection[currentElement].Weight;
+                    settingRange = true;
                     CurrentStart = Collection[currentElement].DisplayStart;
                     CurrentEnd = Collection[currentElement].DisplayEnd;
+                    settingRange = false;
                 }
                 else
                 {
                     CurrentWeight = 1;
+                    settingRange = true;
                     CurrentStart = 0 + AddMin;
                     CurrentEnd = 1 + AddMax;
+                    settingRange = false;
                 }
             }
         }
@@ -291,6 +295,26 @@ namespace RogueEssence.Dev.ViewModels
                 int index = CurrentElement;
                 Switch(CurrentElement, CurrentElement + 1);
                 CurrentElement = index + 1;
+            }
+        }
+
+        bool settingRange;
+        public void AdjustOtherLimit(int newVal, bool changeEnd)
+        {
+            int newStart = CurrentStart;
+            int newEnd = CurrentEnd;
+
+            if (changeEnd)
+                newEnd = newVal;
+            else
+                newStart = newVal;
+
+            if (!settingRange && newEnd < newStart)
+            {
+                if (changeEnd)
+                    CurrentStart = newEnd;
+                else
+                    CurrentEnd = newStart;
             }
         }
 
