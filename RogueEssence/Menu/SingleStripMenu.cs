@@ -62,11 +62,17 @@ namespace RogueEssence.Menu
                     new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + 5 - 4, VERT_SPACE - 2));
             }
         }
-        protected int CalculateChoiceLength(IEnumerable<MenuTextChoice> choices, int minWidth)
+        protected int CalculateChoiceLength(IEnumerable<IChoosable> choices, int minWidth)
         {
             int maxWidth = minWidth;
-            foreach(MenuTextChoice choice in choices)
-                maxWidth = Math.Max(choice.Text.GetTextLength() + 16 + GraphicsManager.MenuBG.TileWidth * 2, maxWidth);
+            foreach (IChoosable choice in choices)
+            {
+                if (choice is MenuTextChoice)
+                {
+                    MenuTextChoice textChoice = (MenuTextChoice)choice;
+                    maxWidth = Math.Max(textChoice.Text.GetTextLength() + 16 + GraphicsManager.MenuBG.TileWidth * 2, maxWidth);
+                }
+            }
             maxWidth = MathUtils.DivUp(maxWidth, 4) * 4;
             return maxWidth;
         }

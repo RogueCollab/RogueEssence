@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
             CancelFunction = cancelFun;
             int? mappedDefault = null;
             //Intepret the choices from lua
-            List<MenuTextChoice> choices = new List<MenuTextChoice>();
+            List<IChoosable> choices = new List<IChoosable>();
             IDictionaryEnumerator dict = choicesPairs.GetEnumerator();
             while (dict.MoveNext())
             {
@@ -65,25 +65,38 @@ namespace RogueEssence.Menu
                 bool enabled = true;
                 LuaFunction fn = null;
                 if (dict.Value is string)
+                {
                     choicetext = dict.Value as string;
+
+                    choices.Add(new MenuTextChoice(choicetext, () =>
+                    {
+                        if (fn != null)
+                            fn.Call();
+                    },
+                        enabled, enabled ? Color.White : Color.Red));
+                }
                 else if (dict.Value is LuaTable)
                 {
                     LuaTable tbl = dict.Value as LuaTable;
                     choicetext = (string)tbl[1];
                     enabled = (bool)tbl[2];
                     fn = (LuaFunction)tbl[3];
+
+                    choices.Add(new MenuTextChoice(choicetext, () =>
+                    {
+                        if (fn != null)
+                            fn.Call();
+                    },
+                        enabled, enabled ? Color.White : Color.Red));
+                }
+                else if (dict.Value is MenuChoice)
+                {
+                    choices.Add((MenuChoice)dict.Value);
                 }
                 long choiceval = (long)dict.Key;
 
                 if (defaultChoice.Equals(choiceval))
                     mappedDefault = choices.Count;
-
-                choices.Add(new MenuTextChoice(choicetext, () =>
-                {
-                    if (fn != null)
-                        fn.Call();
-                },
-                    enabled, enabled ? Color.White : Color.Red));
             }
 
             if (mappedDefault == null)
