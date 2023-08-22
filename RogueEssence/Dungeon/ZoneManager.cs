@@ -96,17 +96,14 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public void MoveToZone(string zoneIndex, SegLoc mapId, ulong seed)
+        public void MoveToZone(string zoneIndex, ulong seed)
         {
             if (CurrentZone != null)
                 CurrentZone.DoCleanup();
             CurrentZoneID = zoneIndex;
             ZoneData zone = DataManager.Instance.GetZone(zoneIndex);
             if (zone != null)
-            {
                 CurrentZone = zone.CreateActiveZone(seed, zoneIndex);
-                CurrentZone.SetCurrentMap(mapId);
-            }
         }
 
         public void Cleanup()

@@ -686,6 +686,7 @@ namespace RogueEssence
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
             bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
             bool sameSegment = sameZone && (destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment);
+            bool newSegment = (!sameSegment || forceNewZone);
 
             // The only time a replay tries to move to a ground is when it ends its current segment.
             // Do the same logic as EndSegment.
@@ -699,17 +700,27 @@ namespace RogueEssence
 
                 //switch location
                 if (sameZone && !forceNewZone)
-                    ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+                {
+                    //don't need to do anything
+                }
                 else
                 {
-                    ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
+                    ZoneManager.Instance.MoveToZone(destId.ID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
                     yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
                 }
+
+                if (newSegment)
+                {
+                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing, destId.StructID));
+                }
+
+                ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
 
                 //switch in new scene
                 MoveToScene(destScene);
 
-                yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
+                yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, newSegment, preserveMusic));
             }
         }
 
@@ -731,11 +742,6 @@ namespace RogueEssence
 
                 GroundScene.Instance.EnterGround(entryPoint);
 
-                if (newSegment)
-                {
-                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
-                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
-                }
 
                 yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
                 //no fade; the script handles that itself
@@ -747,12 +753,6 @@ namespace RogueEssence
                     BGM(ZoneManager.Instance.CurrentMap.Music, true);
 
                 DungeonScene.Instance.EnterFloor(entryPoint);
-
-                if (newSegment)
-                {
-                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
-                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
-                }
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
 
