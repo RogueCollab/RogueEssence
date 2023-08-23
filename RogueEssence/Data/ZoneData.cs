@@ -71,6 +71,11 @@ namespace RogueEssence.Data
         public bool LevelCap { get; set; }
 
         /// <summary>
+        /// Turn on to keep the teams moveset during level restrictions.
+        /// </summary>
+        public bool KeepSkills { get; set; }
+        
+        /// <summary>
         /// Turn on to force the player to enter with 1 team member.
         /// </summary>
         public bool TeamRestrict { get; set; }
@@ -123,6 +128,7 @@ namespace RogueEssence.Data
             summary.NoEXP = NoEXP;
             summary.Level = Level;
             summary.LevelCap = LevelCap;
+            summary.KeepSkills = KeepSkills;
             summary.TeamRestrict = TeamRestrict;
             summary.TeamSize = TeamSize;
             summary.MoneyRestrict = MoneyRestrict;
@@ -190,6 +196,7 @@ namespace RogueEssence.Data
             zone.NoEXP = NoEXP;
             zone.Level = Level;
             zone.LevelCap = LevelCap;
+            zone.KeepSkills = KeepSkills;
             zone.TeamRestrict = TeamRestrict;
             zone.TeamSize = TeamSize;
             zone.MoneyRestrict = MoneyRestrict;
@@ -212,6 +219,7 @@ namespace RogueEssence.Data
         public bool NoEXP;
         public int Level;
         public bool LevelCap;
+        public bool KeepSkills;
         public bool TeamRestrict;
         public int TeamSize;
         public bool MoneyRestrict;
