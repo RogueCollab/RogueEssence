@@ -26,8 +26,8 @@ namespace RogueEssence
     public static class Text
     {
         public const string DIVIDER_STR = "\n";
-        public static List<Dictionary<string, string>> Strings;
-        public static List<Dictionary<string, string>> StringsEx;
+        public static Dictionary<string, string> Strings;
+        public static Dictionary<string, string> StringsEx;
         public static CultureInfo Culture;
         public static string[] SupportedLangs;
         public static Dictionary<string, LanguageSetting> LangNames;
@@ -55,8 +55,8 @@ namespace RogueEssence
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            Strings = new List<Dictionary<string, string>>();
-            StringsEx = new List<Dictionary<string, string>>();
+            Strings = new Dictionary<string, string>();
+            StringsEx = new Dictionary<string, string>();
 
             List<string> codes = new List<string>();
             Dictionary<string, LanguageSetting> translations = new Dictionary<string, LanguageSetting>();
@@ -332,12 +332,9 @@ namespace RogueEssence
             try
             {
                 //take a resource instead of a string, and return the localized string for it
-                string text = "";
-                for (int ii = 0; ii < Strings.Count; ii++)
-                {
-                    if (Text.Strings[ii].TryGetValue(key, out text))
-                        return FormatGrammar(Regex.Unescape(text), args);
-                }
+                string text;
+                if (Text.Strings.TryGetValue(key, out text))
+                    return FormatGrammar(Regex.Unescape(text), args);
                 throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
             }
             catch (Exception ex)
@@ -352,15 +349,10 @@ namespace RogueEssence
             if (extra != null)
                 key += "_" + extra;
 
-            string text = "";
-            for (int ii = 0; ii < Strings.Count; ii++)
-            {
-                if (Text.Strings[ii].TryGetValue(key, out text))
-                    break;
-            }
-
-            if (!String.IsNullOrEmpty(text))
+            string text;
+            if (Text.Strings.TryGetValue(key, out text))
                 return Regex.Unescape(text);
+    
             return value.ToString();
         }
         public static string ToLocal(this Enum value)
@@ -408,13 +400,20 @@ namespace RogueEssence
             loadCulture(StringsEx, code, "stringsEx");
         }
 
-        private static void loadCulture(List<Dictionary<string, string>> strings, string code, string fileName)
+        private static void loadCulture(Dictionary<string, string> strings, string code, string fileName)
         {
             strings.Clear();
             //order of string fallbacks:
             //first go through all mods of the original language
-            foreach(string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
-                strings.Add(LoadStringResx(path));
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
+            {
+                Dictionary<string, string> dict = LoadStringResx(path);
+                foreach (string key in dict.Keys)
+                {
+                    if (!strings.ContainsKey(key))
+                        strings.Add(key, dict[key]);
+                }
+            }
 
             //then go through all mods of the official fallbacks
             if (LangNames.ContainsKey(code))
@@ -422,12 +421,26 @@ namespace RogueEssence
                 foreach (string fallback in LangNames[code].Fallbacks)
                 {
                     foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
-                        strings.Add(LoadStringResx(path));
+                    {
+                        Dictionary<string, string> dict = LoadStringResx(path);
+                        foreach (string key in dict.Keys)
+                        {
+                            if (!strings.ContainsKey(key))
+                                strings.Add(key, dict[key]);
+                        }
+                    }
                 }
             }
             //then go through all mods of the default language
             foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
-                strings.Add(LoadStringResx(path));
+            {
+                Dictionary<string, string> dict = LoadStringResx(path);
+                foreach (string key in dict.Keys)
+                {
+                    if (!strings.ContainsKey(key))
+                        strings.Add(key, dict[key]);
+                }
+            }
         }
 
         public static string GetLanguagedPath(string basePath, string cultureCode)
@@ -557,12 +570,9 @@ namespace RogueEssence
         {
             try
             {
-                string val = "";
-                for (int ii = 0; ii < Text.StringsEx.Count; ii++)
-                {
-                    if (Text.StringsEx[ii].TryGetValue(Key, out val))
-                        return Regex.Unescape(val);
-                }
+                string val;
+                if (Text.StringsEx.TryGetValue(Key, out val))
+                    return Regex.Unescape(val);
                 throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
             }
             catch (Exception ex)
