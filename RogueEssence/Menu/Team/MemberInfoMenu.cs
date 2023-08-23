@@ -53,7 +53,7 @@ namespace RogueEssence.Menu
                 new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), false);
 
             string speciesName = dexEntry.GetColoredName();
-            if (player.BaseForm.Skin != DataManager.Instance.DefaultSkin)
+            if (DataManager.Instance.GetSkin(player.BaseForm.Skin).Display)
                 speciesName += " (" + DataManager.Instance.GetSkin(player.BaseForm.Skin).GetColoredName() + ")";
             if (player.BaseForm.Gender != Gender.Genderless)
                 speciesName += (player.BaseForm.Gender == Gender.Male) ? " (\u2642)" : " (\u2640)";
