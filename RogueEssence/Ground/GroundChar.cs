@@ -317,7 +317,7 @@ namespace RogueEssence.Ground
                             continue;
                     }
 
-                    if (obj.TriggerType != EEntityTriggerTypes.None)
+                    if (obj.TriggerType == EEntityTriggerTypes.Touch || obj.TriggerType == EEntityTriggerTypes.TouchOnce)
                         GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
                     break;
                 }
