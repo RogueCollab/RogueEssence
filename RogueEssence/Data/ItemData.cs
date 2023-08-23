@@ -87,6 +87,7 @@ namespace RogueEssence.Data
         /// Special variables that this item contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<ItemState> ItemStates;
         
         /// <summary>

@@ -11,6 +11,7 @@ using RogueEssence.Dev.Views;
 using System.Collections;
 using RogueEssence.Dev.ViewModels;
 using Avalonia.Interactivity;
+using Avalonia;
 
 namespace RogueEssence.Dev
 {
@@ -18,6 +19,7 @@ namespace RogueEssence.Dev
     {
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
+        public override bool DefaultLabel => false;
 
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, IPriorityList member, Type[] subGroupStack)
         {
@@ -83,7 +85,27 @@ namespace RogueEssence.Dev
             };
 
             vm.LoadFromList(member);
-            control.Children.Add(lbxValue);
+
+
+            ListCollapseAttribute collapseAtt = ReflectionExt.FindAttribute<ListCollapseAttribute>(attributes);
+
+            string desc = DevDataManager.GetMemberDoc(parentType, name);
+            if (collapseAtt != null)
+            {
+
+                Expander expander = new Expander();
+                expander.Header = Text.GetMemberTitle(name) + ":";
+                if (desc != null)
+                    ToolTip.SetTip(expander, desc);
+                expander.IsExpanded = member.Count > 0;
+                expander.Content = lbxValue;
+                control.Children.Add(expander);
+            }
+            else
+            {
+                LoadLabelControl(control, name, desc);
+                control.Children.Add(lbxValue);
+            }
         }
 
 
@@ -136,7 +158,14 @@ namespace RogueEssence.Dev
         {
             int controlIndex = 0;
 
-            PriorityListBox lbxValue = (PriorityListBox)control.Children[controlIndex];
+            ListCollapseAttribute collapseAtt = ReflectionExt.FindAttribute<ListCollapseAttribute>(attributes);
+
+            PriorityListBox lbxValue;
+            if (collapseAtt != null)
+                lbxValue = (PriorityListBox)((Expander)control.Children[controlIndex]).Content;
+            else
+                lbxValue = (PriorityListBox)control.Children[controlIndex];
+
             PriorityListBoxViewModel mv = (PriorityListBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);
         }

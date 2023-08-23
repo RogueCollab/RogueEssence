@@ -3,6 +3,7 @@ using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueElements;
 using Microsoft.Xna.Framework;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -53,7 +54,9 @@ namespace RogueEssence.Data
         public Loc MinimapIcon;
         public Color MinimapColor;
 
+        [ListCollapse]
         public PriorityList<SingleCharEvent> LandedOnTiles;
+        [ListCollapse]
         public PriorityList<SingleCharEvent> InteractWithTiles;
 
         public TileData()

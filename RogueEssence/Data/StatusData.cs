@@ -65,11 +65,13 @@ namespace RogueEssence.Data
         /// Special variables that this status contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<StatusState> StatusStates;
 
         /// <summary>
         /// Event for when the character's skills are changed or swapped around.
         /// </summary>
+        [ListCollapse]
         public PriorityList<SkillChangeEvent> OnSkillChanges;
 
         /// <summary>

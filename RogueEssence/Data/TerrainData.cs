@@ -2,6 +2,7 @@
 using RogueEssence.Dungeon;
 using RogueElements;
 using Microsoft.Xna.Framework;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -46,8 +47,10 @@ namespace RogueEssence.Data
         /// Special variables that this terrain contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<TerrainState> TerrainStates;
 
+        [ListCollapse]
         public PriorityList<SingleCharEvent> LandedOnTiles;
 
         public TerrainData()

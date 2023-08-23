@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
         public override bool DefaultSubgroup => true;
 
         public override bool DefaultDecoration => false;
+        public override bool DefaultLabel => false;
 
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, ITypeDict member, Type[] subGroupStack)
         {
@@ -88,14 +89,41 @@ namespace RogueEssence.Dev
             foreach (object state in member)
                 states.Add(state);
             vm.LoadFromList(states);
-            control.Children.Add(lbxValue);
+
+
+
+            ListCollapseAttribute collapseAtt = ReflectionExt.FindAttribute<ListCollapseAttribute>(attributes);
+
+            string desc = DevDataManager.GetMemberDoc(parentType, name);
+            if (collapseAtt != null)
+            {
+
+                Expander expander = new Expander();
+                expander.Header = Text.GetMemberTitle(name) + ":";
+                if (desc != null)
+                    ToolTip.SetTip(expander, desc);
+                expander.IsExpanded = member.Count > 0;
+                expander.Content = lbxValue;
+                control.Children.Add(expander);
+            }
+            else
+            {
+                LoadLabelControl(control, name, desc);
+                control.Children.Add(lbxValue);
+            }
         }
 
         public override ITypeDict SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
         {
             int controlIndex = 0;
 
-            CollectionBox lbxValue = (CollectionBox)control.Children[controlIndex];
+            ListCollapseAttribute collapseAtt = ReflectionExt.FindAttribute<ListCollapseAttribute>(attributes);
+
+            CollectionBox lbxValue;
+            if (collapseAtt != null)
+                lbxValue = (CollectionBox)((Expander)control.Children[controlIndex]).Content;
+            else
+                lbxValue = (CollectionBox)control.Children[controlIndex];
 
             ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;

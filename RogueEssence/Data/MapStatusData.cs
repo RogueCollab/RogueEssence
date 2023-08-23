@@ -2,6 +2,7 @@
 using RogueEssence.Dungeon;
 using RogueEssence.Content;
 using RogueElements;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -29,8 +30,10 @@ namespace RogueEssence.Data
         public SwitchOffEmitter Emitter;
         public bool DefaultHidden;
 
+        [ListCollapse]
         public StateCollection<MapStatusState> StatusStates;
 
+        [ListCollapse]
         public PriorityList<RefreshEvent> OnMapRefresh;
         public MapStatusGivenEvent RepeatMethod;
 
