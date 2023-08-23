@@ -63,7 +63,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             string stringsdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, ZoneManager.Instance.CurrentGround.AssetName, "/init.lua"));
             //Clear old strings
-            Dictionary<string, Dictionary<string, string>> rawStrings = new Dictionary<string, Dictionary<string, string>>();
+            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = new Dictionary<string, Dictionary<string, (string, string)>>();
 
             string FMTStr = String.Format("{0}{1}.{2}", ScriptStrings.STRINGS_FILE_NAME, "{0}", ScriptStrings.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)
@@ -77,13 +77,12 @@ namespace RogueEssence.Dev.ViewModels
                     foreach (string name in xmlDict.Keys)
                     {
                         if (!rawStrings.ContainsKey(name))
-                            rawStrings.Add(name, new Dictionary<string, string>());
+                            rawStrings.Add(name, new Dictionary<string, (string val, string comment)>());
 
-                        //TODO: support comments
                         if (!rawStrings[name].ContainsKey(code))
-                            rawStrings[name].Add(code, xmlDict[name].val);
+                            rawStrings[name].Add(code, xmlDict[name]);
                         else
-                            rawStrings[name][code] = xmlDict[name].val;
+                            rawStrings[name][code] = xmlDict[name];
                     }
 
                     DiagManager.Instance.LogInfo(String.Format("GroundEditor.LoadStrings({0}): Loaded succesfully the \"{1}\" strings file for this map!", stringsdir, fname));
@@ -97,7 +96,16 @@ namespace RogueEssence.Dev.ViewModels
 
             MapStrings.Clear();
             foreach (string key in rawStrings.Keys)
-                MapStrings.Add(new MapString(key, "", rawStrings[key]));
+            {
+                Dictionary<string, string> comments = new Dictionary<string, string>();
+                Dictionary<string, string> vals = new Dictionary<string, string>();
+                foreach (string name in rawStrings[key].Keys)
+                {
+                    comments[name] = rawStrings[key][name].comment;
+                    vals[name] = rawStrings[key][name].val;
+                }
+                MapStrings.Add(new MapString(key, comments, vals));
+            }
         }
 
         /// <summary>
@@ -116,12 +124,13 @@ namespace RogueEssence.Dev.ViewModels
 
                 foreach (MapString str in MapStrings)
                 {
-                    string tl;
+                    string cm, tl;
+                    if (!str.Comments.TryGetValue(code, out cm))
+                        cm = "";
                     if (!str.Translations.TryGetValue(code, out tl))
                         tl = "";
-                    //TODO: support comments
                     if (tl != "" || code == "en")
-                        stringDict[str.Key] = (tl, "");
+                        stringDict[str.Key] = (tl, cm);
                 }
                 Text.SaveStringResx(path, stringDict);
             }

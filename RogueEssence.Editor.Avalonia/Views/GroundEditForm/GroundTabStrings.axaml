@@ -35,7 +35,7 @@
 
       <DataGrid.Columns>
         <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="1*"/>
-        <DataGridTextColumn Header="Comment" Binding="{Binding Comment}" Width="2*"/>
+        <DataGridTextColumn Header="Comment" Binding="{Binding Comment}" Width="1*"/>
         <DataGridTextColumn Header="String" Binding="{Binding String}" Width="3*"/>
       </DataGrid.Columns>
     </DataGrid>

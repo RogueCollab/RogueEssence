@@ -23,8 +23,10 @@
       <ColumnDefinition/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <Button Name="btnEditStartParams" Command="{Binding btnEditStartParams_Click}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" >Start Parameters</Button>
-    <Button Name="btnEditUniversal" Command="{Binding btnEditUniversal_Click}" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" >Universal</Button>
+    <Button Name="btnEditStartParams" Command="{Binding btnEditStartParams_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Start Parameters</Button>
+    <Button Name="btnEditUniversal" Command="{Binding btnEditUniversal_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Universal</Button>
+    <Button Name="btnEditStrings" Command="{Binding btnEditStrings_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Menu Text</Button>
+    <Button Name="btnEditStringsEx" Command="{Binding btnEditStringsEx_Click}" Margin="4" Grid.Row="1" Grid.Column="1" >Gameplay Text</Button>
     <Button Name="btnEditHeal" Command="{Binding btnEditHeal_Click}" Margin="4" Grid.Row="2" Grid.Column="0" >Heal FX</Button>
     <Button Name="btnEditRestoreCharge" Command="{Binding btnEditRestoreCharge_Click}" Margin="4" Grid.Row="2" Grid.Column="1" >+Charge FX</Button>
     <Button Name="btnEditLoseCharge" Command="{Binding btnEditLoseCharge_Click}" Margin="4" Grid.Row="3" Grid.Column="0" >-Charge FX</Button>
