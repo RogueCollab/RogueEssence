@@ -58,7 +58,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Formats a string.  Will unescape escaped characters.
+        /// Formats a string.  Will unescape escaped characters and process grammar tags.
         /// </summary>
         /// <param name="fmt">String to format.</param>
         /// <param name="para">Arguments</param>

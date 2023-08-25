@@ -123,7 +123,10 @@ namespace RogueEssence.Dev
             if (collapseAtt != null)
                 lbxValue = (CollectionBox)((Expander)control.Children[controlIndex]).Content;
             else
+            {
+                controlIndex++;
                 lbxValue = (CollectionBox)control.Children[controlIndex];
+            }
 
             ITypeDict member = (ITypeDict)Activator.CreateInstance(type);
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;

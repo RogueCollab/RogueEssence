@@ -164,7 +164,10 @@ namespace RogueEssence.Dev
             if (collapseAtt != null)
                 lbxValue = (PriorityListBox)((Expander)control.Children[controlIndex]).Content;
             else
+            {
+                controlIndex++;
                 lbxValue = (PriorityListBox)control.Children[controlIndex];
+            }
 
             PriorityListBoxViewModel mv = (PriorityListBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);
