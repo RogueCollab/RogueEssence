@@ -351,7 +351,10 @@ namespace RogueEssence
 
             string text;
             if (Text.Strings.TryGetValue(key, out text))
-                return Regex.Unescape(text);
+            {
+                if (!String.IsNullOrEmpty(text))
+                    return Regex.Unescape(text);
+            }
     
             return value.ToString();
         }
