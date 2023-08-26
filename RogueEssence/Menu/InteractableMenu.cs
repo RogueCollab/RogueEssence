@@ -9,7 +9,10 @@ namespace RogueEssence.Menu
         const int INPUT_GAP = 6;
 
         public virtual bool IsCheckpoint { get { return false; } }
-        public bool Inactive { get; set; }
+        public bool Inactive {
+            get;
+            set;
+        }
         public bool BlockPrevious { get; set; }
 
         public abstract void Update(InputManager input);

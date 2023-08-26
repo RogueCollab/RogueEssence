@@ -39,6 +39,7 @@ namespace RogueEssence.Menu
 
             if (menus.Count > 0)
                 menus[menus.Count - 1].Inactive = true;
+            menu.Inactive = false;
             menu.BlockPrevious = !stackOn;
             menus.Add(menu);
         }
@@ -80,7 +81,7 @@ namespace RogueEssence.Menu
         {
             if (menus.Count > 0)
                 menus[menus.Count - 1].Inactive = true;
-
+            menu.Inactive = false;
             menu.BlockPrevious = true;
             menus.Add(menu);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine());
