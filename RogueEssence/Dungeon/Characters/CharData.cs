@@ -147,6 +147,7 @@ namespace RogueEssence.Dungeon
             MAtkBonus = other.MAtkBonus;
             MDefBonus = other.MDefBonus;
             SpeedBonus = other.SpeedBonus;
+            Unrecruitable = other.Unrecruitable;
 
             BaseSkills = new List<SlotSkill>();
             foreach (SlotSkill skill in other.BaseSkills)
