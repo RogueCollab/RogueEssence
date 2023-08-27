@@ -6,7 +6,7 @@ using System;
 namespace RogueEssence.Content
 {
 
-    class OverlayAnim : BaseAnim
+    public class OverlayAnim : BaseAnim
     {
 
         public OverlayAnim(Loc mapLoc, BGAnimData anim, Color color, bool omnipresent, Loc movement, int totalTime, int fadeIn, int fadeOut, bool repeatX, bool repeatY)
@@ -114,5 +114,10 @@ namespace RogueEssence.Content
             return new Loc(GraphicsManager.TileSize);
         }
 
+        public void EndAnim()
+        {
+            int frame = Time.ToFrames();
+            TotalTime = frame + FadeOut;
+        }
     }
 }

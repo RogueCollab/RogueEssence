@@ -566,14 +566,20 @@ namespace RogueEssence.Ground
             Loc texDiff = RogueElements.Grid.ResizeJustified(ref obstacles,
                 width * TexSize, height * TexSize, anchorDir.Reverse(), blockChangeOp, blocknewOp);
 
-            foreach (GroundChar character in IterateCharacters())
+            foreach (EntityLayer layer in Entities)
             {
-                character.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TileSize - character.Width, height * TileSize - character.Height, character.MapLoc + texDiff * divSize));
-                character.UpdateFrame();
+                foreach (GroundEntity obj in layer.IterateEntities())
+                {
+                    obj.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TileSize - obj.Width, height * TileSize - obj.Height, obj.MapLoc + texDiff * divSize));
+                    if (obj is GroundChar)
+                    {
+                        GroundChar character = (GroundChar)obj;
+                        character.UpdateFrame();
+                    }
+                }
             }
 
             this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
-            //wait... don't we need to recompute all entities?
         }
 
         public void Retile(int texSize)

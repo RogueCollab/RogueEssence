@@ -1226,7 +1226,7 @@ namespace RogueEssence.Script
         //===================================
 
         /// <summary>
-        /// Checks if a player is making a certain input.
+        /// Checks if a player is making a certain physical keyboard input.
         /// </summary>
         /// <param name="keyid">The ID of the input</param>
         /// <returns>True if the button is currently pressed.  False otherwise.</returns>
@@ -1234,6 +1234,16 @@ namespace RogueEssence.Script
         {
             Microsoft.Xna.Framework.Input.Keys curkey = (Microsoft.Xna.Framework.Input.Keys)keyid;
             return GameManager.Instance.MetaInputManager.BaseKeyDown(curkey);
+        }
+
+        /// <summary>
+        /// Checks if a player is making a certain game input.
+        /// </summary>
+        /// <param name="inputid"></param>
+        /// <returns>True if the input is currently pressed.  False otherwise.</returns>
+        public bool IsInputDown(int inputid)
+        {
+            return GameManager.Instance.MetaInputManager[(FrameInput.InputType)inputid];
         }
 
         /// <summary>

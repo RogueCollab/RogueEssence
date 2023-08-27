@@ -113,6 +113,8 @@ namespace RogueEssence.Content
         {
             Anim = new BGAnimData(other.Anim);
             Movement = other.Movement;
+            FadeIn = other.FadeIn;
+            FadeOut = other.FadeOut;
             Offset = other.Offset;
             Layer = other.Layer;
             Color = other.Color;
@@ -126,6 +128,19 @@ namespace RogueEssence.Content
         /// Pixels per second
         /// </summary>
         public Loc Movement;
+
+
+        /// <summary>
+        /// Time to fade in, in render frames.  Cuts into total time.
+        /// </summary>
+        public int FadeIn;
+
+        /// <summary>
+        /// Time to fade out, in render frames.  Cuts into total time.
+        /// </summary>
+        [Dev.SharedRow]
+        public int FadeOut;
+
         public DrawLayer Layer;
         public Color Color;
 
@@ -136,7 +151,7 @@ namespace RogueEssence.Content
         {
             if (runningAnim == null && Anim.AnimIndex != "")
             {
-                runningAnim = new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, true, Movement, -1, 0, 0, true, true);
+                runningAnim = new OverlayAnim(Origin + Dir.GetLoc() * Offset, Anim, Color, true, Movement, -1, FadeIn, FadeOut, true, true);
                 scene.Anims[(int)Layer].Add(runningAnim);
             }
         }
@@ -145,7 +160,7 @@ namespace RogueEssence.Content
         {
             finished = true;
             if (runningAnim != null)
-                runningAnim.TotalTime = 0;//TODO: the running anim should just be aborted directly.  We need a standard for this...
+                runningAnim.EndAnim();
         }
 
         public override string ToString()
