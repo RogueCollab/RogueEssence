@@ -166,14 +166,17 @@ namespace RogueEssence.Script
         /// <param name="entryid">The entry point on the resulting map</param>
         /// <param name="display">Display an epitaph marking the end of the adventure.</param>
         /// <param name="fanfare">Play a fanfare.</param>
+        /// <param name="completedZone">Zone to mark as completed. Defaults to current zone.</param>
         /// <example>
         /// GAME:EndDungeonRun(GameProgress.ResultType.Cleared, 0, -1, 1, 0, true, true)
         /// </example>
         public LuaFunction EndDungeonRun;
 
-        public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
+        public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare, string completedZone = null)
         {
-            return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
+            if (String.IsNullOrEmpty(completedZone))
+                completedZone = ZoneManager.Instance.CurrentZoneID;
+            return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare, completedZone));
         }
 
         /// <summary>
@@ -1483,7 +1486,7 @@ namespace RogueEssence.Script
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;
-            EndDungeonRun = state.RunString("return function(_, result, destzoneid, structureid, mapid, entryid, display, fanfare) return coroutine.yield(GAME:_EndDungeonRun(result, destzoneid, structureid, mapid, entryid, display, fanfare)) end").First() as LuaFunction;
+            EndDungeonRun = state.RunString("return function(_, result, destzoneid, structureid, mapid, entryid, display, fanfare, completedZone) return coroutine.yield(GAME:_EndDungeonRun(result, destzoneid, structureid, mapid, entryid, display, fanfare, completedZone)) end").First() as LuaFunction;
             FadeOut = state.RunString("return function(_, bwhite, duration) return coroutine.yield(GAME:_FadeOut(bwhite, duration)) end").First() as LuaFunction;
             FadeIn = state.RunString("return function(_, duration) return coroutine.yield(GAME:_FadeIn(duration)) end").First() as LuaFunction;
             MoveCamera = state.RunString("return function(_, x, y, duration, toPlayer) return coroutine.yield(GAME:_MoveCamera(x, y, duration, toPlayer)) end").First() as LuaFunction;

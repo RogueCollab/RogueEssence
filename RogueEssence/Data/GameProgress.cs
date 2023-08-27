@@ -330,7 +330,7 @@ namespace RogueEssence.Data
         }
 
         public abstract IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
-        public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
+        public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare, string completedZoneId);
 
         /// <summary>
         /// Begin counting play time for session
@@ -978,7 +978,7 @@ namespace RogueEssence.Data
                 DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false, SessionStartTime);
         }
 
-        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
+        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare, string completedZoneId)
         {
             EndSession();
 
@@ -1044,7 +1044,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
+                    CompleteDungeon(completedZoneId);
 
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -1093,7 +1093,7 @@ namespace RogueEssence.Data
             {
                 if (mainSave != null)
                     DataManager.Instance.SetProgress(mainSave);
-                DataManager.Instance.Save.CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
+                DataManager.Instance.Save.CompleteDungeon(completedZoneId);
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 
@@ -1242,12 +1242,11 @@ namespace RogueEssence.Data
             yield break;
         }
 
-        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
+        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare, string completedZoneId)
         {
             EndSession();
 
             bool recorded = DataManager.Instance.RecordingReplay;
-            string completedZone = ZoneManager.Instance.CurrentZoneID;
             //if lose, end the play, display plaque, and go to title
             if (result != ResultType.Cleared)
             {
@@ -1299,7 +1298,7 @@ namespace RogueEssence.Data
                 }
 
                 if (result == ResultType.Escaped)
-                    yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZone));
+                    yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZoneId));
                 else if (newRecruits.Count > 0)
                 {
                     yield return new WaitForFrames(10);
@@ -1329,7 +1328,7 @@ namespace RogueEssence.Data
                 if (state != null)
                 {
                     MergeDexTo(state.Save, true);
-                    state.Save.CompleteDungeon(completedZone);
+                    state.Save.CompleteDungeon(completedZoneId);
                     DataManager.Instance.SaveGameState(state);
                 }
                 
@@ -1349,7 +1348,7 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
                 }
 
-                yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZone));
+                yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZoneId));
             }
             yield return new WaitForFrames(20);
         }
