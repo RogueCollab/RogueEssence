@@ -45,7 +45,13 @@ namespace RogueEssence.Menu
                 if (zoneEntry.Level > -1)
                 {
                     if (zoneEntry.LevelCap || rogue)
+                    {
                         rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), Loc.Zero));
+                        if (!zoneEntry.KeepSkills && !rogue)
+                        {
+                            rules.Add(new MenuText(Text.FormatKey("ZONE_RESET_MOVESET"), Loc.Zero));
+                        }
+                    }
                     else
                         rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), Loc.Zero));
                 }

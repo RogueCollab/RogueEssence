@@ -18,6 +18,7 @@ namespace RogueEssence.Dungeon
         public bool NoEXP;
         public int Level;
         public bool LevelCap;
+        public bool KeepSkills;
         public bool TeamRestrict;
         public int TeamSize;
         public bool MoneyRestrict;
