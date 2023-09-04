@@ -370,7 +370,7 @@ namespace RogueEssence.Script
         {
             if (chara != null)
             {
-                m_curspeakerID = chara.CurrentForm;
+                m_curspeakerID = chara.Appearance;
                 m_curspeakerName = chara.GetDisplayName(true);
             }
             else
