@@ -332,7 +332,8 @@ namespace RogueEssence.Script
         const string SCRIPT_COMMON = "common.lua";
         const string SCRIPT_VARS = "scriptvars.lua";
         const string SCRIPT_EVENT = "event.lua";
-        const string INCLUDE_EVENT = "include.lua";
+        const string SCRIPT_INCLUDE = "include.lua";
+        const string SCRIPT_DEBUG = "debugger.lua";
 
         /// <summary>
         /// Assemble the path to the specified script
@@ -427,7 +428,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Importing .NET packages..");
             LuaState.LoadCLRPackage();
 
-            LuaState.DoFile(PathToScript(INCLUDE_EVENT));
+            LuaState.DoFile(PathToScript(SCRIPT_INCLUDE));
         }
 
         /// <summary>
@@ -792,17 +793,24 @@ namespace RogueEssence.Script
         {
             DiagManager.Instance.LogInfo("[SE]:Caching scripts..");
             m_scrsvc.SetupLuaFunctions(this);
+            try
+            {
+                LuaState.DoFile(PathToScript(SCRIPT_DEBUG));
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+            }
             //Cache default script variables
             LuaState.DoFile(PathToScript(SCRIPT_VARS));
             //Cache common lib
-            LuaState.LoadFile(PathToScript(SCRIPT_COMMON));
+            LuaState.DoFile(PathToScript(SCRIPT_COMMON));
             //load events
             LuaState.DoFile(PathToScript(SCRIPT_EVENT));
 
             //Install misc lua functions each interfaces needs
             DiagManager.Instance.LogInfo("[SE]:Installing game interface functions..");
             SetupLuaFunctions();
-            //m_scrco.SetupLuaFunctions(this);
             m_scriptstr.SetupLuaFunctions(this);
             m_scriptsound.SetupLuaFunctions(this);
             m_scriptground.SetupLuaFunctions(this);
