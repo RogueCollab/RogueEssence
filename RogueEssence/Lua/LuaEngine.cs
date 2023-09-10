@@ -791,8 +791,9 @@ namespace RogueEssence.Script
         /// </summary>
         private void CacheMainScripts()
         {
-            DiagManager.Instance.LogInfo("[SE]:Caching scripts..");
+            DiagManager.Instance.LogInfo("[SE]:Setting up lua functions...");
             m_scrsvc.SetupLuaFunctions(this);
+            DiagManager.Instance.LogInfo("[SE]:Setting up debug functions...");
             try
             {
                 LuaState.DoFile(PathToScript(SCRIPT_DEBUG));
@@ -801,10 +802,14 @@ namespace RogueEssence.Script
             {
                 DiagManager.Instance.LogError(ex, false);
             }
+            DiagManager.Instance.LogInfo("[SE]:Setting up default script vars...");
             //Cache default script variables
             LuaState.DoFile(PathToScript(SCRIPT_VARS));
+
+            DiagManager.Instance.LogInfo("[SE]:Caching common lib...");
             //Cache common lib
             LuaState.LoadFile(PathToScript(SCRIPT_COMMON));
+            DiagManager.Instance.LogInfo("[SE]:Loading events...");
             //load events
             LuaState.DoFile(PathToScript(SCRIPT_EVENT));
 
