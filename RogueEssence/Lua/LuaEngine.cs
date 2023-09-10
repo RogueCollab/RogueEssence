@@ -804,7 +804,7 @@ namespace RogueEssence.Script
             //Cache default script variables
             LuaState.DoFile(PathToScript(SCRIPT_VARS));
             //Cache common lib
-            LuaState.DoFile(PathToScript(SCRIPT_COMMON));
+            LuaState.LoadFile(PathToScript(SCRIPT_COMMON));
             //load events
             LuaState.DoFile(PathToScript(SCRIPT_EVENT));
 
