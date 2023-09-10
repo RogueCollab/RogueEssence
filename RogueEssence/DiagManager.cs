@@ -51,6 +51,7 @@ namespace RogueEssence
 
         private string gamePadID;
         public Dictionary<string, Dictionary<Buttons, string>> ButtonToLabel { get; private set; }
+        public Dictionary<Keys, string> KeyToLabel { get; private set; }
         public Dictionary<string, GamePadMap> GamepadDefaults { get; set; }
         public Buttons[] CurActionButtons { get { return CurSettings.GamepadMaps[gamePadID].ActionButtons; } }
         public string CurGamePadName { get { return CurSettings.GamepadMaps[gamePadID].Name; } }
@@ -88,6 +89,7 @@ namespace RogueEssence
             CurSettings = new Settings();
             gamePadID = "default";
             ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
+            KeyToLabel = new Dictionary<Keys, string>();
             GamepadDefaults = new Dictionary<string, GamePadMap>();
             FNALoggerEXT.LogInfo = LogInfo;
             FNALoggerEXT.LogWarn = LogInfo;
@@ -309,7 +311,7 @@ namespace RogueEssence
             }
         }
 
-        public void SetupGamepad()
+        public void SetupInputs()
         {
             ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
             //try to load from file
@@ -329,6 +331,19 @@ namespace RogueEssence
 
                 string fileName = Path.GetFileNameWithoutExtension(filePath);
                 ButtonToLabel[fileName] = mapping;
+            }
+
+            KeyToLabel = new Dictionary<Keys, string>();
+            {
+                string filePath = CONTROLS_LABEL_PATH + "keyboard.xml";
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(filePath);
+
+                foreach (XmlNode button in xmldoc.SelectNodes("root/Key"))
+                {
+                    Keys btn = Enum.Parse<Keys>(button.Attributes["name"].Value);
+                    KeyToLabel[btn] = button.InnerText;
+                }
             }
 
             filePaths = Directory.GetFiles(CONTROLS_DEFAULT_PATH, "*.xml");
@@ -734,6 +749,10 @@ namespace RogueEssence
 
         public string GetKeyboardString(Keys key)
         {
+            string mappedString;
+            if (KeyToLabel.TryGetValue(key, out mappedString))
+                return Regex.Unescape(mappedString);
+
             return "[" + key.ToLocal() + "]";
         }
 
