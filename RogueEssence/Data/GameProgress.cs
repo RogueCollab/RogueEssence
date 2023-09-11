@@ -523,20 +523,20 @@ namespace RogueEssence.Data
         /// <param name="permanent"></param>
         /// <param name="silent"></param>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent)
+        public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent, bool keepSkills)
         {
             StartLevel = level;
             try
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills);
                     if (!permanent)
                         ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills);
                     //no backref for guests
                 }
             }
@@ -555,7 +555,7 @@ namespace RogueEssence.Data
         /// <param name="character"></param>
         /// <param name="level"></param>
         /// <param name="capOnly">Will force lower level to specified level if false.</param>
-        public void RestrictCharLevel(Character character, int level, bool capOnly)
+        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills)
         {
             //set level
             if (capOnly)
@@ -575,15 +575,19 @@ namespace RogueEssence.Data
 
             if (!character.Dead)
                 character.HP = character.MaxHP;
-            
-            //reroll skills
-            BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-            while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                character.DeleteSkill(0);
-            List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
-            foreach (string skill in final_skills)
-                character.LearnSkill(skill, GetDefaultEnable(skill));
+            //reroll skills
+            BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species)
+                .Forms[character.BaseForm.Form];
+
+            if (!keepSkills) {
+                while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
+                    character.DeleteSkill(0);
+                List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+                foreach (string skill in final_skills)
+                    character.LearnSkill(skill, GetDefaultEnable(skill));
+            }
+
             character.Relearnables = new Dictionary<string, bool>();
         }
 
@@ -968,7 +972,7 @@ namespace RogueEssence.Data
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;
@@ -1228,7 +1232,7 @@ namespace RogueEssence.Data
             Stakes = stakes;
             Outcome = ResultType.Unknown;
 
-            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, false, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, false, true, true, false));
 
             BeginSession();
 

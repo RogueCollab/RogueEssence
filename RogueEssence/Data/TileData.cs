@@ -41,7 +41,7 @@ namespace RogueEssence.Data
 
 
         /// <summary>
-        /// The layer to draw the tile on.  Only supports Bottom, Back and Front for now.
+        /// The layer to draw the tile on. Only supports Bottom, Back, and Front for now.
         /// </summary>
         public DrawLayer Layer;
         //public bool BlockLight;
