@@ -556,8 +556,8 @@ namespace RogueEssence.Dev
             {
                 using (FontSheet font = FontSheet.Import(Path.Combine(sourceDir, fonts[ii]) + "/"))
                 {
-                    using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii] + ".png"), FileMode.Create, FileAccess.Write))
-                        font.Export(stream);
+                    //using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii] + ".png"), FileMode.Create, FileAccess.Write))
+                    //    font.Export(stream);
 
                     using (FileStream stream = new FileStream(String.Format(cachePattern, fonts[ii]), FileMode.Create, FileAccess.Write))
                     {
