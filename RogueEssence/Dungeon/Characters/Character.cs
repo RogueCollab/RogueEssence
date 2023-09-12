@@ -791,6 +791,9 @@ namespace RogueEssence.Dungeon
         //find a way to check for death in this method, or check for death at certain specific points
         public IEnumerator<YieldInstruction> InflictDamage(int hp, bool anim = true, bool endure = false)
         {
+            if (Dead)
+                yield break;
+
             int takeHP = (hp < 0) ? HP : hp;
             Loc? earshot = null;
             if (!anim)
