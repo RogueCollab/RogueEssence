@@ -85,7 +85,7 @@ namespace RogueEssence.Menu
                     bool hardReq = false;
                     foreach (PromoteDetail detail in dexEntry.Promotions[ii].Details)
                     {
-                        if (detail.IsHardReq() && !detail.GetReq(player))
+                        if (detail.IsHardReq() && !detail.GetReq(player, inDungeon))
                         {
                             hardReq = true;
                             break;

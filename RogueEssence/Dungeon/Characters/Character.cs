@@ -1351,16 +1351,20 @@ namespace RogueEssence.Dungeon
         public List<string> GetRelearnableSkills(bool includePreEvo)
         {
             List<BaseMonsterForm> entries = new List<BaseMonsterForm>();
-            string evolutionStage = BaseForm.Species;
+            MonsterID evolutionStage = BaseForm;
             MonsterData entryData;
             BaseMonsterForm entryForm;
 
-            while (!string.IsNullOrEmpty(evolutionStage))
+            while (evolutionStage.IsValid())
             {
-                entryData = DataManager.Instance.GetMonster(evolutionStage);
-                entryForm = entryData.Forms[BaseForm.Form];
+                entryData = DataManager.Instance.GetMonster(evolutionStage.Species);
+                entryForm = entryData.Forms[evolutionStage.Form];
                 entries.Add(entryForm);
-                evolutionStage = includePreEvo ? entryData.PromoteFrom : string.Empty;
+
+                if (includePreEvo)
+                    evolutionStage = new MonsterID(entryData.PromoteFrom, entryForm.PromoteForm, evolutionStage.Skin, evolutionStage.Gender);
+                else
+                    evolutionStage = MonsterID.Invalid;
             }
 
             List<string> forgottenSkills = new List<string>();

@@ -815,7 +815,7 @@ namespace RogueEssence.Script
                 bool hardReq = false;
                 foreach (PromoteDetail detail in entry.Promotions[ii].Details)
                 {
-                    if (detail.IsHardReq() && !detail.GetReq(character))
+                    if (detail.IsHardReq() && !detail.GetReq(character, false))
                     {
                         hardReq = true;
                         break;
@@ -852,7 +852,7 @@ namespace RogueEssence.Script
                     bool hardReq = false;
                     foreach (PromoteDetail detail in entry.Promotions[ii].Details)
                     {
-                        if (detail.IsHardReq() && !detail.GetReq(character))
+                        if (detail.IsHardReq() && !detail.GetReq(character, false))
                         {
                             hardReq = true;
                             break;
@@ -879,8 +879,7 @@ namespace RogueEssence.Script
             bool bypass = character.EquippedItem.ID == bypassItem;
             MonsterID newData = character.BaseForm;
             newData.Species = branch.Result;
-            if (newData.Form >= entry.Forms.Count)
-                newData.Form = 0;
+            branch.BeforePromote(character, false, ref newData);
             character.Promote(newData);
             character.FullRestore();
             branch.OnPromote(character, false, bypass);

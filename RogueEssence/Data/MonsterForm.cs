@@ -16,6 +16,8 @@ namespace RogueEssence.Data
 
         public bool Temporary;
 
+        public int PromoteForm;
+
         [JsonConverter(typeof(ElementConverter))]
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public string Element1;

@@ -1977,7 +1977,7 @@ namespace RogueEssence.Script
     public class LuaTableContainer
     {
         /// <summary>
-        /// We're using a List<object[]> instead of a dictionary because some quirk in json serialization causes integer keys to be written as strings.
+        /// We're using a List of object arrays instead of a dictionary because some quirk in json serialization causes integer keys to be written as strings.
         /// this data type is the next best thing in terms of internal storage
         /// </summary>
         [JsonConverter(typeof(Dev.LuaTableContainerDictConverter))]
