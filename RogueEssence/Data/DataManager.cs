@@ -1811,6 +1811,7 @@ namespace RogueEssence.Data
                         writer.Write(reader.ReadUInt64());
                         //read favorite, no need to write it though
                         reader.ReadBoolean();
+                        writer.Write(false);
                         //read language that the game was played in
                         writer.Write(reader.ReadString());
                         //read commands
