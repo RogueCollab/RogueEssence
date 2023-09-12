@@ -141,7 +141,7 @@ namespace RogueEssence.Menu
             if (Ending.ActiveTeam.Name != "")
                 return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
             else
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
         }
 
         protected override EventedList<Character> GetChars()
