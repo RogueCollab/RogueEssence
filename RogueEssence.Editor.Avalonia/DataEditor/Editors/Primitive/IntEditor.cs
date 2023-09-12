@@ -22,16 +22,28 @@ namespace RogueEssence.Dev
 
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, Int32 member, Type[] subGroupStack)
         {
-            FrameTypeAttribute frameAtt = ReflectionExt.FindAttribute<FrameTypeAttribute>(attributes);
             NumericUpDown nudValue = new NumericUpDown();
-            nudValue.Minimum = Int32.MinValue;
-            nudValue.Maximum = Int32.MaxValue;
+            int minimum = Int32.MinValue;
+            int maximum = Int32.MaxValue;
             NumberRangeAttribute rangeAtt = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
             if (rangeAtt != null)
             {
-                nudValue.Minimum = rangeAtt.Min;
-                nudValue.Maximum = rangeAtt.Max;
+                minimum = rangeAtt.Min;
+                maximum = rangeAtt.Max;
             }
+            IntRangeAttribute intAtt = ReflectionExt.FindAttribute<IntRangeAttribute>(attributes);
+            if (intAtt != null)
+            {
+                if (intAtt.Index1)
+                {
+                    minimum += 1;
+                    if (maximum < Int32.MaxValue)
+                        maximum += 1;
+                    member += 1;
+                }
+            }
+            nudValue.Minimum = minimum;
+            nudValue.Maximum = maximum;
             nudValue.Value = member;
 
             control.Children.Add(nudValue);
@@ -43,7 +55,12 @@ namespace RogueEssence.Dev
             int controlIndex = 0;
 
             NumericUpDown nudValue = (NumericUpDown)control.Children[controlIndex];
-            return (Int32)nudValue.Value;
+            int member = (Int32)nudValue.Value;
+
+            IntRangeAttribute intAtt = ReflectionExt.FindAttribute<IntRangeAttribute>(attributes);
+            if (intAtt != null && intAtt.Index1)
+                member -= 1;
+            return member;
         }
 
     }

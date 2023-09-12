@@ -14,4 +14,15 @@ namespace RogueEssence.Dev
             Max = max;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class IntRangeAttribute : PassableAttribute
+    {
+        public readonly bool Index1;
+
+        public IntRangeAttribute(int flags, bool index1) : base(flags)
+        {
+            Index1 = index1;
+        }
+    }
 }

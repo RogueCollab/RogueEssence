@@ -68,6 +68,7 @@ namespace RogueEssence.Dev.ViewModels
         public void SetEntries(Dictionary<string, string> entries)
         {
             SearchList.Clear();
+            keys.Clear();
             List<string> items = new List<string>();
             foreach (string key in entries.Keys)
             {
