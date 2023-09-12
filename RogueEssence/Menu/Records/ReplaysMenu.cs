@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
                     try
                     {
                         string rogueSign = "";
-                        if (record.Result == GameProgress.ResultType.Escaped || record.Result == GameProgress.ResultType.Cleared)
+                        if (record.Result == GameProgress.ResultType.Escaped || record.Result == GameProgress.ResultType.Cleared || record.Result == GameProgress.ResultType.Rescue)
                             rogueSign += "\uE10A";
                         else
                             rogueSign += "\uE10B";
