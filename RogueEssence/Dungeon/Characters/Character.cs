@@ -84,6 +84,8 @@ namespace RogueEssence.Dungeon
                     return String.Format("[color=#009CFF]{0}[color]", name);
                 return String.Format("[color=#FFFF00]{0}[color]", name);
             }
+            else if (team.MapFaction == Faction.Friend)
+                return String.Format("[color=#FFFF00]{0}[color]", name);
 
             string apparentSpecies = BaseForm.Species;
             if (ProxySprite.IsValid() && ProxyName != "")
