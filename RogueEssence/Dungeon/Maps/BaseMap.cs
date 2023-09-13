@@ -127,6 +127,42 @@ namespace RogueEssence.Dungeon
             }
             return -1;
         }
+        
+        public bool TileAttackBlocked(Loc loc)
+        {
+            return TileAttackBlocked(loc, false);
+        }
+        
+        public bool TileAttackBlocked(Loc loc, bool inclusive)
+        {
+            return TileAttackBlocked(loc, inclusive, false);
+        }
+
+        public bool TileAttackBlocked(Loc loc, bool inclusive, bool diagonal)
+        {
+            return TileAttackBlocked(loc, inclusive ? TerrainData.Mobility.All : TerrainData.Mobility.Passable, diagonal);
+        }
+
+        public bool TileAttackBlocked(Loc loc, TerrainData.Mobility mobility)
+        {
+            return TileAttackBlocked(loc, mobility, false);
+        }
+
+        public bool TileAttackBlocked(Loc loc, TerrainData.Mobility mobility, bool diagonal)
+        {
+            Tile tile = Tiles[loc.X][loc.Y];
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                TileData effect = DataManager.Instance.GetTile(tile.Effect.ID);
+                if (effect.StepType == TileData.TriggerType.Object)
+                {
+                    //Objects should allow attacks through but not movement
+                    return false;
+                }
+            }
+
+            return TileBlocked(loc, mobility, diagonal);
+        }
 
         public bool TileBlocked(Loc loc)
         {
@@ -192,7 +228,7 @@ namespace RogueEssence.Dungeon
             //doesn't apply here; for now, assume all effects block diagonal if they block at all
             //if (diagonal && !effect.BlockDiagonal)
             //    return false;
-            if (effect.StepType == TileData.TriggerType.Unlockable || effect.StepType == TileData.TriggerType.Blocker)
+            if (effect.StepType == TileData.TriggerType.Unlockable || effect.StepType == TileData.TriggerType.Blocker || effect.StepType == TileData.TriggerType.Object)
                 return true;
 
             return false;

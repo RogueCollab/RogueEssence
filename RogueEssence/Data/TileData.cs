@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueEssence.Dungeon;
+using RogueEssence.Dev;
 using RogueEssence.Content;
 using RogueElements;
+using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
 using RogueEssence.Dev;
 
@@ -23,7 +26,8 @@ namespace RogueEssence.Data
             Trap,
             Switch,
             Blocker,
-            Unlockable
+            Unlockable,
+            Object
         }
 
         public LocalText Name { get; set; }
@@ -53,11 +57,33 @@ namespace RogueEssence.Data
         public TriggerType StepType;
         public Loc MinimapIcon;
         public Color MinimapColor;
+        
+        /// <summary>
+        /// Allows the tile to be destroyed by certain attacks.
+        /// </summary>
+        public bool Destructible;
+
+        /// <summary>
+        /// Any supereffective move used against this tile will destroy it.  If this is none, any attack will destroy it.  Only used if Destructible is true.
+        /// </summary>
+        [JsonConverter(typeof(ElementListConverter))]
+        [Dev.DataType(0, DataManager.DataType.Element, false)]
+        public List<string> EffectiveElements;
+        
+        /// <summary>
+        /// The minimum damage needed to destroy the tile.  Only used if Destructible is true.
+        /// </summary>
+        public int PowerNeededToDestroy;
 
         [ListCollapse]
         public PriorityList<SingleCharEvent> LandedOnTiles;
         [ListCollapse]
         public PriorityList<SingleCharEvent> InteractWithTiles;
+        
+        /// <summary>
+        /// Triggers right before the tile is destroyed.  Only used if Destructible is true.
+        /// </summary>
+        public PriorityList<SingleCharEvent> OnTileDestroyed;
 
         public TileData()
         {
@@ -65,11 +91,11 @@ namespace RogueEssence.Data
             Desc = new LocalText();
             Comment = "";
             Anim = new ObjAnimData();
+            EffectiveElements = new List<string>();
             LandedOnTiles = new PriorityList<SingleCharEvent>();
             InteractWithTiles = new PriorityList<SingleCharEvent>();
+            OnTileDestroyed = new PriorityList<SingleCharEvent>();
         }
-
-
         public string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());

@@ -802,7 +802,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < modRange; ii++)
             {
                 targetLoc += addLoc;
-                if (ZoneManager.Instance.CurrentMap.TileBlocked(targetLoc, true))
+                if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(targetLoc, true))
                     break;
             }
             return targetLoc + HitOffset;
@@ -1320,7 +1320,7 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < modRange; ii++)
             {
                 targetLoc += addLoc;
-                if (ZoneManager.Instance.CurrentMap.TileBlocked(targetLoc, true))
+                if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(targetLoc, true))
                     break;
             }
             return targetLoc;
@@ -1415,14 +1415,14 @@ namespace RogueEssence.Dungeon
                         }
 
 
-                        if (ZoneManager.Instance.CurrentMap.TileBlocked(leftLoc, true))
+                        if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(leftLoc, true))
                             sideL[side] = false;
-                        if (ZoneManager.Instance.CurrentMap.TileBlocked(rightLoc, true))
+                        if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(rightLoc, true))
                             sideR[side] = false;
                     }
                 }
 
-                if (ZoneManager.Instance.CurrentMap.TileBlocked(targetLoc, true))
+                if (ZoneManager.Instance.CurrentMap.TileAttackBlocked(targetLoc, true))
                     sideM = false;
             }
             return null;

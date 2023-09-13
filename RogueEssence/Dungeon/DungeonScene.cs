@@ -1049,8 +1049,21 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
-                    TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                    if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                    Tile rootTile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y];
+                    TerrainData terrain = rootTile.Data.GetData();
+                    
+                    //Object tiles should hide items beneath them
+                    bool hiddenBehindObject = false;
+                    if (!String.IsNullOrEmpty(rootTile.Effect.ID))
+                    {
+                        TileData effect = DataManager.Instance.GetTile(rootTile.Effect.ID);
+                        if (effect.StepType == TileData.TriggerType.Object)
+                        {
+                            hiddenBehindObject = true;
+                        }
+                    }
+                    
+                    if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block || hiddenBehindObject)
                     {
                         if (showHiddenItem)
                             item.Draw(spriteBatch, viewLoc, Color.White * 0.5f);
