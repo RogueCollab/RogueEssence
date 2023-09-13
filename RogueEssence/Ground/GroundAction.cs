@@ -48,7 +48,7 @@ namespace RogueEssence.Ground
         }
 
         public virtual void UpdateInput(GameAction action) { }
-        public void Begin(CharID appearance)
+        public virtual void Begin(CharID appearance)
         {
             AnimRushTime = GraphicsManager.GetChara(appearance).GetRushTime(AnimFrameType, CharDir);
             AnimHitTime = GraphicsManager.GetChara(appearance).GetHitTime(AnimFrameType, CharDir);
@@ -434,6 +434,40 @@ namespace RogueEssence.Ground
         }
     }
 
+    [Serializable]
+    public class ReverseGroundAction : GroundAction
+    {
+        public override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            long totalTick = FrameTick.FrameToTick(AnimTotalTime);
+            return CharSheet.TrueFrame(frames, totalTick - (ActionTime.Ticks % totalTick), true);
+        }
+        public override int AnimFrameType { get { return AnimID; } }
+        public override bool Complete { get { return ActionTime >= AnimTotalTime; } }
+
+        int AnimID;
+
+        public ReverseGroundAction(Loc pos, Dir8 dir, int animid)
+        {
+            MapLoc = pos;
+            CharDir = dir;
+            AnimID = animid;
+        }
+
+        public ReverseGroundAction(Loc pos, int height, Dir8 dir, int animid)
+        {
+            MapLoc = pos;
+            LocHeight = height;
+            CharDir = dir;
+            AnimID = animid;
+        }
+
+        public override void UpdateInput(GameAction action)
+        {
+
+        }
+    }
+
 
     [Serializable]
     public class AnimateToPositionGroundAction : GroundAction
@@ -467,6 +501,12 @@ namespace RogueEssence.Ground
             this.moveRate = moveRate;
             this.goalDiff = destination - MapLoc;
             this.goalHeightDiff = destHeight - LocHeight;
+        }
+
+        public override void Begin(CharID appearance)
+        {
+            base.Begin(appearance);
+            baseAction.Begin(appearance);
         }
 
         public override void UpdateFrameInternal()
