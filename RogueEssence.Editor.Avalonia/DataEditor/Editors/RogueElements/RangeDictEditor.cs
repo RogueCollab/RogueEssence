@@ -49,7 +49,7 @@ namespace RogueEssence.Dev
             if (heightAtt != null)
                 lbxValue.MaxHeight = heightAtt.Height;
             else
-                lbxValue.MaxHeight = 180;
+                lbxValue.MaxHeight = 220;
 
             RangeDictBoxViewModel vm = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
@@ -69,6 +69,7 @@ namespace RogueEssence.Dev
             lbxValue.DataContext = vm;
 
             lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
             vm.OnEditItem += (IntRange key, object element, bool advancedEdit, RangeDictBoxViewModel.EditElementOp op) =>

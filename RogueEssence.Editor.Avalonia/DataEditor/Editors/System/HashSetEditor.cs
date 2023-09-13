@@ -31,7 +31,7 @@ namespace RogueEssence.Dev
             if (heightAtt != null)
                 lbxValue.MaxHeight = heightAtt.Height;
             else
-                lbxValue.MaxHeight = 180;
+                lbxValue.MaxHeight = 200;
 
             CollectionBoxViewModel vm = new CollectionBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
@@ -40,6 +40,7 @@ namespace RogueEssence.Dev
                 vm.ConfirmDelete = confirmAtt.ConfirmDelete;
 
             lbxValue.DataContext = vm;
+            lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
             vm.OnEditItem += (int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op) =>

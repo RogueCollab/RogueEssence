@@ -53,6 +53,7 @@ namespace RogueEssence.Dev
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, false);
                 lbxValue.DataContext = vm;
                 lbxValue.SetListContextMenu(CreateContextMenu(control, type, vm));
+                lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
         }
