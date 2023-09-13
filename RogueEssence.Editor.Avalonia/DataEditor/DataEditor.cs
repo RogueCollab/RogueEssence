@@ -73,7 +73,8 @@ namespace RogueEssence.Dev
             Size savedSize;
             if (DevDataManager.GetTypeSize(editType, out savedSize))
             {
-                editor.Width = savedSize.Width;
+                //TODO: avalonia pls, why you increase the width of the window immediately after opening??
+                editor.Width = savedSize.Width - 10;
                 editor.Height = savedSize.Height;
             }
 
