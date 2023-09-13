@@ -83,6 +83,11 @@ namespace RogueEssence.Ground
         public virtual bool EntEnabled { get; set; }
 
         /// <summary>
+        /// The draw/interaction order of the entity.  Lower values are handled before higher ones.
+        /// </summary>
+        public virtual int EntOrder { get; set; }
+
+        /// <summary>
         /// Returns an enum value indicating the actual type of this entity.
         /// </summary>
         /// <returns></returns>

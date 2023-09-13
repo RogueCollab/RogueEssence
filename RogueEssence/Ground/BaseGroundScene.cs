@@ -25,6 +25,11 @@ namespace RogueEssence.Ground
 
         protected List<(IDrawableSprite sprite, Loc viewOffset)> foregroundDraw;
 
+        /// <summary>
+        /// Ground char and ground object draw, utilizing their specific entity order variable.
+        /// </summary>
+        protected List<(GroundEntity sprite, Loc viewOffset)> groundObjectDraw;
+
         protected Rect viewTileRect;
         
 
@@ -36,6 +41,7 @@ namespace RogueEssence.Ground
             groundDraw = new List<(IDrawableSprite, Loc)>();
             objectDraw = new List<(IDrawableSprite, Loc)>();
             foregroundDraw = new List<(IDrawableSprite, Loc)>();
+            groundObjectDraw = new List<(GroundEntity sprite, Loc viewOffset)>();
 
             ZoomChanged();
         }
@@ -118,6 +124,7 @@ namespace RogueEssence.Ground
                 groundDraw.Clear();
                 objectDraw.Clear();
                 foregroundDraw.Clear();
+                groundObjectDraw.Clear();
 
                 DrawGame(spriteBatch);
 
@@ -198,7 +205,7 @@ namespace RogueEssence.Ground
                         continue;
                     foreach(Loc viewLoc in IterateRelevantDraw(wrapped, ZoneManager.Instance.CurrentGround.GroundSize, character))
                     {
-                        AddToDraw(objectDraw, character, viewLoc);
+                        AddToGroundDraw(groundObjectDraw, character, viewLoc);
                         shownShadows.Add((character, viewLoc));
                     }
                 }
@@ -217,19 +224,17 @@ namespace RogueEssence.Ground
             //draw items
             if (!DataManager.Instance.HideObjects)
             {
-                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].GroundObjects)
+                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].IterateObjects())
                 {
                     if (!item.EntEnabled)
                         continue;
-                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
-                }
-                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].TemporaryObjects)
-                {
-                    if (!item.EntEnabled)
-                        continue;
-                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
+                    AddRelevantGroundDraw(groundObjectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
                 }
             }
+
+            //add the objects to the objectDraw
+            foreach ((GroundEntity sprite, Loc offset) ent in groundObjectDraw)
+                AddToDraw(objectDraw, ent.sprite, ent.offset);
 
             //draw object
             charIndex = 0;
@@ -361,6 +366,29 @@ namespace RogueEssence.Ground
                 return;
 
             DataManager.Instance.MsgLog.Add(msg);
+        }
+
+
+
+        public void AddToGroundDraw(List<(GroundEntity, Loc)> sprites, GroundEntity sprite, Loc viewOffset)
+        {
+            CollectionExt.AddToSortedList(sprites, (sprite, viewOffset), CompareGroundEntCoords);
+        }
+
+
+        public int CompareGroundEntCoords((GroundEntity sprite, Loc viewOffset) sprite1, (GroundEntity sprite, Loc viewOffset) sprite2)
+        {
+            int sign = Math.Sign((sprite1.sprite.MapLoc.Y - sprite1.viewOffset.Y) - (sprite2.sprite.MapLoc.Y - sprite2.viewOffset.Y));
+            if (sign != 0)
+                return sign;
+            return Math.Sign(sprite1.sprite.EntOrder - sprite2.sprite.EntOrder);
+        }
+
+
+        public void AddRelevantGroundDraw(List<(GroundEntity, Loc)> sprites, bool wrapped, Loc wrapSize, GroundEntity sprite)
+        {
+            foreach (Loc viewOffset in IterateRelevantDraw(wrapped, wrapSize, sprite))
+                AddToGroundDraw(sprites, sprite, viewOffset);
         }
 
     }
