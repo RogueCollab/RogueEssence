@@ -20,7 +20,7 @@ namespace RogueEssence.Menu
             Loc center = Loc.Zero;
 
             Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2));
-            skillText = new MenuText("", Bounds.Center + new Loc(-48, GraphicsManager.MenuBG.TileHeight), DirH.Left);
+            skillText = new MenuText("", Bounds.Center + new Loc(-50, GraphicsManager.MenuBG.TileHeight), DirH.Left);
             skillElement = new MenuText("", Bounds.Center + new Loc(-48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Left);
             skillCharges = new MenuText("", Bounds.Center + new Loc(48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), DirH.Right);
         }
@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
             }
 
             Bounds = Rect.FromPoints(center - new Loc(56 + GraphicsManager.MenuBG.TileWidth, 0), center + new Loc(56 + GraphicsManager.MenuBG.TileWidth, LINE_HEIGHT * 2 + GraphicsManager.MenuBG.TileHeight * 2));
-            skillText.Loc = new Loc(Bounds.Size.X / 2 - 48, GraphicsManager.MenuBG.TileHeight);
+            skillText.Loc = new Loc(Bounds.Size.X / 2 - 50, GraphicsManager.MenuBG.TileHeight);
             skillElement.Loc = new Loc(Bounds.Size.X / 2 - 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
             skillCharges.Loc = new Loc(Bounds.Size.X / 2 + 48, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT);
         }
