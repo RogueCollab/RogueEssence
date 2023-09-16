@@ -827,7 +827,7 @@ namespace RogueEssence.Script
         /// <summary>
         /// Set a character's action.
         /// </summary>
-        /// <param name="chara">Character to perfomr the action</param>
+        /// <param name="chara">Character to perfom the action</param>
         /// <param name="action">The action to perform</param>
         public void CharSetAction(GroundChar chara, GroundAction action)
         {
