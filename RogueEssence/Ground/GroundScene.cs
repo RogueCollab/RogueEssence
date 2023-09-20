@@ -69,6 +69,15 @@ namespace RogueEssence.Ground
 
             //yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new GetHelpMenu()));
 
+            //ExplorerTeam activeTeam = DataManager.Instance.Save.ActiveTeam;
+            //BaseMonsterForm form = DataManager.Instance.GetMonster(activeTeam.Leader.BaseForm.Species).Forms[activeTeam.Leader.BaseForm.Form];
+            //activeTeam.Leader.MaxHPBonus = 5;
+            //activeTeam.Leader.AtkBonus = 5;
+            //activeTeam.Leader.DefBonus = 5;
+            //activeTeam.Leader.MAtkBonus = 5;
+            //activeTeam.Leader.MDefBonus = 5;
+            //activeTeam.Leader.SpeedBonus = 5;
+
             yield break;
         }
 
