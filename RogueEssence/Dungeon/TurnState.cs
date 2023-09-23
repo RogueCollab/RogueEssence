@@ -15,13 +15,39 @@ namespace RogueEssence.Dungeon
 
         public TurnState()
         {
-            CurrentOrder = new TurnOrder(0, Faction.Player, 0, false);
+            CurrentOrder = new TurnOrder(0, Faction.Player, 0);
             TurnToChar = new List<CharIndex>();
         }
 
-        public void SkipRemainingTurns()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="team"></param>
+        /// <param name="reset">True = Reset everyone's turns.  False = Skip everyone's turns</param>
+        public void SetTeamRound(Team team, bool reset)
         {
-            CurrentOrder.SkipAll = true;
+            setCharacterRound(team.Players[team.LeaderIndex], reset);
+            for (int ii = 0; ii < team.Players.Count; ii++)
+            {
+                if (ii != team.LeaderIndex)
+                    setCharacterRound(team.Players[ii], reset);
+            }
+            for (int ii = 0; ii < team.Guests.Count; ii++)
+                setCharacterRound(team.Guests[ii], reset);
+        }
+
+        private void setCharacterRound(Character character, bool reset)
+        {
+            if (character.Dead)
+                return;
+
+            if (reset)
+            {
+                character.TiersUsed = 0;
+                character.TurnUsed = false;
+            }
+            else
+                character.TurnUsed = true;
         }
 
         public CharIndex GetCurrentTurnChar()
@@ -84,9 +110,6 @@ namespace RogueEssence.Dungeon
             if (character.Dead)
                 return false;
 
-            if (CurrentOrder.SkipAll)
-                return false;
-
             if (character.TurnUsed)
                 return false;
 
@@ -127,11 +150,7 @@ namespace RogueEssence.Dungeon
             if (!character.Dead)
             {
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
-                {
                     character.TurnWait--;
-                    character.TiersUsed = 0;
-                    character.TurnUsed = false;//refresh turn-used immediately after
-                }
             }
 
             if (IsEligibleToMove(character))
