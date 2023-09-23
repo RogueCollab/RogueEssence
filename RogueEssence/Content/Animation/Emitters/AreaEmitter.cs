@@ -383,6 +383,16 @@ namespace RogueEssence.Content
                 int dist = CurrentRadius;
                 if (AreaLimit == Dungeon.Hitbox.AreaLimit.Cone)
                     angle = (45 * (int)Dir + 45) * Math.PI / 180 + angle / 4;
+                else if (AreaLimit == Dungeon.Hitbox.AreaLimit.Cross)
+                {
+                    dist -= GraphicsManager.TileSize / 2;
+                    int diffDist = MathUtils.Rand.Next(GraphicsManager.TileSize / 2 + 1);
+                    startDelta += new Loc((int)Math.Round(Math.Cos(angle) * diffDist), (int)Math.Round(Math.Sin(angle) * diffDist));
+
+                    //any multiple of 90
+                    int dir = MathUtils.Rand.Next(4);
+                    angle = (dir * 90) * Math.PI / 180;
+                }
                 else if (AreaLimit == Dungeon.Hitbox.AreaLimit.Sides)
                 {
                     dist -= GraphicsManager.TileSize / 2;

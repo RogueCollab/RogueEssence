@@ -681,6 +681,8 @@ namespace RogueEssence.Dungeon
                     return Text.FormatKey("RANGE_AREA_FULL", Range, GetTargetsString(true));
                 case Hitbox.AreaLimit.Cone:
                     return Text.FormatKey("RANGE_AREA_CONE", Range, GetTargetsString(true));
+                case Hitbox.AreaLimit.Cross:
+                    return Text.FormatKey("RANGE_AREA_CROSS", Range, GetTargetsString(true));
                 case Hitbox.AreaLimit.Sides:
                     return Text.FormatKey("RANGE_AREA_SIDES", Range, GetTargetsString(true));
                 default:
@@ -705,6 +707,10 @@ namespace RogueEssence.Dungeon
             /// Hits the targeted tile, and the tiles to the left and right of it.
             /// </summary>
             Sides,
+            /// <summary>
+            /// Hits the targeted tile, and all cardinally adjacent tiles.
+            /// </summary>
+            Cross,
             /// <summary>
             /// Hits the targeted tile, and all adjacent tiles.
             /// </summary>
@@ -770,18 +776,46 @@ namespace RogueEssence.Dungeon
             //create the area hitbox(es) and toss them into the wild
             yield return CoroutineManager.Instance.StartCoroutine(PassEmitter(actionContext.User));
             Loc groundZero = GetLanding(actionContext.User.CharLoc, actionContext.User.CharDir, 0);
+            int maxRadius = (HitArea == OffsetArea.Tile) ? 0 : 1;
+            Hitbox.AreaLimit areaLimit;
+            switch (HitArea)
+            {
+                case OffsetArea.Sides:
+                    areaLimit = Hitbox.AreaLimit.Sides;
+                    break;
+                case OffsetArea.Cross:
+                    areaLimit = Hitbox.AreaLimit.Cross;
+                    break;
+                default:
+                    areaLimit = Hitbox.AreaLimit.Full;
+                    break;
+            }
+            CircleSquareHitbox hitbox = new CircleSquareHitbox(actionContext.User, TargetAlignments, HitTiles, BurstTiles, groundZero, TileEmitter, Emitter,
+                    maxRadius, Speed, LagBehindTime, areaLimit, actionContext.User.CharDir);
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ReleaseHitboxes(actionContext.User,
-                new CircleSquareHitbox(actionContext.User, TargetAlignments, HitTiles, BurstTiles, groundZero, TileEmitter, Emitter,
-                    (HitArea == OffsetArea.Tile) ? 0 : 1, Speed, LagBehindTime, (HitArea == OffsetArea.Sides) ? Hitbox.AreaLimit.Sides : Hitbox.AreaLimit.Full, actionContext.User.CharDir),
-                effect, tileEffect));
+                hitbox, effect, tileEffect));
             actionContext.StrikeLandTiles.Add(groundZero);
         }
 
         public override IEnumerable<Loc> GetPreTargets(Character owner, Dir8 dir, int rangeMod)
         {
             Loc groundZero = GetLanding(owner.CharLoc, dir, rangeMod);
+            int maxRadius = (HitArea == OffsetArea.Tile) ? 0 : 1;
+            Hitbox.AreaLimit areaLimit;
+            switch (HitArea)
+            {
+                case OffsetArea.Sides:
+                    areaLimit = Hitbox.AreaLimit.Sides;
+                    break;
+                case OffsetArea.Cross:
+                    areaLimit = Hitbox.AreaLimit.Cross;
+                    break;
+                default:
+                    areaLimit = Hitbox.AreaLimit.Full;
+                    break;
+            }
             CircleSquareHitbox hitbox = new CircleSquareHitbox(owner, TargetAlignments, HitTiles, BurstTiles, groundZero, TileEmitter, Emitter,
-                (HitArea == OffsetArea.Tile) ? 0 : 1, Speed, LagBehindTime, (HitArea == OffsetArea.Sides) ? Hitbox.AreaLimit.Sides : Hitbox.AreaLimit.Full, dir);
+                maxRadius, Speed, LagBehindTime, areaLimit, dir);
 
             hitbox.PreCalculateAllTargets();
 
@@ -830,6 +864,9 @@ namespace RogueEssence.Dungeon
                     break;
                 case OffsetArea.Sides:
                     areaString = Text.FormatKey("RANGE_OFFSET_SIDES", Range, GetTargetsString(true));
+                    break;
+                case OffsetArea.Cross:
+                    areaString = Text.FormatKey("RANGE_OFFSET_CROSS", Range, GetTargetsString(true));
                     break;
                 case OffsetArea.Tile:
                     areaString = Text.FormatKey("RANGE_OFFSET_TILE", Range, GetTargetsString(false));
