@@ -995,7 +995,7 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(SendHome(index));
         }
 
-        public IEnumerator<YieldInstruction> SendHome(int index)
+        public IEnumerator<YieldInstruction> SendHome(int index, bool silent = false)
         {
             Character player = ActiveTeam.Players[index];
             if (!player.Dead)
@@ -1018,8 +1018,9 @@ namespace RogueEssence.Dungeon
 
             ZoneManager.Instance.CurrentMap.UpdateExploration(player);
             yield return new WaitForFrames(30);
-
-            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.GetDisplayName(false))));
+            
+            if (!silent)
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.LogSkippableMsg(Text.FormatKey("MSG_TEAM_SENT_HOME", player.GetDisplayName(false))));
         }
 
         public void SilentSendHome(int index)
