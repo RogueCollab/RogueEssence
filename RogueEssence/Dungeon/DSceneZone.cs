@@ -609,8 +609,13 @@ namespace RogueEssence.Dungeon
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex);
 
-            if (charIndex.Faction == Faction.Player && focusedPlayerIndex > charIndex.Char)
-                focusedPlayerIndex--;
+            if (charIndex.Faction == Faction.Player)
+            {
+                if (focusedPlayerIndex > charIndex.Char)
+                    focusedPlayerIndex--;
+                if (focusedPlayerIndex >= playerList.Count)
+                    focusedPlayerIndex = team.LeaderIndex;
+            }
 
             //if the team is all empty (not all dead), definitely remove them
             if (team.Players.Count == 0 && team.Guests.Count == 0 && charIndex.Faction != Faction.Player)
