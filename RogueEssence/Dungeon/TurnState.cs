@@ -26,17 +26,11 @@ namespace RogueEssence.Dungeon
         /// <param name="reset">True = Reset everyone's turns.  False = Skip everyone's turns</param>
         public void SetTeamRound(Team team, bool reset)
         {
-            setCharacterRound(team.Players[team.LeaderIndex], reset);
-            for (int ii = 0; ii < team.Players.Count; ii++)
-            {
-                if (ii != team.LeaderIndex)
-                    setCharacterRound(team.Players[ii], reset);
-            }
-            for (int ii = 0; ii < team.Guests.Count; ii++)
-                setCharacterRound(team.Guests[ii], reset);
+            foreach(ITurnChar character in team.IterateByRank())
+                setCharacterRound(character, reset);
         }
 
-        private void setCharacterRound(Character character, bool reset)
+        private void setCharacterRound(ITurnChar character, bool reset)
         {
             if (character.Dead)
                 return;
@@ -105,7 +99,7 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public bool IsEligibleToMove(Character character)
+        public bool IsEligibleToMove(ITurnChar character)
         {
             if (character.Dead)
                 return false;
@@ -144,9 +138,9 @@ namespace RogueEssence.Dungeon
                 loadTeamMemberTurnMap(faction, teamIndex, true, ii, team.Guests);
         }
 
-        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, EventedList<Character> playerList)
+        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, IList<Character> playerList)
         {
-            Character character = playerList[charIndex];
+            ITurnChar character = playerList[charIndex];
             if (!character.Dead)
             {
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
@@ -233,6 +227,5 @@ namespace RogueEssence.Dungeon
                 TurnToChar.Insert(firstIdx, leaderIndex);
             }
         }
-
     }
 }

@@ -15,7 +15,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable, IPreviewable
+    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable, IPreviewable, ITurnChar
     {
 
         public const int MAX_FULLNESS = 100;
@@ -266,17 +266,17 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// The number of turns this character must wait before being able to move again.
         /// </summary>
-        public int TurnWait;
+        public int TurnWait { get; set; }
 
         /// <summary>
         /// The number of turn tiers that this character has moved OR acted on.
         /// </summary>
-        public int TiersUsed;
+        public int TiersUsed { get; set; }
 
         /// <summary>
         /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
         /// </summary>
-        public bool TurnUsed;
+        public bool TurnUsed { get; set; }
         [NonSerialized]
         public List<StatusRef> StatusesTargetingThis;
         public bool EXPMarked;
