@@ -1465,7 +1465,8 @@ namespace RogueEssence.Dungeon
             }
 
             //if the landing spot is occupied or nontraversible, find the closest unoccupied tile
-            Loc? dest = ZoneManager.Instance.CurrentMap.GetClosestTileForChar(character, endLoc);
+            TerrainData.Mobility throwMobility = TerrainData.Mobility.Lava | TerrainData.Mobility.Water | TerrainData.Mobility.Abyss;
+            Loc? dest = ZoneManager.Instance.CurrentMap.GetClosestTileForChar(character, endLoc, throwMobility);
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.ThrowFX));
 

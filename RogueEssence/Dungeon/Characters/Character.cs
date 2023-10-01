@@ -1192,10 +1192,15 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void ChangeSkill(int slot, string skillNum)
+        public void ChangeSkill(int slot, string skillNum, int charges)
         {
             if (!String.IsNullOrEmpty(skillNum))
-                Skills[slot] = new BackReference<Skill>(new Skill(skillNum, DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost), -1);
+            {
+                int maxCharges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
+                if (charges < 0)
+                    charges = maxCharges;
+                Skills[slot] = new BackReference<Skill>(new Skill(skillNum, Math.Min(charges, maxCharges)), -1);
+            }
             else
                 Skills[slot] = new BackReference<Skill>(new Skill(), -1);
 

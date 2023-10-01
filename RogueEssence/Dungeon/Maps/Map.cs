@@ -652,22 +652,21 @@ namespace RogueEssence.Dungeon
         /// <returns>The best fit warp destination.  This value is wrapped.</returns>
         public Loc? GetClosestTileForChar(Character character, Loc loc)
         {
+            TerrainData.Mobility mobility = TerrainData.Mobility.Passable;
+            if (character != null)
+                mobility = character.Mobility;
+            return GetClosestTileForChar(character, loc, mobility);
+        }
+        public Loc? GetClosestTileForChar(Character character, Loc loc, TerrainData.Mobility mobility)
+        {
             Loc boundsStartLoc = Loc.Zero;
             if (EdgeView == ScrollEdge.Wrap)
                 boundsStartLoc = loc - Size / 2;
             Loc? result = Grid.FindClosestConnectedTile(boundsStartLoc, Size,
                 (Loc testLoc) =>
                 {
-                    if (character == null)
-                    {
-                        if (TileBlocked(testLoc))
-                            return false;
-                    }
-                    else
-                    {
-                        if (TileBlocked(testLoc, character.Mobility))
-                            return false;
-                    }
+                    if (TileBlocked(testLoc, mobility))
+                        return false;
 
                     Character locChar = GetCharAtLoc(testLoc, character);
                     if (locChar != null)
