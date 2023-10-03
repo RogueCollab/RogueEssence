@@ -43,8 +43,7 @@ namespace RogueEssence.Data
             {
                 if (noGive && !String.IsNullOrEmpty(detail.GiveItem))
                     continue;
-                if (inDungeon)
-                    detail.OnPromote(character, inDungeon);
+                detail.OnPromote(character, inDungeon);
             }
         }
 
