@@ -978,7 +978,7 @@ namespace RogueEssence
             }
         }
 
-        public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result)
+        public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result, bool preserveMusic = false)
         {
             if (ZoneManager.Instance.InDevZone)
             {
@@ -993,11 +993,15 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MsgLogMenu()));
             }
 
-            BGM("", true);
-
-            yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
-
-            yield return new WaitForFrames(40);
+            if (!preserveMusic)
+            {
+                BGM("", true);
+                yield return new WaitForFrames(40);
+            }
+            else
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+            }
 
             if (DataManager.Instance.CurrentReplay != null)
                 yield return CoroutineManager.Instance.StartCoroutine(handleReplayDungeonEnd(result));
