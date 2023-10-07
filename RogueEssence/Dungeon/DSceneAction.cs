@@ -29,9 +29,9 @@ namespace RogueEssence.Dungeon
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteSkill));
 
-            if (!String.IsNullOrEmpty(context.SkillUsedUp) && !context.User.Dead)
+            if (!String.IsNullOrEmpty(context.SkillUsedUp.Skill) && !context.User.Dead)
             {
-                SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
+                SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp.Skill);
                 LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
 
                 yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
@@ -118,7 +118,7 @@ namespace RogueEssence.Dungeon
             {
                 yield return CoroutineManager.Instance.StartCoroutine(context.User.DeductCharges(context.UsageSlot, 1, false, false, false));
                 if (context.User.Skills[context.UsageSlot].Element.Charges == 0)
-                    context.SkillUsedUp = context.User.Skills[context.UsageSlot].Element.SkillNum;
+                    context.SkillUsedUp.Skill = context.User.Skills[context.UsageSlot].Element.SkillNum;
             }
             yield return new WaitUntil(AnimationsOver);
 

@@ -91,7 +91,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// The skill whose last charge was used up
         /// </summary>
-        public string SkillUsedUp;
+        public SkillStatus SkillUsedUp;
         /// <summary>
         /// Determines if this action should trigger end-of-turn.
         /// </summary>
@@ -117,7 +117,7 @@ namespace RogueEssence.Dungeon
             TurnCancel = new AbortStatus();
             this.ActionType = actionType;
             UsageSlot = BattleContext.DEFAULT_ATTACK_SLOT;
-            SkillUsedUp = "";
+            SkillUsedUp = new SkillStatus();
             StrikeLandTiles = new List<Loc>();
             actionMsg = "";
             GlobalContextStates = new StateCollection<ContextState>();
@@ -281,5 +281,13 @@ namespace RogueEssence.Dungeon
             //do thing to tile
             yield return CoroutineManager.Instance.StartCoroutine(actionContext.User.HitTile(actionContext));
         }
+    }
+
+    public class SkillStatus
+    {
+        public string Skill;
+
+        public SkillStatus() { Skill = "";  }
+        public SkillStatus(string skill) { Skill = skill; }
     }
 }
