@@ -996,6 +996,7 @@ namespace RogueEssence
             if (!preserveMusic)
             {
                 BGM("", true);
+                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
                 yield return new WaitForFrames(40);
             }
             else
