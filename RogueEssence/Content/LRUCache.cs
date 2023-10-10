@@ -76,6 +76,8 @@ namespace RogueEssence
         protected void remove()
         {
             LinkedListNode<LRUNode> node = lruList.First;
+            if (node == null)
+                throw new System.NullReferenceException(string.Format("No First element found!  List:{0} total:{1} capacity:{2}", lruList.Count, total, capacity));
             lruList.RemoveFirst();
 
             cacheMap.Remove(node.Value.key);
