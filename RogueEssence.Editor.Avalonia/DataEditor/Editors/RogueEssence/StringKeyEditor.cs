@@ -39,13 +39,14 @@ namespace RogueEssence.Dev
                 items.Add("**EMPTY**");
 
             foreach (string key in Text.StringsEx.Keys)
+                totalKeys.Add(key);
+            totalKeys.Sort();
+            foreach (string key in totalKeys)
             {
                 if (key == member.Key)
-                    chosenIndex = totalKeys.Count;
-                totalKeys.Add(String.Format("{0}: {1}", key, Text.StringsEx[key]));
+                    chosenIndex = items.Count;
+                items.Add(String.Format("{0}: {1}", key, Text.StringsEx[key]));
             }
-            totalKeys.Sort();
-            items.AddRange(totalKeys);
 
             var subject = new Subject<List<string>>();
             cbValue.Bind(ComboBox.ItemsProperty, subject);
