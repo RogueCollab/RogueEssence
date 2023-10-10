@@ -20,7 +20,7 @@ namespace RogueEssence.Data
     [Serializable]
     public class StartChar
     {
-        [MonsterID(1, false, false, true, true)]
+        [MonsterID(0, false, false, true, true)]
         public MonsterID ID;
         public string Name;
 
