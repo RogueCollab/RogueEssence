@@ -293,13 +293,21 @@ namespace RogueEssence.Data
         {
             LoadConversions();
             LoadIndex(DataType.Item);
+            itemCache.Clear();
             LoadIndex(DataType.Skill);
+            skillCache.Clear();
             LoadIndex(DataType.Monster);
+            monsterCache.Clear();
             LoadIndex(DataType.Zone);
+            zoneCache.Clear();
             LoadIndex(DataType.Status);
+            statusCache.Clear();
             LoadIndex(DataType.Intrinsic);
+            intrinsicCache.Clear();
             LoadIndex(DataType.AutoTile);
+            autoTileCache.Clear();
             LoadIndex(DataType.MapStatus);
+            mapStatusCache.Clear();
             LoadIndexFull(DataType.Tile, tileCache);
             LoadIndexFull(DataType.Terrain, terrainCache);
             LoadIndexFull(DataType.Emote, emoteCache);
