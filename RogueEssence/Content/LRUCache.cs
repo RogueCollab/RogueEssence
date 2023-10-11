@@ -77,7 +77,11 @@ namespace RogueEssence
         {
             LinkedListNode<LRUNode> node = lruList.First;
             if (node == null)
-                throw new System.NullReferenceException(string.Format("No First element found!  List:{0} total:{1} capacity:{2}", lruList.Count, total, capacity));
+            {
+                DiagManager.Instance.LogError(new System.NullReferenceException(string.Format("No First element found!  List:{0} total:{1} capacity:{2}", lruList.Count, total, capacity)));
+                total = 0;
+                return;
+            }
             lruList.RemoveFirst();
 
             cacheMap.Remove(node.Value.key);
