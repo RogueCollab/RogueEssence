@@ -1402,15 +1402,17 @@ namespace RogueEssence.Dungeon
 
             if (Diagonal)
             {
+
+                Loc center = FocusedCharacter.CharLoc * GraphicsManager.TileSize - ViewRect.Start + new Loc(GraphicsManager.TileSize / 2);
                 int base_offset = (int)(GraphicsManager.TotalFrameTick / (ulong)FrameTick.FrameToTick(3) % 6);
                 if (base_offset >= 4)
                     base_offset = 6 - base_offset;
                 Vector2 arrow_offset = new Vector2(base_offset);
                 Vector2 arrow_alt_offset = new Vector2(base_offset, -base_offset);
-                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileWidth, (GraphicsManager.ScreenHeight / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileHeight) - arrow_offset, 0, 0);
-                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale + GraphicsManager.TileSize) / 2, (GraphicsManager.ScreenHeight / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileHeight) + arrow_alt_offset, 2, 0);
-                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale - GraphicsManager.TileSize) / 2 - GraphicsManager.Arrows.TileWidth, (GraphicsManager.ScreenHeight / scale + GraphicsManager.TileSize) / 2) - arrow_alt_offset, 0, 2);
-                GraphicsManager.Arrows.DrawTile(spriteBatch, new Vector2((GraphicsManager.ScreenWidth / scale + GraphicsManager.TileSize) / 2, (GraphicsManager.ScreenHeight / scale + GraphicsManager.TileSize) / 2) + arrow_offset, 2, 2);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, center.ToVector2() + new Vector2(-GraphicsManager.TileSize / 2 - GraphicsManager.Arrows.TileWidth, -GraphicsManager.TileSize / 2 - GraphicsManager.Arrows.TileHeight) - arrow_offset, 0, 0);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, center.ToVector2() + new Vector2(                                    GraphicsManager.TileSize / 2, -GraphicsManager.TileSize / 2 - GraphicsManager.Arrows.TileHeight) + arrow_alt_offset, 2, 0);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, center.ToVector2() + new Vector2(-GraphicsManager.TileSize / 2 - GraphicsManager.Arrows.TileWidth,                                      GraphicsManager.TileSize / 2) - arrow_alt_offset, 0, 2);
+                GraphicsManager.Arrows.DrawTile(spriteBatch, center.ToVector2() + new Vector2(                                    GraphicsManager.TileSize / 2,                                      GraphicsManager.TileSize / 2) + arrow_offset, 2, 2);
             }
 
 
