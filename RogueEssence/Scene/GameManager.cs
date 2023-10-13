@@ -566,6 +566,7 @@ namespace RogueEssence
 
             SetQuest(quest, mods, loadOrder);
 
+            DiagManager.Instance.PrintModSettings();
             DiagManager.Instance.SaveModSettings();
 
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());

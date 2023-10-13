@@ -677,6 +677,16 @@ namespace RogueEssence
             return (ModHeader.Invalid, new ModHeader[0] { });
         }
 
+        public void PrintModSettings()
+        {
+            DiagManager.Instance.LogInfo("-----------------------------------------");
+            if (PathMod.Quest.IsValid())
+                DiagManager.Instance.LogInfo(String.Format("Quest: {0} {1} {2}", PathMod.Quest.Name, PathMod.Quest.Version, PathMod.Quest.UUID));
+            foreach (ModHeader mod in PathMod.Mods)
+                DiagManager.Instance.LogInfo(String.Format("Mod: {0} {1} {2}", mod.Name, mod.Version, mod.UUID));
+            DiagManager.Instance.LogInfo("-----------------------------------------");
+        }
+
         public void SaveModSettings()
         {
             XmlDocument xmldoc = new XmlDocument();
