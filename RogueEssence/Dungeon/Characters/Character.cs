@@ -78,14 +78,17 @@ namespace RogueEssence.Dungeon
             if (Unidentifiable && team != DataManager.Instance.Save.ActiveTeam)
                 name = "???";
 
-            if (team == DataManager.Instance.Save.ActiveTeam)
+            if (team != null)
             {
-                if (this == team.Leader)
-                    return String.Format("[color=#009CFF]{0}[color]", name);
-                return String.Format("[color=#FFFF00]{0}[color]", name);
+                if (team == DataManager.Instance.Save.ActiveTeam)
+                {
+                    if (this == team.Leader)
+                        return String.Format("[color=#009CFF]{0}[color]", name);
+                    return String.Format("[color=#FFFF00]{0}[color]", name);
+                }
+                else if (team.MapFaction == Faction.Friend)
+                    return String.Format("[color=#FFFF00]{0}[color]", name);
             }
-            else if (team.MapFaction == Faction.Friend)
-                return String.Format("[color=#FFFF00]{0}[color]", name);
 
             string apparentSpecies = BaseForm.Species;
             if (ProxySprite.IsValid() && ProxyName != "")
