@@ -26,17 +26,38 @@ namespace RogueEssence.Data
             Unlockable
         }
 
+        /// <summary>
+        /// The name of the data
+        /// </summary>
         public LocalText Name { get; set; }
 
+        /// <summary>
+        /// The description of the data
+        /// </summary>
         [Dev.Multiline(0)]
         public LocalText Desc { get; set; }
+
+        /// <summary>
+        /// Determines if it's released
+        /// </summary>
         public bool Released { get; set; }
+
+        /// <summary>
+        /// Comments visible to only developers
+        /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment); }
 
+        /// <summary>
+        /// The object animation used for this tile
+        /// </summary>
         public ObjAnimData Anim;
+
+        /// <summary>
+        /// The offset for which to draw the object animation
+        /// </summary>
         public Loc Offset;
 
 
@@ -44,18 +65,39 @@ namespace RogueEssence.Data
         /// The layer to draw the tile on. Only supports Bottom, Back, and Front for now.
         /// </summary>
         public DrawLayer Layer;
+
         //public bool BlockLight;
 
         /// <summary>
         /// Prevents items from landing on it.
         /// </summary>
         public bool BlockItem;
+
+        /// <summary>
+        /// Determines how the tile can be interacted with
+        /// </summary>
         public TriggerType StepType;
+
+        /// <summary>
+        /// Texture for the minimap icon
+        /// </summary>
         public Loc MinimapIcon;
+
+        /// <summary>
+        /// Color for the minimap icon
+        /// </summary>
         public Color MinimapColor;
 
+        /// <summary>
+        /// What happens when a character walks on the tile.
+        /// Also triggers if forced on or winds up on it in any other way.
+        /// </summary>
         [ListCollapse]
         public PriorityList<SingleCharEvent> LandedOnTiles;
+
+        /// <summary>
+        /// What happens when the character voluntarily triggers the tile.
+        /// </summary>
         [ListCollapse]
         public PriorityList<SingleCharEvent> InteractWithTiles;
 

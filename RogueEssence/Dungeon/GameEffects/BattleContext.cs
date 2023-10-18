@@ -57,7 +57,9 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public List<Loc> StrikeLandTiles { get; set; }
 
-
+        /// <summary>
+        /// The ActionType: Skill, Item, Throw or Trap
+        /// </summary>
         public BattleActionType ActionType { get; set; }
         /// <summary>
         /// For skills, the skill slot
@@ -109,6 +111,10 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int RangeMod;
 
+        /// <summary>
+        /// Context states that remain on the main battlecontext even after iterating over different targets.
+        /// Ordinarily, context states are left behind when switching to a new target (in multi-target contexts)
+        /// </summary>
         public StateCollection<ContextState> GlobalContextStates;
 
 
