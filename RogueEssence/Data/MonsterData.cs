@@ -14,11 +14,24 @@ namespace RogueEssence.Data
             return Name.ToLocal();
         }
 
+        /// <summary>
+        /// Monster's name
+        /// </summary>
         public LocalText Name { get; set; }
 
+        /// <summary>
+        /// Monster's species title
+        /// </summary>
         public LocalText Title;
 
+        /// <summary>
+        /// Is it released and allowed to show up in the game?
+        /// </summary>
         public bool Released { get; set; }
+
+        /// <summary>
+        /// Comments visible to only developers
+        /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
@@ -30,6 +43,9 @@ namespace RogueEssence.Data
             return summary;
         }
 
+        /// <summary>
+        /// Index number of the monster for sorting.  Must be unique
+        /// </summary>
         public int IndexNum;
 
         /// <summary>
@@ -39,23 +55,42 @@ namespace RogueEssence.Data
         [Dev.DataType(0, DataManager.DataType.GrowthGroup, false)]
         public string EXPTable;
 
+        /// <summary>
+        /// Skill group for shared skills
+        /// </summary>
         [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
         public string SkillGroup1;
 
+        /// <summary>
+        /// Skill group 2 for shared skills
+        /// </summary>
         [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.SharedRow]
         [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
         public string SkillGroup2;
 
+        /// <summary>
+        /// Chance to be recruited
+        /// </summary>
         public int JoinRate;
 
 
+        /// <summary>
+        /// Monster SPECIES this was promoted from
+        /// </summary>
         [JsonConverter(typeof(MonsterConverter))]
         [Dev.DataType(0, DataManager.DataType.Monster, true)]
         public string PromoteFrom;
+
+        /// <summary>
+        /// Possible promotions
+        /// </summary>
         public List<PromoteBranch> Promotions;
 
+        /// <summary>
+        /// Forms of the monster
+        /// </summary>
         public List<BaseMonsterForm> Forms;
 
         public MonsterData()
@@ -71,7 +106,10 @@ namespace RogueEssence.Data
             Forms = new List<BaseMonsterForm>();
         }
 
-
+        /// <summary>
+        /// Gets the colored text string of the monster
+        /// </summary>
+        /// <returns></returns>
         public string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());

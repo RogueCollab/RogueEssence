@@ -25,6 +25,9 @@ namespace RogueEssence.Data
             Box
         }
 
+        /// <summary>
+        /// The name of the data
+        /// </summary>
         public LocalText Name { get; set; }
 
         /// <summary>
@@ -39,10 +42,21 @@ namespace RogueEssence.Data
         [Alias(0, "Item_Icon")]
         public int Icon;
 
+
+        /// <summary>
+        /// The description of the item
+        /// </summary>
         [Dev.Multiline(0)]
         public LocalText Desc { get; set; }
 
+        /// <summary>
+        /// Is it released and allowed to show up in the game?
+        /// </summary>
         public bool Released { get; set; }
+
+        /// <summary>
+        /// Comments visible to only developers
+        /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
@@ -54,6 +68,9 @@ namespace RogueEssence.Data
             return summary;
         }
 
+        /// <summary>
+        /// The number order of the item for sorting
+        /// </summary>
         public int SortCategory;
 
         /// <summary>
@@ -151,11 +168,19 @@ namespace RogueEssence.Data
         }
 
 
+        /// <summary>
+        /// Gets the colored text string of the item
+        /// </summary>
+        /// <returns></returns>
         public string GetColoredName()
         {
             return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
         }
 
+        /// <summary>
+        /// Gets the colored text string of the item, with icon included
+        /// </summary>
+        /// <returns></returns>
         public string GetIconName()
         {
             string prefix = "";

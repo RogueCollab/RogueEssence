@@ -38,7 +38,7 @@ namespace RogueEssence.Data
         public LocalText Desc { get; set; }
 
         /// <summary>
-        /// Determines if it's released
+        /// Is it released and allowed to show up in the game?
         /// </summary>
         public bool Released { get; set; }
 
@@ -111,7 +111,10 @@ namespace RogueEssence.Data
             InteractWithTiles = new PriorityList<SingleCharEvent>();
         }
 
-
+        /// <summary>
+        /// Gets the colored name for the tile
+        /// </summary>
+        /// <returns></returns>
         public string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());

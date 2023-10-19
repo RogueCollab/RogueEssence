@@ -162,21 +162,77 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
+        /// <summary>
+        /// The parameters governing the start of the game.
+        /// Such as starting character, map, level, etc.
+        /// </summary>
         public StartParams Start;
 
         public MonsterID DefaultMonsterID { get { return new MonsterID(DefaultMonster, 0, DefaultSkin, Gender.Genderless); } }
+
+        /// <summary>
+        /// The monster ID consiered default for purposes of initialization
+        /// </summary>
         public string DefaultMonster;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultSkill;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultIntrinsic;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultMapStatus;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultElement;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultTile;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultZone;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultRank;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultAI;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultSkin;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "floor" in random dungeon generation
+        /// </summary>
         public string GenFloor;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "wall" in random dungeon generation
+        /// </summary>
         public string GenWall;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "unbreakable" in random dungeon generation
+        /// </summary>
         public string GenUnbreakable;
         
         public UniversalActiveEffect UniversalEvent;
