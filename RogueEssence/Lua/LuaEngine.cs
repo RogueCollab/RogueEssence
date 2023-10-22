@@ -38,7 +38,7 @@ namespace RogueEssence.Script
     /// <summary>
     /// Manager for the program-wide lua state. Init and de-init block!
     /// </summary>
-    public partial class LuaEngine
+    public class LuaEngine
     {
         #region ZONE_EVENTS
         /// <summary>
@@ -99,7 +99,6 @@ namespace RogueEssence.Script
 
         #endregion
 
-
         #region MAP_EVENTS
         /// <summary>
         /// The available callbacks a map's lua script may receive from the engine.
@@ -155,8 +154,6 @@ namespace RogueEssence.Script
         }
 
         #endregion
-
-
 
         #region DUNGEON_MAP_EVENTS
 
@@ -276,7 +273,6 @@ namespace RogueEssence.Script
             return String.Format("{0}(obj, activator)", callback);
         }
         #endregion
-
 
         #region SERVICES_EVENTS
         private static readonly string NameLuaServiceEventNames = "EngineServiceEvents";

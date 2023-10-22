@@ -44,6 +44,11 @@ namespace RogueEssence
         public int DebugReplayIndex;
 
         public bool DevMode;
+
+        /// <summary>
+        /// Debug with lua listener
+        /// </summary>
+        public bool DebugLua;
         public IRootEditor DevEditor;
         public bool ListenGen;
 
