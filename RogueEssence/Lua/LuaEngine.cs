@@ -828,7 +828,8 @@ namespace RogueEssence.Script
 
             //Run main script
             DiagManager.Instance.LogInfo(String.Format("[SE]:Running {0} script..", SCRIPT_MAIN));
-            LuaState.DoFile(PathToScript(SCRIPT_MAIN));
+            foreach(string modPath in PathMod.FallforthPaths(String.Format("{0}{1}", SCRIPT_PATH, SCRIPT_MAIN)))
+                LuaState.DoFile(modPath);
         }
 
 
