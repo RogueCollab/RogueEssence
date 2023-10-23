@@ -754,7 +754,7 @@ namespace RogueEssence.Content
 
         private static FontSheet LoadFont(string prefix)
         {
-            return LoadFontFull(PathMod.ModPath(String.Format(FONT_PATTERN, prefix)));
+            return LoadFontFull(Text.ModLangPath(PathMod.ModPath(String.Format(FONT_PATTERN, prefix))));
         }
         private static FontSheet LoadFontFull(string path)
         {
