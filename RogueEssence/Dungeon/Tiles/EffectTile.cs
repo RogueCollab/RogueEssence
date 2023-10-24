@@ -143,6 +143,7 @@ namespace RogueEssence.Dungeon
             return new Loc(MapLoc.X - sheet.TileWidth / 2,
             MapLoc.Y - sheet.TileHeight / 2) + entry.Offset - offset;
         }
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public Loc GetDrawSize()
         {
@@ -196,6 +197,7 @@ namespace RogueEssence.Dungeon
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - sheet.TileWidth / 2,
             MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) + entry.Offset - offset;
         }
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public Loc GetDrawSize()
         {

@@ -2728,6 +2728,10 @@ namespace RogueEssence.Dungeon
         {
             return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(Appearance.ToCharID()));
         }
+        public Loc GetSheetOffset()
+        {
+            return currentCharAction.GetSheetOffset(GraphicsManager.GetChara(Appearance.ToCharID()));
+        }
 
         public Loc GetDrawSize()
         {

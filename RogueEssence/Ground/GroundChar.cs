@@ -428,6 +428,10 @@ namespace RogueEssence.Ground
         {
             return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm.ToCharID()));
         }
+        public override Loc GetSheetOffset()
+        {
+            return currentCharAction.GetSheetOffset(GraphicsManager.GetChara(CurrentForm.ToCharID()));
+        }
 
         public override Loc GetDrawSize()
         {

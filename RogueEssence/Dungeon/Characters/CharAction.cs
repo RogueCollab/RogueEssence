@@ -86,6 +86,10 @@ namespace RogueEssence.Dungeon
         public virtual Loc GetActionPoint(CharSheet sheet, ActionPointType pointType) { return currentAnim.GetActionPoint(sheet, pointType); }
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset, CharSheet sheet) { currentAnim.Draw(spriteBatch, offset, sheet); }
         public Loc GetDrawLoc(Loc offset, CharSheet sheet) { return currentAnim.GetDrawLoc(sheet, offset); }
+        public Loc GetSheetOffset(CharSheet sheet)
+        {
+            return currentAnim.GetSheetOffset(sheet);
+        }
         public void GetCurrentSprite(CharSheet sheet, out int anim, out int currentTime, out int currentFrame) { currentAnim.GetCurrentSprite(sheet, out anim, out currentTime, out currentFrame); }
 
         public void PickUpFrom(CharID appearance, CharAction prevAction)

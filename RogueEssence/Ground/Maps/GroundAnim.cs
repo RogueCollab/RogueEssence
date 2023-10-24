@@ -60,6 +60,7 @@ namespace RogueEssence.Ground
         {
             return MapLoc - offset;
         }
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public Loc GetDrawSize()
         {

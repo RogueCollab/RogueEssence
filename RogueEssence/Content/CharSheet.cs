@@ -1403,6 +1403,38 @@ namespace RogueEssence.Content
             else
                 DrawDefault(spriteBatch, new Rectangle((int)pos.X, (int)pos.Y, TileWidth, TileHeight));
         }
+        /// <summary>
+        /// Gets the offset of the sprite being drawn relative to the position it is ordered to draw at.
+        /// Basically, the charsheet has its own offset system to move the single texture it draws around.
+        /// When ordered to draw on a vector, its actual draw location is vector + adjustedOffset
+        /// This will give you that offset.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="truncateDash"></param>
+        /// <param name="dir"></param>
+        /// <param name="frameMethod"></param>
+        public Loc GetSheetOffset(int type, bool truncateDash, Dir8 dir, DetermineFrame frameMethod)
+        {
+            type = GetReferencedAnimIndex(type);
+            CharAnimGroup group = getReferencedAnim(type);
+            if (group != null)
+            {
+                CharAnimSequence seq = group.SeqAtDir(dir);
+                int frameNum = frameMethod(seq.Frames);
+                CharAnimFrame frame = seq.Frames[frameNum];
+                Loc adjustedOffset = frame.Offset;
+                if (truncateDash)
+                {
+                    int trueRush = group.RushFrame > -1 ? group.RushFrame : 0;
+                    adjustedOffset = AdjustOffset(type, group.RushFrame, frameNum, seq.Frames[trueRush].Offset, frame.Offset);
+                }
+
+                return adjustedOffset;
+            }
+            else
+                return Loc.Zero;
+        }
+
         public Loc GetActionPoint(int type, bool truncateDash, Dir8 dir, ActionPointType pointType, DetermineFrame frameMethod)
         {
             type = GetReferencedAnimIndex(type);
