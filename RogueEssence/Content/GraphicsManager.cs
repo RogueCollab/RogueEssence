@@ -583,7 +583,7 @@ namespace RogueEssence.Content
             if ((conversionFlags & AssetType.Font) != AssetType.None)
             {
                 Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", BASE_PATH + "{0}.font", "system");
-                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "banner");
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "text.zh-hans", "banner");
             }
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
