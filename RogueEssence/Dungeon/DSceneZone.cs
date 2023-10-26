@@ -138,9 +138,6 @@ namespace RogueEssence.Dungeon
         }
 
 
-
-
-
         public IEnumerator<YieldInstruction> ProcessAI()
         {
             GameAction action = CurrentCharacter.Tactic.GetAction(CurrentCharacter, DataManager.Instance.Save.Rand, false);

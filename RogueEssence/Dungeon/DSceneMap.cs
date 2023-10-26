@@ -616,6 +616,10 @@ namespace RogueEssence.Dungeon
                 SingleCharContext singleContext = new SingleCharContext(character);
                 yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(singleContext));
 
+                //This behaves like ProcessUseSkill, ProcessUseItem, ProcessThrowItem
+                //with ONE exception: if both cancel and turnCancel are on, then the result is a FAIL not a Success
+                //if there was a PreInteract where fail checks could occur, then this code would be allowed to behave the same as the aforementioned functions
+                //but there isn't, so the only way to fail is after interaction itself.
                 if (singleContext.CancelState.Cancel && singleContext.TurnCancel.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(singleContext.User.CharLoc)); yield break; }
 
                 if (!singleContext.TurnCancel.Cancel)
