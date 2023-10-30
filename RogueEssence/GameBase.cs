@@ -111,7 +111,7 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             backgroundLoaded = true;
-            DiagManager.Instance.LoadMsg = "Press any key to continue";
+            DiagManager.Instance.LoadMsg = Text.FormatKey("GAME_LOAD_READY");
         }
 
         /// <summary>
