@@ -50,17 +50,20 @@ namespace RogueEssence.Menu
             bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !equippedItems);
 
             Choices.Clear();
-            Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SKILLS"), () =>
+            if (CharData.MAX_SKILL_SLOTS > 0)
             {
-                int mainIndex = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_SKILLS"), () =>
                 {
-                    CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
-                    if (turnChar.Faction == Faction.Player)
-                        mainIndex = turnChar.Char;
-                }
-                MenuManager.Instance.AddMenu(new SkillMenu(mainIndex), false);
-            }));
+                    int mainIndex = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
+                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    {
+                        CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
+                        if (turnChar.Faction == Faction.Player)
+                            mainIndex = turnChar.Char;
+                    }
+                    MenuManager.Instance.AddMenu(new SkillMenu(mainIndex), false);
+                }));
+            }
             Choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
 
             bool hasTactics = (DataManager.Instance.Save.ActiveTeam.Players.Count > 1);

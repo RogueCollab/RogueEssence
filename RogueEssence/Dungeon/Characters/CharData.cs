@@ -14,8 +14,8 @@ namespace RogueEssence.Dungeon
     public class CharData
     {
 
-        public const int MAX_SKILL_SLOTS = 4;
-        public const int MAX_INTRINSIC_SLOTS = 1;
+        public static int MAX_SKILL_SLOTS = 4;
+        public static int MAX_INTRINSIC_SLOTS = 1;
 
         public string Nickname;
         public string BaseName
