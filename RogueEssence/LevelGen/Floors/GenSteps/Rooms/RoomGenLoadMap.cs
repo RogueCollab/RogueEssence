@@ -42,7 +42,7 @@ namespace RogueEssence.LevelGen
         public PostProcType PreventChanges { get; set; }
 
         [NonSerialized]
-        private Map roomMap;
+        protected Map roomMap;
 
         public RoomGenLoadMap()
         {

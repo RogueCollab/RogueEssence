@@ -55,6 +55,7 @@ namespace RogueEssence.LevelGen
             foreach (Dir8 checkDir in DirExt.VALID_DIR8)
             {
                 Loc checkLoc = branch + checkDir.GetLoc();
+                //TODO: actually, count out of bounds as empty room
                 if ((floorPlan.Wrap || Collision.InBounds(floorPlan.GridWidth, floorPlan.GridHeight, checkLoc))
                     && floorPlan.GetRoomIndex(checkLoc) == -1)
                 {
@@ -64,22 +65,6 @@ namespace RogueEssence.LevelGen
                         rating *= 2;
                 }
             }
-
-
-            //for (int xx = -2; xx <= 2; xx++)
-            //{
-            //    for (int yy = -2; yy <= 2; yy++)
-            //    {
-            //        {
-            //            Loc checkLoc = branch + new Loc(xx, yy);
-            //            if ((floorPlan.Wrap || Collision.InBounds(floorPlan.GridWidth, floorPlan.GridHeight, checkLoc))
-            //                && floorPlan.GetRoomIndex(checkLoc) == -1)
-            //            {
-            //                rating += 1;
-            //            }
-            //        }
-            //    }
-            //}
 
             return rating;
         }
@@ -100,6 +85,7 @@ namespace RogueEssence.LevelGen
                     {
                         if (checkDir != dir.ToDir8().Reverse())
                         {
+                            //TODO: actually, count out of bounds as empty room
                             Loc checkLoc = endLoc + checkDir.GetLoc();
                             if ((floorPlan.Wrap || Collision.InBounds(floorPlan.GridWidth, floorPlan.GridHeight, checkLoc))
                                 && floorPlan.GetRoomIndex(checkLoc) == -1)

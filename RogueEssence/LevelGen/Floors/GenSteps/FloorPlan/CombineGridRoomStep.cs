@@ -209,22 +209,27 @@ namespace RogueEssence.LevelGen
 
                 Loc destLoc = chosenLoc.Value;
 
-                //erase the constituent rooms
-                for (int x2 = destLoc.X; x2 < destLoc.X + combo.Size.X; x2++)
-                {
-                    for (int y2 = destLoc.Y; y2 < destLoc.Y + combo.Size.Y; y2++)
-                    {
-                        floorPlan.EraseRoom(new Loc(x2, y2));
-                        if (x2 > destLoc.X)
-                            floorPlan.SetHall(new LocRay4(x2, y2, Dir4.Left), null, new ComponentCollection());
-                        if (y2 > destLoc.Y)
-                            floorPlan.SetHall(new LocRay4(x2, y2, Dir4.Up), null, new ComponentCollection());
-                    }
-                }
-
-                //place the room
-                floorPlan.AddRoom(new Rect(destLoc.X, destLoc.Y, combo.Size.X, combo.Size.Y), combo.GiantRoom.Copy(), this.RoomComponents.Clone(), false);
+                combineRooms(floorPlan, destLoc, combo.Size, combo.GiantRoom);
             }
+        }
+
+        private void combineRooms(GridPlan floorPlan, Loc destLoc, Loc size, RoomGen<T> giantRoom)
+        {
+            //erase the constituent rooms
+            for (int x2 = destLoc.X; x2 < destLoc.X + size.X; x2++)
+            {
+                for (int y2 = destLoc.Y; y2 < destLoc.Y + size.Y; y2++)
+                {
+                    floorPlan.EraseRoom(new Loc(x2, y2));
+                    if (x2 > destLoc.X)
+                        floorPlan.SetHall(new LocRay4(x2, y2, Dir4.Left), null, new ComponentCollection());
+                    if (y2 > destLoc.Y)
+                        floorPlan.SetHall(new LocRay4(x2, y2, Dir4.Up), null, new ComponentCollection());
+                }
+            }
+
+            //place the room
+            floorPlan.AddRoom(new Rect(destLoc.X, destLoc.Y, size.X, size.Y), giantRoom.Copy(), this.RoomComponents.Clone(), false);
         }
 
         protected bool roomViable(GridPlan floorPlan, int xx, int yy)
