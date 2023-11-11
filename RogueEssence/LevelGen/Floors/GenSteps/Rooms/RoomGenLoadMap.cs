@@ -13,36 +13,16 @@ namespace RogueEssence.LevelGen
     /// <summary>
     /// Generates a room by loading a map as the room.
     /// Includes tiles, items, enemies, and mapstarts.
+    /// Borders are specified by a tile.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class RoomGenLoadMap<T> : RoomGen<T> where T : BaseMapGenContext
+    public class RoomGenLoadMap<T> : RoomGenLoadMapBase<T> where T : BaseMapGenContext
     {
-        /// <summary>
-        /// Map file to load.
-        /// </summary>
-        [Dev.DataFolder(0, "Map/")]
-        public string MapID;
-
         /// <summary>
         /// The terrain that counts as room.  Halls will only attach to room tiles, or tiles specified with Borders.
         /// </summary>
         public ITile RoomTerrain { get; set; }
-
-        /// <summary>
-        /// Determines which tiles of the border are open for halls.
-        /// </summary>
-        //public Dictionary<Dir4, bool[]> Borders { get; set; }
-
-        /// <summary>
-        /// Determines if connecting hallways should continue digging inward after they hit the room bounds, until a walkable tile is found.
-        /// </summary>
-        //public bool FulfillAll { get; set; }
-
-        public PostProcType PreventChanges { get; set; }
-
-        [NonSerialized]
-        protected Map roomMap;
 
         public RoomGenLoadMap()
         {
@@ -50,24 +30,144 @@ namespace RogueEssence.LevelGen
         }
 
 
-        protected RoomGenLoadMap(RoomGenLoadMap<T> other)
+        protected RoomGenLoadMap(RoomGenLoadMap<T> other) : base(other)
         {
-            MapID = other.MapID;
             this.RoomTerrain = other.RoomTerrain;
-            this.PreventChanges = other.PreventChanges;
-            //this.FulfillAll = other.FulfillAll;
-
-            //this.Borders = new Dictionary<Dir4, bool[]>();
-            //foreach (Dir4 dir in DirExt.VALID_DIR4)
-            //{
-            //    this.Borders[dir] = new bool[other.Borders[dir].Length];
-            //    for (int jj = 0; jj < other.Borders[dir].Length; jj++)
-            //        this.Borders[dir][jj] = other.Borders[dir][jj];
-            //}
-
         }
+
         public override RoomGen<T> Copy() { return new RoomGenLoadMap<T>(this); }
 
+
+
+        protected override void PrepareFulfillableBorders(IRandom rand)
+        {
+            // NOTE: Because the context is not passed in when preparing borders,
+            // the tile ID representing an opening must be specified on this class instead.
+            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
+            {
+                foreach (Dir4 dir in DirExt.VALID_DIR4)
+                {
+                    for (int jj = 0; jj < this.FulfillableBorder[dir].Length; jj++)
+                        this.FulfillableBorder[dir][jj] = true;
+                }
+            }
+            else
+            {
+                for (int ii = 0; ii < this.Draw.Width; ii++)
+                {
+                    this.FulfillableBorder[Dir4.Up][ii] = this.roomMap.Tiles[ii][0].TileEquivalent(this.RoomTerrain);
+                    this.FulfillableBorder[Dir4.Down][ii] = this.roomMap.Tiles[ii][this.Draw.Height - 1].TileEquivalent(this.RoomTerrain);
+                }
+
+                for (int ii = 0; ii < this.Draw.Height; ii++)
+                {
+                    this.FulfillableBorder[Dir4.Left][ii] = this.roomMap.Tiles[0][ii].TileEquivalent(this.RoomTerrain);
+                    this.FulfillableBorder[Dir4.Right][ii] = this.roomMap.Tiles[this.Draw.Width - 1][ii].TileEquivalent(this.RoomTerrain);
+                }
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Generates a room by loading a map as the room.
+    /// Includes tiles, items, enemies, and mapstarts.
+    /// Borders are specified by the user.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
+    public class RoomGenLoadMapBordered<T> : RoomGenLoadMapBase<T> where T : BaseMapGenContext
+    {
+        /// <summary>
+        /// Determines which tiles of the border are open for halls.
+        /// </summary>
+        public Dictionary<Dir4, bool[]> Borders { get; set; }
+
+        /// <summary>
+        /// Determines if connecting hallways should continue digging inward after they hit the room bounds, until a walkable tile is found.
+        /// </summary>
+        //public bool FulfillAll { get; set; }
+
+
+        public RoomGenLoadMapBordered()
+        {
+            MapID = "";
+            this.Borders = new Dictionary<Dir4, bool[]>();
+        }
+
+
+        protected RoomGenLoadMapBordered(RoomGenLoadMapBordered<T> other) : base(other)
+        {
+            //this.FulfillAll = other.FulfillAll;
+
+            this.Borders = new Dictionary<Dir4, bool[]>();
+            foreach (Dir4 dir in DirExt.VALID_DIR4)
+            {
+                this.Borders[dir] = new bool[other.Borders[dir].Length];
+                for (int jj = 0; jj < other.Borders[dir].Length; jj++)
+                    this.Borders[dir][jj] = other.Borders[dir][jj];
+            }
+
+        }
+
+        public override RoomGen<T> Copy() { return new RoomGenLoadMapBordered<T>(this); }
+
+
+        protected override void PrepareFulfillableBorders(IRandom rand)
+        {
+            // NOTE: Because the context is not passed in when preparing borders,
+            // the tile ID representing an opening must be specified on this class instead.
+            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
+            {
+                foreach (Dir4 dir in DirExt.VALID_DIR4)
+                {
+                    for (int jj = 0; jj < this.FulfillableBorder[dir].Length; jj++)
+                        this.FulfillableBorder[dir][jj] = true;
+                }
+            }
+            else
+            {
+                for (int ii = 0; ii < this.Draw.Width; ii++)
+                {
+                    this.FulfillableBorder[Dir4.Up][ii] = this.Borders[Dir4.Up][ii];
+                    this.FulfillableBorder[Dir4.Down][ii] = this.Borders[Dir4.Down][ii];
+                }
+
+                for (int ii = 0; ii < this.Draw.Height; ii++)
+                {
+                    this.FulfillableBorder[Dir4.Left][ii] = this.Borders[Dir4.Left][ii];
+                    this.FulfillableBorder[Dir4.Right][ii] = this.Borders[Dir4.Right][ii];
+                }
+            }
+        }
+    }
+
+
+    [Serializable]
+    public abstract class RoomGenLoadMapBase<T> : RoomGen<T> where T : BaseMapGenContext
+    {
+        /// <summary>
+        /// Map file to load.
+        /// </summary>
+        [Dev.DataFolder(0, "Map/")]
+        public string MapID;
+
+        public PostProcType PreventChanges { get; set; }
+
+        [NonSerialized]
+        protected Map roomMap;
+
+        public RoomGenLoadMapBase()
+        {
+            MapID = "";
+        }
+
+
+        protected RoomGenLoadMapBase(RoomGenLoadMapBase<T> other)
+        {
+            MapID = other.MapID;
+            this.PreventChanges = other.PreventChanges;
+        }
 
         public override Loc ProposeSize(IRandom rand)
         {
@@ -191,34 +291,6 @@ namespace RogueEssence.LevelGen
             {
                 for (int yy = 0; yy < Draw.Height; yy++)
                     map.GetPostProc(new Loc(Draw.X + xx, Draw.Y + yy)).AddMask(new PostProcTile(PreventChanges));
-            }
-        }
-
-        protected override void PrepareFulfillableBorders(IRandom rand)
-        {
-            // NOTE: Because the context is not passed in when preparing borders,
-            // the tile ID representing an opening must be specified on this class instead.
-            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
-            {
-                foreach (Dir4 dir in DirExt.VALID_DIR4)
-                {
-                    for (int jj = 0; jj < this.FulfillableBorder[dir].Length; jj++)
-                        this.FulfillableBorder[dir][jj] = true;
-                }
-            }
-            else
-            {
-                for (int ii = 0; ii < this.Draw.Width; ii++)
-                {
-                    this.FulfillableBorder[Dir4.Up][ii] = this.roomMap.Tiles[ii][0].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Up][ii];
-                    this.FulfillableBorder[Dir4.Down][ii] = this.roomMap.Tiles[ii][this.Draw.Height - 1].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Down][ii];
-                }
-
-                for (int ii = 0; ii < this.Draw.Height; ii++)
-                {
-                    this.FulfillableBorder[Dir4.Left][ii] = this.roomMap.Tiles[0][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Left][ii];
-                    this.FulfillableBorder[Dir4.Right][ii] = this.roomMap.Tiles[this.Draw.Width - 1][ii].TileEquivalent(this.RoomTerrain);// || this.Borders[Dir4.Right][ii];
-                }
             }
         }
     }
