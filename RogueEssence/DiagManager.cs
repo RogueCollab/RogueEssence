@@ -29,7 +29,7 @@ namespace RogueEssence
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
 
-        object lockObj = new object();
+        private object lockObj = new object();
 
         public delegate void LogAdded(string message);
         public delegate string ErrorTrace();
