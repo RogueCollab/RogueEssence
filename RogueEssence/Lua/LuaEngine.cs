@@ -1612,6 +1612,16 @@ namespace RogueEssence.Script
             return arr;
         }
 
+        public IList MakeList(IEnumerable enumerable)
+        {
+            List<object> objList = new List<object>();
+            foreach (object val in enumerable)
+            {
+                objList.Add(val);
+            }
+            return objList;
+        }
+
 
         private Type[] parseTypeArgs(LuaTable table)
         {
