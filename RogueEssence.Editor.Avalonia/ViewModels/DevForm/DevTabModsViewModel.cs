@@ -99,6 +99,9 @@ namespace RogueEssence.Dev.ViewModels
                     GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromExe(chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
                 else
                     GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
+
+                DiagManager.Instance.PrintModSettings();
+                DiagManager.Instance.SaveModSettings();
             }
         }
 
