@@ -1155,7 +1155,7 @@ namespace RogueEssence.Dungeon
                         else
                         {
                             TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
-                            if (!(terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block))
+                            if (terrain.ItemDraw != TerrainData.TileItemDraw.Hide)
                             {
                                 if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                                     seeItem = true;
