@@ -893,7 +893,7 @@ namespace RogueEssence.Script
         /// and for execution to suspend until the choice is returned.
         /// Then to recover the integer representing the chosen team member, UI:ChoiceResult() must be called.
         /// </summary>
-        public void TutorTeamMenu()
+        public void TutorTeamMenu(LuaFunction eligibleCheck = null)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -903,9 +903,16 @@ namespace RogueEssence.Script
 
             try
             {
+                bool isEligible(Character chara)
+                {
+                    if (eligibleCheck == null)
+                        return true;
+                    return (bool)eligibleCheck.Call(chara)[0];
+                };
+                
+                //yields = LuaEngine.Instance.CallScriptFunction(luaFun);
                 m_choiceresult = -1;
-                //TODO: allow this to work in dungeon mode by skipping replays
-                m_curchoice = new TutorTeamMenu(-1,
+                m_curchoice = new TutorTeamMenu(-1, isEligible,
                     (int teamSlot) => { m_choiceresult = teamSlot; DataManager.Instance.LogUIPlay(teamSlot); },
                     () => { DataManager.Instance.LogUIPlay(-1); });
             }

@@ -2,6 +2,7 @@
 using RogueElements;
 using System;
 using RogueEssence.Content;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Menu
 {
@@ -17,7 +18,8 @@ namespace RogueEssence.Menu
             this.chooseSlotAction = action;
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_CHOOSE"), RememberAction));
+            bool enabled = (chooseSlotAction != null);
+            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_CHOOSE"), RememberAction, enabled, enabled ? Color.White : Color.Red));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_SUMMARY"), SummaryAction));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
