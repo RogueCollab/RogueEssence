@@ -526,7 +526,8 @@ namespace RogueEssence.Dungeon
                     otherStatus.TargetChar = null;
             }
 
-            RestoreForm();
+            //Do not refresh types and intrinsics from the character to avoid triggering effects on death that have been wiped
+            RestoreForm(true);
         }
 
         private List<int> baseRestore()
@@ -663,6 +664,11 @@ namespace RogueEssence.Dungeon
 
         public void RestoreForm()
         {
+            RestoreForm(false);
+        }
+
+        public void RestoreForm(bool onDeath)
+        {
             CurrentForm = BaseForm;
 
             List<int> skillIndices = new List<int>();
@@ -684,13 +690,16 @@ namespace RogueEssence.Dungeon
                 Skills.Add(new BackReference<Skill>(newState, ii));
             }
 
-            Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
-            Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
-
-            Intrinsics.Clear();
-            for (int ii = 0; ii < BaseIntrinsics.Count; ii++)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
-
+            if (!onDeath)
+            {
+                Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
+                Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
+                
+                Intrinsics.Clear();
+                for (int ii = 0; ii < BaseIntrinsics.Count; ii++)
+                    Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
+            }
+            
             ProxyAtk = -1;
             ProxyDef = -1;
             ProxyMAtk = -1;
