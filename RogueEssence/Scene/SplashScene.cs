@@ -25,7 +25,17 @@ namespace RogueEssence
                 yield return new WaitForFrames(30);
             }
             GameManager.Instance.SetFade(true, false);
-            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+            GameManager.Instance.SceneOutcome = StartToTitle();
+        }
+
+        /// <summary>
+        /// Start to title, without all the unneeded restart logic.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> StartToTitle()
+        {
+            GameManager.Instance.MoveToScene(new TitleScene(false));
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeIn());
         }
 
         public override void Draw(SpriteBatch spriteBatch)

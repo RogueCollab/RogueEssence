@@ -434,7 +434,16 @@ namespace RogueEssence.Script
         public void Reset()
         {
             if (LuaState != null)
-                LuaState.Close();
+            {
+                try
+                {
+                    LuaState.Close();
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex);
+                }
+            }
             //init lua
             LuaState = new Lua();
             //LuaState.UseTraceback = true;
