@@ -1105,6 +1105,9 @@ namespace RogueEssence.Data
             }
 
             MenuBase.Transparent = false;
+            
+            //turn off the music
+            GameManager.Instance.BGM("", false);
 
             if (recorded && display)
             {
