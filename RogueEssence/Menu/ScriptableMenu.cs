@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using NLua;
 using System.Collections;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -13,9 +14,9 @@ namespace RogueEssence.Menu
         public List<IMenuElement> MenuElements;
         public List<SummaryMenu> SummaryMenus;
 
-        protected LuaFunction UpdateFunction;
+        protected Action<InputManager> UpdateFunction;
 
-        public ScriptableMenu(int x, int y, int w, int h, LuaFunction updateFunction)
+        public ScriptableMenu(int x, int y, int w, int h, Action<InputManager> updateFunction)
         {
             UpdateFunction = updateFunction;
             Bounds = new Rect(x, y, w, h);
@@ -31,7 +32,8 @@ namespace RogueEssence.Menu
 
         public override void Update(InputManager input)
         {
-            UpdateFunction?.Call(input);
+            if (UpdateFunction != null)
+            UpdateFunction(input);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -50,9 +52,11 @@ namespace RogueEssence.Menu
     {
         public List<SummaryMenu> SummaryMenus;
 
-        public LuaFunction CancelFunction;
+        public Action CancelFunction;
 
-        public ScriptableSingleStripMenu(int x, int y, int minWidth, LuaTable choicesPairs, object defaultChoice, LuaFunction cancelFun)
+        public Action ChoiceChangedFunction;
+
+        public ScriptableSingleStripMenu(int x, int y, int minWidth, LuaTable choicesPairs, object defaultChoice, Action cancelFun)
         {
             CancelFunction = cancelFun;
             int? mappedDefault = null;
@@ -107,6 +111,14 @@ namespace RogueEssence.Menu
 
             SummaryMenus = new List<SummaryMenu>();
         }
+
+        protected override void ChoiceChanged()
+        {
+            if (ChoiceChangedFunction != null)
+                ChoiceChangedFunction();
+        }
+
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Visible)
@@ -120,16 +132,60 @@ namespace RogueEssence.Menu
         protected override void MenuPressed()
         {
             if (CancelFunction != null)
-                CancelFunction.Call();
+                CancelFunction();
         }
 
         protected override void Canceled()
         {
             if (CancelFunction != null)
-                CancelFunction.Call();
+                CancelFunction();
         }
 
     }
 
 
+    public class ScriptableMultiPageMenu : MultiPageMenu
+    {
+        public List<SummaryMenu> SummaryMenus;
+
+        public Action CancelFunction;
+
+        public Action MenuFunction;
+
+        public Action ChoiceChangedFunction;
+
+        public override bool CanMenu => MenuFunction is not null;
+        public override bool CanCancel => CancelFunction is not null;
+
+
+        public ScriptableMultiPageMenu(Loc start, int width, string title, IChoosable[] totalChoices, int defaultTotalChoice, int spacesPerPage, Action onCancel, Action onMenu)
+        {
+            this.CancelFunction = onCancel;
+            this.MenuFunction = onMenu;
+            IChoosable[][] pagedChoices = SortIntoPages(totalChoices, spacesPerPage);
+            int defaultPage = defaultTotalChoice / spacesPerPage;
+            int defaultChoice = defaultTotalChoice % spacesPerPage;
+            Initialize(start, width, title, pagedChoices, defaultChoice, defaultPage, spacesPerPage);
+
+            SummaryMenus = new List<SummaryMenu>();
+        }
+
+        protected override void ChoiceChanged()
+        {
+            if (ChoiceChangedFunction != null)
+                ChoiceChangedFunction();
+        }
+
+        protected override void MenuPressed()
+        {
+            if (MenuFunction != null)
+                MenuFunction();
+        }
+
+        protected override void Canceled()
+        {
+            if (CancelFunction != null)
+                CancelFunction();
+        }
+    }
 }

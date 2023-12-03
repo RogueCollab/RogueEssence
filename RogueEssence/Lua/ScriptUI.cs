@@ -1520,10 +1520,12 @@ namespace RogueEssence.Script
 
                 Action cancelAction = null;
                 if (mappedCancel != null)
+                {
                     cancelAction = () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = (int)(long)cancelChoice; DataManager.Instance.LogUIPlay((int)(long)cancelChoice); };
+                }
 
                 //Make a choice menu, and check if we display a speaker or not
-                m_curchoice = new CustomMultiPageMenu(new RogueElements.Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, cancelAction);
+                m_curchoice = new ScriptableMultiPageMenu(new Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, cancelAction);
             }
             catch (Exception e)
             {
