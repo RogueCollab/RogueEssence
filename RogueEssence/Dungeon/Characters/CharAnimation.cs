@@ -751,12 +751,26 @@ namespace RogueEssence.Dungeon
         {
             if (FromLoc != VisualLoc)
             {
-                double maxDistance = Math.Sqrt(((FromLoc - VisualLoc) * GraphicsManager.TileSize).DistSquared());
-                LocHeight = AnimMath.GetArc(maxDistance / 2, ANIM_TIME, ActionTime.ToFrames());
+                if (ZoneManager.Instance.CurrentMap.EdgeView == BaseMap.ScrollEdge.Wrap)
+                {
+                    Loc size = ZoneManager.Instance.CurrentMap.Size;
+                    Loc offsetTargetLoc = WrappedCollision.GetClosestWrap(size, FromLoc, VisualLoc);
+                    
+                    double maxDistance = Math.Sqrt(((FromLoc - offsetTargetLoc) * GraphicsManager.TileSize).DistSquared());
+                    LocHeight = AnimMath.GetArc(maxDistance / 2, ANIM_TIME, ActionTime.ToFrames());
+                    Loc diff = (offsetTargetLoc - FromLoc) * GraphicsManager.TileSize;
+                    diff = new Loc((int)(diff.X * ActionTime.FractionOf(ANIM_TIME)), (int)(diff.Y * ActionTime.FractionOf(ANIM_TIME)));
 
-                Loc diff = (VisualLoc - FromLoc) * GraphicsManager.TileSize;
-                diff = new Loc((int)(diff.X * ActionTime.FractionOf(ANIM_TIME)), (int)(diff.Y * ActionTime.FractionOf(ANIM_TIME)));
-                MapLoc = diff + FromLoc * GraphicsManager.TileSize;
+                    MapLoc = diff + (ZoneManager.Instance.CurrentMap.WrapLoc(FromLoc) * GraphicsManager.TileSize);
+                }
+                else
+                {
+                    double maxDistance = Math.Sqrt(((FromLoc - VisualLoc) * GraphicsManager.TileSize).DistSquared());
+                    LocHeight = AnimMath.GetArc(maxDistance / 2, ANIM_TIME, ActionTime.ToFrames());
+                    Loc diff = (VisualLoc - FromLoc) * GraphicsManager.TileSize;
+                    diff = new Loc((int)(diff.X * ActionTime.FractionOf(ANIM_TIME)), (int)(diff.Y * ActionTime.FractionOf(ANIM_TIME)));
+                    MapLoc = diff + (FromLoc * GraphicsManager.TileSize);
+                }
             }
             else
                 MapLoc = FromLoc * GraphicsManager.TileSize;
