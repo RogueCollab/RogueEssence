@@ -527,7 +527,7 @@ namespace RogueEssence.Dungeon
             }
 
             //Do not refresh types and intrinsics from the character to avoid triggering effects on death that have been wiped
-            RestoreForm(true);
+            RestoreForm(false);
         }
 
         private List<int> baseRestore()
@@ -664,10 +664,14 @@ namespace RogueEssence.Dungeon
 
         public void RestoreForm()
         {
-            RestoreForm(false);
+            RestoreForm(true);
         }
 
-        public void RestoreForm(bool onDeath)
+        /// <summary>
+        /// Restores the character's forms and all (or just some) of its details.
+        /// </summary>
+        /// <param name="fullRestore">Restores element and intrinsics too if true.</param>
+        public void RestoreForm(bool fullRestore)
         {
             CurrentForm = BaseForm;
 
@@ -690,7 +694,7 @@ namespace RogueEssence.Dungeon
                 Skills.Add(new BackReference<Skill>(newState, ii));
             }
 
-            if (!onDeath)
+            if (fullRestore)
             {
                 Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
                 Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
