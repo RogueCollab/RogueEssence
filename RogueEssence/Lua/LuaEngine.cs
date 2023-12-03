@@ -470,6 +470,14 @@ namespace RogueEssence.Script
             m_scriptai = new ScriptAI();
             m_scriptxml = new ScriptXML();
 
+            DiagManager.Instance.LogInfo("[SE]: **- Lua engine started! -**");
+        }
+
+        /// <summary>
+        /// Call this after all singletons are loaded.
+        /// </summary>
+        public void LoadScripts()
+        {
             //Expose symbols
             ExposeInterface();
             SetupGlobals();

@@ -63,6 +63,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //Reload everything
                 LuaEngine.Instance.Reset();
+                LuaEngine.Instance.LoadScripts();
                 LuaEngine.Instance.ReInit();
             }
         }

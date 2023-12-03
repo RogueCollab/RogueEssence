@@ -100,6 +100,8 @@ namespace RogueEssence
             
                 DungeonEditScene.InitInstance();
                 GroundEditScene.InitInstance();
+
+                LuaEngine.Instance.LoadScripts();
                 //Notify script engine
                 LuaEngine.Instance.OnDataLoad();
                 GameManager.Instance.Begin();
