@@ -176,6 +176,16 @@ namespace RogueEssence.Menu
                 ChoiceChangedFunction();
         }
 
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            foreach (SummaryMenu menu in SummaryMenus)
+                menu.Draw(spriteBatch);
+        }
+
         protected override void MenuPressed()
         {
             if (MenuFunction != null)
