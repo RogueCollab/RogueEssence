@@ -67,7 +67,7 @@ namespace RogueEssence.Dungeon
 
                     context.User.StatusEffects.TryGetValue("sleep", out status);
 
-                    if (status != null && status.StatusStates.GetWithDefault<CountDownState>().Counter <= 0)
+                    if (status != null && status.StatusStates.GetWithDefault<CountDownState>().Counter < 0)
                     {
                         slowBattleSpeed = false;
                     }
