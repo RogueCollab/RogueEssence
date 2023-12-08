@@ -58,22 +58,7 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
                 }
 
-                bool slowBattleSpeed = true;
-
-                if (context.User.StatusEffects.ContainsKey("sleep"))
-                {
-                    //Do not slow down the battle speed when the Pokemon is asleep on spawn (the sleep message does not play)
-                    StatusEffect status = null;
-
-                    context.User.StatusEffects.TryGetValue("sleep", out status);
-
-                    if (status != null && status.StatusStates.GetWithDefault<CountDownState>().Counter < 0)
-                    {
-                        slowBattleSpeed = false;
-                    }
-                }
-
-                if (slowBattleSpeed == true)
+                if (DungeonScene.Instance.FocusedCharacter == context.User)
                 {
                     yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
                 }
