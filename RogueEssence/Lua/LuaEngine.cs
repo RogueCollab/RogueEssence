@@ -1179,15 +1179,17 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Load and execute the script of a zone.
+        /// Load and execute the script of a map.
+        /// TECHNICALLY this should exist but there's no use case for it yet.
         /// </summary>
-        /// <param name="mapassetname">The AssetName of the zone for which we have to load the script of</param>
+        /// <param name="mapassetname">The AssetName of the map for which we have to load the script of</param>
         public void RunDungeonMapScript(string mapassetname)
         {
             string abspath = MakeDungeonMapScriptPath(false, mapassetname, "/init.lua");
             try
             {
-                RunAssetScript(abspath, mapassetname, string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapassetname), DungeonMapCurrentScriptSym);
+                //TODO: implement usage of map script
+                //RunAssetScript(abspath, mapassetname, string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapassetname), DungeonMapCurrentScriptSym);
             }
             catch (Exception e)
             {
