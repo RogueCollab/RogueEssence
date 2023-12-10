@@ -10,7 +10,7 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class LoopedTeamSpawner<T> : IMultiTeamSpawner<T>
+    public class LoopedTeamSpawner<T> : IMultiTeamSpawner<T>, ILoopedTeamSpawner
         where T : IGenContext, IMobSpawnMap
     {
         /// <summary>
@@ -21,7 +21,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Decides how many teams to spawn.
         /// </summary>
-        public IRandPicker<int> AmountSpawner;
+        public IRandPicker<int> AmountSpawner { get; set; }
 
         public LoopedTeamSpawner() { }
 
@@ -59,5 +59,10 @@ namespace RogueEssence.LevelGen
             else
                 return String.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), AmountSpawner.ToString());
         }
+    }
+
+    public interface ILoopedTeamSpawner
+    {
+        IRandPicker<int> AmountSpawner { get; set; }
     }
 }
