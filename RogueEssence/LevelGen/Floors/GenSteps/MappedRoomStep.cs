@@ -6,6 +6,7 @@ namespace RogueEssence.LevelGen
 {
     /// <summary>
     /// Loads a file from the Map directory to be used as the dungeon floor.
+    /// Includes entities and properties. 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
