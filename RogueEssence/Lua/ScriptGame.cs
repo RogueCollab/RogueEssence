@@ -396,6 +396,15 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Prevents or allows the joining of recruits for the save file.
+        /// </summary>
+        /// <param name="canRecruit">Set to true to allow recruit joins, set to false to prevent it.</param>
+        public void SetCanRecruit(bool canRecruit)
+        {
+            DataManager.Instance.Save.NoRecruiting = !canRecruit;
+        }
+
+        /// <summary>
         /// Returns the player party count.  Does not include guests.
         /// </summary>
         /// <returns>The count of players</returns>
