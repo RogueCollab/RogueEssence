@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RogueEssence.Data
 {
@@ -6,6 +7,7 @@ namespace RogueEssence.Data
     {
         public const int MAX_HIGH_SCORES = 12;
 
+        public Version Version;
         public string Name;
         public string DateTimeString;
         public string LocationString;
