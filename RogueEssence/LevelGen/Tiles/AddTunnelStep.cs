@@ -34,6 +34,11 @@ namespace RogueEssence
         public bool AllowDeadEnd { get; set; }
 
         /// <summary>
+        /// Allows tunnels to penetrate passable tiles.  Tunnels will never replace any non-wall terrain that they encounter.
+        /// </summary>
+        public bool AllowPenetratePassableTiles { get; set; }
+
+        /// <summary>
         /// The number of tunnels to draw.
         /// </summary>
         public RandRange Halls { get; set; }
@@ -114,7 +119,68 @@ namespace RogueEssence
                         drawnRays.Add((legRay, legLength));
 
                         if (bonk)
+                        {
+                            if (bonkFloor && AllowPenetratePassableTiles)
+                            {
+                                curLength += addLength;
+                                
+                                //Try to find the next closest wall terrain, starting by going forward
+                                int curLengthRemaining = finalLength - curLength;
+
+                                LocRay4 baseDir = new LocRay4(tunnelDir);
+
+                                bool nextOriginFound = false;
+
+                                for (int i = 0; i < curLengthRemaining; i++)
+                                {
+                                    Loc currentLoc = baseDir.Traverse(i);
+                                    
+                                    if (checkBlock(currentLoc))
+                                    {
+                                        curLength += i;
+                                        tunnelDir.Loc = tunnelDir.Traverse(i);
+                                        nextOriginFound = true;
+                                        break;
+                                    }
+                                    if (!checkGround(currentLoc))
+                                    {
+                                        break;
+                                    }
+                                }
+                                
+                                //If not forward, try a random turn direction.
+                                if (map.Rand.Next(2) == 0)
+                                    tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Left);
+                                else
+                                    tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Right);
+
+                                baseDir = new LocRay4(tunnelDir);
+                                
+                                for (int i = 0; i < curLengthRemaining; i++)
+                                {
+                                    Loc currentLoc = baseDir.Traverse(i);
+
+                                    if (checkBlock(currentLoc))
+                                    {
+                                        curLength += i;
+                                        tunnelDir.Loc = tunnelDir.Traverse(i);
+                                        nextOriginFound = true;
+                                        break;
+                                    }
+                                    if (!checkGround(currentLoc))
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                if (nextOriginFound)
+                                {
+                                    continue;
+                                }
+                            }
                             break;
+                        }
+                            
 
                         curLength += addLength;
 
