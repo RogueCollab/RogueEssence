@@ -42,6 +42,11 @@ namespace RogueEssence.LevelGen
             Script = script;
             ArgTable = "{}";
         }
+        public ScriptZoneStep(string script, string argTable)
+        {
+            Script = script;
+            ArgTable = argTable;
+        }
         protected ScriptZoneStep(ScriptZoneStep other, ulong seed)
         {
             Script = other.Script;
