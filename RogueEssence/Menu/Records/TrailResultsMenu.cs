@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
             TrailPoints = new MenuText[displayTotal];
             for (int ii = 0; ii < displayTotal; ii++)
             {
-                TrailPoints[ii] = new MenuText(trailData[ii], new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
+                TrailPoints[ii] = new MenuText(trailData[ii + Page * MAX_LINES], new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
             }
 
             base.Initialize();
