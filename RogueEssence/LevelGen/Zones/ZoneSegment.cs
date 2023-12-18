@@ -96,6 +96,21 @@ namespace RogueEssence.LevelGen
                 throw new Exception("Requested a map id out of range.");
         }
 
+        public override List<int> GetNoMissionFloors()
+        {
+            List<int> noMissionFloors = new List<int>();
+            
+            for (int i=0; i<Floors.Count; i++)
+            {
+                IFloorGen floor = Floors[i];
+                if (floor is LoadGen || floor is ChanceFloorGen)
+                {
+                    noMissionFloors.Add(i + 1);
+                }
+            }
+
+            return noMissionFloors;
+        }
     }
 
     /// <summary>
@@ -129,6 +144,19 @@ namespace RogueEssence.LevelGen
                 throw new Exception("Requested a map id out of range.");
         }
 
+
+        public override List<int> GetNoMissionFloors()
+        {
+            List<int> noMissionFloors = new List<int>();
+            
+            IFloorGen floor = BaseFloor;
+            if (floor is LoadGen || floor is ChanceFloorGen)
+            {
+                noMissionFloors.Add(1);
+            }
+
+            return noMissionFloors;
+        }
     }
 
 
@@ -175,6 +203,22 @@ namespace RogueEssence.LevelGen
             else
                 throw new Exception("Requested a map id out of range.");
         }
+        
+        public override List<int> GetNoMissionFloors()
+        {
+            List<int> noMissionFloors = new List<int>();
+            
+            for (int i=0; i<Floors.GetTotalCount(); i++)
+            {
+                IFloorGen floor = Floors[i];
+                if (floor is LoadGen || floor is ChanceFloorGen)
+                {
+                    noMissionFloors.Add(i + 1);
+                }
+            }
+
+            return noMissionFloors;
+        }
     }
 
     /// <summary>
@@ -207,6 +251,22 @@ namespace RogueEssence.LevelGen
             else
                 throw new Exception("Requested a map id out of range.");
         }
+        
+        public override List<int> GetNoMissionFloors()
+        {
+            List<int> noMissionFloors = new List<int>();
+            
+            foreach(int key in Floors.Keys)
+            {
+                IFloorGen floor = Floors[key];
+                if (floor is LoadGen || floor is ChanceFloorGen)
+                {
+                    noMissionFloors.Add(key);
+                }
+            }
+
+            return noMissionFloors;
+        }
     }
 
 
@@ -221,7 +281,6 @@ namespace RogueEssence.LevelGen
         /// </summary>
         [Collection(0, true)]
         public List<ZoneStep> ZoneSteps;
-
         /// <summary>
         /// Determines if the segment counts to the dungeon's total floor count.
         /// </summary>
@@ -237,6 +296,11 @@ namespace RogueEssence.LevelGen
         }
 
         public abstract IGenContext GetMap(ZoneGenContext zoneContext);
+
+        /// <summary>
+        /// This should parse through the floor count and get all floors that cannot generate a mission (i.e. LoadGen)
+        /// </summary>
+        public abstract List<int> GetNoMissionFloors();
 
         public override string ToString()
         {
