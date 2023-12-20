@@ -47,44 +47,47 @@ namespace RogueEssence.Menu
                     {
                         int idx = ii;
                         GroundItemEvent groundEvent = entry.GroundUseActions[idx];
-                        Action action = () => UseSelfAction(idx);
-                        
-                        
-                        switch (groundEvent.Selection)
+                        if (!groundEvent.Hidden)
                         {
-                            case SelectionType.Others:
-                                action = () => UseOtherAction(idx);
-                                break;
-                        }
+                            Action action = () => UseSelfAction(idx);
 
-                        // Note the hardcode for LearnItemAction
-                        if (groundEvent is LearnItemEvent)
-                        {
-                            action = () => TeachOtherAction(idx);
-                        }
 
-                        string actionName = "";
-                        switch (groundEvent.GroundUsageType)
-                        {
-                            case ItemData.UseType.Eat:
-                                actionName = Text.FormatKey("MENU_ITEM_EAT");
-                                break;
-                            case ItemData.UseType.Drink:
-                                actionName = Text.FormatKey("MENU_ITEM_DRINK");
-                                break;
-                            case ItemData.UseType.Use:
-                                actionName = Text.FormatKey("MENU_ITEM_USE");
-                                break;
-                            case ItemData.UseType.UseOther:
-                                actionName = Text.FormatKey("MENU_ITEM_USE");
-                                break;
-                            case ItemData.UseType.Learn:
-                                actionName = Text.FormatKey("MENU_ITEM_TEACH");
-                                break;
+                            switch (groundEvent.Selection)
+                            {
+                                case SelectionType.Others:
+                                    action = () => UseOtherAction(idx);
+                                    break;
+                            }
+
+                            // Note the hardcode for LearnItemAction
+                            if (groundEvent is LearnItemEvent)
+                            {
+                                action = () => TeachOtherAction(idx);
+                            }
+
+                            string actionName = "";
+                            switch (groundEvent.GroundUsageType)
+                            {
+                                case ItemData.UseType.Eat:
+                                    actionName = Text.FormatKey("MENU_ITEM_EAT");
+                                    break;
+                                case ItemData.UseType.Drink:
+                                    actionName = Text.FormatKey("MENU_ITEM_DRINK");
+                                    break;
+                                case ItemData.UseType.Use:
+                                    actionName = Text.FormatKey("MENU_ITEM_USE");
+                                    break;
+                                case ItemData.UseType.UseOther:
+                                    actionName = Text.FormatKey("MENU_ITEM_USE");
+                                    break;
+                                case ItemData.UseType.Learn:
+                                    actionName = Text.FormatKey("MENU_ITEM_TEACH");
+                                    break;
+                            }
+
+                            choices.Add(new MenuTextChoice(actionName, action, !invItem.Cursed && !groundEvent.Disabled,
+                                invItem.Cursed || groundEvent.Disabled ? Color.Red : Color.White));
                         }
-                        
-                        choices.Add(new MenuTextChoice(actionName, action, !invItem.Cursed,
-                            invItem.Cursed ? Color.Red : Color.White));
                     }
                 }
                 else if (GameManager.Instance.CurrentScene == DungeonScene.Instance)

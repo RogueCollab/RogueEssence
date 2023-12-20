@@ -13,20 +13,37 @@ namespace RogueEssence.Ground
     public enum SelectionType
     {
         /// <summary>
-        /// apply to user
+        /// Apply to user
         /// </summary>
         Self,
         /// <summary>
-        /// apply to other party members
+        /// Apply to other party members
         /// </summary>
         Others,
     }
     
     public abstract class GroundItemEvent : GameEvent
     {
+        /// <summary>
+        /// The ground item menu label
+        /// </summary>
         public ItemData.UseType GroundUsageType;
+        
+        /// <summary>
+        /// Determines who the item should target
+        /// </summary>
         public SelectionType Selection;
         public abstract IEnumerator<YieldInstruction> Apply(GroundContext context);
+        
+        /// <summary>
+        /// Whether the action is hidden in the item menu
+        /// </summary>
+        public bool Hidden;
+        
+        /// <summary>
+        /// Whether the action is disabled in the item menu
+        /// </summary>
+        public bool Disabled;
     }
     
     [Serializable]
