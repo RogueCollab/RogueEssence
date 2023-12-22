@@ -87,29 +87,31 @@ namespace RogueEssence.LevelGen
         {
             Floors = new List<IFloorGen>();
         }
+        
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floorId">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
+        {
+            if (floor >= 0 && floor < Floors.Count)
+            {
+                return Floors[floor];
+            }
+            else
+            {
+                throw new Exception("Requested a map gen id out of range.");
+            }
+        }
 
         public override IGenContext GetMap(ZoneGenContext zoneContext)
         {
-            if (zoneContext.CurrentID < Floors.Count)
-                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+            if (zoneContext.CurrentID >= 0 && zoneContext.CurrentID < Floors.Count)
+                return GetMapGen(zoneContext.CurrentID).GenMap(zoneContext);
             else
                 throw new Exception("Requested a map id out of range.");
-        }
-
-        public override List<int> GetNoMissionFloors()
-        {
-            List<int> noMissionFloors = new List<int>();
-            
-            for (int i=0; i<Floors.Count; i++)
-            {
-                IFloorGen floor = Floors[i];
-                if (floor is LoadGen || floor is ChanceFloorGen)
-                {
-                    noMissionFloors.Add(i + 1);
-                }
-            }
-
-            return noMissionFloors;
         }
     }
 
@@ -135,6 +137,18 @@ namespace RogueEssence.LevelGen
         {
             FloorSpan = floors;
         }
+        
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floorId">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
+        {
+            //There is only one floor
+             return BaseFloor;
+        }
 
         public override IGenContext GetMap(ZoneGenContext zoneContext)
         {
@@ -142,20 +156,6 @@ namespace RogueEssence.LevelGen
                 return BaseFloor.GenMap(zoneContext);
             else
                 throw new Exception("Requested a map id out of range.");
-        }
-
-
-        public override List<int> GetNoMissionFloors()
-        {
-            List<int> noMissionFloors = new List<int>();
-            
-            IFloorGen floor = BaseFloor;
-            if (floor is LoadGen || floor is ChanceFloorGen)
-            {
-                noMissionFloors.Add(1);
-            }
-
-            return noMissionFloors;
         }
     }
 
@@ -196,28 +196,31 @@ namespace RogueEssence.LevelGen
             Floors = new RangeDict<IFloorGen>();
         }
 
+        
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floorId">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
+        {
+            if (floor >= 0 && floor < Floors.GetTotalCount())
+            {
+                return Floors[floor];
+            }
+            else
+            {
+                throw new Exception("Requested a map gen id out of range.");
+            }
+        }
+        
         public override IGenContext GetMap(ZoneGenContext zoneContext)
         {
             if (Floors.ContainsItem(zoneContext.CurrentID))
-                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+                return GetMapGen(zoneContext.CurrentID).GenMap(zoneContext);
             else
                 throw new Exception("Requested a map id out of range.");
-        }
-        
-        public override List<int> GetNoMissionFloors()
-        {
-            List<int> noMissionFloors = new List<int>();
-            
-            for (int i=0; i<Floors.GetTotalCount(); i++)
-            {
-                IFloorGen floor = Floors[i];
-                if (floor is LoadGen || floor is ChanceFloorGen)
-                {
-                    noMissionFloors.Add(i + 1);
-                }
-            }
-
-            return noMissionFloors;
         }
     }
 
@@ -244,28 +247,30 @@ namespace RogueEssence.LevelGen
             Floors = new Dictionary<int, IFloorGen>();
         }
 
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floorId">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
+        {
+            if (floor >= 0 && floor < Floors.Keys.Count)
+            {
+                return Floors[floor];
+            }
+            else
+            {
+                throw new Exception("Requested a map gen id out of range.");
+            }
+        }
+        
         public override IGenContext GetMap(ZoneGenContext zoneContext)
         {
             if (Floors.ContainsKey(zoneContext.CurrentID))
                 return Floors[zoneContext.CurrentID].GenMap(zoneContext);
             else
                 throw new Exception("Requested a map id out of range.");
-        }
-        
-        public override List<int> GetNoMissionFloors()
-        {
-            List<int> noMissionFloors = new List<int>();
-            
-            foreach(int key in Floors.Keys)
-            {
-                IFloorGen floor = Floors[key];
-                if (floor is LoadGen || floor is ChanceFloorGen)
-                {
-                    noMissionFloors.Add(key);
-                }
-            }
-
-            return noMissionFloors;
         }
     }
 
@@ -295,12 +300,15 @@ namespace RogueEssence.LevelGen
             Comment = "";
         }
 
-        public abstract IGenContext GetMap(ZoneGenContext zoneContext);
-
         /// <summary>
-        /// This should parse through the floor count and get all floors that cannot generate a mission (i.e. LoadGen)
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
         /// </summary>
-        public abstract List<int> GetNoMissionFloors();
+        /// <param name="floorId">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public abstract IFloorGen GetMapGen(int floorId);
+        
+        public abstract IGenContext GetMap(ZoneGenContext zoneContext);
 
         public override string ToString()
         {
