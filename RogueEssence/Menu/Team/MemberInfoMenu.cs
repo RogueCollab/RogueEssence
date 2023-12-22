@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             
-            int totalLearnsetPages = (int) Math.Ceiling((double) formEntry.LevelSkills.Count / MemberLearnsetMenu.SLOTS_PER_PAGE);
+            int totalLearnsetPages = (int) Math.Ceiling((double)MemberLearnsetMenu.getEligibleSkills(formEntry) / MemberLearnsetMenu.SLOTS_PER_PAGE);
             int totalOtherMemberPages = 3;
             int totalPages = totalLearnsetPages + totalOtherMemberPages;
 
