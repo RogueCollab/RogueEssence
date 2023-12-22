@@ -4,17 +4,22 @@ using RogueElements;
 using RogueEssence.Data;
 using System.IO;
 using System;
+using RogueEssence.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
     public class ReplaysMenu : MultiPageMenu
     {
-        private const int SLOTS_PER_PAGE = 14;
+        private const int SLOTS_PER_PAGE = 10;
+
+        ReplayMiniSummary summaryMenu;
+        List<RecordHeaderData> validRecords;
 
         public ReplaysMenu()
         {
             List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION);
-
+            validRecords = new List<RecordHeaderData>();
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             foreach (RecordHeaderData record in records)
             {
@@ -38,6 +43,7 @@ namespace RogueEssence.Menu
 
                         //also include an indicator of the floors traversed, if possible
                         fileName = rogueSign + record.Name + ": " + record.LocationString;
+                        validRecords.Add(record);
                     }
                     catch (Exception ex)
                     {
@@ -51,12 +57,31 @@ namespace RogueEssence.Menu
             //for the summary menu, include team, date, filename, location (string), seed, indication of rogue and seeded runs
             //if it can't be read, just include the filename
 
+            summaryMenu = new ReplayMiniSummary(Rect.FromPoints(new Loc(0,
+                GraphicsManager.ScreenHeight - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 3),
+                new Loc(GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight)));
+
+
             Initialize(new Loc(0, 0), 224, Text.FormatKey("MENU_REPLAYS_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
         private void choose(string dir)
         {
             MenuManager.Instance.AddMenu(new ReplayChosenMenu(dir), true);
+        }
+
+        protected override void ChoiceChanged()
+        {
+            int totalChoice = CurrentChoice + CurrentPage * SLOTS_PER_PAGE;
+            summaryMenu.SetReplay(validRecords[totalChoice]);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
+
+            //draw other windows
+            summaryMenu.Draw(spriteBatch);
         }
     }
 }

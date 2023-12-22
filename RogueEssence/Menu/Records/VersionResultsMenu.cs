@@ -34,8 +34,8 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < displayTotal; ii++)
             {
                 Versions[ii] = new MenuText[2];
-                Versions[ii][0] = new MenuText(versionData[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
-                Versions[ii][1] = new MenuText(versionData[ii].VersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Versions[ii][0] = new MenuText(versionData[ii + Page * MAX_LINES].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
+                Versions[ii][1] = new MenuText(versionData[ii + Page * MAX_LINES].VersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
             }
 
             base.Initialize();

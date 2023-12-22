@@ -1682,7 +1682,7 @@ namespace RogueEssence.Data
                     using (BinaryReader reader = new BinaryReader(stream))
                     {
                         //version string
-                        Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                        record.Version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                         //epitaph location
                         long endPos = reader.ReadInt64();
                         //read time
