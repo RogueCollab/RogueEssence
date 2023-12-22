@@ -15,6 +15,9 @@ namespace RogueEssence.Menu
 
         private const int SLOTS_PER_PAGE = 12;
         
+        /// <summary>
+        /// The slot chosen out of the Choosable forms, not actual slot in the form list
+        /// </summary>
         public int FormSetting;
         public string SkinSetting;
         public Gender GenderSetting;
