@@ -882,10 +882,10 @@ namespace RogueEssence.Script
         public void SaveData(GameProgress save)
         {
             //First tell the script we're gonna save
-            m_scrsvc.Publish("SaveData");
+            m_scrsvc.Publish(EServiceEvents.SaveData.ToString());
 
             //Save script engine stuff here!
-            DiagManager.Instance.LogInfo(EServiceEvents.SaveData.ToString());
+            DiagManager.Instance.LogInfo("LuaEngine.SaveData()..");
             LuaTable tbl = LuaState.GetTable(SCRIPT_VARS_NAME);
             save.ScriptVars = SaveLuaTable(tbl);
             save.ActiveTeam.SaveLua();
