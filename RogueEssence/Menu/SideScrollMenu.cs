@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
             //draw cursor
             if (((GraphicsManager.TotalFrameTick - PrevTick) / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0 || Inactive)
             {
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.X - 11, GraphicsManager.ScreenHeight / 2), 0, 0, Color.White, SpriteEffects.FlipHorizontally);
+                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.X - GraphicsManager.Cursor.TileWidth, GraphicsManager.ScreenHeight / 2), 0, 0, Color.White, SpriteEffects.FlipHorizontally);
                 GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.End.X, GraphicsManager.ScreenHeight / 2), 0, 0);
             }
 

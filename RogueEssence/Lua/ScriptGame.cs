@@ -1052,8 +1052,19 @@ namespace RogueEssence.Script
         /// Remove an item from player inventory
         /// </summary>
         /// <param name="slot">The slot from which to remove the item</param>
-        public void TakePlayerBagItem(int slot)
+        /// <param name="takeAll"></param>
+        public void TakePlayerBagItem(int slot, bool takeAll = false)
         {
+            if (!takeAll)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.GetInv(slot);
+                ItemData entry = (ItemData)item.GetData();
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    item.Amount--;
+                    return;
+                }
+            }
             DataManager.Instance.Save.ActiveTeam.RemoveFromInv(slot);
         }
 
@@ -1061,8 +1072,20 @@ namespace RogueEssence.Script
         /// Remove the equipped item from a chosen member of the team
         /// </summary>
         /// <param name="slot">The slot of the character on the team from which to remove the item</param>
-        public void TakePlayerEquippedItem(int slot)
+        /// <param name="takeAll"></param>
+        public void TakePlayerEquippedItem(int slot, bool takeAll = false)
         {
+            if (!takeAll)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
+                ItemData entry = (ItemData)item.GetData();
+
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    item.Amount--;
+                    return;
+                }
+            }
             DataManager.Instance.Save.ActiveTeam.Players[slot].SilentDequipItem();
         }
 
@@ -1070,8 +1093,20 @@ namespace RogueEssence.Script
         /// Remove the equipped item from a chosen guest of the team
         /// </summary>
         /// <param name="slot">The slot of the character on the team's guest list from which to remove the item</param>
-        public void TakeGuestEquippedItem(int slot)
+        /// <param name="takeAll"></param>
+        public void TakeGuestEquippedItem(int slot, bool takeAll = false)
         {
+            if (!takeAll)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
+                ItemData entry = (ItemData)item.GetData();
+
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    item.Amount--;
+                    return;
+                }
+            }
             DataManager.Instance.Save.ActiveTeam.Guests[slot].SilentDequipItem();
         }
 
