@@ -36,7 +36,7 @@ namespace RogueEssence
         /// <summary>
         /// Allows tunnels to penetrate passable tiles.  Tunnels will never replace any non-wall terrain that they encounter.
         /// </summary>
-        public bool AllowPenetratePassableTiles { get; set; }
+        public bool TraverseFloor { get; set; }
 
         /// <summary>
         /// The number of tunnels to draw.
@@ -120,7 +120,7 @@ namespace RogueEssence
 
                         if (bonk)
                         {
-                            if (bonkFloor && AllowPenetratePassableTiles)
+                            if (bonkFloor && TraverseFloor)
                             {
                                 curLength += addLength;
                                 
