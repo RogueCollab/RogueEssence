@@ -17,7 +17,7 @@ namespace RogueEssence.Dungeon
     {
         public LocalText Name;
 
-        public bool NoEXP;
+        public int ExpPercent;
         public int Level;
         public bool LevelCap;
         public bool KeepSkills;

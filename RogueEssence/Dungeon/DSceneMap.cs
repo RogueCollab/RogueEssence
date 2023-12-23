@@ -757,7 +757,7 @@ namespace RogueEssence.Dungeon
 
         public void HandoutEXP()
         {
-            if (ZoneManager.Instance.CurrentZone.NoEXP)
+            if (ZoneManager.Instance.CurrentZone.ExpPercent <= 0)
             {
                 GainedEXP.Clear();
                 return;
@@ -773,7 +773,7 @@ namespace RogueEssence.Dungeon
 
                 if (!player.Dead && player.Level < DataManager.Instance.Start.MaxLevel)
                 {
-                    totalExp += GainedEXP[ii];
+                    totalExp += GainedEXP[ii] * ZoneManager.Instance.CurrentZone.ExpPercent / 100;
 
                     string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                     GrowthData growthData = DataManager.Instance.GetGrowth(growth);

@@ -40,7 +40,7 @@ namespace RogueEssence.Menu
 
                 List<MenuText> rules = new List<MenuText>();
 
-                if (zoneEntry.NoEXP)
+                if (zoneEntry.ExpPercent <= 0)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_EXP"), Loc.Zero));
                 if (zoneEntry.Level > -1)
                 {

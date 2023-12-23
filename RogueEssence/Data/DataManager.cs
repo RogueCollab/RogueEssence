@@ -646,7 +646,7 @@ namespace RogueEssence.Data
         /// <summary>
         /// Index paths are modified like mods.  However, if multiple mods have conflicting indices, a combined index must be generated.
         /// </summary>
-        /// <param name="basePath"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
         public static EntryDataIndex GetIndex(DataType type)
         {
