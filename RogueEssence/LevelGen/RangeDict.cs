@@ -23,6 +23,18 @@ namespace RogueEssence.LevelGen
             nodes.Clear();
         }
 
+        public int GetTotalCount()
+        {
+            int length = 0;
+
+            foreach (RangeNode node in nodes)
+            {
+                length += node.Range.Max - node.Range.Min;
+            }
+
+            return length;
+        }
+
         public void SetRange(T item, IntRange range)
         {
             //TODO: make this use binary search for O(logn) access time
