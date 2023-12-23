@@ -205,7 +205,7 @@ namespace RogueEssence.LevelGen
         /// <returns></returns>
         public override IFloorGen GetMapGen(int floor)
         {
-            if (floor >= 0 && floor < Floors.GetTotalCount())
+            if (Floors.ContainsItem(floor))
             {
                 return Floors[floor];
             }
@@ -255,7 +255,7 @@ namespace RogueEssence.LevelGen
         /// <returns></returns>
         public override IFloorGen GetMapGen(int floor)
         {
-            if (floor >= 0 && floor < Floors.Keys.Count)
+            if (Floors.ContainsKey(floor))
             {
                 return Floors[floor];
             }
