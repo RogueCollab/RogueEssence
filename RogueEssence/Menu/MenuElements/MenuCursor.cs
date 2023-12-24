@@ -16,6 +16,11 @@ namespace RogueEssence.Menu
         public Dir4 Direction;
 
         private IInteractable baseMenu;
+        public MenuCursor(IInteractable baseMenu)
+        {
+            this.baseMenu = baseMenu;
+            this.Direction = Dir4.Right;
+        }
         public MenuCursor(IInteractable baseMenu, Dir4 dir)
         {
             this.baseMenu = baseMenu;
