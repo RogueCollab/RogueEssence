@@ -870,6 +870,21 @@ namespace RogueEssence.Ground
         }
 
         /// <summary>
+        /// Returns the index of an entry point for the current map by name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public int GetEntryPointIdx(string name)
+        {
+            int idx = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
+            if (idx > -1)
+                return idx;
+
+            throw new KeyNotFoundException(String.Format("GroundMap.GetEntryPointIdx({0}): Couldn't find the specified Marker!", name));
+        }
+
+        /// <summary>
         /// Change the position of the specified named marker
         /// </summary>
         /// <param name="name"></param>
