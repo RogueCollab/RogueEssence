@@ -18,16 +18,6 @@ namespace RogueEssence.Ground
             EnterGround(entry.Loc, entry.Dir);
         }
 
-        public void EnterGround(string entryPoint)
-        {
-            LocRay8 entry = ZoneManager.Instance.CurrentGround.GetEntryPoint(entryPoint);
-
-            if (entry.Dir == Dir8.None)
-                entry.Dir = DataManager.Instance.Save.ActiveTeam.Leader.CharDir;
-
-            EnterGround(entry.Loc, entry.Dir);
-        }
-
 
         public void EnterGround(Loc entrypos, Dir8 entrydir)
         {

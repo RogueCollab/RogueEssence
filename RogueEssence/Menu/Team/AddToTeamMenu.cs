@@ -30,7 +30,7 @@ namespace RogueEssence.Menu
             this.eligibleAssembly = new List<int>();
             for (int ii = 0; ii < DungeonScene.Instance.ActiveTeam.Assembly.Count; ii++)
             {
-                if (!DungeonScene.Instance.ActiveTeam.Assembly[ii].Absentee)
+                //if (!DungeonScene.Instance.ActiveTeam.Assembly[ii].Absentee)
                     eligibleAssembly.Add(ii);
             }
 

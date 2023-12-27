@@ -232,7 +232,13 @@ namespace RogueEssence.Dungeon
         public Dir8 CharDir
         {
             get { return currentCharAction.CharDir; }
-            set { currentCharAction.CharDir = value; }
+            set
+            {
+                if (value > Dir8.None && value <= Dir8.DownRight)
+                    currentCharAction.CharDir = value;
+                else
+                    throw new ArgumentException(String.Format("Cannot set CharDir to {0}!", value));
+            }
         }
 
         public bool HideShadow
