@@ -109,12 +109,20 @@ namespace RogueEssence
 
         public void ListenToMapGen()
         {
-            GenContextDebug.OnError += LogError;
+            GenContextDebug.OnError += logRogueElementsError;
             GenContextDebug.OnStepIn += logRogueElements;
             GenContextDebug.OnStep += logRogueElements;
         }
 
         private List<string> logMsgs = new List<string>();
+        private void logRogueElementsError(Exception ex)
+        {
+            LogError(ex);
+            if (ListenGen)
+            {
+                logMsgs.Add(String.Format("[{0}] Mapgen: {1}: {2}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), ex.GetType().ToString(), ex.Message));
+            }
+        }
         private void logRogueElements(string msg)
         {
             if (ListenGen)

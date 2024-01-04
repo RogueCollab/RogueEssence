@@ -53,7 +53,11 @@ namespace RogueEssence.LevelGen
         public ITile GetTile(Loc loc) { return Map.GetTile(loc); }
         public virtual bool CanSetTile(Loc loc, ITile tile)
         {
-            if (UnbreakableTerrain.TileEquivalent(Map.GetTile(loc)))
+            Tile curTile = Map.GetTile(loc);
+            if (curTile == null)
+                return false;
+
+            if (UnbreakableTerrain.TileEquivalent(curTile))
             {
                 if (!UnbreakableTerrain.TileEquivalent(tile))
                     return false;

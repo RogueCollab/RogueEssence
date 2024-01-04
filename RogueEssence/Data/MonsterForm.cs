@@ -106,7 +106,7 @@ namespace RogueEssence.Data
 
 
         public abstract int GetStat(int level, Stat stat, int bonus);
-        public abstract int GetMaxStat(Stat stat);
+        public abstract int GetMaxStat(Stat stat, int level);
         public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
         public abstract bool CanLearnSkill(string skill);
