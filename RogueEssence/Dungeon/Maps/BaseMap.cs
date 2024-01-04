@@ -184,7 +184,7 @@ namespace RogueEssence.Dungeon
             if (terrain.BlockType == TerrainData.Mobility.Passable)
                 return false;
 
-            return (terrain.BlockType & mobility) == TerrainData.Mobility.Passable;
+            return (terrain.BlockType & mobility) == 0;
         }
 
         public bool EffectTileBlocked(TileData effect, bool diagonal)

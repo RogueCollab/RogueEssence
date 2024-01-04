@@ -18,12 +18,12 @@ namespace RogueEssence.Data
         public enum Mobility
         {
             Impassable = -1,
-            Passable = 0,
             Water = 1,
             Lava = 2,
             Abyss = 4,
             Block = 8,
-            All = 15
+            Passable = 16,
+            All = 31
         }
 
         public enum TileItemLand
@@ -91,6 +91,7 @@ namespace RogueEssence.Data
         public TerrainData()
         {
             Name = new LocalText();
+            BlockType = Mobility.Passable;
             Comment = "";
             TerrainStates = new StateCollection<TerrainState>();
             LandedOnTiles = new PriorityList<SingleCharEvent>();
