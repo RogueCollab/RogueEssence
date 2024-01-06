@@ -600,7 +600,7 @@ namespace RogueEssence.Dungeon
             }
         }
         
-        public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, ActionResult result)
+        public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, bool inFront, ActionResult result)
         {
             if (character.CantInteract)
             {
@@ -608,7 +608,10 @@ namespace RogueEssence.Dungeon
                 yield break;
             }
 
-            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
+            Loc destLoc = character.CharLoc;
+            if (inFront)
+                destLoc = destLoc + character.CharDir.GetLoc();
+            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[destLoc.X][destLoc.Y];
             if (String.IsNullOrEmpty(tile.Effect.ID))
                 throw new Exception("Attempted to trigger a nonexistent tile effect.  This should never happen.");
             else
