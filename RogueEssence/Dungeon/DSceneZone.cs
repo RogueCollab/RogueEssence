@@ -393,7 +393,7 @@ namespace RogueEssence.Dungeon
                     }
                 case GameAction.ActionType.Tile:
                     {
-                        yield return CoroutineManager.Instance.StartCoroutine(ProcessTileInteract(character, result));
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessTileInteract(character, (action[0] == 1), result));
                         break;
                     }
                 case GameAction.ActionType.Attack:
