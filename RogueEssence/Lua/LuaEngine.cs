@@ -362,7 +362,23 @@ namespace RogueEssence.Script
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
-        public const string SCRIPT_CPATH = DataManager.DATA_PATH + "Script/bin/"; //Base script engine libraries, for so and dlls
+        //Base script engine libraries, for so and dlls
+        private string GetScriptCPath()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                if (Environment.Is64BitOperatingSystem)
+                    return DataManager.DATA_PATH + "Script/bin/win-x64/";
+                else
+                    return DataManager.DATA_PATH + "Script/bin/win-x86/";
+            }
+            else if (OperatingSystem.IsMacOS())
+                return DataManager.DATA_PATH + "Script/bin/osx-x64/";
+            else if (OperatingSystem.IsLinux())
+                return DataManager.DATA_PATH + "Script/bin/linux-x64/";
+            throw new PlatformNotSupportedException();
+        }
+
         private ScriptServices m_scrsvc;
         private ScriptSound m_scriptsound;
         private ScriptGround m_scriptground;
@@ -575,7 +591,7 @@ namespace RogueEssence.Script
             LuaState["package.path"] = buildPath;
 
             //Add lua binary path. No mods
-            string cpath = LuaState["package.cpath"] + ";" + Path.GetFullPath(PathMod.NoMod(SCRIPT_CPATH));
+            string cpath = LuaState["package.cpath"] + ";" + Path.GetFullPath(PathMod.NoMod(GetScriptCPath()));
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 cpath += "?.dll";
             else
