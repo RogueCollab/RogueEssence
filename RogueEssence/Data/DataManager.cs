@@ -853,6 +853,11 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public ZoneData GetZone(string index)
         {
+            return GetZone(index, false);
+        }
+
+        public ZoneData GetZone(string index, bool silentFail)
+        {
             ZoneData data = null;
 
             //wait for any preloading to finish
@@ -877,7 +882,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -889,6 +895,10 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public Map GetMap(string name)
         {
+            return GetMap(name, false);
+        }
+        public Map GetMap(string name, bool silentFail)
+        {
             Map mapData = null;
             try
             {
@@ -898,7 +908,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
+                if(!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
             }
 
             return mapData;
@@ -911,6 +922,10 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public GroundMap GetGround(string name)
         {
+            return GetGround(name, false);
+        }
+        public GroundMap GetGround(string name, bool silentFail)
+        {
             GroundMap mapData = null;
             try
             {
@@ -920,7 +935,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", name), ex));
             }
 
             return mapData;
@@ -933,6 +949,10 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public SkillData GetSkill(string index)
         {
+            return GetSkill(index, false);
+        }
+        public SkillData GetSkill(string index, bool silentFail)
+        {
             SkillData data;
             if (skillCache.TryGetValue(index, out data))
                 return data;
@@ -944,7 +964,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -957,6 +978,10 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public ItemData GetItem(string index)
         {
+            return GetItem(index, false);
+        }
+        public ItemData GetItem(string index, bool silentFail)
+        {
             ItemData data;
             if (itemCache.TryGetValue(index, out data))
                 return data;
@@ -968,7 +993,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -979,6 +1005,10 @@ namespace RogueEssence.Data
         /// <param name="index"></param>
         /// <returns></returns>
         public AutoTileData GetAutoTile(string index)
+        {
+            return GetAutoTile(index, false);
+        }
+        public AutoTileData GetAutoTile(string index, bool silentFail)
         {
             AutoTileData data;
             if (autoTileCache.TryGetValue(index, out data))
@@ -991,7 +1021,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -1002,6 +1033,10 @@ namespace RogueEssence.Data
         /// <param name="index"></param>
         /// <returns></returns>
         public MonsterData GetMonster(string index)
+        {
+            return GetMonster(index, false);
+        }
+        public MonsterData GetMonster(string index, bool silentFail)
         {
             MonsterData data;
             if (monsterCache.TryGetValue(index, out data))
@@ -1014,7 +1049,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -1025,6 +1061,10 @@ namespace RogueEssence.Data
         /// <param name="index"></param>
         /// <returns></returns>
         public StatusData GetStatus(string index)
+        {
+            return GetStatus(index, false);
+        }
+        public StatusData GetStatus(string index, bool silentFail)
         {
             StatusData data;
             if (statusCache.TryGetValue(index, out data))
@@ -1037,7 +1077,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -1048,6 +1089,10 @@ namespace RogueEssence.Data
         /// <param name="index"></param>
         /// <returns></returns>
         public IntrinsicData GetIntrinsic(string index)
+        {
+            return GetIntrinsic(index, false);
+        }
+        public IntrinsicData GetIntrinsic(string index, bool silentFail)
         {
             IntrinsicData data;
             if (intrinsicCache.TryGetValue(index, out data))
@@ -1060,7 +1105,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
@@ -1071,6 +1117,10 @@ namespace RogueEssence.Data
         /// <param name="index"></param>
         /// <returns></returns>
         public MapStatusData GetMapStatus(string index)
+        {
+            return GetMapStatus(index, false);
+        }
+        public MapStatusData GetMapStatus(string index, bool silentFail)
         {
             MapStatusData data;
             if (mapStatusCache.TryGetValue(index, out data))
@@ -1083,7 +1133,8 @@ namespace RogueEssence.Data
             }
             catch (Exception ex)
             {
-                DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
+                if (!silentFail)
+                    DiagManager.Instance.LogError(new FileNotFoundException(String.Format("Missing Data: {0}", index), ex));
             }
             return data;
         }
