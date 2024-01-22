@@ -1581,8 +1581,12 @@ namespace RogueEssence.Dungeon
                         {
                             for (int y = -1; y <= 1; y++)
                             {
-                                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + loc.Loc))
-                                    charSightValues[loc.Loc.X + x - sightRect.X][loc.Loc.Y + y - sightRect.Y] += loc.Weight;
+                                Loc testLoc = loc.Loc + new Loc(x, y);
+                                foreach (Loc wrapLoc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
+                                {
+                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, wrapLoc))
+                                        charSightValues[wrapLoc.X - sightRect.X][wrapLoc.Y - sightRect.Y] += loc.Weight;
+                                }
                             }
                         }
                         break;
@@ -1598,8 +1602,12 @@ namespace RogueEssence.Dungeon
                         {
                             for (int y = 0; y < localSightRect.Size.Y; y++)
                             {
-                                if (Collision.InBounds(sightRect.Start, sightRect.Size, new Loc(x, y) + localSightRect.Start))
-                                    charSightValues[localSightRect.Start.X + x - sightRect.X][localSightRect.Start.Y + y - sightRect.Y] += loc.Weight;
+                                Loc testLoc = localSightRect.Start + new Loc(x, y);
+                                foreach (Loc wrapLoc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
+                                {
+                                    if (Collision.InBounds(sightRect.Start, sightRect.Size, wrapLoc))
+                                        charSightValues[wrapLoc.X - sightRect.X][wrapLoc.Y - sightRect.Y] += loc.Weight;
+                                }
                             }
                         }
                         break;
