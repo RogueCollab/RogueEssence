@@ -336,7 +336,7 @@ namespace RogueEssence.Menu
             string[] break_str = Regex.Split(msg, "\\[br\\]", RegexOptions.IgnoreCase);
 
             // TODO fix MultiQuestion
-            DialogueBox box = new QuestionDialog(break_str[break_str.Length - 1], sound, soundEffect, speakTime, false, false, bounds, scripts, choices, defaultChoice, cancelChoice, menuLoc);
+            DialogueBox box = new QuestionDialog(break_str[break_str.Length - 1], sound, soundEffect, speakTime, centerH, centerV, bounds, scripts, choices, defaultChoice, cancelChoice, menuLoc);
             box.SetSpeaker(speaker, speakerName, emotion, speakerLoc);
             if (autoFinish)
                 box.FinishText();
