@@ -207,6 +207,7 @@ namespace RogueEssence.Ground
             
             yield return CoroutineManager.Instance.StartCoroutine(HandoutLevelUp());
         }
+		
         public IEnumerator<YieldInstruction> HandoutLevelUp()
         {
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
