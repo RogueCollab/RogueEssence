@@ -32,7 +32,6 @@ namespace RogueEssence.Data
         public int CurrentState;
         public int CurrentAction;
         public int CurrentUI;
-        public int Desyncs;
 
         public bool Paused;
         public bool OpenMenu;
@@ -41,6 +40,11 @@ namespace RogueEssence.Data
         public List<GameState> States;
         public List<GameAction> Actions;
         public List<int> UICodes;
+
+
+        // Replay verification booleans
+        public int Desyncs;
+        public bool SilentVerify;
 
         public ReplayData()
         {
