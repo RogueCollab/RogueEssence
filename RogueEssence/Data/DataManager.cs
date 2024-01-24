@@ -162,21 +162,77 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
+        /// <summary>
+        /// The parameters governing the start of the game.
+        /// Such as starting character, map, level, etc.
+        /// </summary>
         public StartParams Start;
 
         public MonsterID DefaultMonsterID { get { return new MonsterID(DefaultMonster, 0, DefaultSkin, Gender.Genderless); } }
+
+        /// <summary>
+        /// The monster ID consiered default for purposes of initialization
+        /// </summary>
         public string DefaultMonster;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultSkill;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultIntrinsic;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultMapStatus;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultElement;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultTile;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultZone;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultRank;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultAI;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultSkin;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "floor" in random dungeon generation
+        /// </summary>
         public string GenFloor;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "wall" in random dungeon generation
+        /// </summary>
         public string GenWall;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "unbreakable" in random dungeon generation
+        /// </summary>
         public string GenUnbreakable;
         
         public UniversalActiveEffect UniversalEvent;
@@ -196,6 +252,9 @@ namespace RogueEssence.Data
         public BattleFX JumpFX;
         public BattleFX ThrowFX;
 
+        /// <summary>
+        /// The current save file, loaded into memory
+        /// </summary>
         public GameProgress Save { get; private set; }
 
         public List<string> MsgLog;
@@ -787,6 +846,11 @@ namespace RogueEssence.Data
             zoneCache.Add(index, data);
         }
 
+        /// <summary>
+        /// Gets a zone based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ZoneData GetZone(string index)
         {
             ZoneData data = null;
@@ -818,6 +882,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets a map based on its ID
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public Map GetMap(string name)
         {
             Map mapData = null;
@@ -835,6 +904,11 @@ namespace RogueEssence.Data
             return mapData;
         }
 
+        /// <summary>
+        /// Gets a ground map based on its ID
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public GroundMap GetGround(string name)
         {
             GroundMap mapData = null;
@@ -852,7 +926,11 @@ namespace RogueEssence.Data
             return mapData;
         }
 
-
+        /// <summary>
+        /// Gets the data for a skill based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public SkillData GetSkill(string index)
         {
             SkillData data;
@@ -872,7 +950,11 @@ namespace RogueEssence.Data
         }
 
 
-
+        /// <summary>
+        /// Gets the data for an item based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ItemData GetItem(string index)
         {
             ItemData data;
@@ -891,6 +973,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for an autotile based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public AutoTileData GetAutoTile(string index)
         {
             AutoTileData data;
@@ -909,6 +996,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a monster based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public MonsterData GetMonster(string index)
         {
             MonsterData data;
@@ -927,6 +1019,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a status effect based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public StatusData GetStatus(string index)
         {
             StatusData data;
@@ -945,6 +1042,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for an intrinsic (passive ability) based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public IntrinsicData GetIntrinsic(string index)
         {
             IntrinsicData data;
@@ -963,6 +1065,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a map-wide status effect based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public MapStatusData GetMapStatus(string index)
         {
             MapStatusData data;
@@ -981,6 +1088,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a tile, such as stairs or traps, based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public TileData GetTile(string index)
         {
             TileData data = null;
@@ -990,6 +1102,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a terrain type based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public TerrainData GetTerrain(string index)
         {
             TerrainData data = null;
@@ -999,6 +1116,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for an emote based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public EmoteData GetEmote(string index)
         {
             EmoteData data = null;
@@ -1008,6 +1130,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for an elemental type based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ElementData GetElement(string index)
         {
             ElementData data = null;
@@ -1017,6 +1144,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a growth group based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public GrowthData GetGrowth(string index)
         {
             GrowthData data = null;
@@ -1026,6 +1158,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a skill-sharing group based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public SkillGroupData GetSkillGroup(string index)
         {
             SkillGroupData data = null;
@@ -1035,6 +1172,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for an ai tactic based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public AITactic GetAITactic(string index)
         {
             AITactic data = null;
@@ -1044,6 +1186,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a team rank based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public RankData GetRank(string index)
         {
             RankData data = null;
@@ -1053,6 +1200,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a skin based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public SkinData GetSkin(string index)
         {
             SkinData data = null;
@@ -2182,7 +2334,7 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// Returns game progress and current zone.
+        /// Returns game progress loaded from the save folder and current zone.
         /// </summary>
         /// <returns></returns>
         public GameState LoadMainGameState(bool allowUpgrade)

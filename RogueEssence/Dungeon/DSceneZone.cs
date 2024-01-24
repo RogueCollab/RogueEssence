@@ -63,10 +63,7 @@ namespace RogueEssence.Dungeon
 
         public void ResetFloor()
         {
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
-            RegenerateTurnMap();
-            
-            ReloadFocusedPlayer();
+            ResetTurns();
 
             //refresh everyone's traits
             ZoneManager.Instance.CurrentMap.RefreshTraits();
@@ -229,6 +226,7 @@ namespace RogueEssence.Dungeon
             }
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
+            ResetRound();
             RegenerateTurnMap();
 
             RemoveDeadTeams();
@@ -928,6 +926,7 @@ namespace RogueEssence.Dungeon
         {
             //silently set team mode to false
             DataManager.Instance.Save.TeamMode = false;
+            ResetRound();
             //silently reset turn map
             ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();

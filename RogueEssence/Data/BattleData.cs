@@ -56,10 +56,16 @@ namespace RogueEssence.Data
         [NonSerialized]
         public DataManager.DataType DataType;
 
+        /// <summary>
+        /// Elemental typing of attack
+        /// </summary>
         [JsonConverter(typeof(ElementConverter))]
         [DataType(0, DataManager.DataType.Element, false)]
         public string Element;
 
+        /// <summary>
+        /// Category of attack
+        /// </summary>
         public SkillCategory Category;
 
         /// <summary>
