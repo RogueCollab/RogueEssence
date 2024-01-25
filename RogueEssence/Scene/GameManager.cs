@@ -603,6 +603,7 @@ namespace RogueEssence
             DungeonScene.InitInstance();
             GroundScene.InitInstance();
             LuaEngine.Instance.Reset();
+            LuaEngine.Instance.LoadScripts();
             LuaEngine.Instance.ReInit();
         }
 

@@ -23,11 +23,12 @@ namespace RogueEssence.LevelGen
         /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]
-        [Dev.EditorHeight(0, 290)]
+        [EditorHeight(0, 290)]
         public SpawnRangeList<TeamMemberSpawn> Spawns;
 
         /// <summary>
         /// The size of teams across all floors of the dungeon segment.
+        /// When spawning, this amount of spawns are chosen by rolling them from the Spawns list.
         /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]
@@ -35,6 +36,7 @@ namespace RogueEssence.LevelGen
 
         /// <summary>
         /// Pre-made teams and their spawn chances across floors.
+        /// Unaffected by Team Sizes.
         /// </summary>
         [SubGroup]
         [RangeBorder(0, true, true)]

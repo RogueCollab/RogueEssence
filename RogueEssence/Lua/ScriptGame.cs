@@ -396,6 +396,15 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Prevents or allows the joining of recruits for the save file.
+        /// </summary>
+        /// <param name="canRecruit">Set to true to allow recruit joins, set to false to prevent it.</param>
+        public void SetCanRecruit(bool canRecruit)
+        {
+            DataManager.Instance.Save.NoRecruiting = !canRecruit;
+        }
+
+        /// <summary>
         /// Returns the player party count.  Does not include guests.
         /// </summary>
         /// <returns>The count of players</returns>
@@ -1045,7 +1054,12 @@ namespace RogueEssence.Script
         /// <param name="slot">The slot from which to remove the item</param>
         public void TakePlayerBagItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.RemoveFromInv(slot);
+            InvItem item = DataManager.Instance.Save.ActiveTeam.GetInv(slot);
+            ItemData entry = (ItemData)item.GetData();
+            if (entry.MaxStack > 1 && item.Amount > 1)
+                item.Amount--;
+            else
+                DataManager.Instance.Save.ActiveTeam.RemoveFromInv(slot);
         }
 
         /// <summary>
@@ -1054,7 +1068,13 @@ namespace RogueEssence.Script
         /// <param name="slot">The slot of the character on the team from which to remove the item</param>
         public void TakePlayerEquippedItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.Players[slot].SilentDequipItem();
+            InvItem item = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
+            ItemData entry = (ItemData)item.GetData();
+
+            if (entry.MaxStack > 1 && item.Amount > 1)
+                item.Amount--;
+            else
+                DataManager.Instance.Save.ActiveTeam.Players[slot].SilentDequipItem();
         }
 
         /// <summary>
@@ -1063,7 +1083,13 @@ namespace RogueEssence.Script
         /// <param name="slot">The slot of the character on the team's guest list from which to remove the item</param>
         public void TakeGuestEquippedItem(int slot)
         {
-            DataManager.Instance.Save.ActiveTeam.Guests[slot].SilentDequipItem();
+            InvItem item = DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
+            ItemData entry = (ItemData)item.GetData();
+
+            if (entry.MaxStack > 1 && item.Amount > 1)
+                item.Amount--;
+            else
+                DataManager.Instance.Save.ActiveTeam.Guests[slot].SilentDequipItem();
         }
 
         /// <summary>

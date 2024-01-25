@@ -58,7 +58,11 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
                 }
 
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
+                if (DungeonScene.Instance.FocusedCharacter == context.User)
+                {
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
+                }
+                
                 yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
             }
 

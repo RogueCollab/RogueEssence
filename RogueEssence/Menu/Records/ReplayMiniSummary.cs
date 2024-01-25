@@ -48,7 +48,7 @@ namespace RogueEssence.Menu
         public void SetReplay(RecordHeaderData header)
         {
             Name.SetText(header.Name);
-            
+            Version.SetText(header.Version.ToString());
             Location.SetText(header.LocationString);
             Date.SetText(header.DateTimeString.Split('_')[0]);
             Filename.SetText(Path.GetFileName(header.Path));

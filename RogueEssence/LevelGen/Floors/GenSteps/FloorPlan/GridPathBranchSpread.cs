@@ -11,7 +11,7 @@ namespace RogueEssence.LevelGen
 {
     /// <summary>
     /// Populates the empty grid plan of a map by creating a minimum spanning tree of connected rooms and halls.
-    /// Prefers that 
+    /// Prefers to add rooms where there are no neighbors.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]

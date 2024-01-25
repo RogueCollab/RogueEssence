@@ -176,6 +176,26 @@ namespace RogueEssence.Dungeon
         }
 
 
+        public bool HasBaseIntrinsic(string intrinsic)
+        {
+            foreach (string checkIntrinsic in BaseIntrinsics)
+            {
+                if (checkIntrinsic == intrinsic)
+                    return true;
+            }
+            return false;
+        }
+
+        public bool HasBaseSkill(string skill)
+        {
+            foreach (SlotSkill checkSkill in BaseSkills)
+            {
+                if (checkSkill.SkillNum == skill)
+                    return true;
+            }
+            return false;
+        }
+
 
         public virtual void Promote(MonsterID data)
         {

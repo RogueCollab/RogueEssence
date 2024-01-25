@@ -227,9 +227,13 @@ namespace RogueEssence.LevelGen
         /// </summary>
         public bool IsRelevant;
 
+        [Dev.Multiline(0)]
+        public string Comment;
+
         public ZoneSegmentBase()
         {
             ZoneSteps = new List<ZoneStep>();
+            Comment = "";
         }
 
         public abstract IGenContext GetMap(ZoneGenContext zoneContext);

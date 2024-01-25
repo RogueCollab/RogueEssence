@@ -75,4 +75,14 @@ namespace RogueEssence.Dev
             return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.Amount, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
         }
     }
+    public class LoopedTeamSpawnerEditor : Editor<ILoopedTeamSpawner>
+    {
+        public override bool DefaultSubgroup => true;
+
+        public override string GetString(ILoopedTeamSpawner obj, Type type, object[] attributes)
+        {
+            PropertyInfo memberInfo = typeof(ILoopedTeamSpawner).GetProperty(nameof(obj.AmountSpawner));
+            return string.Format("{0}: {1}", obj.GetType().GetFormattedTypeName(), DataEditor.GetString(obj.AmountSpawner, memberInfo.GetMemberInfoType(), memberInfo.GetCustomAttributes(false)));
+        }
+    }
 }

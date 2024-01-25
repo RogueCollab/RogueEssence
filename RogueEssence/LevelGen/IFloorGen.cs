@@ -178,6 +178,14 @@ namespace RogueEssence.LevelGen
     public abstract class FloorMapGen<T> : MapGen<T>, IFloorGen
         where T : BaseMapGenContext
     {
+        [Dev.Multiline(0)]
+        public string Comment;
+
+        public FloorMapGen()
+        {
+            Comment = "";
+        }
+
         public IGenContext GenMap(ZoneGenContext zoneContext)
         {
             //it will first create the instance of the context,

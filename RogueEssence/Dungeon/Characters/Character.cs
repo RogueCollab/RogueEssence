@@ -526,7 +526,8 @@ namespace RogueEssence.Dungeon
                     otherStatus.TargetChar = null;
             }
 
-            RestoreForm();
+            //Do not refresh types and intrinsics from the character to avoid triggering effects on death that have been wiped
+            RestoreForm(false);
         }
 
         private List<int> baseRestore()
@@ -663,6 +664,15 @@ namespace RogueEssence.Dungeon
 
         public void RestoreForm()
         {
+            RestoreForm(true);
+        }
+
+        /// <summary>
+        /// Restores the character's forms and all (or just some) of its details.
+        /// </summary>
+        /// <param name="fullRestore">Restores element and intrinsics too if true.</param>
+        public void RestoreForm(bool fullRestore)
+        {
             CurrentForm = BaseForm;
 
             List<int> skillIndices = new List<int>();
@@ -684,13 +694,16 @@ namespace RogueEssence.Dungeon
                 Skills.Add(new BackReference<Skill>(newState, ii));
             }
 
-            Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
-            Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
-
-            Intrinsics.Clear();
-            for (int ii = 0; ii < BaseIntrinsics.Count; ii++)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
-
+            if (fullRestore)
+            {
+                Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
+                Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
+                
+                Intrinsics.Clear();
+                for (int ii = 0; ii < BaseIntrinsics.Count; ii++)
+                    Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
+            }
+            
             ProxyAtk = -1;
             ProxyDef = -1;
             ProxyMAtk = -1;

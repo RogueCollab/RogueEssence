@@ -21,7 +21,7 @@ namespace RogueEssence.Dungeon
         {
             //put the carry-overs in the new map
             foreach (MapStatus status in ZoneManager.Instance.CurrentZone.CarryOver)
-                ZoneManager.Instance.CurrentMap.Status.Add(status.ID, status);
+                ZoneManager.Instance.CurrentMap.Status[status.ID] = status;
             ZoneManager.Instance.CurrentZone.CarryOver.Clear();
 
             ZoneManager.Instance.CurrentMap.EnterMap(DataManager.Instance.Save.ActiveTeam, entryPoint);

@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Name);
 
-            Version = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), DirH.Right);
+            Version = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth - 2, GraphicsManager.MenuBG.TileHeight), DirH.Right);
             Elements.Add(Version);
 
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),

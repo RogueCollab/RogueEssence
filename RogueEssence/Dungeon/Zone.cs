@@ -6,6 +6,8 @@ using RogueEssence.Ground;
 using RogueEssence.Data;
 using RogueEssence.Script;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Dungeon
 {
@@ -38,6 +40,8 @@ namespace RogueEssence.Dungeon
 
         [NonSerialized]
         protected Dictionary<int, ZoneGenContext> structureContexts;
+
+        [JsonConverter(typeof(SegLocTableConverter))]
         protected Dictionary<SegLoc, Map> maps;
 
         public int MapCount { get { return maps.Count; } }
