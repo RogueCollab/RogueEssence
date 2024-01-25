@@ -174,6 +174,7 @@ namespace RogueEssence.Menu
                         selectedTotal++;
                     else
                         selectedTotal--;
+                    ChoiceChanged();
                 }
                 else
                     GameManager.Instance.SE("Menu/Cancel");
