@@ -1091,7 +1091,7 @@ namespace RogueEssence.Dungeon
             }
             Tile tile = ZoneManager.Instance.CurrentMap.GetTile(loc);
             TerrainData terrain = tile.Data.GetData();
-            if (terrain.BlockType == TerrainData.Mobility.Lava)
+            if (terrain.ItemLand == TerrainData.TileItemLand.Destroy)
             {
                 if (!silent)
                 {
@@ -1099,7 +1099,7 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
                 }
             }
-            else if (terrain.BlockType == TerrainData.Mobility.Abyss)
+            else if (terrain.ItemLand == TerrainData.TileItemLand.Fall)
             {
                 if (!silent)
                     LogMsg(Text.FormatKey("MSG_MAP_ITEM_FALL", itemName));

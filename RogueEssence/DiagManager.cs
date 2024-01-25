@@ -658,18 +658,24 @@ namespace RogueEssence
 
                     string quest = xmldoc.SelectSingleNode("Config/Quest").InnerText;
                     ModHeader newQuest = ModHeader.Invalid;
-                    ModHeader questHeader = PathMod.GetModDetails(quest);
-                    if (questHeader.IsValid())
-                        newQuest = questHeader;
+                    if (!String.IsNullOrEmpty(quest))
+                    {
+                        ModHeader questHeader = PathMod.GetModDetails(PathMod.FromExe(quest));
+                        if (questHeader.IsValid())
+                            newQuest = questHeader;
+                    }
 
                     List<ModHeader> modList = new List<ModHeader>();
                     XmlNode modsNode = xmldoc.SelectSingleNode("Config/Mods");
                     foreach (XmlNode modNode in modsNode.SelectNodes("Mod"))
                     {
                         string mod = modNode.InnerText;
-                        ModHeader modHeader = PathMod.GetModDetails(mod);
-                        if (modHeader.IsValid())
-                            modList.Add(modHeader);
+                        if (!String.IsNullOrEmpty(mod))
+                        {
+                            ModHeader modHeader = PathMod.GetModDetails(PathMod.FromExe(mod));
+                            if (modHeader.IsValid())
+                                modList.Add(modHeader);
+                        }
                     }
 
                     return (newQuest, modList.ToArray());

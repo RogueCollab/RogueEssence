@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RogueElements;
 
 namespace RogueEssence.Content
@@ -77,6 +78,51 @@ namespace RogueEssence.Content
         }
     }
 
+
+
+    [Serializable]
+    public class MultiSwitchEmitter : SwitchOffEmitter
+    {
+        private bool finished;
+        public override bool Finished { get { return finished; } }
+
+        public MultiSwitchEmitter()
+        {
+            Emitters = new List<SwitchOffEmitter>();
+        }
+        public MultiSwitchEmitter(MultiSwitchEmitter other)
+        {
+            Emitters = new List<SwitchOffEmitter>();
+            foreach (SwitchOffEmitter emittable in other.Emitters)
+                Emitters.Add((SwitchOffEmitter)emittable.Clone());
+        }
+
+        public List<SwitchOffEmitter> Emitters;
+
+        public override BaseEmitter Clone() { return new MultiSwitchEmitter(this); }
+
+        public override void Update(BaseScene scene, FrameTick elapsedTime)
+        {
+            foreach (SwitchOffEmitter emitter in Emitters)
+            {
+                emitter.Update(scene, elapsedTime);
+            }
+        }
+
+
+        public override void SwitchOff()
+        {
+            finished = true;
+            foreach (SwitchOffEmitter emitter in Emitters)
+                emitter.SwitchOff();
+        }
+
+        public override string ToString()
+        {
+            return "[Multiple]";
+        }
+
+    }
 
     /// <summary>
     /// A simple emitter that releases a single animation, and then continues it until turned off.

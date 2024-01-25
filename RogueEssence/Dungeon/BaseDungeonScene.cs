@@ -240,17 +240,17 @@ namespace RogueEssence.Dungeon
                 {
                     TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data;
                     TerrainData terrain = tile.GetData();
-                    if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                    if (terrain.ItemDraw == TerrainData.TileItemDraw.Hide)
                     {
                         if (showHiddenItem)
                             item.Draw(spriteBatch, viewLoc, Color.White * 0.7f);
                     }
                     else if (showHiddenItem || ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                     {
-                        if (tile.ID == DataManager.Instance.GenFloor)
-                            item.Draw(spriteBatch, viewLoc, Color.White);
-                        else
+                        if (terrain.ItemDraw == TerrainData.TileItemDraw.Transparent)
                             item.Draw(spriteBatch, viewLoc, Color.White * 0.7f);
+                        else
+                            item.Draw(spriteBatch, viewLoc, Color.White);
                     }
                 }
             }
