@@ -66,6 +66,7 @@ namespace RogueEssence.Dev
                 cbSpecies.SelectedIndex = chosenSpecies;
                 cbSpecies.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
+                    forms = new List<string>();
                     loadForms(dataAtt, monsterKeys[cbSpecies.SelectedIndex], forms);
                     cbForms.SelectedIndex = -1;
                     cbForms.SelectedIndex = Math.Min(Math.Max(0, cbForms.SelectedIndex), forms.Count - 1);

@@ -139,34 +139,5 @@ namespace RogueEssence.Dungeon
             else
                 return entry.Price;
         }
-
-        //TODO: Created v0.5.20, delete on v1.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (!String.IsNullOrEmpty(ID))
-            {
-                ItemData item = DataManager.Instance.GetItem(ID);
-
-                int amt;
-                if (int.TryParse(HiddenValue, out amt))
-                {
-                    if (item.MaxStack > 0)
-                    {
-                        Amount = amt;
-                        HiddenValue = "";
-                    }
-                    else if (amt > 0)
-                    {
-                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
-                        HiddenValue = asset_name;
-                    }
-                    else
-                    {
-                        HiddenValue = "";
-                    }
-                }
-            }
-        }
     }
 }

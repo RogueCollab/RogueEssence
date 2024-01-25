@@ -20,27 +20,47 @@ namespace RogueEssence.Dungeon
             context.User = character;
             context.UsageSlot = skillSlot;
 
+            //if cancel occurs on a BeforeTryAction, it will automatically return with a FAIL result.
+            //this is the only way to fail; everything else after this point returns a success or turntaken
             yield return CoroutineManager.Instance.StartCoroutine(InitActionData(context));
             yield return CoroutineManager.Instance.StartCoroutine(context.User.BeforeTryAction(context));
             if (context.CancelState.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(context.User.CharLoc)); yield break; }
 
             context.TurnCancel.Cancel = false;
 
-            //move has been made; end-turn must be done from this point onwards
+            //move has been made; TurnTaken or Success must be done from this point onwards:
+
+            //Normal, everything ran to completion
+            //Cancel = False, TurnCancel = False
+            //TurnTaken
+
+            //Cancelled mid-execution, want to leave but still spent the turn
+            //Cancel = True, TurnCancel = False
+            //TurnTaken
+
+            //Ran to completion, but don't want to move to the next turn yet
+            //Cancel = False, TurnCancel = True
+            //Success
+
+            //Cancelled mid-execution, want to leave ASAP without doing anything else, even the slightest turn-end
+            //Cancel = True, TurnCancel = True
+            //Success
+
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteSkill));
 
-            if (!String.IsNullOrEmpty(context.SkillUsedUp.Skill) && !context.User.Dead)
+            if (!context.CancelState.Cancel || !context.TurnCancel.Cancel)
             {
-                SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp.Skill);
-                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
+                if (!String.IsNullOrEmpty(context.SkillUsedUp.Skill) && !context.User.Dead)
+                {
+                    SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp.Skill);
+                    LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
 
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
-            }
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
+                }
 
-            if (!context.CancelState.Cancel)
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+            }
 
             result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
@@ -67,10 +87,11 @@ namespace RogueEssence.Dungeon
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteItem));
-            if (!context.CancelState.Cancel)
+            if (!context.CancelState.Cancel || !context.TurnCancel.Cancel)
+            {
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+            }
 
             result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
@@ -89,10 +110,11 @@ namespace RogueEssence.Dungeon
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteItem));
-            if (!context.CancelState.Cancel)
+            if (!context.CancelState.Cancel || !context.TurnCancel.Cancel)
+            {
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+            }
 
             result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }

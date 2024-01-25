@@ -73,6 +73,7 @@ namespace RogueEssence.Content
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
 
         public virtual Loc GetDrawLoc(Loc offset) { return Origin - offset; }
+        public Loc GetSheetOffset() { return Loc.Zero; }
         public virtual Loc GetDrawSize() { return new Loc(); }
     }
 

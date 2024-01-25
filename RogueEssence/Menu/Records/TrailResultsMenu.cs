@@ -7,35 +7,33 @@ using System;
 
 namespace RogueEssence.Menu
 {
-    public class VersionResultsMenu : SideScrollMenu
+    public class TrailResultsMenu : SideScrollMenu
     {
         public const int MAX_LINES = 13;
 
         public MenuText Title;
         public MenuDivider Div;
-        public MenuText[][] Versions;
+        public MenuText[] TrailPoints;
 
         public GameProgress Ending;
         public int Page;
 
-        public VersionResultsMenu(GameProgress ending, int page)
+        public TrailResultsMenu(GameProgress ending, int page)
         {
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             Ending = ending;
             Page = page;
 
-            List<ModVersion> versionData = ending.GetModVersion();
-            Title = new MenuText(Text.FormatKey("MENU_VERSION_TITLE", Page + 1, MathUtils.DivUp(versionData.Count, MAX_LINES)), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            List<string> trailData = ending.Trail;
+            Title = new MenuText(Text.FormatKey("MENU_TRAIL_TITLE", Page + 1, MathUtils.DivUp(trailData.Count, MAX_LINES)), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
             Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
-            int displayTotal = Math.Min(MAX_LINES, versionData.Count - Page * MAX_LINES);
-            Versions = new MenuText[displayTotal][];
+            int displayTotal = Math.Min(MAX_LINES, trailData.Count - Page * MAX_LINES);
+            TrailPoints = new MenuText[displayTotal];
             for (int ii = 0; ii < displayTotal; ii++)
             {
-                Versions[ii] = new MenuText[2];
-                Versions[ii][0] = new MenuText(versionData[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
-                Versions[ii][1] = new MenuText(versionData[ii].VersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                TrailPoints[ii] = new MenuText(trailData[ii], new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
             }
 
             base.Initialize();
@@ -46,9 +44,8 @@ namespace RogueEssence.Menu
             yield return Title;
             yield return Div;
 
-            foreach (MenuText[] arr in Versions)
-                foreach(MenuText item in arr)
-                    yield return item;
+            foreach (MenuText item in TrailPoints)
+                yield return item;
         }
 
         public override void Update(InputManager input)
@@ -63,17 +60,23 @@ namespace RogueEssence.Menu
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (Page > 0)
-                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, Page - 1));
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, Page - 1));
                 else
-                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, (Ending.LocTrail.Count - 1) / VersionResultsMenu.MAX_LINES));
+                {
+                    int eligibleAssemblyCount = AssemblyResultsMenu.GetEligibleCount(Ending);
+                    if (eligibleAssemblyCount > 0)
+                        MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, (eligibleAssemblyCount - 1) / 4));
+                    else
+                        MenuManager.Instance.ReplaceMenu(new PartyResultsMenu(Ending));
+                }
             }
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                if (Page < (Ending.GetModVersion().Count - 1) / MAX_LINES)
-                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, Page + 1));
+                if (Page < (Ending.Trail.Count - 1) / MAX_LINES)
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, Page + 1));
                 else
-                    MenuManager.Instance.ReplaceMenu(new FinalResultsMenu(Ending));
+                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
             }
 
         }

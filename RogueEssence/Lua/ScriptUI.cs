@@ -27,6 +27,9 @@ namespace RogueEssence.Script
 
         //Variables for storing multi-step operations, like setting the speaker in a dialog
         private object                 m_choiceresult = -1;
+        private IEnumerator<YieldInstruction> m_curdialogue;
+        private IInteractable m_curchoice;
+
         private MonsterID       m_curspeakerID = MonsterID.Invalid;
         private string              m_curspeakerName= "";
         private bool m_curcenter_h = false;
@@ -39,10 +42,41 @@ namespace RogueEssence.Script
         private Rect m_curbounds = DialogueBox.DefaultBounds;
         private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
         private Loc m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
-        
-        private IEnumerator<YieldInstruction> m_curdialogue;
 
-        private IInteractable m_curchoice;
+
+        public LuaTable ExportSpeakerSettings()
+        {
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, itm) tbl[key] = itm end").First() as LuaFunction;
+            addfn.Call(tbl, "SpeakerID", m_curspeakerID);
+            addfn.Call(tbl, "SpeakerName", m_curspeakerName);
+            addfn.Call(tbl, "TextCenterH", m_curcenter_h);
+            addfn.Call(tbl, "TextCenterV", m_curcenter_v);
+            addfn.Call(tbl, "AutoFinish", m_curautoFinish);
+            addfn.Call(tbl, "SpeakerEmotion", m_curspeakerEmo);
+            addfn.Call(tbl, "SpeakerSound", m_curspeakerSnd);
+            addfn.Call(tbl, "SpeakerSE", m_curspeakerSe);
+            addfn.Call(tbl, "SpeakTime", m_curspeakTime);
+            addfn.Call(tbl, "TextBounds", m_curbounds);
+            addfn.Call(tbl, "SpeakerLoc", m_curspeakerLoc);
+            addfn.Call(tbl, "ChoiceLoc", m_curchoiceLoc);
+            return tbl;
+        }
+        public void ImportSpeakerSettings(LuaTable tbl)
+        {
+            m_curspeakerID = (MonsterID)tbl["SpeakerID"];
+            m_curspeakerName = (string)tbl["SpeakerName"];
+            m_curcenter_h = (bool)tbl["TextCenterH"];
+            m_curcenter_v = (bool)tbl["TextCenterV"];
+            m_curautoFinish = (bool)tbl["AutoFinish"];
+            m_curspeakerEmo = (EmoteStyle)tbl["SpeakerEmotion"];
+            m_curspeakerSnd = (bool)tbl["SpeakerSound"];
+            m_curspeakerSe = (string)tbl["SpeakerSE"];
+            m_curspeakTime = (int)(long)tbl["SpeakTime"];
+            m_curbounds = (Rect)tbl["TextBounds"];
+            m_curspeakerLoc = (Loc)tbl["SpeakerLoc"];
+            m_curchoiceLoc = (Loc)tbl["ChoiceLoc"];
+        }
 
         public ScriptUI()
         {

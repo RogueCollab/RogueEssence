@@ -86,6 +86,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> BeginFloor()
         {
+            DataManager.Instance.Save.LocTrail.Add(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentZone.CurrentMapID));
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentMap.GetColoredName());
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentMap.GetColoredName()), true, false);
 
@@ -136,9 +137,6 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolations());
         }
-
-
-
 
 
         public IEnumerator<YieldInstruction> ProcessAI()

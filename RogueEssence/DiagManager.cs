@@ -29,7 +29,7 @@ namespace RogueEssence
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
 
-        object lockObj = new object();
+        private object lockObj = new object();
 
         public delegate void LogAdded(string message);
         public delegate string ErrorTrace();
@@ -44,6 +44,11 @@ namespace RogueEssence
         public int DebugReplayIndex;
 
         public bool DevMode;
+
+        /// <summary>
+        /// Debug with lua listener
+        /// </summary>
+        public bool DebugLua;
         public IRootEditor DevEditor;
         public bool ListenGen;
 

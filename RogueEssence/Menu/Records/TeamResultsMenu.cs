@@ -117,7 +117,7 @@ namespace RogueEssence.Menu
                 if (eligibleAssemblyCount > 0)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, 0));
                 else
-                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, 0));
             }
 
         }
@@ -203,7 +203,7 @@ namespace RogueEssence.Menu
                 if (Page < (eligibleAssemblyCount - 1) / 4)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, Page+1));
                 else
-                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, 0));
             }
 
         }

@@ -228,59 +228,12 @@ namespace RogueEssence.Dungeon
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - GraphicsManager.GetItem(SpriteIndex).TileWidth / 2,
                 MapLoc.Y + GraphicsManager.TileSize / 2 - GraphicsManager.GetItem(SpriteIndex).TileHeight / 2) - offset;
         }
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public Loc GetDrawSize()
         {
             return new Loc(GraphicsManager.GetItem(SpriteIndex).TileWidth,
                 GraphicsManager.GetItem(SpriteIndex).TileHeight);
-        }
-
-        //TODO: Created v0.5.20, delete on v1.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (IsMoney)
-            {
-                int amt;
-                if (int.TryParse(HiddenValue, out amt))
-                {
-                    Amount = amt;
-                    HiddenValue = "";
-                }
-            }
-            else
-            {
-                if (!String.IsNullOrEmpty(Value))
-                {
-                    ItemData item = DataManager.Instance.GetItem(Value);
-
-                    if (item != null)
-                    {
-                        int amt;
-                        if (int.TryParse(HiddenValue, out amt))
-                        {
-                            if (item.MaxStack > 0)
-                            {
-                                Amount = amt;
-                                HiddenValue = "";
-                            }
-                            else if (amt > 0)
-                            {
-                                string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
-                                HiddenValue = asset_name;
-                            }
-                            else
-                            {
-                                HiddenValue = "";
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Value = "empty";
-                    }
-                }
-            }
         }
     }
 }

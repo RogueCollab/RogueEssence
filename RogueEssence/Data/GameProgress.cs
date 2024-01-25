@@ -144,6 +144,7 @@ namespace RogueEssence.Data
         public string EndDate;
         public string Location;
         public List<string> Trail;
+        public List<ZoneLoc> LocTrail;
         public DungeonStakes Stakes;
         public bool MidAdventure;
         public ResultType Outcome;
@@ -177,6 +178,7 @@ namespace RogueEssence.Data
             EndDate = "";
             Location = "";
             Trail = new List<string>();
+            LocTrail = new List<ZoneLoc>();
             Outcome = ResultType.Unknown;
         }
 
@@ -785,6 +787,7 @@ namespace RogueEssence.Data
             EndDate = "";
             Location = "";
             Trail = new List<string>();
+            LocTrail = new List<ZoneLoc>();
 
             Rand = new ReRandom(seed);//reseed own random
             DataManager.Instance.MsgLog.Clear();

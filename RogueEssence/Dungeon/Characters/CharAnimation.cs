@@ -200,6 +200,12 @@ namespace RogueEssence.Dungeon
                 MapLoc.Y + GraphicsManager.TileSize / 2 - sheet.TileHeight / 2) + drawOffset - offset;
         }
 
+        public Loc GetSheetOffset(CharSheet sheet)
+        {
+            //draw sprite at current frame
+            return sheet.GetSheetOffset(charFrameType, InPlace, DirExt.AddAngles(CharDir, dirOffset), determineFrame);
+        }
+
         public void GetCurrentSprite(CharSheet sheet, out int currentAnim, out int currentTime, out int currentFrame)
         {
             currentAnim = charFrameType;

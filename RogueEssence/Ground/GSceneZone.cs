@@ -79,6 +79,7 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> BeginGround()
         {
+            DataManager.Instance.Save.LocTrail.Add(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentZone.CurrentMapID));
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetColoredName());
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
             //psy's note: might as well help encapsulate map stuff

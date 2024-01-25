@@ -119,6 +119,12 @@ namespace RogueEssence.Ground
                 MapLoc.Y + Collider.Height / 2 - sheet.TileHeight / 2) + DrawOffset - offset;
         }
 
+        public Loc GetSheetOffset(CharSheet sheet)
+        {
+            //draw sprite at current frame
+            return sheet.GetSheetOffset(AnimFrameType, true, DirExt.AddAngles(CharDir, dirOffset), FrameMethod);
+        }
+
         public void GetCurrentSprite(CharSheet sheet, out int currentAnim, out int currentTime, out int currentFrame)
         {
             currentAnim = AnimFrameType;

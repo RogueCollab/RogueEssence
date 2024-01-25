@@ -50,6 +50,7 @@ namespace RogueEssence.Dungeon
             return new Loc(MapLoc.X + GraphicsManager.TileSize / 2 - GraphicsManager.GetItem(SpriteIndex).TileWidth / 2,
                 MapLoc.Y + GraphicsManager.TileSize / 2 - GraphicsManager.GetItem(SpriteIndex).TileHeight / 2) - offset;
         }
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public Loc GetDrawSize()
         {

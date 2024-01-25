@@ -63,7 +63,7 @@ namespace RogueEssence.Ground
         public LocalText Name { get; set; }
         public string GetColoredName()
         {
-            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal().Replace('\n', ' '));
+            return String.Format("[color=#FFFFA5]{0}[color]", Name.ToLocal().Replace('\n', ' '));
         }
 
         public bool Released { get; set; }

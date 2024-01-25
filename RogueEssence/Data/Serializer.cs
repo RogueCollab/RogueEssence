@@ -41,32 +41,24 @@ namespace RogueEssence.Data
         /// </summary>
         public static Version OldVersion;
 
-        public static object Deserialize(Stream stream, Type type)
-        {
-            object obj;
-            Version pastVersion = OldVersion;
-            OldVersion = Versioning.GetVersion();
-            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
-            {
-                obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, Settings);
-            }
-            OldVersion = pastVersion;
-            return obj;
-        }
+        private static object lockObj = new object();
 
         public static object Deserialize(Stream stream, Type type, params JsonConverter[] converters)
         {
-            object obj;
-            Version pastVersion = OldVersion;
-            OldVersion = Versioning.GetVersion();
-            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+            lock (lockObj)
             {
-                JsonSerializerSettings settingsCopy = new JsonSerializerSettings(Settings);
-                settingsCopy.Converters = converters;
-                obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, settingsCopy);
+                object obj;
+                Version pastVersion = OldVersion;
+                OldVersion = Versioning.GetVersion();
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                {
+                    JsonSerializerSettings settingsCopy = new JsonSerializerSettings(Settings);
+                    settingsCopy.Converters = converters;
+                    obj = JsonConvert.DeserializeObject(reader.ReadToEnd(), type, settingsCopy);
+                }
+                OldVersion = pastVersion;
+                return obj;
             }
-            OldVersion = pastVersion;
-            return obj;
         }
 
         public static void Serialize(Stream stream, object entry)
@@ -123,15 +115,18 @@ namespace RogueEssence.Data
 
         public static object DeserializeData(Stream stream)
         {
-            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+            lock (lockObj)
             {
-                string containerStr = reader.ReadToEnd();
-                //Temporarily set global old version for converters in UpgradeConverters.cs to recognize the version.
-                Version pastVersion = OldVersion;
-                OldVersion = GetVersion(containerStr);
-                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
-                OldVersion = pastVersion;
-                return container.Object;
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                {
+                    string containerStr = reader.ReadToEnd();
+                    //Temporarily set global old version for converters in UpgradeConverters.cs to recognize the version.
+                    Version pastVersion = OldVersion;
+                    OldVersion = GetVersion(containerStr);
+                    SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
+                    OldVersion = pastVersion;
+                    return container.Object;
+                }
             }
         }
 

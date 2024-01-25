@@ -291,6 +291,7 @@ namespace RogueEssence.Dungeon
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
 
         public abstract Loc GetDrawLoc(Loc offset);
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public abstract Loc GetDrawSize();
     }
