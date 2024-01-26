@@ -51,7 +51,10 @@ namespace RogueEssence.Menu
 
             texts.Add(new MenuText(label, new Loc(GraphicsManager.MenuBG.TileWidth * 2, height), DirH.Left));
             texts.Add(new MenuText(oldVal.ToString(), new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 64, height), DirH.Right));
-            texts.Add(new MenuText("+"+diff.ToString(), new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 32, height), DirH.Right));
+            string precede = "";
+            if (diff > 0)
+                precede = "+";
+            texts.Add(new MenuText(precede+diff.ToString(), new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 32, height), DirH.Right));
             texts.Add(new MenuText(newVal.ToString(), new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, height), DirH.Right));
 
             return texts.ToArray();
