@@ -108,7 +108,7 @@ namespace RogueEssence.Dev.ViewModels
         public async void btnAdd_Click()
         {
             ModConfigWindow window = new ModConfigWindow();
-            ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
+            ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
             ModConfigViewModel vm = new ModConfigViewModel(header);
             window.DataContext = vm;
 
@@ -148,7 +148,7 @@ namespace RogueEssence.Dev.ViewModels
             //add all asset folders
             Directory.CreateDirectory(fullPath);
             //create the mod xml
-            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
+            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
             PathMod.SaveModDetails(fullPath, newHeader);
 
             //add Strings
@@ -200,7 +200,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //save the mod data
                 string fullPath = PathMod.FromExe(PathMod.Quest.Path);
-                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
+                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
                 PathMod.SaveModDetails(fullPath, resultHeader);
 
                 reloadMods();
