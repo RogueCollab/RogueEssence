@@ -30,7 +30,7 @@ namespace RogueEssence.Data
 
     public interface IZoneData : IEntryData
     {
-        bool NoEXP { get; set; }
+        int ExpPercent { get; set; }
         int Level { get; set; }
         bool TeamRestrict { get; set; }
         int TeamSize { get; set; }
@@ -58,7 +58,14 @@ namespace RogueEssence.Data
         /// <summary>
         /// Turn on to disable EXP gain in the dungeon.
         /// </summary>
+        [NonEdited]
         public bool NoEXP { get; set; }
+
+        /// <summary>
+        /// Percent to multiply EXP gain for the dungeon.
+        /// 0 means no EXP.
+        /// </summary>
+        public int ExpPercent { get; set; }
 
         /// <summary>
         /// The recommended level to face the dungeon.
@@ -125,7 +132,7 @@ namespace RogueEssence.Data
                     totalFloors += structure.FloorCount;
             }
             ZoneEntrySummary summary = new ZoneEntrySummary(Name, Released, Comment);
-            summary.NoEXP = NoEXP;
+            summary.ExpPercent = ExpPercent;
             summary.Level = Level;
             summary.LevelCap = LevelCap;
             summary.KeepSkills = KeepSkills;
@@ -173,6 +180,7 @@ namespace RogueEssence.Data
             Name = new LocalText();
             Comment = "";
 
+            ExpPercent = 100;
             Level = -1;
             TeamSize = -1;
             BagRestrict = -1;
@@ -193,7 +201,7 @@ namespace RogueEssence.Data
             Zone zone = new Zone(seed, zoneIndex);
             zone.Name = Name;
 
-            zone.NoEXP = NoEXP;
+            zone.ExpPercent = ExpPercent;
             zone.Level = Level;
             zone.LevelCap = LevelCap;
             zone.KeepSkills = KeepSkills;
@@ -210,13 +218,23 @@ namespace RogueEssence.Data
             return zone;
         }
 
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            //TODO: remove on v1.1
+            if (Serializer.OldVersion < new Version(0, 7, 22))
+            {
+                if (!NoEXP)
+                    ExpPercent = 100;
+            }
+        }
     }
 
 
     [Serializable]
     public class ZoneEntrySummary : EntrySummary
     {
-        public bool NoEXP;
+        public int ExpPercent;
         public int Level;
         public bool LevelCap;
         public bool KeepSkills;

@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
         private List<string> names;
         private List<string> titles;
 
-        public DungeonsMenu(List<string> names, List<string> titles, List<ZoneLoc> dests, OnChooseSlot destAction)
+        public DungeonsMenu(List<string> names, List<string> titles, List<ZoneLoc> dests, int defaultChoice, OnChooseSlot destAction)
         {
             this.destAction = destAction;
             this.dests = dests;
@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
 
             summaryMenu = new DungeonSummary(Rect.FromPoints(new Loc(168, 8), new Loc(GraphicsManager.ScreenWidth - 8, 8 + GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
 
-            Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices, 0, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
+            Initialize(new Loc(0, 0), 160, Text.FormatKey("MENU_DUNGEON_TITLE"), choices, defaultChoice, 0, Math.Min(SLOTS_PER_PAGE, flatChoices.Count));
         }
 
         private void chooseDungeon(int choice)

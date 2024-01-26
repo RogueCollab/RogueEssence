@@ -600,7 +600,7 @@ namespace RogueEssence.Dungeon
             }
         }
         
-        public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, ActionResult result)
+        public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, bool inFront, ActionResult result)
         {
             if (character.CantInteract)
             {
@@ -608,7 +608,10 @@ namespace RogueEssence.Dungeon
                 yield break;
             }
 
-            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
+            Loc destLoc = character.CharLoc;
+            if (inFront)
+                destLoc = destLoc + character.CharDir.GetLoc();
+            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[destLoc.X][destLoc.Y];
             if (String.IsNullOrEmpty(tile.Effect.ID))
                 throw new Exception("Attempted to trigger a nonexistent tile effect.  This should never happen.");
             else
@@ -757,7 +760,7 @@ namespace RogueEssence.Dungeon
 
         public void HandoutEXP()
         {
-            if (ZoneManager.Instance.CurrentZone.NoEXP)
+            if (ZoneManager.Instance.CurrentZone.ExpPercent <= 0)
             {
                 GainedEXP.Clear();
                 return;
@@ -773,7 +776,7 @@ namespace RogueEssence.Dungeon
 
                 if (!player.Dead && player.Level < DataManager.Instance.Start.MaxLevel)
                 {
-                    totalExp += GainedEXP[ii];
+                    totalExp += GainedEXP[ii] * ZoneManager.Instance.CurrentZone.ExpPercent / 100;
 
                     string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                     GrowthData growthData = DataManager.Instance.GetGrowth(growth);
@@ -1059,9 +1062,17 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(DropMapItem(mapItem, loc, start, false));
         }
 
-        public IEnumerator<YieldInstruction> DropMapItem(MapItem item, Loc loc, Loc start, bool silent)
+        /// <summary>
+        /// Drops the map item onto the map, bouncing it off invalid tiles till it finds a spot or is destroyed.
+        /// The item itself is altered (TileLoc).
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="loc"></param>
+        /// <param name="start"></param>
+        /// <param name="silent"></param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> DropMapItem(MapItem mapItem, Loc loc, Loc start, bool silent)
         {
-            MapItem mapItem = new MapItem(item);
             string itemName = mapItem.GetDungeonName();
 
             if (!ZoneManager.Instance.CurrentMap.CanItemLand(loc, false, false))
@@ -1084,7 +1095,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!silent)
                 {
-                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), loc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), item.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), loc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), mapItem.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(mapItem.Value).Sprite, GraphicsManager.TileSize / 2, 1);
                     CreateAnim(itemAnim, DrawLayer.Normal);
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }

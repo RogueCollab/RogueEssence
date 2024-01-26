@@ -126,11 +126,11 @@ namespace RogueEssence.Content
         }
 
         /// <summary>
-        // This method is actually more accurate than getting samples from timespan
-        // however there is no GetSamplesPlayed for DynamicSoundEffectInstance
-        // I would have to add it, and that would mean maintaining a fork of FNA for it
-        // too much trouble...
-        // For reference, this would be done by calling FAudioSourceVoice_GetState and get the SamplesPlayed from the result.
+        /// This method is actually more accurate than getting samples from timespan
+        /// however there is no GetSamplesPlayed for DynamicSoundEffectInstance
+        /// I would have to add it, and that would mean maintaining a fork of FNA for it
+        /// too much trouble...
+        /// For reference, this would be done by calling FAudioSourceVoice_GetState and get the SamplesPlayed from the result.
         /// </summary>
         /// <returns></returns>
         public long GetSamplesPlayed()

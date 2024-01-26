@@ -47,7 +47,7 @@ namespace RogueEssence.Menu
                 case 0:
                     {//trigger
                         MenuManager.Instance.ClearMenus();
-                        MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None));
+                        MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None, 0));
                     }
                     break;
                 case 1:

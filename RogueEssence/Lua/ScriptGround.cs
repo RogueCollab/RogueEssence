@@ -976,6 +976,20 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Gives a character a set amount of EXP.
+        /// Also handles leveling up and learning new moves.
+        /// </summary>
+        /// <param name="character">The characters to level up.</param>
+        /// <param name="experience">The amount of EXP to gain.</param>
+       
+        public LuaFunction HandoutEXP;
+        
+        public Coroutine _HandoutEXP(Character character, int experience)
+        {
+            return new Coroutine(GroundScene.Instance.HandoutEXP(character, experience));
+        }
+
+        /// <summary>
         /// Levels up a character a certain amount of times all at once.
         /// Also handles learning new moves.
         /// </summary>
@@ -1035,6 +1049,7 @@ namespace RogueEssence.Script
             CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
 
             MoveObjectToPosition = state.RunString("return function(_, ent, x, y, speed) return coroutine.yield(GROUND:_MoveObjectToPosition(ent, x, y, speed)) end", "MoveObjectToPosition").First() as LuaFunction;
+            HandoutEXP = state.RunString("return function(_, character, numlevelups) return coroutine.yield(GROUND:_HandoutEXP(character, experience)) end", "HandoutEXP").First() as LuaFunction;
             LevelUpChar = state.RunString("return function(_, character, numlevelups) return coroutine.yield(GROUND:_LevelUpChar(character, numlevelups)) end", "LevelUpChar").First() as LuaFunction;
         }
     }

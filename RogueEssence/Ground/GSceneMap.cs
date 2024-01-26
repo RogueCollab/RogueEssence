@@ -175,7 +175,11 @@ namespace RogueEssence.Ground
 
         //public IEnumerator<YieldInstruction> CheckEXP()
 
-        //public void HandoutEXP()
+        public IEnumerator<YieldInstruction> HandoutEXP(Character character, int expToGain)
+        {
+            character.EXP += expToGain;
+            yield return CoroutineManager.Instance.StartCoroutine(HandoutLevelUp());
+        }
 
         public IEnumerator<YieldInstruction> LevelUpChar(Character character, int numLevels)
         {
@@ -203,6 +207,7 @@ namespace RogueEssence.Ground
             
             yield return CoroutineManager.Instance.StartCoroutine(HandoutLevelUp());
         }
+		
         public IEnumerator<YieldInstruction> HandoutLevelUp()
         {
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)

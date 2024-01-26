@@ -542,6 +542,12 @@ namespace RogueEssence.Data
                     RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills);
                     //no backref for guests
                 }
+                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills);
+                    if (!permanent)
+                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
+                }
             }
             catch (Exception ex)
             {

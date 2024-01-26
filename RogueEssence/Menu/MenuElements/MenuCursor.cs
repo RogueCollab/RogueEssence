@@ -13,10 +13,18 @@ namespace RogueEssence.Menu
 
         public Loc Loc { get; set; }
 
+        public Dir4 Direction;
+
         private IInteractable baseMenu;
         public MenuCursor(IInteractable baseMenu)
         {
             this.baseMenu = baseMenu;
+            this.Direction = Dir4.Right;
+        }
+        public MenuCursor(IInteractable baseMenu, Dir4 dir)
+        {
+            this.baseMenu = baseMenu;
+            this.Direction = dir;
         }
 
         public void ResetTimeOffset()
@@ -28,7 +36,24 @@ namespace RogueEssence.Menu
         {
             //draw cursor
             if (((GraphicsManager.TotalFrameTick - PrevTick) / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0 || baseMenu.Inactive)
-                GraphicsManager.Cursor.DrawTile(spriteBatch, (Loc + offset).ToVector2(), 0, 0);
+            {
+                switch (Direction)
+                {
+                    case Dir4.Down:
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, (Loc + offset).ToVector2(), 1, 0);
+                        break;
+                    case Dir4.Left:
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, (Loc + offset).ToVector2(), 0, 0, Color.White, SpriteEffects.FlipHorizontally);
+                        break;
+                    case Dir4.Up:
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, (Loc + offset).ToVector2(), 1, 0, Color.White, SpriteEffects.FlipVertically);
+                        break;
+                    case Dir4.Right:
+                        GraphicsManager.Cursor.DrawTile(spriteBatch, (Loc + offset).ToVector2(), 0, 0);
+                        break;
+                }
+            }
+
 
         }
     }

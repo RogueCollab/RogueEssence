@@ -38,7 +38,8 @@ namespace RogueEssence.Menu
             {
                 string skill = levelUpSkill.Skill;
                 SkillData skillEntry = DataManager.Instance.GetSkill(levelUpSkill.Skill);
-
+                if (!skillEntry.Released)
+                    continue;
 
                 MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
                 MenuText levelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
@@ -57,6 +58,19 @@ namespace RogueEssence.Menu
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
             Initialize(new Loc(16, 16), GraphicsManager.ScreenWidth - 32, "", choices, 0, maxPage ? (choices.Length - 1) : 0, SLOTS_PER_PAGE);
+        }
+
+        public static int getEligibleSkills(BaseMonsterForm formEntry)
+        {
+            int total = 0;
+            foreach (LevelUpSkill levelUpSkill in formEntry.LevelSkills)
+            {
+                EntrySummary skillEntry = DataManager.Instance.DataIndices[DataManager.DataType.Skill].Get(levelUpSkill.Skill);
+                if (!skillEntry.Released)
+                    continue;
+                total++;
+            }
+            return total;
         }
 
         protected override void ChoiceChanged()

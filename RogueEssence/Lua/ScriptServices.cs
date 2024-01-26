@@ -104,7 +104,7 @@ namespace RogueEssence.Script
         /// Add a service to the list of managed services
         /// </summary>
         /// <param name="name">Handle for the given service instance.</param>
-        /// <param name="classpath">Class to instanciate the service from.</param>
+        /// <param name="instance"></param>
         public void AddService(string name, LuaTable instance)
         {
             ServiceEntry svc = new ServiceEntry();
@@ -133,6 +133,7 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
         /// Get a service's lua instance by name
         /// </summary>
         /// <param name="name"></param>

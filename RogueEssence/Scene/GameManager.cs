@@ -719,12 +719,62 @@ namespace RogueEssence
 
                 ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
 
-                //switch in new scene
-                MoveToScene(destScene);
-
                 yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, newSegment, preserveMusic));
             }
         }
+
+
+        /// <summary>
+        /// Enter a ground map by name, and makes the player spawn at the specified named marker
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <param name="mapname"></param>
+        /// <param name="entrypoint"></param>
+        /// <param name="preserveMusic"></param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> MoveToGround(string zone, string mapname, string entrypoint, bool preserveMusic)
+        {
+            //if we're in a test map, return to editor
+            if (ZoneManager.Instance.InDevZone)
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
+                yield break;
+            }
+
+            if (!DataManager.Instance.DataIndices[DataManager.DataType.Zone].ContainsKey(zone))
+                throw new ArgumentException(String.Format("Invalid Zone Name: {0}", zone), nameof(zone));
+
+            ZoneEntrySummary summary = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zone);
+            if (!summary.GroundValid(mapname))
+                throw new ArgumentException(String.Format("Invalid Ground Map Name: {0}", mapname), nameof(mapname));
+
+            bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
+            bool newSegment = !sameZone;
+
+            yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
+
+            //switch location
+            if (!sameZone)
+            {
+                ZoneManager.Instance.MoveToZone(zone, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
+            }
+
+            int mapId = ZoneManager.Instance.CurrentZone.GroundMaps.FindIndex((str) => (str == mapname));
+            SegLoc destSegLoc = new SegLoc(-1, mapId);
+
+            if (newSegment)
+            {
+                bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing, destSegLoc));
+            }
+
+            ZoneManager.Instance.CurrentZone.SetCurrentMap(destSegLoc);
+
+            int entryIdx = ZoneManager.Instance.CurrentGround.GetEntryPointIdx(entrypoint);
+            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(entryIdx, true, newSegment, preserveMusic));
+        }
+
 
         private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
         {
@@ -732,9 +782,15 @@ namespace RogueEssence
             MenuBase.Transparent = !newGround;
 
             if (newGround && CurrentScene != GroundScene.Instance)
+            {
+                MoveToScene(GroundScene.Instance);
                 LuaEngine.Instance.OnGroundModeBegin();
+            }
             else if (!newGround && CurrentScene != DungeonScene.Instance)
+            {
+                MoveToScene(DungeonScene.Instance);
                 LuaEngine.Instance.OnDungeonModeBegin();
+            }
 
 
             if (newGround)
@@ -763,68 +819,6 @@ namespace RogueEssence
             DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
         }
 
-
-
-        /// <summary>
-        /// Enter a ground map by name, and makes the player spawn at the specified named marker
-        /// </summary>
-        /// <param name="zone"></param>
-        /// <param name="mapname"></param>
-        /// <param name="entrypoint"></param>
-        /// <param name="preserveMusic"></param>
-        /// <returns></returns>
-        public IEnumerator<YieldInstruction> MoveToGround(string zone, string mapname, string entrypoint, bool preserveMusic)
-        {
-            //if we're in a test map, return to editor
-            if (ZoneManager.Instance.InDevZone)
-            {
-                yield return CoroutineManager.Instance.StartCoroutine(ReturnToEditor());
-                yield break;
-            }
-
-            if (!DataManager.Instance.DataIndices[DataManager.DataType.Zone].ContainsKey(zone))
-                throw new ArgumentException(String.Format("Invalid Zone Name: {0}", zone), nameof(zone));
-
-            ZoneEntrySummary summary = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zone);
-            if (!summary.GroundValid(mapname))
-                throw new ArgumentException(String.Format("Invalid Ground Map Name: {0}", mapname), nameof(mapname));
-
-            bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
-            yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
-
-            //switch location
-            if (sameZone)
-                ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
-            else
-            {
-                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
-                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
-            }
-
-            if (ZoneManager.Instance.CurrentGround == null)
-                throw new Exception(String.Format("GroundScene.MoveToGround(): Failed to load map {0}!", mapname));
-
-
-            //Transparency mode
-            MenuBase.Transparent = false;
-
-            //switch in new scene
-            if (CurrentScene != GroundScene.Instance)
-            {
-                MoveToScene(GroundScene.Instance);
-                LuaEngine.Instance.OnGroundModeBegin();
-            }
-
-            if (!preserveMusic)
-                BGM(ZoneManager.Instance.CurrentGround.Music, true);
-
-            GroundScene.Instance.EnterGround(entrypoint);
-
-            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
-            //no fade; the script handles that itself
-            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
-            DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
-        }
 
 
 
@@ -1126,9 +1120,6 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
 
             ZoneManager.Instance.MoveToDevZone(newGround, mapName);
-
-            //switch in new scene
-            MoveToScene(destScene);
 
             //move in like a normal map would
             yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(0, newGround, true, false));

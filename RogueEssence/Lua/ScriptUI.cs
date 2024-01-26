@@ -1179,28 +1179,39 @@ namespace RogueEssence.Script
         /// Then to recover the ZoneLoc indicating the chosen destination, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="destinations">A lua table representing the list of destinations with each element in the format of { Name=string, Dest=ZoneLoc }</param>
-        public void DestinationMenu(LuaTable destinations)
+        public void DestinationMenu(LuaTable destinations, object defaultChoice)
         {
             try
             {
+                int? mappedDefault = null;
+
                 List<string> names = new List<string>();
                 List<string> titles = new List<string>();
                 List<ZoneLoc> dests = new List<ZoneLoc>();
+                List<object> keys = new List<object>();
                 foreach (object key in destinations.Keys)
                 {
                     LuaTable entry = destinations[key] as LuaTable;
                     string name = (string)entry["Name"];
                     string title = entry["Title"] != null ? (string)entry["Title"] : name;
                     ZoneLoc item = (ZoneLoc)entry["Dest"];
+
+                    if (defaultChoice.Equals(key))
+                        mappedDefault = names.Count;
+
                     names.Add(name);
                     titles.Add(title);
                     dests.Add(item);
+                    keys.Add(key);
                 }
 
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+
                 //give the player the choice between all the possible dungeons
-                m_choiceresult = ZoneLoc.Invalid;
-                m_curchoice = new DungeonsMenu(names, titles, dests,
-                    (int choice) => { m_choiceresult = dests[choice]; });
+                m_choiceresult = null;
+                m_curchoice = new DungeonsMenu(names, titles, dests, mappedDefault.Value,
+                    (int choice) => { m_choiceresult = keys[choice]; });
             }
             catch (Exception e)
             {
