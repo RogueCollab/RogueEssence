@@ -39,7 +39,7 @@ namespace RogueEssence
                                                 @"|(?<scrollbreak>\[scroll\])" +
                                                 @"|(?<script>\[script=(?<scriptval>\d+)\])" +
                                                 @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
-                                                @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
+                                                @"|(?<emote>\[emote=(?<emoteval>[a-zA-Z0-9\-]*)\])",
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" +
