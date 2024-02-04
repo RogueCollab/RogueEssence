@@ -4,7 +4,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Generates a rounded room.  Square dimensions result in a circle, while rectangular dimensions result in capsules.
+    /// Generates a diamond-shaped room.  Square dimensions result in a perfect diamond, while rectangular dimensions result in edged capsules.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
