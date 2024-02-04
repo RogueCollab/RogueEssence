@@ -800,7 +800,7 @@ namespace RogueEssence.Script
                     }
                     //after this point, may be still some stacks left to take care of
                     if (item.Amount <= 0)
-                        return;
+                        continue;
                 }
                 DataManager.Instance.Save.ActiveTeam.AddToInv(item);
             }
