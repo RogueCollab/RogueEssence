@@ -166,10 +166,19 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     string chosen_entry = Zones[chosenZone].Split(':')[0];
                     ZoneData zone = DataManager.Instance.GetZone(chosen_entry);
-                    foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
+                    if (zone.Segments[chosenStructure].FloorCount < 0)
                     {
+                        int ii = 0;
                         newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
                         floorIDs.Add(ii);
+                    }
+                    else
+                    {
+                        foreach (int ii in zone.Segments[chosenStructure].GetFloorIDs())
+                        {
+                            newFloors.Add(ii.ToString("D2") + ": " + getFloorString(zone.Segments[chosenStructure], ii));
+                            floorIDs.Add(ii);
+                        }
                     }
                 }
 
