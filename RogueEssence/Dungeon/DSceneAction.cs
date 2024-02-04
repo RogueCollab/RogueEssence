@@ -161,7 +161,11 @@ namespace RogueEssence.Dungeon
                 InvItem item = ((ExplorerTeam)context.User.MemberTeam).GetInv(context.UsageSlot);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    //TODO: Price needs to be multiplied by amount instead of dividing
+                    item.Price -= item.Price / item.Amount;
                     item.Amount--;
+                }
                 else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
@@ -174,7 +178,11 @@ namespace RogueEssence.Dungeon
                 InvItem item = context.User.EquippedItem;
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    //TODO: Price needs to be multiplied by amount instead of dividing
+                    item.Price -= item.Price / item.Amount;
                     item.Amount--;
+                }
                 else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
@@ -188,7 +196,11 @@ namespace RogueEssence.Dungeon
                 MapItem item = ZoneManager.Instance.CurrentMap.Items[mapSlot];
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
                 if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    //TODO: Price needs to be multiplied by amount instead of dividing
+                    item.Price -= item.Price / item.Amount;
                     item.Amount--;
+                }
                 else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
