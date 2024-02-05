@@ -792,9 +792,9 @@ namespace RogueEssence.Script
         /// <param name="character">The character to learn the skill</param>
         /// <param name="skillId">The skill to learn</param>
         /// <param name="slot">The slot to replace</param>
-        public void SetCharacterSkill(Character character, string skillId, int slot)
+        public void SetCharacterSkill(Character character, string skillId, int slot, bool enabled = true)
         {
-            character.ReplaceSkill(skillId, slot, true);
+            character.ReplaceSkill(skillId, slot, enabled);
         }
 
         /// <summary>

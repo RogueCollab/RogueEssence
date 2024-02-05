@@ -79,6 +79,8 @@ namespace RogueEssence.Menu
 
         protected virtual void ChoiceChanged() { }
 
+        protected virtual void MultiSelectChanged() { }
+
         public override void Update(InputManager input)
         {
             UpdateMouse(input);
@@ -174,7 +176,7 @@ namespace RogueEssence.Menu
                         selectedTotal++;
                     else
                         selectedTotal--;
-                    ChoiceChanged();
+                    MultiSelectChanged();
                 }
                 else
                     GameManager.Instance.SE("Menu/Cancel");

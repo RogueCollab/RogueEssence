@@ -60,6 +60,8 @@ namespace RogueEssence.Menu
 
         public Action ChoiceChangedFunction;
 
+        public Action MultiSelectChangedFunction;
+
         public Action<LuaTable> MultiSelectFunction;
 
         public ScriptableSingleStripMenu(int x, int y, int minWidth, LuaTable choicesPairs, object defaultChoice, Action cancelFun) : this(x, y, minWidth, choicesPairs, defaultChoice, cancelFun, -1, null) { }
@@ -127,6 +129,12 @@ namespace RogueEssence.Menu
                 ChoiceChangedFunction();
         }
 
+        protected override void MultiSelectChanged()
+        {
+            if (MultiSelectChangedFunction != null)
+                MultiSelectChangedFunction();
+        }
+
 
         public override void Draw(SpriteBatch spriteBatch)
         {
@@ -183,6 +191,8 @@ namespace RogueEssence.Menu
 
         public Action ChoiceChangedFunction;
 
+        public Action MultiSelectChangedFunction;
+
         public Action<LuaTable> MultiSelectFunction;
 
         public override bool CanMenu => MenuFunction is not null;
@@ -209,6 +219,12 @@ namespace RogueEssence.Menu
         {
             if (ChoiceChangedFunction != null)
                 ChoiceChangedFunction();
+        }
+
+        protected override void MultiSelectChanged()
+        {
+            if (MultiSelectChangedFunction != null)
+                MultiSelectChangedFunction();
         }
 
         public override void Draw(SpriteBatch spriteBatch)

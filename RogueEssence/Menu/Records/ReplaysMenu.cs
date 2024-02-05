@@ -15,9 +15,11 @@ namespace RogueEssence.Menu
 
         ReplayMiniSummary summaryMenu;
         List<RecordHeaderData> validRecords;
+        int massValidationIdx;
 
         public ReplaysMenu()
         {
+            massValidationIdx = -1;
             List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION);
             validRecords = new List<RecordHeaderData>();
             List<MenuChoice> flatChoices = new List<MenuChoice>();
@@ -74,6 +76,36 @@ namespace RogueEssence.Menu
         {
             int totalChoice = CurrentChoice + CurrentPage * SLOTS_PER_PAGE;
             summaryMenu.SetReplay(validRecords[totalChoice]);
+        }
+
+
+        protected override void UpdateKeys(InputManager input)
+        {
+            if (DiagManager.Instance.DevMode && input[FrameInput.InputType.Ctrl] && input.JustPressed(FrameInput.InputType.Minimap) || massValidationIdx > -1)
+                massValidationIdx++;
+
+            if (massValidationIdx > -1)
+            {
+                if (massValidationIdx < validRecords.Count)
+                    VerifyAllAction();
+                else
+                    massValidationIdx = -1;
+            }
+            else
+                base.UpdateKeys(input);
+        }
+
+        private void VerifyAllAction()
+        {
+            RecordHeaderData recordHeader = validRecords[massValidationIdx];
+            ReplayData replay = DataManager.Instance.LoadReplay(recordHeader.Path, false);
+            if (replay != null)
+            {
+                TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
+
+                MenuManager.Instance.ClearMenus();
+                GameManager.Instance.SceneOutcome = ReplayChosenMenu.Replay(replay, true, true);
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)

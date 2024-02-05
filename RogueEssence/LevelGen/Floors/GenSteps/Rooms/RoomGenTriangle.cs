@@ -4,7 +4,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Generates a rounded room.  Square dimensions result in a circle, while rectangular dimensions result in capsules.
+    /// Generates a Right Triangle-shaped room, wih its right angle at the top-left.  Flipping can cause it to be angled other directions.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
@@ -29,8 +29,14 @@ namespace RogueEssence.LevelGen
             this.FlipV = other.FlipV;
         }
 
+        /// <summary>
+        /// Flips the triangle horizontally
+        /// </summary>
         public bool FlipH { get; set; }
 
+        /// <summary>
+        /// Flips the triangle vertically
+        /// </summary>
         public bool FlipV { get; set; }
 
         public RandRange Size { get; set; }

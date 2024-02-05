@@ -895,7 +895,10 @@ namespace RogueEssence
                         // Change dialogue message depending on the LoadMode.
                         DataManager.Instance.CurrentReplay.Desyncs++;
                         if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                        {
+                            if (!DataManager.Instance.CurrentReplay.SilentVerify)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                        }
                     }
                 }
 
@@ -962,10 +965,13 @@ namespace RogueEssence
                     }
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying)
                     {
-                        if (DataManager.Instance.CurrentReplay.Desyncs > 0)
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
-                        else
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                        if (!DataManager.Instance.CurrentReplay.SilentVerify)
+                        {
+                            if (DataManager.Instance.CurrentReplay.Desyncs > 0)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                            else
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                        }
                         yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
                     }
                     else //we've reached the end of the replay

@@ -409,24 +409,25 @@ namespace RogueEssence.Dungeon
 
                 if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.Menu))
                 {
+                    updateUIPreviews(turn, showSkills, previewMove, diagonal);
                     GameManager.Instance.SE("Menu/Skip");
-                    CurrentPreviewMove = -1;
-                    Turn = false;
                     yield return CoroutineManager.Instance.StartCoroutine(LuaEngine.Instance.OnMenuButtonPressed());
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.MsgLog))
                 {
+                    updateUIPreviews(turn, showSkills, previewMove, diagonal);
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MsgLogMenu()));
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.SkillMenu))
                 {
-                    ShowActions = false;
-                    GameManager.Instance.SE("Menu/Skip");
-
                     CharIndex turnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.GetCurrentTurnChar();
                     if (turnChar.Faction == Faction.Player)
+                    {
+                        updateUIPreviews(turn, showSkills, previewMove, diagonal);
+                        GameManager.Instance.SE("Menu/Skip");
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new SkillMenu(turnChar.Char)));
+                    }
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.ItemMenu))
                 {
@@ -441,6 +442,7 @@ namespace RogueEssence.Dungeon
                     }
                     if (!(ActiveTeam.GetInvCount() == 0 && !heldItems))
                     {
+                        updateUIPreviews(turn, showSkills, previewMove, diagonal);
                         GameManager.Instance.SE("Menu/Skip");
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ItemMenu()));
                     }
@@ -451,6 +453,7 @@ namespace RogueEssence.Dungeon
                 {
                     if (ActiveTeam.Players.Count > 1)
                     {
+                        updateUIPreviews(turn, showSkills, previewMove, diagonal);
                         GameManager.Instance.SE("Menu/Skip");
                         yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TacticsMenu()));
                     }
@@ -459,6 +462,7 @@ namespace RogueEssence.Dungeon
                 }
                 else if (!input[FrameInput.InputType.Skills] && input.JustPressed(FrameInput.InputType.TeamMenu))
                 {
+                    updateUIPreviews(turn, showSkills, previewMove, diagonal);
                     GameManager.Instance.SE("Menu/Skip");
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(false)));
                 }
@@ -703,15 +707,20 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                canPreTurn = !turn;
-                ShowActions = showSkills;
-                CurrentPreviewMove = previewMove;
-                Turn = turn;
-                Diagonal = diagonal;
+                updateUIPreviews(turn, showSkills, previewMove, diagonal);
 
                 if (action.Type != GameAction.ActionType.None)
                     yield return CoroutineManager.Instance.StartCoroutine(ProcessPlayerInput(action));
             }
+        }
+
+        private void updateUIPreviews(bool turn, bool showSkills, int previewMove, bool diagonal)
+        {
+            canPreTurn = !turn;
+            ShowActions = showSkills;
+            CurrentPreviewMove = previewMove;
+            Turn = turn;
+            Diagonal = diagonal;
         }
 
         private void ProcessMinimapInput(InputManager input)

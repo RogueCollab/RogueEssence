@@ -324,6 +324,9 @@ namespace RogueEssence
             for (int ii = 0; ii < preOrder.Count; ii++)
             {
                 ModHeader header = getModHeader(quest, mods, preOrder[ii]);
+                if (Versioning.GetVersion() < header.GameVersion)
+                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", "", Guid.Empty, header.GameVersion, new Version(), ModType.None, new RelatedMod[0] { }) }));
+
                 foreach (RelatedMod rel in header.Relationships)
                 {
                     switch (rel.Relationship)
@@ -355,7 +358,7 @@ namespace RogueEssence
                                 if (guidLookup.TryGetValue(rel.UUID, out depIdx))
                                     localOrders[preOrder[ii]].Add(depIdx);
                                 else
-                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", rel.Namespace, rel.UUID, new Version(), ModType.None, new RelatedMod[0] { }) }));
+                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", rel.Namespace, rel.UUID, new Version(), new Version(), ModType.None, new RelatedMod[0] { }) }));
                             }
                             break;
                     }
@@ -465,6 +468,12 @@ namespace RogueEssence
                                 header.Namespace = Text.Sanitize(header.Name).ToLower();
                             header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
                             header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
+
+                            //TODO: v1.1 remove this
+                            XmlNode gameVersionNode = xmldoc.SelectSingleNode("Header/GameVersion");
+                            if (gameVersionNode != null)
+                                header.GameVersion = Version.Parse(gameVersionNode.InnerText);
+
                             header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
 
                             //TODO: v1.1 remove this
@@ -507,6 +516,7 @@ namespace RogueEssence
             docNode.AppendInnerTextChild(xmldoc, "Namespace", header.Namespace);
             docNode.AppendInnerTextChild(xmldoc, "UUID", header.UUID.ToString().ToUpper());
             docNode.AppendInnerTextChild(xmldoc, "Version", header.Version.ToString());
+            docNode.AppendInnerTextChild(xmldoc, "GameVersion", header.GameVersion.ToString());
             docNode.AppendInnerTextChild(xmldoc, "ModType", header.ModType.ToString());
 
 
@@ -666,12 +676,13 @@ namespace RogueEssence
         public string Namespace;
         public Guid UUID;
         public Version Version;
+        public Version GameVersion;
         public PathMod.ModType ModType;
         public RelatedMod[] Relationships;
 
-        public static readonly ModHeader Invalid = new ModHeader("", "", "", "", "", Guid.Empty, new Version(), PathMod.ModType.None, new RelatedMod[0] { });
+        public static readonly ModHeader Invalid = new ModHeader("", "", "", "", "", Guid.Empty, new Version(), new Version(), PathMod.ModType.None, new RelatedMod[0] { });
 
-        public ModHeader(string path, string name, string author, string description, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
+        public ModHeader(string path, string name, string author, string description, string newNamespace, Guid uuid, Version version, Version gameVersion, PathMod.ModType modType, RelatedMod[] relationships)
         {
             Path = path;
             Name = name;
@@ -680,6 +691,7 @@ namespace RogueEssence
             Namespace = newNamespace;
             UUID = uuid;
             Version = version;
+            GameVersion = gameVersion;
             ModType = modType;
             Relationships = relationships;
         }
