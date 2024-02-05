@@ -54,6 +54,8 @@ namespace RogueEssence.Menu
     {
         public List<SummaryMenu> SummaryMenus;
 
+        public Action<InputManager> UpdateFunction;
+
         public Action CancelFunction;
 
         public Action ChoiceChangedFunction;
@@ -136,6 +138,13 @@ namespace RogueEssence.Menu
                 menu.Draw(spriteBatch);
         }
 
+        public override void Update(InputManager input)
+        {
+            base.Update(input);
+            if (UpdateFunction != null)
+                UpdateFunction(input);
+        }
+
         protected override void MenuPressed()
         {
             if (CancelFunction != null)
@@ -165,6 +174,8 @@ namespace RogueEssence.Menu
     public class ScriptableMultiPageMenu : MultiPageMenu
     {
         public List<SummaryMenu> SummaryMenus;
+
+        public Action<InputManager> UpdateFunction;
 
         public Action CancelFunction;
 
@@ -208,6 +219,19 @@ namespace RogueEssence.Menu
 
             foreach (SummaryMenu menu in SummaryMenus)
                 menu.Draw(spriteBatch);
+        }
+
+        public override void Update(InputManager input)
+        {
+            base.Update(input);
+            if (UpdateFunction != null)
+                UpdateFunction(input);
+        }
+
+        public void SetCurrentPage(int page)
+        {
+            page = Math.Min(Math.Max(0, page), TotalChoices.Length - 1);
+            SetPage(page);
         }
 
         protected override void MenuPressed()
