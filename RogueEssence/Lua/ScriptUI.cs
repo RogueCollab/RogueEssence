@@ -641,13 +641,14 @@ namespace RogueEssence.Script
         /// <param name="title">The text to show above the input line.</param>
         /// <param name="desc">The text to show below the input line.</param>
         /// <param name="maxLength">The length of the text in pixels.</param>
-        public void NameMenu(string title, string desc, int maxLength = 116)
+        /// <param name="defaultName">Name to start the textbox with.</param>
+        public void NameMenu(string title, string desc, int maxLength = 116, string defaultName = "")
         {
             try
             {
                 m_choiceresult = "";
                 //TODO: allow this to work in dungeon mode by skipping replays
-                m_curchoice = new TeamNameMenu(title, desc, maxLength, (string name) => { m_choiceresult = name; });
+                m_curchoice = new TeamNameMenu(title, desc, maxLength, defaultName, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
             {

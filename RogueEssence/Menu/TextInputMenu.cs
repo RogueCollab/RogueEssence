@@ -46,11 +46,16 @@ namespace RogueEssence.Menu
 
         protected void Initialize(string title, string notes, int boxLength)
         {
+            Initialize(title, notes, boxLength, "");
+        }
+
+        protected void Initialize(string title, string notes, int boxLength, string defaultVal)
+        {
             Bounds = new Rect(new Loc(GraphicsManager.ScreenWidth / 2 - boxLength / 2, 50), new Loc(boxLength, TitledStripMenu.TITLE_OFFSET + LINE_HEIGHT * 5 + GraphicsManager.MenuBG.TileHeight * 2));
 
             Title = new MenuText(title, new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
 
-            Text = new MenuText("", new Loc(Bounds.Width / 2 - MaxLength / 2, TitledStripMenu.TITLE_OFFSET * 2));
+            Text = new MenuText(defaultVal, new Loc(Bounds.Width / 2 - MaxLength / 2, TitledStripMenu.TITLE_OFFSET * 2));
             NameLine = new MenuDivider(new Loc(Bounds.Width / 2 - MaxLength / 2, TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT), MaxLength);
 
             Notes = new MenuText(notes, new Loc(Bounds.Width / 2, TitledStripMenu.TITLE_OFFSET * 2 + LINE_HEIGHT * 7 / 2), DirV.None, DirH.None, Color.White);
