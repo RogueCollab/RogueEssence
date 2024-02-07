@@ -11,16 +11,19 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(SkillConverter))]
         public string SkillNum;
         public int Charges;
+        public bool CanForget;
 
         public SlotSkill() : this("") { }
 
         public SlotSkill(string skillNum)
         {
             SkillNum = skillNum;
+            CanForget = true;
         }
         public SlotSkill(SlotSkill other)
         {
             SkillNum = other.SkillNum;
+            CanForget = other.CanForget;
         }
     }
 }
