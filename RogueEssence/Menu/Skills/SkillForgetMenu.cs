@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
@@ -32,13 +33,14 @@ namespace RogueEssence.Menu
                 {
                     bool enabled = skill.CanForget;
                     SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    string skillString = enabled ? data.GetColoredName() : String.Format("[color=#FF0000]{0}[color]", data.Name.ToLocal());
+                    string skillString = data.GetColoredName();
                     string skillCharges = skill.Charges + "/" + (data.BaseCharges + player.ChargeBoost);
+                    Color color = Color.White;
                     if (!enabled)
-                        skillCharges = String.Format("[color=#FF0000]{0}[color]", skillCharges);
+                        color = Color.Red;
                     int index = ii;
-                    MenuText menuText = new MenuText(skillString, new Loc(2, 1));
-                    MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirH.Right);
+                    MenuText menuText = new MenuText(skillString, new Loc(2, 1), color);
+                    MenuText menuCharges = new MenuText(skillCharges, new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, color);
                     if (ii < Character.MAX_SKILL_SLOTS - 1)
                     {
                         MenuDivider div = new MenuDivider(new Loc(0, LINE_HEIGHT), menuWidth - 8 * 4);
