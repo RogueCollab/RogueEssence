@@ -1243,6 +1243,10 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
+        public void SetSkillLocking(int slot, bool lck)
+        {
+            BaseSkills[slot].CanForget = !lck;
+        }
 
         public void DeleteSkill(int slot, bool refresh=true)
         {

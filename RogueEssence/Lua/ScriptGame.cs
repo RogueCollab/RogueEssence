@@ -787,6 +787,27 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Makes a skill impossible to forget or replace for the specified character.
+        /// Note that this only affects normal gameplay. Scripts can still freely get rid of the skill.
+        /// </summary>
+        /// <param name="chara">The character to lock the skill</param>
+        /// <param name="slot">The slot of the skill to lock</param>
+        public void LockSkill(Character chara, int slot)
+        {
+            chara.SetSkillLocking(slot, true);
+        }
+
+        /// <summary>
+        /// Unlocks a previously locked skill for the specified character, making it possible to be forgotten or replaced during normal gameplay.
+        /// </summary>
+        /// <param name="chara">The character to unlock the skill</param>
+        /// <param name="slot">The slot of the skill to unlock</param>
+        public void UnlockSkill(Character chara, int slot)
+        {
+            chara.SetSkillLocking(slot, false);
+        }
+
+        /// <summary>
         /// Gives a new skill to a specified character, replacing a specifically chosen slot.
         /// </summary>
         /// <param name="character">The character to learn the skill</param>
