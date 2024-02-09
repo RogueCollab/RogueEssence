@@ -1246,20 +1246,6 @@ namespace RogueEssence.Dungeon
         public void SetSkillLocking(int slot, bool lck)
         {
             BaseSkills[slot].CanForget = !lck;
-
-            //update the backreferences 
-            int owningSlot = -1;
-            for (int ii = 0; ii < Skills.Count; ii++)
-            {
-                if (Skills[ii].BackRef > slot)
-                    Skills[ii].BackRef--;
-                else if (Skills[ii].BackRef == slot)
-                    owningSlot = ii;
-            }
-            if (owningSlot > -1)
-            {
-                Skills[owningSlot].Element.CanForget = !lck;
-            }
         }
 
         public void DeleteSkill(int slot, bool refresh=true)

@@ -12,7 +12,6 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(SkillConverter))]
         public string SkillNum;
         public int Charges;
-        public bool CanForget;
         public bool Enabled;
 
         public bool Sealed;
@@ -29,7 +28,6 @@ namespace RogueEssence.Dungeon
             SkillNum = skillNum;
             Charges = charges;
             Enabled = enabled;
-            CanForget = true;
         }
     }
 }
