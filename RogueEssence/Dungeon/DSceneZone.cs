@@ -430,7 +430,7 @@ namespace RogueEssence.Dungeon
                     {
                         result.Success = ActionResult.ResultType.Success;
 
-                        SwitchTeam(action[0]);
+                        SwitchTeam(action[0], action[0] + 1);
                         break;
                     }
                 case GameAction.ActionType.SetLeader:
@@ -719,8 +719,15 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(ProcessBattleFX(chara, chara, skin.LeaderFX));
         }
 
-        public void SwitchTeam(int charIndex)
+        public void SwitchTeam(int index1, int index2)
         {
+            if (index1 > index2)
+            {
+                int tmp = index1;
+                index1 = index2;
+                index2 = tmp;
+            }
+
             if (CurrentCharacter != ActiveTeam.Leader)
             {
                 //this shouldn't be reached
@@ -728,23 +735,25 @@ namespace RogueEssence.Dungeon
             }
             else
             {
-                Character character = ActiveTeam.Players[charIndex];
-                //move this character with the character in front
-                ActiveTeam.Players.RemoveAt(charIndex);
-                ActiveTeam.Players.Insert(charIndex+1, character);
+                Character targetChar = ActiveTeam.Players[index2];
+                ActiveTeam.Players.RemoveAt(index2);
+                ActiveTeam.Players.Insert(index1, targetChar);
+                targetChar = ActiveTeam.Players[index1 + 1];
+                ActiveTeam.Players.RemoveAt(index1 + 1);
+                ActiveTeam.Players.Insert(index2, targetChar);
 
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustSlotSwap(Faction.Player, 0, false, charIndex, charIndex+1);
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustSlotSwap(Faction.Player, 0, false, index1, index2);
 
                 //update the leader indices
-                if (ActiveTeam.LeaderIndex == charIndex)
+                if (ActiveTeam.LeaderIndex == index1)
                 {
-                    ActiveTeam.LeaderIndex++;
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex, ActiveTeam.LeaderIndex);
+                    ActiveTeam.LeaderIndex = index2;
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, index1, ActiveTeam.LeaderIndex);
                 }
-                else if (ActiveTeam.LeaderIndex == charIndex + 1)
+                else if (ActiveTeam.LeaderIndex == index2)
                 {
-                    ActiveTeam.LeaderIndex--;
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, charIndex + 1, ActiveTeam.LeaderIndex);
+                    ActiveTeam.LeaderIndex = index1;
+                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.AdjustLeaderSwap(Faction.Player, 0, false, index2, ActiveTeam.LeaderIndex);
                 }
 
                 ReloadFocusedPlayer();

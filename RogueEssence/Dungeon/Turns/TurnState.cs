@@ -156,6 +156,9 @@ namespace RogueEssence.Dungeon
             if (faction != CurrentOrder.Faction)
                 return;
 
+            //TODO: when this swap is done, the turn order still remains the same even though it should be in a different order!
+            //the original slot update is still necessary because they may have been swapped with someone who isn't in the turn queue to begin with
+            //but afterwards the new members have to be assigned to their correct positions
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
