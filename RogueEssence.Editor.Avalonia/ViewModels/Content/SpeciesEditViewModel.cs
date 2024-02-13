@@ -637,20 +637,24 @@ namespace RogueEssence.Dev.ViewModels
                 if (!Directory.Exists(currentPath))
                     Directory.CreateDirectory(currentPath);
 
-                if (checkSprites)
+                CharID fallback = GraphicsManager.GetFallbackForm(GraphicsManager.CharaIndex, currentForm);
+                if (fallback == currentForm)
                 {
-                    CharSheet sheet = GraphicsManager.GetChara(currentForm);
-                    CharSheet.Export(sheet, currentPath, singleSheet);
-                }
-                else
-                {
-                    PortraitSheet sheet = GraphicsManager.GetPortrait(currentForm);
-                    PortraitSheet.Export(sheet, currentPath, singleSheet);
-                }
+                    if (checkSprites)
+                    {
+                        CharSheet sheet = GraphicsManager.GetChara(currentForm);
+                        CharSheet.Export(sheet, currentPath, singleSheet);
+                    }
+                    else
+                    {
+                        PortraitSheet sheet = GraphicsManager.GetPortrait(currentForm);
+                        PortraitSheet.Export(sheet, currentPath, singleSheet);
+                    }
 
-                DiagManager.Instance.LogInfo("Frames from:\n" +
-                    GetFormString(currentForm) +
-                    "\nhave been exported to:" + currentPath);
+                    DiagManager.Instance.LogInfo("Frames from:\n" +
+                        GetFormString(currentForm) +
+                        "\nhave been exported to:" + currentPath);
+                }
             }
         }
 
