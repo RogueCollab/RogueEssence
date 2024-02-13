@@ -179,7 +179,10 @@ namespace RogueEssence.Dungeon
                 if (entry.MaxStack > 1)
                     nameStr += " (" + Amount + ")";
 
-                return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
+                if (entry.UsageType == ItemData.UseType.Treasure)
+                    return String.Format("{0}[color=#6384E6]{1}[color]", prefix, nameStr);
+                else
+                    return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
             }
         }
 

@@ -22,7 +22,8 @@ namespace RogueEssence.Data
             Eat,
             Drink,
             Learn,
-            Box
+            Box,
+            Treasure
         }
 
         /// <summary>
@@ -174,7 +175,10 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public string GetColoredName()
         {
-            return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+            if (UsageType == UseType.Treasure)
+                return String.Format("[color=#6384E6]{0}[color]", Name.ToLocal());
+            else
+                return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
         }
 
         /// <summary>
@@ -211,7 +215,10 @@ namespace RogueEssence.Data
 
         public override string GetColoredName()
         {
-            return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+            if (UsageType == ItemData.UseType.Treasure)
+                return String.Format("[color=#6384E6]{0}[color]", Name.ToLocal());
+            else
+                return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
         }
 
         public bool ContainsState<T>() where T : ItemState

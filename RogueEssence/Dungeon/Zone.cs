@@ -25,6 +25,7 @@ namespace RogueEssence.Dungeon
         public int TeamSize;
         public bool MoneyRestrict;
         public int BagRestrict;
+        public bool KeepTreasure;
         public int BagSize;
         public bool Persistent;
 

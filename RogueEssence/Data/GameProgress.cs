@@ -371,6 +371,33 @@ namespace RogueEssence.Data
 
         public abstract int GetTotalScore();
 
+        public static bool ShouldRemoveItem(ZoneEntrySummary zone, string itemID)
+        {
+            if (zone.KeepTreasure)
+            {
+                //check if the item's a treasure
+                ItemEntrySummary summary = (ItemEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(itemID);
+                return (summary.UsageType != ItemData.UseType.Treasure);
+            }
+            return true;
+        }
+
+        public int GetTotalRemovableItems(ZoneEntrySummary zone)
+        {
+            int removableSlots = 0;
+            foreach (Character player in ActiveTeam.Players)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID) && ShouldRemoveItem(zone, player.EquippedItem.ID))
+                    removableSlots++;
+            }
+            for (int ii = 0; ii < ActiveTeam.GetInvCount(); ii++)
+            {
+                if (ShouldRemoveItem(zone, ActiveTeam.GetInv(ii).ID))
+                    removableSlots++;
+            }
+            return removableSlots;
+        }
+
         public IEnumerator<YieldInstruction> RestrictTeam(ZoneEntrySummary zone, bool silent)
         {
             List<string> teamRestrictions = new List<string>();
@@ -405,42 +432,58 @@ namespace RogueEssence.Data
 
                 if (zone.BagRestrict > -1)
                 {
-                    bool removedItems = false;
-                    int heldSlots = 0;
+                    int totalSlots = 0;
                     foreach (Character player in ActiveTeam.Players)
                     {
                         if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                            heldSlots++;
+                            totalSlots++;
                     }
-                    List<InvItem> itemsToStore = new List<InvItem>();
-                    while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict && ActiveTeam.GetInvCount() > 0)
-                    {
-                        removedItems = true;
-                        itemsToStore.Add(ActiveTeam.GetInv(ActiveTeam.GetInvCount() - 1));
+                    totalSlots += ActiveTeam.GetInvCount();
 
-                        ActiveTeam.RemoveFromInv(ActiveTeam.GetInvCount() - 1);
-                    }
-                    while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict)
+                    bool removedItems = false;
+                    int removableSlots = GetTotalRemovableItems(zone);
+                    bool hasTreasure = removableSlots < totalSlots;
+
+                    List<InvItem> itemsToStore = new List<InvItem>();
+                    for (int ii = ActiveTeam.GetInvCount() - 1; ii >= 0 && removableSlots > zone.BagRestrict; ii--)
                     {
-                        foreach (Character player in ActiveTeam.Players)
+                        InvItem item = ActiveTeam.GetInv(ii);
+                        if (ShouldRemoveItem(zone, item.ID))
                         {
-                            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                            {
-                                removedItems = true;
-                                itemsToStore.Add(player.EquippedItem);
-                                player.SilentDequipItem();
-                                heldSlots--;
-                                break;
-                            }
+                            removedItems = true;
+                            itemsToStore.Add(item);
+                            ActiveTeam.RemoveFromInv(ii);
+                            removableSlots--;
+                        }
+                    }
+                    for (int ii = ActiveTeam.Players.Count - 1; ii >= 0 && removableSlots > zone.BagRestrict; ii--)
+                    {
+                        InvItem item = ActiveTeam.Players[ii].EquippedItem;
+                        if (!String.IsNullOrEmpty(item.ID) && ShouldRemoveItem(zone, item.ID))
+                        {
+                            removedItems = true;
+                            itemsToStore.Add(item);
+                            ActiveTeam.Players[ii].SilentDequipItem();
+                            removableSlots--;
                         }
                     }
                     ActiveTeam.StoreItems(itemsToStore);
                     if (!silent && removedItems)
                     {
                         if (zone.BagRestrict > 0)
-                            bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT", zone.BagRestrict));
+                        {
+                            if (hasTreasure)
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT_NON_TREASURE", zone.BagRestrict));
+                            else
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT", zone.BagRestrict));
+                        }
                         else
-                            bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
+                        {
+                            if (hasTreasure)
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT_NON_TREASURE"));
+                            else
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
+                        }
                     }
                 }
             }

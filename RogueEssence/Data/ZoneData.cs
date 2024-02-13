@@ -80,6 +80,7 @@ namespace RogueEssence.Data
         /// <summary>
         /// Turn on to keep the teams moveset during level restrictions.
         /// </summary>
+        [SharedRow]
         public bool KeepSkills { get; set; }
         
         /// <summary>
@@ -101,6 +102,11 @@ namespace RogueEssence.Data
         /// Forces items beyond the Nth slot to be stored upon entry.
         /// </summary>
         public int BagRestrict { get; set; }
+
+        /// <summary>
+        /// Exempts Treasure items from BagRestrict limit
+        /// </summary>
+        public bool KeepTreasure { get; set; }
 
         /// <summary>
         /// Forces the bag's maximum size.
@@ -140,6 +146,7 @@ namespace RogueEssence.Data
             summary.TeamSize = TeamSize;
             summary.MoneyRestrict = MoneyRestrict;
             summary.BagRestrict = BagRestrict;
+            summary.KeepTreasure = KeepTreasure;
             summary.BagSize = BagSize;
             summary.Rescues = Rescues;
             summary.CountedFloors = totalFloors;
@@ -209,6 +216,7 @@ namespace RogueEssence.Data
             zone.TeamSize = TeamSize;
             zone.MoneyRestrict = MoneyRestrict;
             zone.BagRestrict = BagRestrict;
+            zone.KeepTreasure = KeepTreasure;
             zone.BagSize = BagSize;
             zone.Persistent = Persistent;
 
@@ -242,6 +250,7 @@ namespace RogueEssence.Data
         public int TeamSize;
         public bool MoneyRestrict;
         public int BagRestrict;
+        public bool KeepTreasure;
         public int BagSize;
         public int Rescues;
         public int CountedFloors;

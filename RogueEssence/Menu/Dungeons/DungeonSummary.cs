@@ -69,8 +69,11 @@ namespace RogueEssence.Menu
                         rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), Loc.Zero,
                             (showRestrict && save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
                     if (zoneEntry.BagRestrict > -1)
+                    {
+                        int totalRemovable = save.GetTotalRemovableItems(zoneEntry);
                         rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), Loc.Zero,
-                            (showRestrict && save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                            (showRestrict && totalRemovable > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                    }
                 }
                 if (zoneEntry.BagSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), Loc.Zero,
