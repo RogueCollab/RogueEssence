@@ -1125,20 +1125,27 @@ namespace RogueEssence.Dungeon
                                 if (ShowMap == MinimapState.Detail)
                                 {
                                     if (terrain.MinimapColor != Color.White && terrain.MinimapColor != Color.Transparent)
-                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, terrain.MinimapColor * mapVis, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
+                                        GraphicsManager.Pixel.Draw(spriteBatch, destVector, null, terrain.MinimapColor, new Vector2(mapSheet.TileWidth, mapSheet.TileHeight));
                                 }
 
                                 if (!ZoneManager.Instance.CurrentMap.TileBlocked(new Loc(ii, jj), mobility))
                                 {
+                                    int settingsIdx = (int)DiagManager.Instance.CurSettings.MinimapColor;
+                                    if (ShowMap == MinimapState.Detail)
+                                        settingsIdx = 0;
+                                    Color blockColor = Settings.MinimapColors[settingsIdx].explored;
+                                    if (discovery != Map.DiscoveryState.Traversed)
+                                        blockColor = Settings.MinimapColors[settingsIdx].unexplored;
+
                                     //draw halls
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj - 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 0, blockColor * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii, jj + 1), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 0, 1, blockColor * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii - 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 0, blockColor * mapVis);
                                     if (ZoneManager.Instance.CurrentMap.TerrainBlocked(new Loc(ii + 1, jj), mobility))
-                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, (discovery == Map.DiscoveryState.Traversed ? Color.White : Color.DarkGray) * mapVis);
+                                        mapSheet.DrawTile(spriteBatch, destVector, 1, 1, blockColor * mapVis);
                                 }
 
                                 if (discovery == Map.DiscoveryState.Traversed && !String.IsNullOrEmpty(tile.Effect.ID) && (tile.Effect.Exposed || SeeAll))

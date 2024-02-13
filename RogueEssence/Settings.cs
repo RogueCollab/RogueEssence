@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using RogueEssence.Menu;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence
 {
@@ -42,6 +43,12 @@ namespace RogueEssence
             Attacks,
             All
         }
+        public enum MinimapStyle
+        {
+            White,
+            Black,
+            Blue
+        }
 
         public int BGMBalance;
         public int SEBalance;
@@ -50,6 +57,7 @@ namespace RogueEssence
 
         public SkillDefault DefaultSkills;
         public int Minimap;
+        public MinimapStyle MinimapColor;
 
         private double textSpeed;
         public double TextSpeed
@@ -93,6 +101,7 @@ namespace RogueEssence
         public static HashSet<FrameInput.InputType> ActionConflicts;
         public static HashSet<Keys> ForbiddenKeys;
         public static HashSet<Buttons> ForbiddenButtons;
+        public static List<(Color explored, Color unexplored)> MinimapColors;
 
         public static void InitStatic()
         {
@@ -205,6 +214,11 @@ namespace RogueEssence
             ForbiddenButtons.Add(Buttons.RightThumbstickLeft);
             ForbiddenButtons.Add(Buttons.RightThumbstickUp);
             ForbiddenButtons.Add(Buttons.RightThumbstickRight);
+
+            MinimapColors = new List<(Color, Color)>();
+            MinimapColors.Add((Color.White, Color.DarkGray));
+            MinimapColors.Add((Color.DimGray, Color.DarkGray));
+            MinimapColors.Add((Color.Blue, Color.DarkGray));
         }
 
         public Settings()

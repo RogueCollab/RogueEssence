@@ -403,6 +403,7 @@ namespace RogueEssence
                     settings.BattleFlow = Enum.Parse<Settings.BattleSpeed>(xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
                     settings.DefaultSkills = Enum.Parse<Settings.SkillDefault>(xmldoc.SelectSingleNode("Config/DefaultSkills").InnerText);
                     settings.Minimap = Int32.Parse(xmldoc.SelectSingleNode("Config/Minimap").InnerText);
+                    settings.MinimapColor = Enum.Parse<Settings.MinimapStyle>(xmldoc.SelectSingleNode("Config/MinimapColor").InnerText);
 
                     settings.TextSpeed = Int32.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
@@ -545,6 +546,7 @@ namespace RogueEssence
                 docNode.AppendInnerTextChild(xmldoc, "BattleFlow", settings.BattleFlow.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "DefaultSkills", settings.DefaultSkills.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Minimap", settings.Minimap.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "MinimapColor", settings.MinimapColor.ToString());
 
                 docNode.AppendInnerTextChild(xmldoc, "TextSpeed", settings.TextSpeed.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Border", settings.Border.ToString());
