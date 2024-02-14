@@ -363,7 +363,7 @@ namespace RogueEssence.Dungeon
             //assumes they have the space
             MapItem item = ZoneManager.Instance.CurrentMap.Items[itemSlot];
 
-            ItemCheckContext context = new ItemCheckContext(character, item, new MapItem());
+            ItemCheckContext context = new ItemCheckContext(character, new MapItem(item), new MapItem());
 
             Team memberTeam = character.MemberTeam;
             if (item.IsMoney)
