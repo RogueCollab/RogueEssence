@@ -32,14 +32,21 @@ namespace RogueEssence
         public static string[] SupportedLangs;
         public static Dictionary<string, LanguageSetting> LangNames;
 
-        public static Regex MsgTags = new Regex(@"(?<pause>\[pause=(?<pauseval>\d+)\])" +
+        private static string subMsgRegex = @"(?<pause>\[pause=(?<pauseval>\d+)\])" +
                                                 @"|(?<sound>\[sound=(?<soundval>[A-Za-z\/0-9\-_]*),?(?<speaktime>\d*)?\])" +
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<scrollbreak>\[scroll\])" +
                                                 @"|(?<script>\[script=(?<scriptval>\d+)\])" +
-                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
-                                                @"|(?<emote>\[emote=(?<emoteval>[a-zA-Z0-9\-]*)\])",
+                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" +
+                                                @"|(?<emote>\[emote=(?<emoteval>[a-zA-Z0-9\-]*)\])";
+
+        private static string subGenderRegex = @"(?<sex>\[male\]|\[female\]|\[neutral\])";
+
+        public static Regex SubMsgTags = new Regex(subMsgRegex,
+                                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static Regex MsgTags = new Regex(subMsgRegex + @"|" + subGenderRegex,
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" + //en
@@ -55,8 +62,7 @@ namespace RogueEssence
                                                 @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" + //ko
                                                 @"|(?<wa_gwa>(?<wa_gwaval>\w)\[와/과\])" + //ko
                                                 @"|(?<eu_lo>(?<eu_loval>\w)\[으/로\])" + //ko
-                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])" + //ko
-                                                @"|(?<sex>\[male\]|\[female\]|\[neutral\])", //ko
+                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])", //ko
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
@@ -218,7 +224,7 @@ namespace RogueEssence
 
             List<(int idx, string replace)> reInserts = new List<(int, string)>();
             int lag = 0;
-            MatchCollection tagMatches = MsgTags.Matches(output);
+            MatchCollection tagMatches = SubMsgTags.Matches(output);
             foreach (Match match in tagMatches)
             {
                 reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
@@ -449,11 +455,6 @@ namespace RogueEssence
                                     replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
                                 else
                                     replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
-                            }
-                            break;
-                        case "sex":
-                            {
-                                replacements.Add((match.Index, match.Length, ""));
                             }
                             break;
                     }
