@@ -55,7 +55,8 @@ namespace RogueEssence
                                                 @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" + //ko
                                                 @"|(?<wa_gwa>(?<wa_gwaval>\w)\[와/과\])" + //ko
                                                 @"|(?<eu_lo>(?<eu_loval>\w)\[으/로\])" + //ko
-                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])", //ko
+                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])" + //ko
+                                                @"|(?<sex>\[male\]|\[female\]|\[neutral\])", //ko
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
@@ -240,9 +241,9 @@ namespace RogueEssence
                                 string vowelcheck = match.Groups["a_anval"].Value;
 
                                 if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
-                                    replacements.Add((match.Index, "[a/an]".Length, "an"));
+                                    replacements.Add(chooseIndefinite(match, "[a/an]", "an"));
                                 else
-                                    replacements.Add((match.Index, "[a/an]".Length, "a"));
+                                    replacements.Add(chooseIndefinite(match, "[a/an]", "a"));
                             }
                             break;
                         case "el_la":
@@ -250,9 +251,9 @@ namespace RogueEssence
                                 Gender gendercheck = extractGenderTag(match.Groups["el_lasex"].Value, Gender.Male);
 
                                 if (gendercheck == Gender.Male)
-                                    replacements.Add((match.Index, "[el/la]".Length, "el"));
+                                    replacements.Add(chooseIndefinite(match, "[el/la]", "el"));
                                 else
-                                    replacements.Add((match.Index, "[el/la]".Length, "la"));
+                                    replacements.Add(chooseIndefinite(match, "[el/la]", "la"));
 
                                 if (match.Groups["el_lasex"].Success)
                                     replacements.Add((match.Groups["el_lasex"].Index, match.Groups["el_lasex"].Value.Length, ""));
@@ -263,11 +264,11 @@ namespace RogueEssence
                                 Gender gendercheck = extractGenderTag(match.Groups["der_die_dassex"].Value, Gender.Male);
 
                                 if (gendercheck == Gender.Male)
-                                    replacements.Add((match.Index, "[der/die/das]".Length, "der"));
+                                    replacements.Add(chooseIndefinite(match, "[der/die/das]", "der"));
                                 else if (gendercheck == Gender.Female)
-                                    replacements.Add((match.Index, "[der/die/das]".Length, "die"));
+                                    replacements.Add(chooseIndefinite(match, "[der/die/das]", "die"));
                                 else
-                                    replacements.Add((match.Index, "[der/die/das]".Length, "das"));
+                                    replacements.Add(chooseIndefinite(match, "[der/die/das]", "das"));
 
                                 if (match.Groups["der_die_dassex"].Success)
                                     replacements.Add((match.Groups["der_die_dassex"].Index, match.Groups["der_die_dassex"].Value.Length, ""));
@@ -278,11 +279,11 @@ namespace RogueEssence
                                 Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einensex"].Value, Gender.Male);
 
                                 if (gendercheck == Gender.Male)
-                                    replacements.Add((match.Index, "[ein/eine/einen]".Length, "ein"));
+                                    replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "ein"));
                                 else if (gendercheck == Gender.Female)
-                                    replacements.Add((match.Index, "[ein/eine/einen]".Length, "eine"));
+                                    replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "eine"));
                                 else
-                                    replacements.Add((match.Index, "[ein/eine/einen]".Length, "einen"));
+                                    replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "einen"));
 
                                 if (match.Groups["ein_eine_einensex"].Success)
                                     replacements.Add((match.Groups["ein_eine_einensex"].Index, match.Groups["ein_eine_einensex"].Value.Length, ""));
@@ -293,9 +294,9 @@ namespace RogueEssence
                                 Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einsex"].Value, Gender.Male);
 
                                 if (gendercheck == Gender.Female)
-                                    replacements.Add((match.Index, "[ein/eine/ein]".Length, "eine"));
+                                    replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "eine"));
                                 else
-                                    replacements.Add((match.Index, "[ein/eine/ein]".Length, "ein"));
+                                    replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "ein"));
 
                                 if (match.Groups["ein_eine_einsex"].Success)
                                     replacements.Add((match.Groups["ein_eine_einsex"].Index, match.Groups["ein_eine_einsex"].Value.Length, ""));
@@ -309,7 +310,10 @@ namespace RogueEssence
 
                                 if (Regex.IsMatch(vowelcheck, "^([aeou]|i[bcdfghjklmnpqrstvwxyz])", RegexOptions.IgnoreCase))
                                 {
-                                    replacements.Add((match.Index, "[il/la]".Length, ""));
+                                    int total_length = "[il/la]".Length;
+                                    while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
+                                        total_length++;
+                                    replacements.Add((match.Index, total_length, ""));
                                     postMatch = "l'";
                                 }
                                 else
@@ -317,13 +321,13 @@ namespace RogueEssence
                                     if (gendercheck == Gender.Male)
                                     {
                                         if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|i[aeiou])", RegexOptions.IgnoreCase))
-                                            replacements.Add((match.Index, "[il/la]".Length, "lo"));
+                                            replacements.Add(chooseIndefinite(match, "[il/la]", "lo"));
                                         else
-                                            replacements.Add((match.Index, "[il/la]".Length, "il"));
+                                            replacements.Add(chooseIndefinite(match, "[il/la]", "il"));
                                     }
                                     else
                                     {
-                                        replacements.Add((match.Index, "[il/la]".Length, "la"));
+                                        replacements.Add(chooseIndefinite(match, "[il/la]", "la"));
                                     }
                                 }
 
@@ -331,7 +335,7 @@ namespace RogueEssence
                                     replacements.Add((match.Groups["il_lasex"].Index, match.Groups["il_lasex"].Value.Length, ""));
 
                                 if (!String.IsNullOrEmpty(postMatch))
-                                    replacements.Add((match.Groups["il_laval"].Index, 0, postMatch));
+                                    replacements.Add((match.Groups["il_laval"].Index, 0, capitalizeIndefinite(match, postMatch)));
                             }
                             break;
                         case "i_le":
@@ -342,12 +346,12 @@ namespace RogueEssence
                                 if (gendercheck == Gender.Male)
                                 {
                                     if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|[aeiou])", RegexOptions.IgnoreCase))
-                                        replacements.Add((match.Index, "[i/le]".Length, "gli"));
+                                        replacements.Add(chooseIndefinite(match, "[i/le]", "gli"));
                                     else
-                                        replacements.Add((match.Index, "[i/le]".Length, "i"));
+                                        replacements.Add(chooseIndefinite(match, "[i/le]", "i"));
                                 }
                                 else
-                                    replacements.Add((match.Index, "[i/le]".Length, "le"));
+                                    replacements.Add(chooseIndefinite(match, "[i/le]", "le"));
 
                                 if (match.Groups["i_lesex"].Success)
                                     replacements.Add((match.Groups["i_lesex"].Index, match.Groups["i_lesex"].Value.Length, ""));
@@ -362,26 +366,29 @@ namespace RogueEssence
                                 if (gendercheck == Gender.Male)
                                 {
                                     if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
-                                        replacements.Add((match.Index, "[uno/una]".Length, "un"));
+                                        replacements.Add(chooseIndefinite(match, "[uno/una]", "un"));
                                     else
-                                        replacements.Add((match.Index, "[uno/una]".Length, "uno"));
+                                        replacements.Add(chooseIndefinite(match, "[uno/una]", "uno"));
                                 }
                                 else
                                 {
                                     if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
                                     {
-                                        replacements.Add((match.Index, "[uno/una]".Length, ""));
+                                        int total_length = "[uno/una]".Length;
+                                        while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
+                                            total_length++;
+                                        replacements.Add((match.Index, total_length, ""));
                                         postMatch = "un'";
                                     }
                                     else
-                                        replacements.Add((match.Index, "[uno/una]".Length, "una"));
+                                        replacements.Add(chooseIndefinite(match, "[uno/una]", "una"));
                                 }
 
                                 if (match.Groups["uno_unasex"].Success)
                                     replacements.Add((match.Groups["uno_unasex"].Index, match.Groups["uno_unasex"].Value.Length, ""));
 
                                 if (!String.IsNullOrEmpty(postMatch))
-                                    replacements.Add((match.Groups["uno_unaval"].Index, 0, postMatch));
+                                    replacements.Add((match.Groups["uno_unaval"].Index, 0, capitalizeIndefinite(match, postMatch)));
                             }
                             break;
                         case "eun_neun":
@@ -444,6 +451,11 @@ namespace RogueEssence
                                     replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
                             }
                             break;
+                        case "sex":
+                            {
+                                replacements.Add((match.Index, match.Length, ""));
+                            }
+                            break;
                     }
                 }
             }
@@ -471,6 +483,18 @@ namespace RogueEssence
             }
 
             return output;
+        }
+
+        private static (int, int, string) chooseIndefinite(Match match, string tag, string val)
+        {
+            return (match.Index, tag.Length, capitalizeIndefinite(match, val));
+        }
+
+        private static string capitalizeIndefinite(Match match, string val)
+        {
+            if (char.IsUpper(match.Value[1]))
+                return val.Substring(0, 1).ToUpper() + val.Substring(1);
+            return val;
         }
 
         private static Gender extractGenderTag(string genderStr, Gender defaultGender)
