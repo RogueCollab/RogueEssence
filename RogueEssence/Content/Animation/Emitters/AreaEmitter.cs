@@ -366,7 +366,7 @@ namespace RogueEssence.Content
             int totalParticles = (int)Math.Round(ParticlesPerTile * (Math.PI * endRange * endRange) / GraphicsManager.TileSize / GraphicsManager.TileSize);
             int prevParticles = 0;
             int currentParticles = totalParticles;
-            if (Range > 0)
+            if (endRange > 0)
             {
                 prevParticles = totalParticles * prevRadius * prevRadius / endRange / endRange;
                 currentParticles = totalParticles * CurrentRadius * CurrentRadius / endRange / endRange;
