@@ -62,10 +62,25 @@ namespace RogueEssence.Dungeon
         /// Height in tiles
         /// </summary>
         public int Height { get { return Tiles[0].Length; } }
+
+        /// <summary>
+        /// Size in tiles
+        /// </summary>
         public Loc Size { get { return new Loc(Width, Height); } }
 
+        /// <summary>
+        /// Width in pixels
+        /// </summary>
         public int GroundWidth { get { return Width * GraphicsManager.TileSize; } }
+
+        /// <summary>
+        /// Height in pixels
+        /// </summary>
         public int GroundHeight { get { return Height * GraphicsManager.TileSize; } }
+
+        /// <summary>
+        /// Size in pixels
+        /// </summary>
         public Loc GroundSize { get { return Size * GraphicsManager.TileSize; } }
 
         public List<MapItem> Items;
