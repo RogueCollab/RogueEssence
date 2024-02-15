@@ -83,6 +83,11 @@ namespace RogueEssence.Dungeon
                 CurrentOrder.TurnIndex--;
         }
 
+        /// <summary>
+        /// Assumes the team being removed is empty.
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="removedTeam"></param>
         public void UpdateTeamRemoval(Faction faction, int removedTeam)
         {
             //The TurnToChar list will always contain only one faction's worth of turns.
@@ -138,6 +143,14 @@ namespace RogueEssence.Dungeon
                 loadTeamMemberTurnMap(faction, teamIndex, true, ii, team.Guests);
         }
 
+        /// <summary>
+        /// Loads the team members' charIndex into the turn map
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="teamIndex"></param>
+        /// <param name="guest"></param>
+        /// <param name="charIndex"></param>
+        /// <param name="playerList"></param>
         private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, IList<Character> playerList)
         {
             ITurnChar character = playerList[charIndex];
@@ -147,28 +160,51 @@ namespace RogueEssence.Dungeon
                     character.TurnWait--;
             }
 
-            if (IsEligibleToMove(character))
-                TurnToChar.Add(new CharIndex(faction, teamIndex, guest, charIndex));
+            //We do not need to check for eligibility to move, because it is to be done whenever any action-related things are checked
+            TurnToChar.Add(new CharIndex(faction, teamIndex, guest, charIndex));
         }
 
+        /// <summary>
+        /// When team members swap positions, their indices on the turn list need to be swapped too.
+        /// Then, they need to be re-ordered to fit their new indices.
+        /// This assumes that both characters are in the turn list.  Which they should be since all members of the faction are.
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="teamIndex"></param>
+        /// <param name="guest"></param>
+        /// <param name="oldSlot"></param>
+        /// <param name="newSlot"></param>
         public void AdjustSlotSwap(Faction faction, int teamIndex, bool guest, int oldSlot, int newSlot)
         {
             if (faction != CurrentOrder.Faction)
                 return;
 
-            //TODO: when this swap is done, the turn order still remains the same even though it should be in a different order!
-            //the original slot update is still necessary because they may have been swapped with someone who isn't in the turn queue to begin with
-            //but afterwards the new members have to be assigned to their correct positions
+            int oldPos = -1;
+            int newPos = -1;
+
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
                 CharIndex turnChar = TurnToChar[ii];
                 if (turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
                     if (turnChar.Char == oldSlot)
+                    {
                         TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, newSlot);
+                        newPos = ii;
+                    }
                     else if (turnChar.Char == newSlot)
+                    {
                         TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, oldSlot);
+                        oldPos = ii;
+                    }
                 }
+            }
+
+            if (oldPos > -1 && newPos > -1)
+            {
+                CharIndex tmp = TurnToChar[newPos];
+                TurnToChar[newPos] = TurnToChar[oldPos];
+                TurnToChar[oldPos] = tmp;
             }
         }
 
