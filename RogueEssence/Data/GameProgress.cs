@@ -480,7 +480,7 @@ namespace RogueEssence.Data
                         else
                         {
                             if (hasTreasure)
-                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT_NON_TREASURE"));
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL_NON_TREASURE"));
                             else
                                 bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
                         }
