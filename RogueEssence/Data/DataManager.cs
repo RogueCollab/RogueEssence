@@ -1550,7 +1550,7 @@ namespace RogueEssence.Data
                 }
                 else if (File.Exists(PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION)))
                 {
-                    string renamedFile = GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
+                    string renamedFile = Text.GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
 
                     if (renamedFile != null)
                     {
@@ -1567,16 +1567,6 @@ namespace RogueEssence.Data
                 DiagManager.Instance.LogError(ex);
             }
             return null;
-        }
-
-        public static string GetNonConflictingSavePath(string folderPath, string fileName, string fileExtension)
-        {
-            bool savePathExists(string name)
-            {
-                return File.Exists(folderPath + name + fileExtension);
-            };
-
-            return Text.GetNonConflictingName(fileName, savePathExists);
         }
 
         //TODO: remove this when LogQuicksave is working
@@ -2126,7 +2116,7 @@ namespace RogueEssence.Data
         {
             string renamedFile = mail.TeamID.ToString();
             if (!force)
-                renamedFile = GetNonConflictingSavePath(folderPath, mail.TeamID.ToString(), mail.Extension);
+                renamedFile = Text.GetNonConflictingSavePath(folderPath, mail.TeamID.ToString(), mail.Extension);
 
             try
             {

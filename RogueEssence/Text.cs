@@ -700,6 +700,16 @@ namespace RogueEssence
             return null;
         }
 
+        public static string GetNonConflictingSavePath(string folderPath, string fileName, string fileExtension)
+        {
+            bool savePathExists(string name)
+            {
+                return File.Exists(folderPath + name + fileExtension);
+            };
+
+            return Text.GetNonConflictingName(fileName, savePathExists);
+        }
+
         public static string GetMemberTitle(string name)
         {
             StringBuilder separatedName = new StringBuilder();

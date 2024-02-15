@@ -89,6 +89,8 @@ namespace RogueEssence.Content
             }
         }
 
+        public const string SCREENSHOT_PATH = "SCREENSHOT/";
+
         public static string BASE_PATH { get => PathMod.ASSET_PATH + "Base/"; }
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
@@ -1153,6 +1155,14 @@ namespace RogueEssence.Content
             obj.Dispose();
         }
 
+        public static void SaveScreenshot(Texture2D gameScreen)
+        {
+            if (!Directory.Exists(PathMod.FromExe(SCREENSHOT_PATH)))
+                Directory.CreateDirectory(PathMod.FromExe(SCREENSHOT_PATH));
+            string outPath = Text.GetNonConflictingSavePath(PathMod.FromExe(SCREENSHOT_PATH), String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now), ".png");
+            using (Stream stream = new FileStream(PathMod.FromExe(SCREENSHOT_PATH) + outPath + ".png", FileMode.Create, FileAccess.Write, FileShare.None))
+                BaseSheet.ExportTex(stream, gameScreen);
+        }
     }
 
 }
