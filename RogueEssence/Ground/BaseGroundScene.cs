@@ -54,6 +54,32 @@ namespace RogueEssence.Ground
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
         }
 
+        protected bool Screenshotting;
+
+        protected RenderTarget2D screenshotScreen;
+        public void Screenshot()
+        {
+            Screenshotting = true;
+            screenshotScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                ZoneManager.Instance.CurrentGround.GroundWidth, ZoneManager.Instance.CurrentGround.GroundHeight,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+        }
+
+        public void BeginScreenshot()
+        {
+            ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.GroundSize);
+            viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.Size);
+        }
+
+        public void ProcessScreenshot()
+        {
+            if (Screenshotting)
+            {
+                GraphicsManager.SaveScreenshot(screenshotScreen);
+                Screenshotting = false;
+            }
+        }
+
         public override void Begin()
         {
             PendingDevEvent = null;
@@ -114,7 +140,13 @@ namespace RogueEssence.Ground
         {
             if (ZoneManager.Instance.CurrentGround != null)
             {
-                GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
+                if (Screenshotting)
+                {
+                    GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
+                    BeginScreenshot();
+                }
+                else
+                    GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
 
                 GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
 
@@ -130,6 +162,7 @@ namespace RogueEssence.Ground
 
                 spriteBatch.End();
 
+                ProcessScreenshot();
 
                 GraphicsManager.GraphicsDevice.SetRenderTarget(GameManager.Instance.GameScreen);
 

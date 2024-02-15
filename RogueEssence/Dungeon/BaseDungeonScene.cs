@@ -67,6 +67,32 @@ namespace RogueEssence.Dungeon
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
         }
 
+        protected bool Screenshotting;
+
+        protected RenderTarget2D screenshotScreen;
+        public void Screenshot()
+        {
+            Screenshotting = true;
+            screenshotScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                ZoneManager.Instance.CurrentMap.GroundWidth, ZoneManager.Instance.CurrentMap.GroundHeight,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+        }
+
+        public void BeginScreenshot()
+        {
+            ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.GroundSize);
+            viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.Size);
+        }
+
+        public void ProcessScreenshot()
+        {
+            if (Screenshotting)
+            {
+                GraphicsManager.SaveScreenshot(screenshotScreen);
+                Screenshotting = false;
+            }
+        }
+
         public override void Begin()
         {
             PendingDevEvent = null;
@@ -258,7 +284,13 @@ namespace RogueEssence.Dungeon
 
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
-            GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
+            if (Screenshotting)
+            {
+                GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
+                BeginScreenshot();
+            }
+            else
+                GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
 
             GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
 
@@ -385,6 +417,8 @@ namespace RogueEssence.Dungeon
             DrawOverlay(spriteBatch);
 
             spriteBatch.End();
+
+            ProcessScreenshot();
 
             PostDraw(spriteBatch);
 

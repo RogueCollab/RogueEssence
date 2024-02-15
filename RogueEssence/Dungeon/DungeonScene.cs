@@ -204,6 +204,7 @@ namespace RogueEssence.Dungeon
                 //For Test
                 DebugEmote = (DebugEmote + 1) % GraphicsManager.Emotions.Count;
                 LogMsg(String.Format("Emotion: {0}", GraphicsManager.Emotions[DebugEmote].Name));
+                Screenshot();
                 //BaseMonsterForm form = DataManager.Instance.GetMonster(ActiveTeam.Leader.BaseForm.Species).Forms[ActiveTeam.Leader.BaseForm.Form];
                 //ActiveTeam.Leader.MaxHPBonus = form.GetMaxStatBonus(Stat.HP);
                 //ActiveTeam.Leader.AtkBonus = form.GetMaxStatBonus(Stat.Attack);
@@ -1083,9 +1084,9 @@ namespace RogueEssence.Dungeon
                 if (ShowMap != MinimapState.Detail)
                     DrawGame(spriteBatch);
 
+                //draw minimap
                 if ((ShowMap != MinimapState.None) && !Turn && CurrentPreviewMove == -1 && !ShowActions && !DataManager.Instance.Save.CutsceneMode && !ZoneManager.Instance.CurrentMap.HideMinimap && MenuManager.Instance.MenuCount == 0)
                 {
-                    //draw minimap
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
                     float mapVis = 1f;
