@@ -125,11 +125,6 @@ namespace RogueEssence.Ground
                 FreeCamCenter += dirLoc * speed;
             }
 
-            if (input.JustPressed(FrameInput.InputType.Test))
-            {
-                Screenshot();
-            }
-
             if (input.JustReleased(FrameInput.InputType.RightMouse) && input[FrameInput.InputType.Ctrl])
             {
                 Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);

@@ -80,8 +80,12 @@ namespace RogueEssence.Dungeon
 
         public void BeginScreenshot()
         {
-            ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.GroundSize);
-            viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.Size);
+            if (Screenshotting)
+            {
+                GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
+                ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.GroundSize);
+                viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.Size);
+            }
         }
 
         public void ProcessScreenshot()
@@ -89,6 +93,8 @@ namespace RogueEssence.Dungeon
             if (Screenshotting)
             {
                 GraphicsManager.SaveScreenshot(screenshotScreen);
+                screenshotScreen.Dispose();
+                screenshotScreen = null;
                 Screenshotting = false;
             }
         }
@@ -103,6 +109,13 @@ namespace RogueEssence.Dungeon
             base.UpdateMeta();
 
             InputManager input = GameManager.Instance.MetaInputManager;
+
+            if (input.JustPressed(FrameInput.InputType.Screenshot))
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                Screenshot();
+            }
+
             MouseLoc = input.MouseLoc;
         }
 
@@ -284,15 +297,10 @@ namespace RogueEssence.Dungeon
 
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
-            if (Screenshotting)
-            {
-                GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
-                BeginScreenshot();
-            }
-            else
-                GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
-
+            GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
             GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
+
+            BeginScreenshot();
 
             Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);

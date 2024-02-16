@@ -67,8 +67,12 @@ namespace RogueEssence.Ground
 
         public void BeginScreenshot()
         {
-            ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.GroundSize);
-            viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.Size);
+            if (Screenshotting)
+            {
+                GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
+                ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.GroundSize);
+                viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.Size);
+            }
         }
 
         public void ProcessScreenshot()
@@ -76,6 +80,8 @@ namespace RogueEssence.Ground
             if (Screenshotting)
             {
                 GraphicsManager.SaveScreenshot(screenshotScreen);
+                screenshotScreen.Dispose();
+                screenshotScreen = null;
                 Screenshotting = false;
             }
         }
@@ -90,6 +96,13 @@ namespace RogueEssence.Ground
         {
             base.UpdateMeta();
             InputManager input = GameManager.Instance.MetaInputManager;
+
+            if (input.JustPressed(FrameInput.InputType.Screenshot))
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                Screenshot();
+            }
+
             MouseLoc = input.MouseLoc;
         }
 
@@ -140,15 +153,10 @@ namespace RogueEssence.Ground
         {
             if (ZoneManager.Instance.CurrentGround != null)
             {
-                if (Screenshotting)
-                {
-                    GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
-                    BeginScreenshot();
-                }
-                else
-                    GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
-
+                GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
                 GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
+
+                BeginScreenshot();
 
                 Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
