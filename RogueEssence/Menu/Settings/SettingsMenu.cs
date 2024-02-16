@@ -111,7 +111,7 @@ namespace RogueEssence.Menu
             bool changeLanguage = false;
             if (!inGame)
             {
-                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[8].CurrentChoice];
+                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[9].CurrentChoice];
                 DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[9].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
