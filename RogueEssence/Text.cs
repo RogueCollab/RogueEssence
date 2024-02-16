@@ -50,13 +50,14 @@ namespace RogueEssence
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" + //en
-                                                @"|(?<el_la>\[el/la\]\W+?(?<el_lasex>\[male\]|\[female\]|\[neutral\])?\w)" + //es
+                                                @"|(?<el_la>\[el/la\]\W+?(?<el_lasex>\[male\]|\[female\])?\w)" + //es
+                                                @"|(?<los_las>\[los/las\]\W+?(?<los_lassex>\[male\]|\[female\])?\w)" + //es
                                                 @"|(?<der_die_das>\[der/die/das\]\W+?(?<der_die_dassex>\[male\]|\[female\]|\[neutral\])?\w)" + //de
                                                 @"|(?<ein_eine_einen>\[ein/eine/einen\]\W+?(?<ein_eine_einensex>\[male\]|\[female\]|\[neutral\])?\w)" + //de
                                                 @"|(?<ein_eine_ein>\[ein/eine/ein\]\W+?(?<ein_eine_einsex>\[male\]|\[female\]|\[neutral\])?\w)" + //de
-                                                @"|(?<il_la>\[il/la\]\W+?(?<il_lasex>\[male\]|\[female\]|\[neutral\])?(?<il_laval>\w\w?))" + //it
-                                                @"|(?<i_le>\[i/le\]\W+?(?<i_lesex>\[male\]|\[female\]|\[neutral\])?(?<i_leval>\w\w?))" + //it
-                                                @"|(?<uno_una>\[uno/una\]\W+?(?<uno_unasex>\[male\]|\[female\]|\[neutral\])?(?<uno_unaval>\w))" + //it
+                                                @"|(?<il_la>\[il/la\]\W+?(?<il_lasex>\[male\]|\[female\])?(?<il_laval>\w\w?))" + //it
+                                                @"|(?<i_le>\[i/le\]\W+?(?<i_lesex>\[male\]|\[female\])?(?<i_leval>\w\w?))" + //it
+                                                @"|(?<uno_una>\[uno/una\]\W+?(?<uno_unasex>\[male\]|\[female\])?(?<uno_unaval>\w))" + //it
                                                 @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" + //ko
                                                 @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" + //ko
                                                 @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" + //ko
@@ -263,6 +264,19 @@ namespace RogueEssence
 
                                 if (match.Groups["el_lasex"].Success)
                                     replacements.Add((match.Groups["el_lasex"].Index, match.Groups["el_lasex"].Value.Length, ""));
+                            }
+                            break;
+                        case "los_las":
+                            {
+                                Gender gendercheck = extractGenderTag(match.Groups["los_lassex"].Value, Gender.Male);
+
+                                if (gendercheck == Gender.Male)
+                                    replacements.Add(chooseIndefinite(match, "[los/las]", "los"));
+                                else
+                                    replacements.Add(chooseIndefinite(match, "[los/las]", "las"));
+
+                                if (match.Groups["los_lassex"].Success)
+                                    replacements.Add((match.Groups["los_lassex"].Index, match.Groups["los_lassex"].Value.Length, ""));
                             }
                             break;
                         case "der_die_das":
