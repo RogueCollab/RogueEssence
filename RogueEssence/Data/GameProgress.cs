@@ -515,27 +515,38 @@ namespace RogueEssence.Data
         {
             MidAdventure = true;
 
+            AITactic defaultTactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
+
             //clear defeat destinations, set absentee status, reload tactics
             for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
             {
                 ActiveTeam.Players[ii].Absentee = false;
                 ActiveTeam.Players[ii].DefeatAt = "";
                 ActiveTeam.Players[ii].DefeatLoc = ZoneLoc.Invalid;
-                ActiveTeam.Players[ii].Tactic = new AITactic(ActiveTeam.Players[ii].Tactic);
+                if (ActiveTeam.Players[ii].Tactic != null)
+                    ActiveTeam.Players[ii].Tactic = new AITactic(ActiveTeam.Players[ii].Tactic);
+                else
+                    ActiveTeam.Players[ii].Tactic = new AITactic(defaultTactic);
             }
             for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
             {
                 ActiveTeam.Guests[ii].Absentee = false;
                 ActiveTeam.Guests[ii].DefeatAt = "";
                 ActiveTeam.Guests[ii].DefeatLoc = ZoneLoc.Invalid;
-                ActiveTeam.Guests[ii].Tactic = new AITactic(ActiveTeam.Guests[ii].Tactic);
+                if (ActiveTeam.Guests[ii].Tactic != null)
+                    ActiveTeam.Guests[ii].Tactic = new AITactic(ActiveTeam.Guests[ii].Tactic);
+                else
+                    ActiveTeam.Guests[ii].Tactic = new AITactic(defaultTactic);
             }
             for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
             {
                 ActiveTeam.Assembly[ii].Absentee = true;
                 ActiveTeam.Assembly[ii].DefeatAt = "";
                 ActiveTeam.Assembly[ii].DefeatLoc = ZoneLoc.Invalid;
-                ActiveTeam.Assembly[ii].Tactic = new AITactic(ActiveTeam.Assembly[ii].Tactic);
+                if (ActiveTeam.Assembly[ii].Tactic != null)
+                    ActiveTeam.Assembly[ii].Tactic = new AITactic(ActiveTeam.Assembly[ii].Tactic);
+                else
+                    ActiveTeam.Assembly[ii].Tactic = new AITactic(defaultTactic);
             }
         }
 

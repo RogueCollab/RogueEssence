@@ -184,7 +184,10 @@ namespace RogueEssence.Menu
                     {
                         int chosenIndex = baseMenu.CurrentPage * baseMenu.SpacesPerPage + baseMenu.CurrentChoice;
 
-                        DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = new Character(tradeTeam.OfferedChar);
+                        Character chara = new Character(tradeTeam.OfferedChar);
+                        AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
+                        chara.Tactic = new AITactic(tactic);
+                        DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = chara;
                         DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
                         DataManager.Instance.Save.RogueUnlockMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
 
