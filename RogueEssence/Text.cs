@@ -221,283 +221,292 @@ namespace RogueEssence
 
         public static string FormatGrammar(string input, params object[] args)
         {
-            string output = String.Format(input, args);
-
-            List<(int idx, string replace)> reInserts = new List<(int, string)>();
-            int lag = 0;
-            MatchCollection tagMatches = SubMsgTags.Matches(output);
-            foreach (Match match in tagMatches)
+            try
             {
-                reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
-                output = output.Remove(match.Index - lag, match.Length);
-                lag += match.Length;
-            }
+                string output = String.Format(input, args);
 
-            List<(int idx, int length, string replace)> replacements = new List<(int, int, string)>();
-            MatchCollection matches = GrammarTags.Matches(output);
-            foreach (Match match in matches)
-            {
-                foreach (string key in match.Groups.Keys)
+                List<(int idx, string replace)> reInserts = new List<(int, string)>();
+                int lag = 0;
+                MatchCollection tagMatches = SubMsgTags.Matches(output);
+                foreach (Match match in tagMatches)
                 {
-                    if (!match.Groups[key].Success)
-                        continue;
-                    switch (key)
+                    reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
+                    output = output.Remove(match.Index - lag, match.Length);
+                    lag += match.Length;
+                }
+
+                List<(int idx, int length, string replace)> replacements = new List<(int, int, string)>();
+                MatchCollection matches = GrammarTags.Matches(output);
+                foreach (Match match in matches)
+                {
+                    foreach (string key in match.Groups.Keys)
                     {
-                        case "a_an":
-                            {
-                                string vowelcheck = match.Groups["a_anval"].Value;
-
-                                if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
-                                    replacements.Add(chooseIndefinite(match, "[a/an]", "an"));
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[a/an]", "a"));
-                            }
-                            break;
-                        case "el_la":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["el_lasex"].Value, Gender.Male);
-
-                                if (gendercheck == Gender.Male)
-                                    replacements.Add(chooseIndefinite(match, "[el/la]", "el"));
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[el/la]", "la"));
-
-                                if (match.Groups["el_lasex"].Success)
-                                    replacements.Add((match.Groups["el_lasex"].Index, match.Groups["el_lasex"].Value.Length, ""));
-                            }
-                            break;
-                        case "los_las":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["los_lassex"].Value, Gender.Male);
-
-                                if (gendercheck == Gender.Male)
-                                    replacements.Add(chooseIndefinite(match, "[los/las]", "los"));
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[los/las]", "las"));
-
-                                if (match.Groups["los_lassex"].Success)
-                                    replacements.Add((match.Groups["los_lassex"].Index, match.Groups["los_lassex"].Value.Length, ""));
-                            }
-                            break;
-                        case "der_die_das":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["der_die_dassex"].Value, Gender.Male);
-
-                                if (gendercheck == Gender.Male)
-                                    replacements.Add(chooseIndefinite(match, "[der/die/das]", "der"));
-                                else if (gendercheck == Gender.Female)
-                                    replacements.Add(chooseIndefinite(match, "[der/die/das]", "die"));
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[der/die/das]", "das"));
-
-                                if (match.Groups["der_die_dassex"].Success)
-                                    replacements.Add((match.Groups["der_die_dassex"].Index, match.Groups["der_die_dassex"].Value.Length, ""));
-                            }
-                            break;
-                        case "ein_eine_einen":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einensex"].Value, Gender.Male);
-
-                                if (gendercheck == Gender.Male)
-                                    replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "ein"));
-                                else if (gendercheck == Gender.Female)
-                                    replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "eine"));
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "einen"));
-
-                                if (match.Groups["ein_eine_einensex"].Success)
-                                    replacements.Add((match.Groups["ein_eine_einensex"].Index, match.Groups["ein_eine_einensex"].Value.Length, ""));
-                            }
-                            break;
-                        case "ein_eine_ein":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einsex"].Value, Gender.Male);
-
-                                if (gendercheck == Gender.Female)
-                                    replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "eine"));
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "ein"));
-
-                                if (match.Groups["ein_eine_einsex"].Success)
-                                    replacements.Add((match.Groups["ein_eine_einsex"].Index, match.Groups["ein_eine_einsex"].Value.Length, ""));
-                            }
-                            break;
-                        case "il_la":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["il_lasex"].Value, Gender.Male);
-                                string vowelcheck = match.Groups["il_laval"].Value;
-                                string postMatch = "";
-
-                                if (Regex.IsMatch(vowelcheck, "^([aeou]|i[bcdfghjklmnpqrstvwxyz])", RegexOptions.IgnoreCase))
+                        if (!match.Groups[key].Success)
+                            continue;
+                        switch (key)
+                        {
+                            case "a_an":
                                 {
-                                    int total_length = "[il/la]".Length;
-                                    while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
-                                        total_length++;
-                                    replacements.Add((match.Index, total_length, ""));
-                                    postMatch = "l'";
+                                    string vowelcheck = match.Groups["a_anval"].Value;
+
+                                    if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                        replacements.Add(chooseIndefinite(match, "[a/an]", "an"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[a/an]", "a"));
                                 }
-                                else
+                                break;
+                            case "el_la":
                                 {
+                                    Gender gendercheck = extractGenderTag(match.Groups["el_lasex"].Value, Gender.Male);
+
                                     if (gendercheck == Gender.Male)
-                                    {
-                                        if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|i[aeiou])", RegexOptions.IgnoreCase))
-                                            replacements.Add(chooseIndefinite(match, "[il/la]", "lo"));
-                                        else
-                                            replacements.Add(chooseIndefinite(match, "[il/la]", "il"));
-                                    }
+                                        replacements.Add(chooseIndefinite(match, "[el/la]", "el"));
                                     else
-                                    {
-                                        replacements.Add(chooseIndefinite(match, "[il/la]", "la"));
-                                    }
+                                        replacements.Add(chooseIndefinite(match, "[el/la]", "la"));
+
+                                    if (match.Groups["el_lasex"].Success)
+                                        replacements.Add((match.Groups["el_lasex"].Index, match.Groups["el_lasex"].Value.Length, ""));
                                 }
-
-                                if (match.Groups["il_lasex"].Success)
-                                    replacements.Add((match.Groups["il_lasex"].Index, match.Groups["il_lasex"].Value.Length, ""));
-
-                                if (!String.IsNullOrEmpty(postMatch))
-                                    replacements.Add((match.Groups["il_laval"].Index, 0, capitalizeIndefinite(match, postMatch)));
-                            }
-                            break;
-                        case "i_le":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["i_lesex"].Value, Gender.Male);
-                                string vowelcheck = match.Groups["i_leval"].Value;
-
-                                if (gendercheck == Gender.Male)
+                                break;
+                            case "los_las":
                                 {
-                                    if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|[aeiou])", RegexOptions.IgnoreCase))
-                                        replacements.Add(chooseIndefinite(match, "[i/le]", "gli"));
+                                    Gender gendercheck = extractGenderTag(match.Groups["los_lassex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[los/las]", "los"));
                                     else
-                                        replacements.Add(chooseIndefinite(match, "[i/le]", "i"));
+                                        replacements.Add(chooseIndefinite(match, "[los/las]", "las"));
+
+                                    if (match.Groups["los_lassex"].Success)
+                                        replacements.Add((match.Groups["los_lassex"].Index, match.Groups["los_lassex"].Value.Length, ""));
                                 }
-                                else
-                                    replacements.Add(chooseIndefinite(match, "[i/le]", "le"));
-
-                                if (match.Groups["i_lesex"].Success)
-                                    replacements.Add((match.Groups["i_lesex"].Index, match.Groups["i_lesex"].Value.Length, ""));
-                            }
-                            break;
-                        case "uno_una":
-                            {
-                                Gender gendercheck = extractGenderTag(match.Groups["uno_unasex"].Value, Gender.Male);
-                                string vowelcheck = match.Groups["uno_unaval"].Value;
-                                string postMatch = "";
-
-                                if (gendercheck == Gender.Male)
+                                break;
+                            case "der_die_das":
                                 {
-                                    if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
-                                        replacements.Add(chooseIndefinite(match, "[uno/una]", "un"));
+                                    Gender gendercheck = extractGenderTag(match.Groups["der_die_dassex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[der/die/das]", "der"));
+                                    else if (gendercheck == Gender.Female)
+                                        replacements.Add(chooseIndefinite(match, "[der/die/das]", "die"));
                                     else
-                                        replacements.Add(chooseIndefinite(match, "[uno/una]", "uno"));
+                                        replacements.Add(chooseIndefinite(match, "[der/die/das]", "das"));
+
+                                    if (match.Groups["der_die_dassex"].Success)
+                                        replacements.Add((match.Groups["der_die_dassex"].Index, match.Groups["der_die_dassex"].Value.Length, ""));
                                 }
-                                else
+                                break;
+                            case "ein_eine_einen":
                                 {
-                                    if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                    Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einensex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "ein"));
+                                    else if (gendercheck == Gender.Female)
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "eine"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "einen"));
+
+                                    if (match.Groups["ein_eine_einensex"].Success)
+                                        replacements.Add((match.Groups["ein_eine_einensex"].Index, match.Groups["ein_eine_einensex"].Value.Length, ""));
+                                }
+                                break;
+                            case "ein_eine_ein":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einsex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Female)
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "eine"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "ein"));
+
+                                    if (match.Groups["ein_eine_einsex"].Success)
+                                        replacements.Add((match.Groups["ein_eine_einsex"].Index, match.Groups["ein_eine_einsex"].Value.Length, ""));
+                                }
+                                break;
+                            case "il_la":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["il_lasex"].Value, Gender.Male);
+                                    string vowelcheck = match.Groups["il_laval"].Value;
+                                    string postMatch = "";
+
+                                    if (Regex.IsMatch(vowelcheck, "^([aeou]|i[bcdfghjklmnpqrstvwxyz])", RegexOptions.IgnoreCase))
                                     {
-                                        int total_length = "[uno/una]".Length;
+                                        int total_length = "[il/la]".Length;
                                         while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
                                             total_length++;
                                         replacements.Add((match.Index, total_length, ""));
-                                        postMatch = "un'";
+                                        postMatch = "l'";
                                     }
                                     else
-                                        replacements.Add(chooseIndefinite(match, "[uno/una]", "una"));
+                                    {
+                                        if (gendercheck == Gender.Male)
+                                        {
+                                            if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|i[aeiou])", RegexOptions.IgnoreCase))
+                                                replacements.Add(chooseIndefinite(match, "[il/la]", "lo"));
+                                            else
+                                                replacements.Add(chooseIndefinite(match, "[il/la]", "il"));
+                                        }
+                                        else
+                                        {
+                                            replacements.Add(chooseIndefinite(match, "[il/la]", "la"));
+                                        }
+                                    }
+
+                                    if (match.Groups["il_lasex"].Success)
+                                        replacements.Add((match.Groups["il_lasex"].Index, match.Groups["il_lasex"].Value.Length, ""));
+
+                                    if (!String.IsNullOrEmpty(postMatch))
+                                        replacements.Add((match.Groups["il_laval"].Index, 0, capitalizeIndefinite(match, postMatch)));
                                 }
+                                break;
+                            case "i_le":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["i_lesex"].Value, Gender.Male);
+                                    string vowelcheck = match.Groups["i_leval"].Value;
 
-                                if (match.Groups["uno_unasex"].Success)
-                                    replacements.Add((match.Groups["uno_unasex"].Index, match.Groups["uno_unasex"].Value.Length, ""));
+                                    if (gendercheck == Gender.Male)
+                                    {
+                                        if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|[aeiou])", RegexOptions.IgnoreCase))
+                                            replacements.Add(chooseIndefinite(match, "[i/le]", "gli"));
+                                        else
+                                            replacements.Add(chooseIndefinite(match, "[i/le]", "i"));
+                                    }
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[i/le]", "le"));
 
-                                if (!String.IsNullOrEmpty(postMatch))
-                                    replacements.Add((match.Groups["uno_unaval"].Index, 0, capitalizeIndefinite(match, postMatch)));
-                            }
-                            break;
-                        case "eun_neun":
-                            {
-                                string vowelcheck = match.Groups["eun_neunval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "는"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "은"));
-                            }
-                            break;
-                        case "eul_leul":
-                            {
-                                string vowelcheck = match.Groups["eul_leulval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "를"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "을"));
-                            }
-                            break;
-                        case "i_ga":
-                            {
-                                string vowelcheck = match.Groups["i_gaval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "가"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
-                            }
-                            break;
-                        case "wa_gwa":
-                            {
-                                string vowelcheck = match.Groups["wa_gwaval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "과"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "와"));
-                            }
-                            break;
-                        case "eu_lo":
-                            {
-                                string vowelcheck = match.Groups["eu_loval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "로"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "으"));
-                            }
-                            break;
-                        case "i_lamyeon":
-                            {
-                                string vowelcheck = match.Groups["i_lamyeonval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
-                            }
-                            break;
+                                    if (match.Groups["i_lesex"].Success)
+                                        replacements.Add((match.Groups["i_lesex"].Index, match.Groups["i_lesex"].Value.Length, ""));
+                                }
+                                break;
+                            case "uno_una":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["uno_unasex"].Value, Gender.Male);
+                                    string vowelcheck = match.Groups["uno_unaval"].Value;
+                                    string postMatch = "";
+
+                                    if (gendercheck == Gender.Male)
+                                    {
+                                        if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                            replacements.Add(chooseIndefinite(match, "[uno/una]", "un"));
+                                        else
+                                            replacements.Add(chooseIndefinite(match, "[uno/una]", "uno"));
+                                    }
+                                    else
+                                    {
+                                        if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                        {
+                                            int total_length = "[uno/una]".Length;
+                                            while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
+                                                total_length++;
+                                            replacements.Add((match.Index, total_length, ""));
+                                            postMatch = "un'";
+                                        }
+                                        else
+                                            replacements.Add(chooseIndefinite(match, "[uno/una]", "una"));
+                                    }
+
+                                    if (match.Groups["uno_unasex"].Success)
+                                        replacements.Add((match.Groups["uno_unasex"].Index, match.Groups["uno_unasex"].Value.Length, ""));
+
+                                    if (!String.IsNullOrEmpty(postMatch))
+                                        replacements.Add((match.Groups["uno_unaval"].Index, 0, capitalizeIndefinite(match, postMatch)));
+                                }
+                                break;
+                            case "eun_neun":
+                                {
+                                    string vowelcheck = match.Groups["eun_neunval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "는"));
+                                    else
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "은"));
+                                }
+                                break;
+                            case "eul_leul":
+                                {
+                                    string vowelcheck = match.Groups["eul_leulval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "를"));
+                                    else
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "을"));
+                                }
+                                break;
+                            case "i_ga":
+                                {
+                                    string vowelcheck = match.Groups["i_gaval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "가"));
+                                    else
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
+                                }
+                                break;
+                            case "wa_gwa":
+                                {
+                                    string vowelcheck = match.Groups["wa_gwaval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "과"));
+                                    else
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "와"));
+                                }
+                                break;
+                            case "eu_lo":
+                                {
+                                    string vowelcheck = match.Groups["eu_loval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "로"));
+                                    else
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "으"));
+                                }
+                                break;
+                            case "i_lamyeon":
+                                {
+                                    string vowelcheck = match.Groups["i_lamyeonval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
+                                    else
+                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
+                                }
+                                break;
+                        }
                     }
                 }
-            }
 
-            int reIdx = reInserts.Count - 1;
-            for (int ii = replacements.Count - 1; ii >= 0; ii--)
-            {
+                int reIdx = reInserts.Count - 1;
+                for (int ii = replacements.Count - 1; ii >= 0; ii--)
+                {
+                    while (reIdx > -1)
+                    {
+                        if (reInserts[reIdx].Item1 < replacements[ii].idx + replacements[ii].length)
+                            break;
+
+                        output = output.Insert(reInserts[reIdx].idx, reInserts[reIdx].replace);
+                        reIdx--;
+                    }
+
+                    output = output.Remove(replacements[ii].idx, replacements[ii].length);
+                    output = output.Insert(replacements[ii].idx, replacements[ii].replace);
+                }
+
                 while (reIdx > -1)
                 {
-                    if (reInserts[reIdx].Item1 < replacements[ii].idx + replacements[ii].length)
-                        break;
-
-                    output = output.Insert(reInserts[reIdx].idx, reInserts[reIdx].replace);
+                    output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].replace);
                     reIdx--;
                 }
 
-                output = output.Remove(replacements[ii].idx, replacements[ii].length);
-                output = output.Insert(replacements[ii].idx, replacements[ii].replace);
-            }
+                return output;
 
-            while (reIdx > -1)
+            }
+            catch (Exception ex)
             {
-                output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].replace);
-                reIdx--;
+                DiagManager.Instance.LogError(ex);
             }
-
-            return output;
+            return input;
         }
 
         private static (int, int, string) chooseIndefinite(Match match, string tag, string val)
