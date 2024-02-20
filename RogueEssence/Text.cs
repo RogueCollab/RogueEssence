@@ -301,11 +301,11 @@ namespace RogueEssence
                                     Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einensex"].Value, Gender.Male);
 
                                     if (gendercheck == Gender.Male)
-                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "ein"));
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "einen"));
                                     else if (gendercheck == Gender.Female)
                                         replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "eine"));
                                     else
-                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "einen"));
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "ein"));
 
                                     if (match.Groups["ein_eine_einensex"].Success)
                                         replacements.Add((match.Groups["ein_eine_einensex"].Index, match.Groups["ein_eine_einensex"].Value.Length, ""));
