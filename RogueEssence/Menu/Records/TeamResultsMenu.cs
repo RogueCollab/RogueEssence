@@ -108,7 +108,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new InvResultsMenu(Ending));
+                MenuManager.Instance.ReplaceMenu(new InvResultsMenu(Ending, (Ending.ActiveTeam.MaxInv - 1) / (InvResultsMenu.MAX_LINES * 2)));
             }
             else if (IsInputting(input, Dir8.Right))
             {
