@@ -149,16 +149,23 @@ namespace RogueEssence.Dungeon
             yield return new WaitUntil(AnimationsOver);
 
             context.PrintActionMsg();
-
-            yield break;
         }
 
         public IEnumerator<YieldInstruction> PreExecuteItem(BattleContext context)
         {
+            yield return CoroutineManager.Instance.StartCoroutine(ExpendItem(context.User, context.UsageSlot, context.ActionType));
+
+            yield return new WaitUntil(AnimationsOver);
+
+            context.PrintActionMsg();
+        }
+
+        public IEnumerator<YieldInstruction> ExpendItem(Character ownerChar, int itemSlot, BattleActionType actionType)
+        {
             //remove the item from the inventory/ground/hold
-            if (context.UsageSlot > BattleContext.EQUIP_ITEM_SLOT)
+            if (itemSlot > BattleContext.EQUIP_ITEM_SLOT)
             {
-                InvItem item = ((ExplorerTeam)context.User.MemberTeam).GetInv(context.UsageSlot);
+                InvItem item = ownerChar.MemberTeam.GetInv(itemSlot);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
                 {
@@ -166,16 +173,16 @@ namespace RogueEssence.Dungeon
                     item.Price -= item.Price / item.Amount;
                     item.Amount--;
                 }
-                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
+                else if (entry.MaxStack < 0 && actionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
                 else
-                    ((ExplorerTeam)context.User.MemberTeam).RemoveFromInv(context.UsageSlot);
+                    ownerChar.MemberTeam.RemoveFromInv(itemSlot);
             }
-            else if (context.UsageSlot == BattleContext.EQUIP_ITEM_SLOT)
+            else if (itemSlot == BattleContext.EQUIP_ITEM_SLOT)
             {
-                InvItem item = context.User.EquippedItem;
+                InvItem item = ownerChar.EquippedItem;
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
                 {
@@ -183,16 +190,16 @@ namespace RogueEssence.Dungeon
                     item.Price -= item.Price / item.Amount;
                     item.Amount--;
                 }
-                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
+                else if (entry.MaxStack < 0 && actionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
                 else
-                    yield return CoroutineManager.Instance.StartCoroutine(context.User.DequipItem());
+                    yield return CoroutineManager.Instance.StartCoroutine(ownerChar.DequipItem());
             }
-            else if (context.UsageSlot == BattleContext.FLOOR_ITEM_SLOT)
+            else if (itemSlot == BattleContext.FLOOR_ITEM_SLOT)
             {
-                int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(context.User.CharLoc);
+                int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(ownerChar.CharLoc);
                 MapItem item = ZoneManager.Instance.CurrentMap.Items[mapSlot];
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
                 if (entry.MaxStack > 1 && item.Amount > 1)
@@ -201,19 +208,13 @@ namespace RogueEssence.Dungeon
                     item.Price -= item.Price / item.Amount;
                     item.Amount--;
                 }
-                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
+                else if (entry.MaxStack < 0 && actionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
                 else
                     ZoneManager.Instance.CurrentMap.Items.RemoveAt(mapSlot);
             }
-
-            yield return new WaitUntil(AnimationsOver);
-
-            context.PrintActionMsg();
-
-            yield break;
         }
 
 
