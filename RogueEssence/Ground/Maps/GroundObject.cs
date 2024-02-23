@@ -61,6 +61,7 @@ namespace RogueEssence.Ground
             DrawOffset = drawOffset;
             Direction = dir;
             SetTriggerType(triggerty);
+            Passable = passable;
             EntName = entname;
         }
 
