@@ -36,11 +36,11 @@ namespace RogueEssence.Data
         [NonSerialized]
         protected BasePlan currentPlan;
         
-        public GameAction GetNextMove(Character controlledChar, bool preThink, IRandom rand)
+        public GameAction GetNextMove(Character controlledChar, bool preThink, List<Character> waitingChars, IRandom rand)
         {
             foreach (BasePlan plan in Plans)
             {
-                GameAction result = AttemptPlan(controlledChar, plan, preThink, rand);
+                GameAction result = AttemptPlan(controlledChar, plan, preThink, waitingChars, rand);
                 if (result != null)
                     return result;
             }
@@ -49,14 +49,14 @@ namespace RogueEssence.Data
             return new GameAction(GameAction.ActionType.Wait, Dir8.None);
         }
 
-        protected GameAction AttemptPlan(Character controlledChar, BasePlan plan, bool preThink, IRandom rand)
+        protected GameAction AttemptPlan(Character controlledChar, BasePlan plan, bool preThink, List<Character> waitingChars, IRandom rand)
         {
             if ((currentPlan != null) && (currentPlan.GetType() == plan.GetType()))
-                return currentPlan.Think(controlledChar, preThink, rand);
+                return currentPlan.Think(controlledChar, preThink, rand, waitingChars);
             else
             {
                 plan.SwitchedIn(currentPlan);
-                GameAction result = plan.Think(controlledChar, preThink, rand);
+                GameAction result = plan.Think(controlledChar, preThink, rand, waitingChars);
                 if (result != null)
                     currentPlan = plan;
                 return result;
@@ -87,11 +87,19 @@ namespace RogueEssence.Data
                 plan.Initialize(controlledChar);
         }
 
-        public GameAction GetAction(Character controlledChar, IRandom rand, bool preThink)
+        /// <summary>
+        /// Gets the next move of an AI controlled character
+        /// </summary>
+        /// <param name="controlledChar">The character this AI is controlling</param>
+        /// <param name="rand">Random object</param>
+        /// <param name="preThink">Determines whether this is a preliminary decision or a final decision. All AI first make a preliminary decision to determine if there are conflicts (such as wanting to move to a square already occupied). Those conflicts are resolved my re-ordering the characters' actions, and then asking them each to decide on a move again (preThink = false).  Pre-think often ignores ally NPCs in the way as choosing to move into them signals a desire for them to move.</param>
+        /// <param name="waitingChars">During pre-think, represents the entire chain of allies that are waiting for this character to move.</param>
+        /// <returns></returns>
+        public GameAction GetAction(Character controlledChar, IRandom rand, bool preThink, List<Character> waitingChars)
         {
             try
             {
-                return GetNextMove(controlledChar, preThink, rand);
+                return GetNextMove(controlledChar, preThink, waitingChars, rand);
             }
             catch (Exception ex)
             {
