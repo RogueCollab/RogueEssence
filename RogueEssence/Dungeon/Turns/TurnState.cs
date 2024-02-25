@@ -38,10 +38,11 @@ namespace RogueEssence.Dungeon
             if (reset)
             {
                 character.TiersUsed = 0;
-                character.TurnUsed = false;
+                character.FactionTierUsed = false;
+                character.ActionTaken = false;
             }
             else
-                character.TurnUsed = true;
+                character.ActionTaken = true;
         }
 
         public CharIndex GetCurrentTurnChar()
@@ -109,7 +110,10 @@ namespace RogueEssence.Dungeon
             if (character.Dead)
                 return false;
 
-            if (character.TurnUsed)
+            if (character.ActionTaken)
+                return false;
+
+            if (character.FactionTierUsed)
                 return false;
 
             //switch statement on the turn tier
@@ -156,6 +160,7 @@ namespace RogueEssence.Dungeon
             ITurnChar character = playerList[charIndex];
             if (!character.Dead)
             {
+                character.FactionTierUsed = false;
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
                     character.TurnWait--;
             }

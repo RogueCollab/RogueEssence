@@ -141,7 +141,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> ProcessAI()
         {
-            GameAction action = CurrentCharacter.Tactic.GetAction(CurrentCharacter, DataManager.Instance.Save.Rand, false);
+            GameAction action = CurrentCharacter.Tactic.GetAction(CurrentCharacter, DataManager.Instance.Save.Rand, false, new List<Character>());
             ActionResult result = new ActionResult();
             yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(action, CurrentCharacter, result));
             while (result.Success != ActionResult.ResultType.TurnTaken)
@@ -569,7 +569,8 @@ namespace RogueEssence.Dungeon
         {
             newChar.TurnWait = 0;
             newChar.TiersUsed = 0;
-            newChar.TurnUsed = false;
+            newChar.FactionTierUsed = false;
+            newChar.ActionTaken = false;
         }
 
         public void RemoveChar(Character character)
@@ -867,7 +868,8 @@ namespace RogueEssence.Dungeon
         {
             CurrentCharacter.TurnWait = (walked ? -CurrentCharacter.MovementSpeed : 0) + 1;
             CurrentCharacter.TiersUsed++;
-            CurrentCharacter.TurnUsed = action;
+            CurrentCharacter.FactionTierUsed = true;
+            CurrentCharacter.ActionTaken = action;
 
             if (!IsGameOver())
             {
@@ -923,7 +925,7 @@ namespace RogueEssence.Dungeon
                 RemoveDeadTeams();
 
                 if (!IsPlayerTurn())
-                    OrganizeAIMovement(0);
+                    OrganizeAIMovement(new List<Character>());
 
                 yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
             }
@@ -989,10 +991,10 @@ namespace RogueEssence.Dungeon
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], true);
         }
 
-        private void OrganizeAIMovement(int depth)
+        private void OrganizeAIMovement(List<Character> waitingChars)
         {
             //here, we check to see if this AI wants to move, and if its ideal movement is blocked
-            GameAction intendedInput = CurrentCharacter.Tactic.GetAction(CurrentCharacter, DataManager.Instance.Save.Rand, true);
+            GameAction intendedInput = CurrentCharacter.Tactic.GetAction(CurrentCharacter, DataManager.Instance.Save.Rand, true, waitingChars);
 
             if (intendedInput.Type == GameAction.ActionType.Move)
             {
@@ -1013,14 +1015,16 @@ namespace RogueEssence.Dungeon
                     }
 
                     //pull them forward in the turn queue.  note: this changes the current character
-                    if (blockingTurn > ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex + depth)
+                    if (blockingTurn > ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex + waitingChars.Count)
                     {
+                        waitingChars.Add(CurrentCharacter);
                         CharIndex newTurnChar = ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar[blockingTurn];
                         ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.RemoveAt(blockingTurn);
                         ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Insert(ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex, newTurnChar);
 
                         //then, recursively check to see if they are blocked themselves
-                        OrganizeAIMovement(depth + 1);
+                        OrganizeAIMovement(waitingChars);
+                        waitingChars.RemoveAt(waitingChars.Count-1);
                     }
                 }
             }

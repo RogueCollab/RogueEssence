@@ -283,9 +283,14 @@ namespace RogueEssence.Dungeon
         public int TiersUsed { get; set; }
 
         /// <summary>
-        /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
+        /// Has completed their turn for this faction-tier.  Cannot move anymore for this faction tier.
         /// </summary>
-        public bool TurnUsed { get; set; }
+        public bool FactionTierUsed { get; set; }
+
+        /// <summary>
+        /// Whether the character has made an action during this map turn, and thus can no longer move for this map turn.  Only one action per map turn permitted.
+        /// </summary>
+        public bool ActionTaken { get; set; }
         [NonSerialized]
         public List<StatusRef> StatusesTargetingThis;
         public bool EXPMarked;
@@ -484,7 +489,6 @@ namespace RogueEssence.Dungeon
                 character.BaseIntrinsics[ii] = this.BaseIntrinsics[ii];
 
             Character new_mob = new Character(character);
-            team.Players.Add(new_mob);
 
             new_mob.IdleOverride = IdleOverride;
             CharAnimIdle idleAction = new CharAnimIdle(this.CharLoc, this.CharDir);
@@ -499,6 +503,8 @@ namespace RogueEssence.Dungeon
 
             foreach (string key in StatusEffects.Keys)
                 new_mob.StatusEffects.Add(key, StatusEffects[key].Clone());
+
+            team.Players.Add(new_mob);
 
             return new_mob;
         }
@@ -2494,7 +2500,11 @@ namespace RogueEssence.Dungeon
                     idleAction.Override = IdleOverride;
             }
 
-            charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
+            if (MemberTeam.ContainingMap != null)
+                charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
+            else
+                charAnim.SetLocWithoutVisual(charAnim.CharLoc);
+
             if (OccupiedwithAction())
             {
                 Loc preInterruptLoc = CharLoc;
