@@ -2494,7 +2494,11 @@ namespace RogueEssence.Dungeon
                     idleAction.Override = IdleOverride;
             }
 
-            charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
+            if (MemberTeam.ContainingMap != null)
+                charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
+            else
+                charAnim.SetLocWithoutVisual(charAnim.CharLoc);
+
             if (OccupiedwithAction())
             {
                 Loc preInterruptLoc = CharLoc;
