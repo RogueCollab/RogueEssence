@@ -155,25 +155,26 @@ namespace RogueEssence.Menu
             //generate list of selected items
             List<int> equip_selected = new List<int>();
             List<InvItem> selected = new List<InvItem>();
-            int pos = 0;
+            int eqs = 0;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
-                    int page = pos / SLOTS_PER_PAGE;
-                    int elem = pos % SLOTS_PER_PAGE;
+                    int page = eqs / SLOTS_PER_PAGE;
+                    int elem = eqs % SLOTS_PER_PAGE;
                     if (TotalChoices[page][elem].Selected)
-                        equip_selected.Add(ii);
-                    pos++;
+                        equip_selected.Add(eqs);
+                    eqs++;
                 }
             }
+            int pos = eqs;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 int page = pos / SLOTS_PER_PAGE;
                 int elem = pos % SLOTS_PER_PAGE;
                 if (TotalChoices[page][elem].Selected)
-                    selected.Add(new InvItem(DataManager.Instance.Save.ActiveTeam.GetInv(ii)));
+                    selected.Add(DataManager.Instance.Save.ActiveTeam.GetInv(ii));
                 pos++;
             }
 
@@ -191,8 +192,7 @@ namespace RogueEssence.Menu
                 ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
             }
             // reselect the rest of the inventory
-            pos = equip_selected.Count;
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+            for (int ii = DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
             {
                 InvItem item = new InvItem(DataManager.Instance.Save.ActiveTeam.GetInv(ii));
                 // look for equivalent item
@@ -211,12 +211,12 @@ namespace RogueEssence.Menu
                 // reselect the item
                 if (loc >= 0)
                 {
-                    int page = pos / SLOTS_PER_PAGE;
-                    int elem = pos % SLOTS_PER_PAGE;
+                    int index = ii + eqs;
+                    int page = index / SLOTS_PER_PAGE;
+                    int elem = index % SLOTS_PER_PAGE;
                     ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
                     selected.RemoveAt(loc);
                 }
-                pos++;
             }
 
             //replace the menu
