@@ -132,7 +132,8 @@ namespace RogueEssence.Menu
         public IEnumerator<YieldInstruction> SortCommand()
         {
             //generate list of selected items
-            List<InvItem> selected = new List<InvItem>();
+            List<int> equip_selected = new List<int>();
+            List<InvItem> selected   = new List<InvItem>();
             int pos = 0;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
@@ -142,7 +143,7 @@ namespace RogueEssence.Menu
                     int page = pos / SLOTS_PER_PAGE;
                     int elem = pos % SLOTS_PER_PAGE;
                     if (TotalChoices[page][elem].Selected)
-                        selected.Add(new InvItem(activeChar.EquippedItem));
+                        equip_selected.Add(ii);
                     pos++;
                 }
             }
@@ -160,37 +161,16 @@ namespace RogueEssence.Menu
             // create the new menu
             DepositMenu menu = new DepositMenu(CurrentChoiceTotal);
 
-            // reselect the items
-            pos = 0;
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            // reselet equip slots
+            for (int ii = 0; ii < equip_selected.Count; ii++)
             {
-                InvItem item = DataManager.Instance.Save.ActiveTeam.Players[ii].EquippedItem;
-                if (!String.IsNullOrEmpty(item.ID))
-                {
-                    // look for equivalent item
-                    int loc = -1;
-                    for (int j = 0; j < selected.Count; j++)
-                    {
-                        InvItem slot = selected[j];
-                        if (slot.ID    == item.ID    && slot.Amount == item.Amount &&
-                            slot.Price == item.Price && slot.Cursed == item.Cursed &&
-                            slot.HiddenValue == item.HiddenValue)
-                        {
-                            loc = j;
-                            break;
-                        }
-                    }
-                    // reselect the item
-                    if (loc >= 0)
-                    {
-                        int page = pos / SLOTS_PER_PAGE;
-                        int elem = pos % SLOTS_PER_PAGE;
-                        ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
-                        selected.RemoveAt(loc);
-                    }
-                    pos++;
-                }
+                int slot = equip_selected[ii];
+                int page = slot / SLOTS_PER_PAGE;
+                int elem = slot % SLOTS_PER_PAGE;
+                ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
             }
+            // reselect the rest of the inventory
+            pos = equip_selected.Count;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 InvItem item = new InvItem(DataManager.Instance.Save.ActiveTeam.GetInv(ii));
