@@ -131,8 +131,95 @@ namespace RogueEssence.Menu
         
         public IEnumerator<YieldInstruction> SortCommand()
         {
+            //generate list of selected items
+            List<InvItem> selected = new List<InvItem>();
+            int pos = 0;
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
+                {
+                    int page = pos / SLOTS_PER_PAGE;
+                    int elem = pos % SLOTS_PER_PAGE;
+                    if (TotalChoices[page][elem].Selected)
+                        selected.Add(new InvItem(activeChar.EquippedItem));
+                    pos++;
+                }
+            }
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+            {
+                int page = pos / SLOTS_PER_PAGE;
+                int elem = pos % SLOTS_PER_PAGE;
+                if (TotalChoices[page][elem].Selected)
+                    selected.Add(new InvItem(DataManager.Instance.Save.ActiveTeam.GetInv(ii)));
+                pos++;
+            }
+
+            // reorder the inventory
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.SortItems, Dir8.None)));
-            MenuManager.Instance.ReplaceMenu(new DepositMenu(CurrentChoiceTotal));
+            // create the new menu
+            DepositMenu menu = new DepositMenu(CurrentChoiceTotal);
+
+            // reselect the items
+            pos = 0;
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.Players[ii].EquippedItem;
+                if (!String.IsNullOrEmpty(item.ID))
+                {
+                    // look for equivalent item
+                    int loc = -1;
+                    for (int j = 0; j < selected.Count; j++)
+                    {
+                        InvItem slot = selected[j];
+                        if (slot.ID    == item.ID    && slot.Amount == item.Amount &&
+                            slot.Price == item.Price && slot.Cursed == item.Cursed &&
+                            slot.HiddenValue == item.HiddenValue)
+                        {
+                            loc = j;
+                            break;
+                        }
+                    }
+                    // reselect the item
+                    if (loc >= 0)
+                    {
+                        int page = pos / SLOTS_PER_PAGE;
+                        int elem = pos % SLOTS_PER_PAGE;
+                        ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
+                        selected.RemoveAt(loc);
+                    }
+                    pos++;
+                }
+            }
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+            {
+                InvItem item = new InvItem(DataManager.Instance.Save.ActiveTeam.GetInv(ii));
+                // look for equivalent item
+                int loc = -1;
+                for (int j = 0; j < selected.Count; j++)
+                {
+                    InvItem slot = selected[j];
+                    if (slot.ID == item.ID && slot.Amount == item.Amount &&
+                        slot.Price == item.Price && slot.Cursed == item.Cursed &&
+                        slot.HiddenValue == item.HiddenValue)
+                    {
+                        loc = j;
+                        break;
+                    }
+                }
+                // reselect the item
+                if (loc >= 0)
+                {
+                    int page = pos / SLOTS_PER_PAGE;
+                    int elem = pos % SLOTS_PER_PAGE;
+                    ((MenuChoice) menu.TotalChoices[page][elem]).SilentSelect(true);
+                    selected.RemoveAt(loc);
+                }
+                pos++;
+            }
+
+            //replace the menu
+            MenuManager.Instance.ReplaceMenu(menu);
         }
     }
 }
