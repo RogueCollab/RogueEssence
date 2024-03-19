@@ -670,7 +670,7 @@ namespace RogueEssence.Dungeon
 
 
                     if (previewMove != CurrentPreviewMove && previewMove > -1)
-                        CalculateMovePreviews(previewMove);
+                        yield return CoroutineManager.Instance.StartCoroutine(CalculateMovePreviews(previewMove));
 
                     if (action.Type == GameAction.ActionType.None && !showSkills)
                     {
@@ -862,7 +862,8 @@ namespace RogueEssence.Dungeon
             return true;
         }
 
-        public void CalculateMovePreviews(int previewMove)
+
+        public IEnumerator<YieldInstruction> CalculateMovePreviews(int previewMove)
         {
             List<HashSet<Loc>> previews = new List<HashSet<Loc>>();
             Skill move = FocusedCharacter.Skills[previewMove].Element;
@@ -874,9 +875,25 @@ namespace RogueEssence.Dungeon
             for (int ii = 0; ii < DirExt.DIR8_COUNT; ii++)
                 dirs.Add((Dir8)ii);
             
+            BattleContext context = new BattleContext(BattleActionType.Skill);
 
-            // TODO: figure out a way to calculate the rangeMod
-            int rangeMod = 0;
+            context.User = FocusedCharacter;
+            context.UsageSlot = previewMove;
+            string usageIndex = context.User.Skills[context.UsageSlot].Element.SkillNum;
+            SkillData entry = DataManager.Instance.GetSkill(usageIndex);
+            context.Data = new BattleData(entry.Data);
+
+            context.Data.ID = usageIndex;
+            context.Data.DataType = DataManager.DataType.Skill;
+            context.Explosion = new ExplosionData(entry.Explosion);
+            context.HitboxAction = entry.HitboxAction.Clone();
+            context.Item = new InvItem();
+            context.Strikes = entry.Strikes;
+            context.StartDir = context.User.CharDir;
+            yield return CoroutineManager.Instance.StartCoroutine(FocusedCharacter.OnAction(context));
+
+            int rangeMod = Math.Min(Math.Max(-3, context.RangeMod), 3);
+            
             bool canViewPastWalls = false;
             
             if (hitbox is AreaAction)
