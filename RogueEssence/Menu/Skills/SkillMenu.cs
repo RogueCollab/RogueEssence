@@ -19,11 +19,15 @@ namespace RogueEssence.Menu
         public SkillMenu(int teamIndex) : this(teamIndex, -1) { }
         public SkillMenu(int teamIndex, int skillSlot)
         {
-            int menuWidth = 168;
-
             List<Character> openPlayers = new List<Character>();
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
                 openPlayers.Add(character);
+
+            string menuTitleText = Text.FormatKey("MENU_SKILLS_TITLE", DataManager.Instance.Save.ActiveTeam.Players[CurrentPage].GetDisplayName(true));
+
+            int menuWidthMin = 168;
+            int menuWidthMax = GraphicsManager.ScreenWidth - 32;
+            int menuWidth = getMenuWidth(menuWidthMin, menuWidthMax, menuTitleText, openPlayers);
 
             MenuChoice[][] skills = new MenuChoice[openPlayers.Count][];
             for (int ii = 0; ii < openPlayers.Count; ii++)
@@ -62,7 +66,7 @@ namespace RogueEssence.Menu
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - LINE_HEIGHT * 2 - VERT_SPACE * 4),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_SKILLS_TITLE", DataManager.Instance.Save.ActiveTeam.Players[CurrentPage].GetDisplayName(true)), skills, skillSlot, teamIndex, CharData.MAX_SKILL_SLOTS);
+            Initialize(new Loc(16, 16), menuWidth, menuTitleText, skills, skillSlot, teamIndex, CharData.MAX_SKILL_SLOTS);
 
         }
 
@@ -104,6 +108,50 @@ namespace RogueEssence.Menu
         {
             if (DataManager.Instance.CurrentReplay == null)
                 MenuManager.Instance.AddMenu(new SkillChosenMenu(CurrentPage, choice), true);
+        }
+
+        private int getMenuWidth(int min, int max, string title, List<Character> openPlayers)
+        {
+            int menuWidth = min;
+            int extraSpaceWidth = 32; // seperation between skill/titel and charges/teamIndex
+
+            // check for all skills if they exceed min
+            int chkTextLength = 8;
+            int chargesTextLength = 8 * 4;
+            int skillIndentation = chargesTextLength;
+            foreach (Character character in openPlayers)
+            {
+                foreach (BackReference<Skill> skillRef in character.Skills)
+                {
+                    Skill skill = skillRef.Element;
+                    if (!String.IsNullOrEmpty(skill.SkillNum))
+                    {
+                        string skillName = DataManager.Instance.GetSkill(skill.SkillNum).GetColoredName();
+                        int skillNameLength = new MenuText(skillName, new Loc(0, 0)).GetTextLength();
+                        int skillRowLength = chkTextLength + chargesTextLength + skillIndentation + skillNameLength + extraSpaceWidth;
+                        if (skillRowLength > menuWidth)
+                        {
+                            menuWidth = skillRowLength;
+                        }
+                    }
+                }
+            }
+
+            // check if title exceeds min
+            int titleTextLength = new MenuText(title, new Loc(0, 0)).GetTextLength();
+            int teamIndexLength = 8 * 4;
+            int titleLength = titleTextLength + teamIndexLength + extraSpaceWidth;
+            if (titleLength > menuWidth)
+            {
+                menuWidth = titleLength;
+            }
+
+            if (menuWidth > max)
+            {
+                return max;
+            }
+
+            return menuWidth;
         }
 
         protected override void ChoiceChanged()
