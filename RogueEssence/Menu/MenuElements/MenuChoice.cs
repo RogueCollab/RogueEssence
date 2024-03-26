@@ -48,6 +48,14 @@ namespace RogueEssence.Menu
             this.click = clicked && hover;
         }
 
+        public void SilentSelect(bool select)
+        {
+            if (Enabled)
+            {
+                Selected = select;
+            }
+        }
+
         public void OnSelect(bool select)
         {
             if (Enabled)
