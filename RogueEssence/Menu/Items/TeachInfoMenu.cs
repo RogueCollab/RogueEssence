@@ -7,8 +7,10 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Menu
 {
-    public class TeachInfoMenu : InteractableMenu
+    public class TeachInfoMenu : SideScrollMenu
     {
+        public string itemId { get; private set; }
+
         MenuText SkillName;
         MenuText SkillCharges;
 
@@ -22,6 +24,7 @@ namespace RogueEssence.Menu
 
         public TeachInfoMenu(string itemNum)
         {
+            itemId = itemNum;
             Bounds = Rect.FromPoints(new Loc(16, 24), new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 72));
             
             ItemData itemData = DataManager.Instance.GetItem(itemNum);
@@ -32,7 +35,7 @@ namespace RogueEssence.Menu
 
             SkillName = new MenuText(skillEntry.GetColoredName(), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             SkillCharges = new MenuText(Text.FormatKey("MENU_SKILLS_TOTAL_CHARGES", skillEntry.BaseCharges), new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight));
-
+            
             SkillElement = new MenuText(Text.FormatKey("MENU_SKILLS_ELEMENT", elementEntry.GetIconName()), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
             SkillCategory = new MenuText(Text.FormatKey("MENU_SKILLS_CATEGORY", skillEntry.Data.Category.ToLocal()), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
 
@@ -48,6 +51,8 @@ namespace RogueEssence.Menu
 
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3 + LINE_HEIGHT),
                 Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
+
+            base.Initialize(Bounds.Top + (Bounds.Height) / 2);
         }
 
         public override IEnumerable<IMenuElement> GetElements()
@@ -79,6 +84,21 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SE("Menu/Cancel");
                 MenuManager.Instance.RemoveMenu();
             }
+            else if (DirPressed(input, Dir8.Right))
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                MenuManager.Instance.ReplaceMenu(new TeachWhomMenu(itemId, 0));
+            }
+            else if (DirPressed(input, Dir8.Left))
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                MenuManager.Instance.ReplaceMenu(new TeachWhomMenu(itemId, (int)Math.Ceiling((double)DataManager.Instance.Save.ActiveTeam.Players.Count / 4) - 1));
+            }
+        }
+
+        private bool DirPressed(InputManager input, Dir8 dir)
+        {
+            return input.Direction == dir && input.PrevDirection != dir;
         }
     }
 }
