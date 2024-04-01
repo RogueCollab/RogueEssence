@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
         public MenuDivider MainDiv;
 
         public MenuText Promotions;
-        public MenuText[] PromoteMethods;
+        public DialogueText[] PromoteMethods;
 
 
         public MemberInfoMenu(int teamSlot, bool assembly, bool allowAssembly)
@@ -68,17 +68,21 @@ namespace RogueEssence.Menu
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Promotions = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTION"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
-            List<MenuText> validPromotions = new List<MenuText>();
+            List<DialogueText> validPromotions = new List<DialogueText>();
 
+            int lineCount = 1;
             bool inDungeon = (GameManager.Instance.CurrentScene == DungeonScene.Instance);
             for (int ii = 0; ii < dexEntry.Promotions.Count; ii++)
             {
+                DialogueText promoteReqText = new DialogueText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(), new Rect(
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 3, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (lineCount * validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, 0)), LINE_HEIGHT);
                 if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(dexEntry.Promotions[ii].Result).Released)
                     continue;
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {
-                    validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(),
-                        new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET)));
+                    validPromotions.Add(promoteReqText);
+                    lineCount = promoteReqText.GetLineCount();
                 }
                 else
                 {
@@ -93,8 +97,9 @@ namespace RogueEssence.Menu
                     }
                     if (!hardReq)
                     {
-                        validPromotions.Add(new MenuText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(),
-                            new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET), Color.Red));
+                        promoteReqText.Color = Color.Red;
+                        validPromotions.Add(promoteReqText);
+                        lineCount = promoteReqText.GetLineCount();
                     }
                 }
             }
@@ -102,8 +107,10 @@ namespace RogueEssence.Menu
                 PromoteMethods = validPromotions.ToArray();
             else
             {
-                PromoteMethods = new MenuText[1];
-                PromoteMethods[0] = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTE_NONE"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET));
+                PromoteMethods = new DialogueText[1];
+                PromoteMethods[0] = new DialogueText(Text.FormatKey("MENU_TEAM_PROMOTE_NONE"), new Rect(
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET),
+                    new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, 0)), LINE_HEIGHT);
             }
         }
 
@@ -121,7 +128,7 @@ namespace RogueEssence.Menu
             yield return MainDiv;
 
             yield return Promotions;
-            foreach (MenuText method in PromoteMethods)
+            foreach (DialogueText method in PromoteMethods)
                 yield return method;
         }
 
