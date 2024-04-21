@@ -50,7 +50,7 @@ namespace RogueEssence.Menu
                         AllowedGoods.Add(key);
                         int slot = flatChoices.Count;
 
-                        MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                        MenuText menuText = new MenuText(itemEntry.GetIconName(), new Loc(2, 1));
                         MenuText menuCount = new MenuText("(" + itemPresence[key] + ")", new Loc(menuWidth - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                         flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                     }

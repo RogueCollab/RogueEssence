@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
                 {
                     WithdrawSlot slot = new WithdrawSlot(false, key, 0);
                     availableItems.Add(slot);
-                    MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                    MenuText menuText = new MenuText(((ItemEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(key)).GetIconName(), new Loc(2, 1));
                     MenuText menuCount = new MenuText("(" + qty + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                     flatChoices.Add(new MenuElementChoice(() => { choose(slot); }, true, menuText, menuCount));
                 }
