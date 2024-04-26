@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
-                    itemPresence[activeChar.EquippedItem.ID]++;
+                    itemPresence[activeChar.EquippedItem.ID] = itemPresence.GetValueOrDefault(activeChar.EquippedItem.ID, 0) + 1;
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
