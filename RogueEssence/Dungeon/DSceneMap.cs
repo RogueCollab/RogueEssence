@@ -1367,16 +1367,7 @@ namespace RogueEssence.Dungeon
             //face direction
             character.CharDir = dir.Reverse();
 
-            Loc endLoc = character.CharLoc;
-
-            //move to the point at range.
-            for (int ii = 0; ii < range; ii++)
-            {
-                //if the next location is blocked, stop.
-                if (ShotBlocked(character, endLoc, dir, Alignment.None, true, true))
-                    break;
-                endLoc = endLoc + dir.GetLoc();
-            }
+            Loc endLoc = DungeonScene.Instance.MoveShotUntilBlocked(character, character.CharLoc, dir, range, Alignment.None, true, true);
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.KnockbackFX));
 
@@ -1409,16 +1400,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> JumpTo(Character character, Dir8 dir, int range)
         {
-            Loc endLoc = character.CharLoc;
-                
-            //move to the point at range.
-            for (int ii = 0; ii < range; ii++)
-            {
-                //if the next location is blocked, stop.
-                if (ShotBlocked(character, endLoc, dir, Alignment.None, true, true))
-                    break;
-                endLoc = endLoc + dir.GetLoc();
-            }
+            Loc endLoc = DungeonScene.Instance.MoveShotUntilBlocked(character, character.CharLoc, dir, range, Alignment.None, true, true);
 
             //if the location is occupied, keep moving
             while (ZoneManager.Instance.CurrentMap.GetCharAtLoc(endLoc) != null)
@@ -1552,6 +1534,16 @@ namespace RogueEssence.Dungeon
             return false;
         }
 
+        public Loc MoveShotUntilBlocked(Character character, Loc loc, Dir8 dir, int range, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
+        {
+            Loc endLoc = loc;
+            for (int ii = 0; ii < range; ii++)
+            {
+                if (!DungeonScene.Instance.ShotBlocked(character, endLoc, dir, blockedAlignments, useMobility, blockedByWall))
+                    endLoc = endLoc + dir.GetLoc();
+            }
+            return endLoc;
+        }
 
         public bool ShotBlocked(Character character, Loc loc, Dir8 dir, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
         {
