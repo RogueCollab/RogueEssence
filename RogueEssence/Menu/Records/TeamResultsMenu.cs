@@ -152,7 +152,7 @@ namespace RogueEssence.Menu
             {
                 if (!Ending.ActiveTeam.Assembly[ii].Absentee)
                 {
-                    if (Page * 4 <= ii && ii < (Page + 1) * 4)
+                    if (Page * 4 <= trueIdx && trueIdx < (Page + 1) * 4)
                     {
                         characters.Add(Ending.ActiveTeam.Assembly[ii]);
                         if (characters.Count == 4)
