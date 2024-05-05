@@ -129,7 +129,7 @@ namespace RogueEssence.Menu
                 base.UpdateKeys(input);
         }
 
-        protected IChoosable GetTotalChoiceAtIndex(int totalIndex)
+        public IChoosable GetTotalChoiceAtIndex(int totalIndex)
         {
             int page = totalIndex / SpacesPerPage;
             int index = totalIndex % SpacesPerPage;
