@@ -601,7 +601,7 @@ namespace RogueEssence.Dungeon
                 if (Storage.GetValueOrDefault(key, 0) > 0)
                 {
                     if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(key))
-                        invValue += DataManager.Instance.GetItem(key).Price;
+                        invValue += DataManager.Instance.GetItem(key).Price * Storage[key];
                 }
             }
             return invValue;

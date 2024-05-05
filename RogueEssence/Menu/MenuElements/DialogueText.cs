@@ -16,6 +16,7 @@ namespace RogueEssence.Menu
         public bool CenterH;
         public bool CenterV;
         public float TextOpacity;
+        public Color Color;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= formattedTextLength; } }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace RogueEssence.Menu
         /// </summary>
         private int formattedTextLength;
 
-        public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
+        public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex, Color color)
         {
             Rect = rect;
             LineHeight = lineHeight;
@@ -46,10 +47,17 @@ namespace RogueEssence.Menu
             CenterV = centerV;
             TextOpacity = 1f;
             CurrentCharIndex = startIndex;
+            Color = color;
             textColor = new List<(int idx, Color color)>();
             SetAndFormatText(text);
         }
-        public DialogueText(string text, Rect rect, int lineHeight) : this(text, rect, lineHeight, false, false, -1)
+
+        public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
+            : this(text, rect, lineHeight, centerH, centerV, startIndex, Color.White)
+        {}
+
+        public DialogueText(string text, Rect rect, int lineHeight)
+            : this(text, rect, lineHeight, false, false, -1, Color.White)
         { }
 
         private static void formatText(List<(int idx, Color color)> colors, ref string text)
@@ -287,7 +295,7 @@ namespace RogueEssence.Menu
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
                             fullLines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
-                            colorStack.Peek() * TextOpacity, curChar, nextColorIdx - curChar);
+                            Color == Color.White ? colorStack.Peek() * TextOpacity : Color * TextOpacity, curChar, nextColorIdx - curChar);
                         curChar = nextColorIdx;
 
                         if (curChar + lineChars >= endIndex)
