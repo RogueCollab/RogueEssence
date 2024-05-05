@@ -149,7 +149,6 @@ namespace RogueEssence.Menu
             moneySummary.Draw(spriteBatch);
         }
 
-        //TODO deal with this
         public IEnumerator<YieldInstruction> SortCommand()
         {
             //generate list of selected items
