@@ -183,12 +183,11 @@ namespace RogueEssence.Menu
                     eqIndex++;
                 }
             }
-            int pos = eqIndex;
+            
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
-                if (GetTotalChoiceAtIndex(pos).Selected)
+                if (GetTotalChoiceAtIndex(eqIndex + ii).Selected)
                     selected.Add(ii);
-                pos++;
             }
 
             // get mapping
