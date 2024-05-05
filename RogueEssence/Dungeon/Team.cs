@@ -244,19 +244,13 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public void SortItems()
         {
+            Dictionary<int, int> mapping = GetSortMapping(false);
             List<InvItem> newInv = new List<InvItem>();
             //for each inv item
             for (int kk = 0; kk < inventory.Count; kk++)
             {
-                //find its new place
-                for (int ii = newInv.Count; ii >= 0; ii--)
-                {
-                    if (ii == 0 || succeedsInvItem(inventory[kk], newInv[ii - 1]))
-                    {
-                        newInv.Insert(ii, inventory[kk]);
-                        break;
-                    }
-                }
+                //find its place on the old list and put in new one
+                newInv.Add(inventory[mapping[kk]]);
             }
             inventory = newInv;
         }
