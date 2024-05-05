@@ -149,74 +149,52 @@ namespace RogueEssence.Menu
             moneySummary.Draw(spriteBatch);
         }
 
-
+        //TODO deal with this
         public IEnumerator<YieldInstruction> SortCommand()
         {
             //generate list of selected items
             List<int> equip_selected = new List<int>();
-            List<InvItem> selected = new List<InvItem>();
-            int eqs = 0;
+            List<int> selected = new List<int>();
+            int eqIndex = 0;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
                 {
-                    int page = eqs / SLOTS_PER_PAGE;
-                    int elem = eqs % SLOTS_PER_PAGE;
-                    if (TotalChoices[page][elem].Selected)
-                        equip_selected.Add(eqs);
-                    eqs++;
+                    if (GetTotalChoiceAtIndex(eqIndex).Selected)
+                        equip_selected.Add(eqIndex);
+                    eqIndex++;
                 }
             }
-            int pos = eqs;
+            int pos = eqIndex;
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
-                int page = pos / SLOTS_PER_PAGE;
-                int elem = pos % SLOTS_PER_PAGE;
-                if (TotalChoices[page][elem].Selected)
-                    selected.Add(DataManager.Instance.Save.ActiveTeam.GetInv(ii));
+                if (GetTotalChoiceAtIndex(pos).Selected)
+                    selected.Add(ii);
                 pos++;
             }
+
+            // get mapping
+            Dictionary<int, int> mapping = DataManager.Instance.Save.ActiveTeam.GetSortMapping(true);
 
             // reorder the inventory
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.SortItems, Dir8.None)));
             // create the new menu
             AppraiseMenu menu = new AppraiseMenu(CurrentChoiceTotal, action);
 
-            // reselet equip slots
+            // reselect equip slots
             for (int ii = 0; ii < equip_selected.Count; ii++)
             {
                 int slot = equip_selected[ii];
-                int page = slot / SLOTS_PER_PAGE;
-                int elem = slot % SLOTS_PER_PAGE;
-                ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
+                ((MenuChoice)menu.GetTotalChoiceAtIndex(slot)).SilentSelect(true);
             }
             // reselect the rest of the inventory
-            for (int ii = DataManager.Instance.Save.ActiveTeam.GetInvCount() - 1; ii >= 0; ii--)
+            for (int ii = selected.Count - 1; ii >= 0; ii--)
             {
-                InvItem item = new InvItem(DataManager.Instance.Save.ActiveTeam.GetInv(ii));
-                // look for equivalent item
-                int loc = -1;
-                for (int j = 0; j < selected.Count; j++)
-                {
-                    InvItem slot = selected[j];
-                    if (slot.ID == item.ID && slot.Amount == item.Amount &&
-                        slot.Price == item.Price && slot.Cursed == item.Cursed &&
-                        slot.HiddenValue == item.HiddenValue)
-                    {
-                        loc = j;
-                        break;
-                    }
-                }
-                // reselect the item
-                if (loc >= 0)
-                {
-                    int index = ii + eqs;
-                    int page = index / SLOTS_PER_PAGE;
-                    int elem = index % SLOTS_PER_PAGE;
-                    ((MenuChoice)menu.TotalChoices[page][elem]).SilentSelect(true);
-                    selected.RemoveAt(loc);
-                }
+                int oldPos = selected[ii];
+                int newPos = mapping[oldPos];
+                int index = newPos + eqIndex;
+                ((MenuChoice)menu.GetTotalChoiceAtIndex(index)).SilentSelect(true);
             }
 
             //replace the menu
