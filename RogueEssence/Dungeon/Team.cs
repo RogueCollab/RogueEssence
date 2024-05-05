@@ -299,7 +299,7 @@ namespace RogueEssence.Dungeon
 
         private bool succeedsInvItem(InvItem inv1, InvItem inv2)
         {
-            return DataManager.Instance.DataIndices[DataManager.DataType.Item].CompareWithSort(inv1.ID, inv2.ID) > 0;
+            return DataManager.Instance.DataIndices[DataManager.DataType.Item].CompareWithSort(inv1.ID, inv2.ID) >= 0;
         }
 
         public int GetInvValue()
