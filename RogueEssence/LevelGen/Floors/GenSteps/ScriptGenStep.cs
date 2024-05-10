@@ -36,7 +36,7 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(T map)
         {
-            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction("FLOOR_GEN_SCRIPT." + Script);
+            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction(LuaEngine.EVENT_FLOORGEN_NAME + "." + Script);
 
             if (luafun != null)
             {

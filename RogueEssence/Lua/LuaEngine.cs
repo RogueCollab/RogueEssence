@@ -72,8 +72,8 @@ namespace RogueEssence.Script
         /// Create the name of a map's expected callback function in its script.
         /// Each specifc callbacks has its own name and format.
         /// </summary>
-        /// <param name="callbackformat"></param>
-        /// <param name="mapname"></param>
+        /// <param name="zonename"></param>
+        /// <param name="callback"></param>
         /// <returns></returns>
         public static string MakeZoneScriptCallbackName(string zonename, EZoneCallbacks callback)
         {
@@ -359,6 +359,16 @@ namespace RogueEssence.Script
 
         //Global lua symbol names
         public const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
+        public const string EVENT_SINGLE_NAME = "SINGLE_CHAR_SCRIPT";
+        public const string EVENT_BATTLE_NAME = "BATTLE_SCRIPT";
+        public const string EVENT_STATUS_NAME = "STATUS_SCRIPT";
+        public const string EVENT_MAPSTATUS_NAME = "MAP_STATUS_SCRIPT";
+        public const string EVENT_ITEM_NAME = "ITEM_SCRIPT";
+        public const string EVENT_GROUNDITEM_NAME = "GROUND_ITEM_EVENT_SCRIPT";
+        public const string EVENT_REFRESH_NAME = "REFRESH_SCRIPT";
+        public const string EVENT_SKILLCHANGE_NAME = "SKILL_CHANGE_SCRIPT";
+        public const string EVENT_FLOORGEN_NAME = "FLOOR_GEN_SCRIPT";
+        public const string EVENT_ZONEGEN_NAME = "ZONE_GEN_SCRIPT";
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -630,6 +640,18 @@ namespace RogueEssence.Script
             RunString(ZoneCurrentScriptSym + " = nil");
             RunString(MapCurrentScriptSym + " = nil");
             RunString(DungeonMapCurrentScriptSym + " = nil");
+
+            //Make the callbacks table
+            LuaState.NewTable(EVENT_SINGLE_NAME);
+            LuaState.NewTable(EVENT_BATTLE_NAME);
+            LuaState.NewTable(EVENT_STATUS_NAME);
+            LuaState.NewTable(EVENT_MAPSTATUS_NAME);
+            LuaState.NewTable(EVENT_ITEM_NAME);
+            LuaState.NewTable(EVENT_GROUNDITEM_NAME);
+            LuaState.NewTable(EVENT_REFRESH_NAME);
+            LuaState.NewTable(EVENT_SKILLCHANGE_NAME);
+            LuaState.NewTable(EVENT_FLOORGEN_NAME);
+            LuaState.NewTable(EVENT_ZONEGEN_NAME);
 
             //Make empty script variable table
             LuaState.NewTable(SCRIPT_VARS_NAME);

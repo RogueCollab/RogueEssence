@@ -31,7 +31,7 @@ namespace RogueEssence.Dungeon
 
         public override void Apply(GameEventOwner owner, Character ownerChar, Character character)
         {
-            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction("REFRESH_SCRIPT." + Script);
+            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction(LuaEngine.EVENT_REFRESH_NAME + "." + Script);
 
             if (luafun != null)
             {
