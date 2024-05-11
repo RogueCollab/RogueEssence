@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
+using System.Numerics;
 
 namespace RogueEssence.Menu
 {
@@ -13,6 +14,7 @@ namespace RogueEssence.Menu
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+        bool boostView;
         
         public MenuText Title;
         public MenuText PageText;
@@ -28,6 +30,7 @@ namespace RogueEssence.Menu
         public MenuDivider MainDiv;
 
         public MenuText StatsTitle;
+        public MenuText BonusTooltip;
         public MenuText HPLabel;
         public MenuText SpeedLabel;
         public MenuText AttackLabel;
@@ -46,12 +49,19 @@ namespace RogueEssence.Menu
         public MenuStatBar DefenseBar;
         public MenuStatBar MAtkBar;
         public MenuStatBar MDefBar;
+        public MenuText HPBonus;
+        public MenuText SpeedBonus;
+        public MenuText AttackBonus;
+        public MenuText DefenseBonus;
+        public MenuText MAtkBonus;
+        public MenuText MDefBonus;
         public MenuDivider ItemDiv;
         public MenuText Item;
 
         //allow moving up and down (but don't alter the team choice selection because it's hard)
 
-        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly)
+        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly) : this(teamSlot, assembly, allowAssembly, false) {}
+        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly, bool bonusView)
         {
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
 
@@ -105,6 +115,7 @@ namespace RogueEssence.Menu
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             StatsTitle = new MenuText(Text.FormatKey("MENU_TEAM_STATS"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
+            BonusTooltip = new MenuText(Text.FormatKey("MENU_TEAM_BONUS", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET), DirH.Right);
 
             HPLabel = new MenuText(Text.FormatKey("MENU_LABEL", Stat.HP.ToLocal("tiny")), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET));
             AttackLabel = new MenuText(Text.FormatKey("MENU_LABEL", Stat.Attack.ToLocal("tiny")), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), player.ProxyAtk > -1 ? Color.Yellow : Color.White);
@@ -133,10 +144,33 @@ namespace RogueEssence.Menu
             int speedLength = calcLength(Stat.Speed, monsterForm, player.Speed, player.Level);
             SpeedBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), speedLength, calcColor(speedLength));
 
+            HPBonus = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+            AttackBonus = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET),  DirH.Right);
+            DefenseBonus = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+            MAtkBonus = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8 + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+            MDefBonus = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+            SpeedBonus = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 8, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+
             ItemDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 12), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
             Item = new MenuText(!String.IsNullOrEmpty(player.EquippedItem.ID) ? Text.FormatKey("MENU_HELD_ITEM", player.EquippedItem.GetDisplayName()) : Text.FormatKey("MENU_HELD_NO_ITEM"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET));
+            if (bonusView) SwitchView();
+        }
 
+        private int calcBoostLength(Stat stat, Character player)
+        {
+            int MAX_STAT_BOOST = 256;
+            int statBonus = 0;
+            switch(stat)
+            {
+                case Stat.HP: statBonus = player.MaxHPBonus; break;
+                case Stat.Attack: statBonus = player.AtkBonus; break;
+                case Stat.Defense: statBonus = player.DefBonus; break;
+                case Stat.MAtk: statBonus = player.MAtkBonus; break;
+                case Stat.MDef: statBonus = player.MDefBonus; break;
+                case Stat.Speed: statBonus = player.SpeedBonus; break;
+            }
+            return Math.Min(Math.Max(0, statBonus * 128 / MAX_STAT_BOOST), 128)+1;
         }
 
         private int calcLength(Stat stat, BaseMonsterForm form, int statVal, int level)
@@ -179,6 +213,7 @@ namespace RogueEssence.Menu
             yield return MainDiv;
 
             yield return StatsTitle;
+            yield return BonusTooltip;
             yield return HPLabel;
             yield return SpeedLabel;
             yield return AttackLabel;
@@ -200,6 +235,13 @@ namespace RogueEssence.Menu
             yield return MAtkBar;
             yield return MDefBar;
 
+            yield return HPBonus;
+            yield return SpeedBonus;
+            yield return AttackBonus;
+            yield return DefenseBonus;
+            yield return MAtkBonus;
+            yield return MDefBonus;
+
             yield return ItemDiv;
             yield return Item;
         }
@@ -216,6 +258,11 @@ namespace RogueEssence.Menu
             {
                 GameManager.Instance.SE("Menu/Cancel");
                 MenuManager.Instance.RemoveMenu();
+            }
+            else if (input.JustPressed(FrameInput.InputType.SortItems))
+            {
+                GameManager.Instance.SE("Menu/Confirm");
+                SwitchView();
             }
             else if (IsInputting(input, Dir8.Left))
             {
@@ -234,12 +281,12 @@ namespace RogueEssence.Menu
                 {
                     int amtLimit = (!assembly) ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
                     if (teamSlot - 1 < 0)
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(amtLimit - 1, !assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(amtLimit - 1, !assembly, allowAssembly, boostView));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot - 1, assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot - 1, assembly, allowAssembly, boostView));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly));
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, boostView));
             }
             else if (IsInputting(input, Dir8.Down))
             {
@@ -248,13 +295,48 @@ namespace RogueEssence.Menu
                 {
                     int amtLimit = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
                     if (teamSlot + 1 >= amtLimit)
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(0, !assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(0, !assembly, allowAssembly, boostView));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot + 1, assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot + 1, assembly, allowAssembly, boostView));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly));
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, boostView));
             }
+        }
+
+        public void SwitchView()
+        {
+            boostView = !boostView;
+            int MAX_STAT_BOOST = 256;
+            Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
+            BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
+
+            int mhp = player.MaxHPBonus;
+            int atk = player.AtkBonus;
+            int def = player.DefBonus;
+            int mat = player.MAtkBonus;
+            int mdf = player.MDefBonus;
+            int spd = player.SpeedBonus;
+
+            BonusTooltip.Color = boostView ? Color.Yellow : Color.White;
+            HPBar.Length = boostView ? calcBoostLength(Stat.HP, player) : calcLength(Stat.HP, monsterForm, player.MaxHP, player.Level);
+            AttackBar.Length = boostView ? calcBoostLength(Stat.Attack, player) : calcLength(Stat.Attack, monsterForm, player.Atk, player.Level);
+            DefenseBar.Length = boostView ? calcBoostLength(Stat.Defense, player) : calcLength(Stat.Defense, monsterForm, player.Def, player.Level);
+            MAtkBar.Length = boostView ? calcBoostLength(Stat.MAtk, player) : calcLength(Stat.MAtk, monsterForm, player.MAtk, player.Level);
+            MDefBar.Length = boostView ? calcBoostLength(Stat.MDef, player) : calcLength(Stat.MDef, monsterForm, player.MDef, player.Level);
+            SpeedBar.Length = boostView ? calcBoostLength(Stat.Speed, player) : calcLength(Stat.Speed, monsterForm, player.Speed, player.Level);
+            HPBar.Color = calcColor(HPBar.Length);
+            AttackBar.Color = calcColor(AttackBar.Length);
+            DefenseBar.Color = calcColor(DefenseBar.Length);
+            MAtkBar.Color = calcColor(MAtkBar.Length);
+            MDefBar.Color = calcColor(MDefBar.Length);
+            SpeedBar.Color = calcColor(SpeedBar.Length);
+            HPBonus.SetText(boostView ? (mhp < MAX_STAT_BOOST ? mhp.ToString() : Text.FormatKey("MENU_TEAM_MAX")) : "");
+            AttackBonus.SetText(boostView ? (atk < MAX_STAT_BOOST ? atk.ToString() : Text.FormatKey("MENU_TEAM_MAX")) : "");
+            DefenseBonus.SetText(boostView ? (def < MAX_STAT_BOOST ? def.ToString() : Text.FormatKey("MENU_TEAM_MAX")) : "");
+            MAtkBonus.SetText(boostView ? (mat < MAX_STAT_BOOST ? mat.ToString() : Text.FormatKey("MENU_TEAM_MAX")) : "");
+            MDefBonus.SetText(boostView ? (mdf < MAX_STAT_BOOST ? mdf.ToString() : Text.FormatKey("MENU_TEAM_MAX")) : "");
+            SpeedBonus.SetText(boostView ? (spd < MAX_STAT_BOOST ? spd.ToString() : Text.FormatKey("MENU_TEAM_MAX")) : "");
         }
     }
 }
