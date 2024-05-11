@@ -13,27 +13,58 @@ namespace RogueEssence.Script
     public class ScriptStrings : ILuaEngineComponent
     {
         public const string STRINGS_FILE_NAME = "strings";
-        public const string STRINGS_FILE_EXT = "resx";
 
         public LuaTable MakePackageStringTable(string packagefilepath)
         {
-            LuaTable tbl = loadXmlDoc(packagefilepath + "/" + STRINGS_FILE_NAME + "." + LocaleCode() + "." + STRINGS_FILE_EXT);
-            LuaTable defaulttbl = loadXmlDoc(packagefilepath + "/" + STRINGS_FILE_NAME + "." + STRINGS_FILE_EXT);
-            LuaFunction addmeta = LuaEngine.Instance.RunString("return function(tbl1, tbl2) setmetatable(tbl1, { __index = tbl2 }) end").First() as LuaFunction;
-            addmeta.Call(tbl, defaulttbl);
-            
-            return tbl;
-        }
-
-        private LuaTable loadXmlDoc(string path)
-        {
             try
             {
+                Dictionary<string, string> xmlDict = new Dictionary<string, string>();
+
+                string code = LocaleCode();
+                //order of string fallbacks:
+                //first go through all mods of the original language
+                foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + "." + code + ".resx"))
+                {
+                    Dictionary<string, string> dict = Text.LoadStringResx(path);
+                    foreach (string key in dict.Keys)
+                    {
+                        if (!xmlDict.ContainsKey(key))
+                            xmlDict.Add(key, dict[key]);
+                    }
+                }
+
+                //then go through all mods of the official fallbacks
+                if (Text.LangNames.ContainsKey(code))
+                {
+                    foreach (string fallback in Text.LangNames[code].Fallbacks)
+                    {
+                        foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + "." + fallback + ".resx"))
+                        {
+                            Dictionary<string, string> dict = Text.LoadStringResx(path);
+                            foreach (string key in dict.Keys)
+                            {
+                                if (!xmlDict.ContainsKey(key))
+                                    xmlDict.Add(key, dict[key]);
+                            }
+                        }
+                    }
+                }
+                //then go through all mods of the default language
+                foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + ".resx"))
+                {
+                    Dictionary<string, string> dict = Text.LoadStringResx(path);
+                    foreach (string key in dict.Keys)
+                    {
+                        if (!xmlDict.ContainsKey(key))
+                            xmlDict.Add(key, dict[key]);
+                    }
+                }
+
+
                 //Build a lua table as we go and return it
                 LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
                 LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, str) tbl[key] = str end").First() as LuaFunction;
 
-                Dictionary<string, string> xmlDict = Text.LoadStringResx(path);
                 foreach (string name in xmlDict.Keys)
                     addfn.Call(tbl, name, xmlDict[name]);
 

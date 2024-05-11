@@ -26,6 +26,8 @@ namespace RogueEssence
     public static class Text
     {
         public const string DIVIDER_STR = "\n";
+        public const string STRINGS_FILE_EXT = ".resx";
+
         public static Dictionary<string, string> Strings;
         public static Dictionary<string, string> StringsEx;
         public static CultureInfo Culture;
@@ -622,7 +624,7 @@ namespace RogueEssence
             strings.Clear();
             //order of string fallbacks:
             //first go through all mods of the original language
-            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + STRINGS_FILE_EXT))
             {
                 Dictionary<string, string> dict = LoadStringResx(path);
                 foreach (string key in dict.Keys)
@@ -637,7 +639,7 @@ namespace RogueEssence
             {
                 foreach (string fallback in LangNames[code].Fallbacks)
                 {
-                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
+                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + STRINGS_FILE_EXT))
                     {
                         Dictionary<string, string> dict = LoadStringResx(path);
                         foreach (string key in dict.Keys)
@@ -649,7 +651,7 @@ namespace RogueEssence
                 }
             }
             //then go through all mods of the default language
-            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + STRINGS_FILE_EXT))
             {
                 Dictionary<string, string> dict = LoadStringResx(path);
                 foreach (string key in dict.Keys)
