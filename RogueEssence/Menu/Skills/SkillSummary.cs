@@ -16,6 +16,8 @@ namespace RogueEssence.Menu
         MenuText SkillPower;
         MenuText SkillHitRate;
         MenuText Targets;
+        MenuText SkillCharges;
+
 
         public SkillSummary(Rect bounds) : base(bounds)
         {
@@ -31,7 +33,10 @@ namespace RogueEssence.Menu
 
             Targets = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
             Elements.Add(Targets);
-
+            
+            SkillCharges = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight), DirH.Right);
+            Elements.Add(SkillCharges);
+            
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + LINE_HEIGHT),
                 Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
             Elements.Add(MenuDiv);
@@ -52,6 +57,7 @@ namespace RogueEssence.Menu
             SkillPower.SetText(Text.FormatKey("MENU_SKILLS_POWER", (powerState != null ? powerState.Power.ToString() : "---")));
             SkillHitRate.SetText(Text.FormatKey("MENU_SKILLS_HIT_RATE", (skillEntry.Data.HitRate > -1 ? skillEntry.Data.HitRate + "%" : "---")));
             Targets.SetText(Text.FormatKey("MENU_SKILLS_RANGE", skillEntry.HitboxAction.GetDescription()));
+            SkillCharges.SetText(Text.FormatKey("MENU_SKILLS_TOTAL_CHARGES", skillEntry.BaseCharges));
             Description.SetAndFormatText(skillEntry.Desc.ToLocal());
         }
 
