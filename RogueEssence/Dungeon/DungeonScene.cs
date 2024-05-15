@@ -876,7 +876,7 @@ namespace RogueEssence.Dungeon
             
 
             // TODO: figure out a way to calculate the rangeMod
-            int rangeMod = 0;
+            int rangeMod = DataManager.Instance.UniversalEvent.GetRange(FocusedCharacter, ref data);
             bool canViewPastWalls = false;
             
             if (hitbox is AreaAction)
