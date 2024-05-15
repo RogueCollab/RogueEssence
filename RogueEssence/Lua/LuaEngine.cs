@@ -612,6 +612,21 @@ namespace RogueEssence.Script
             return null;
         }
 
+        private void ModLoadFile(string loadPath)
+        {
+            foreach (string modPath in PathMod.FallforthPaths(SCRIPT_PATH))
+            {
+                string modulePath = GetModulePath(modPath, loadPath);
+                if (modulePath != null)
+                {
+                    SetLoadPath(modPath);
+                    LuaState.LoadFile(modulePath);
+                    //RunString(String.Format("require('{0}')", loadPath));
+                }
+            }
+            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
+        }
+
         private void ModDoFile(string loadPath)
         {
             foreach (string modPath in PathMod.FallforthPaths(SCRIPT_PATH))
@@ -657,6 +672,21 @@ namespace RogueEssence.Script
             }
             SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
             return tbl;
+        }
+
+        private void ModLoadService(string loadPath)
+        {
+            foreach (string modPath in PathMod.FallbackPaths(SCRIPT_PATH))
+            {
+                string modulePath = GetModulePath(modPath, loadPath);
+                if (modulePath != null)
+                {
+                    SetLoadPath(modPath);
+                    LuaState.DoFile(modulePath);
+                    break;
+                }
+            }
+            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
         }
 
         /// <summary>
@@ -908,7 +938,7 @@ namespace RogueEssence.Script
 
             DiagManager.Instance.LogInfo("[SE]:Caching common lib...");
             //Cache common lib
-            ModDoFile(SCRIPT_COMMON);
+            ModLoadFile(SCRIPT_COMMON);
             DiagManager.Instance.LogInfo("[SE]:Loading events...");
             //load events
             ModDoFile(SCRIPT_EVENT);
@@ -948,10 +978,11 @@ namespace RogueEssence.Script
             //LuaFunction createNew = LuaEngine.Instance.RunString("return function(tbl) return tbl:new() end").First() as LuaFunction;
             foreach (string moduleName in moduleNames)
             {
-                LuaTable servicetbl = ModLoadTable(Path.Join("services", moduleName));
+                //LuaTable servicetbl = ModLoadTable(Path.Join("services", moduleName));
+                ModLoadService(Path.Join("services", moduleName));
                 //object[] obj = createNew.Call(servicetbl);
                 //register this variable
-                m_scrsvc.AddService(moduleName, servicetbl);
+                //m_scrsvc.AddService(moduleName, servicetbl);
             }
         }
 
@@ -1358,8 +1389,10 @@ namespace RogueEssence.Script
         {
             //LuaState.LoadFile(abspath);
             //RunString(String.Format("{0} = require('{1}');", globalsymbol, importpath), abspath);
-            LuaTable state = ModLoadTable(relpath);
-            LuaState[globalsymbol] = state;
+            LuaState[globalsymbol] = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            ModDoFile(relpath);
+            //LuaTable state = ModLoadTable(relpath);
+            //LuaState[globalsymbol] = state;
         }
 
         /// <summary>
