@@ -876,7 +876,7 @@ namespace RogueEssence.Dungeon
             
 
             // TODO: figure out a way to calculate the rangeMod
-            int rangeMod = 0;
+            int rangeMod = DataManager.Instance.UniversalEvent.GetRange(FocusedCharacter, ref data);
             bool canViewPastWalls = false;
             
             if (hitbox is AreaAction)
@@ -908,7 +908,7 @@ namespace RogueEssence.Dungeon
                 {
                     if (!canViewPastWalls)
                     {
-                        if (CanTeamSeeCharLoc(ActiveTeam, loc))
+                        if (CanTeamSeeCharLoc(ActiveTeam, loc) || !ShotBlocked(FocusedCharacter, loc, FocusedCharacter.CharDir, data.HitboxAction.TargetAlignments, true, true))
                         {
                             foreach (Loc expLoc in explosion.IterateTargetedTiles(loc))
                                 hitTiles.Add(ZoneManager.Instance.CurrentMap.WrapLoc(expLoc));
@@ -968,7 +968,7 @@ namespace RogueEssence.Dungeon
                 else if (CurrentPreviewMove > -1 && movePreviews != null)
                 {
                     HashSet<Loc> movePreview = movePreviews[(int)FocusedCharacter.CharDir];
-                    if (movePreview.Contains(visualLoc))
+                    if (movePreview.Contains(wrapLoc))
                         GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 1, 0);
                     else if (!ZoneManager.Instance.CurrentMap.TileBlocked(wrapLoc, FocusedCharacter.Mobility))
                         GraphicsManager.Tiling.DrawTile(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), 0, 0);
