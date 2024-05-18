@@ -218,12 +218,14 @@ namespace RogueEssence.Data
     }
 
     [Serializable]
-    public class UniversalActiveEffect : ActiveEffect
+    public abstract  class UniversalBaseEffect : ActiveEffect
     {
         public List<ZoneStep> ZoneSteps;
-        public UniversalActiveEffect() : base()
+        public UniversalBaseEffect() : base()
         {
             this.ZoneSteps = new List<ZoneStep>();
         }
+
+        public abstract int GetRange(Character character, ref SkillData entry);
     }
 }

@@ -235,7 +235,7 @@ namespace RogueEssence.Data
         /// </summary>
         public string GenUnbreakable;
         
-        public UniversalActiveEffect UniversalEvent;
+        public UniversalBaseEffect UniversalEvent;
         
         public TypeDict<BaseData> UniversalData;
 
@@ -333,7 +333,7 @@ namespace RogueEssence.Data
 
 
             Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
-            UniversalEvent = LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            UniversalEvent = LoadData<UniversalBaseEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
 
             UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
