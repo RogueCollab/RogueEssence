@@ -178,27 +178,29 @@ namespace RogueEssence
                 return Path.Join(ExePath, mod, basePath);
         }
 
-        public static IEnumerable<string> FallforthMods(string basePath)
+        public static IEnumerable<ModHeader> FallforthMods(string basePath)
         {
-            Stack<string> mods = new Stack<string>();
-            foreach (string mod in FallbackMods(basePath))
+            Stack<ModHeader> mods = new Stack<ModHeader>();
+            foreach (ModHeader mod in FallbackMods(basePath))
                 mods.Push(mod);
 
             while (mods.Count > 0)
                 yield return mods.Pop();
         }
 
-        public static IEnumerable<string> FallbackMods(string basePath)
+        public static IEnumerable<ModHeader> FallbackMods(string basePath)
         {
             for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
             {
                 ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
                 string fullPath = HardMod(mod.Path, basePath);
                 if (File.Exists(fullPath) || Directory.Exists(fullPath))
-                    yield return mod.Path;
+                    yield return mod;
             }
 
-            yield return "";
+            ModHeader header = ModHeader.Invalid;
+            header.Namespace = BaseNamespace;
+            yield return header;
         }
 
         public static IEnumerable<string> FallforthPaths(string basePath)

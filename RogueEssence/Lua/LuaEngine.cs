@@ -582,8 +582,15 @@ namespace RogueEssence.Script
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 LuaState.State.Encoding = Encoding.GetEncoding(1252);
 
-            //Set the current script directory to the lua searchpath for loading modules!
-            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
+            //Add the current script directory to the lua searchpath for loading modules!
+            string buildPath = (string)(LuaState["package.path"]);
+            foreach (string pathMod in PathMod.FallbackPaths(SCRIPT_PATH))
+            {
+                buildPath += ";" + pathMod + "lib/?.lua";
+                buildPath += ";" + pathMod + "?.lua";
+                buildPath += ";" + pathMod + "?/init.lua";
+            }
+            LuaState["package.path"] = buildPath;
 
             //Add lua binary path. No mods
             string cpath = LuaState["package.cpath"] + ";" + Path.GetFullPath(PathMod.NoMod(GetScriptCPath()));
@@ -597,11 +604,6 @@ namespace RogueEssence.Script
                 LuaState.State.Encoding = Encoding.UTF8;
         }
 
-        public void SetLoadPath(string modPath)
-        {
-            LuaState["package.path"] = Path.Join(modPath, "lib/?.lua;") + Path.Join(modPath, "?.lua;") + Path.Join(modPath, "?/init.lua");
-        }
-
         private string GetModulePath(string scriptPath, string moduleName)
         {
             //check if the ?.lua or ?/init.lua exists
@@ -612,37 +614,33 @@ namespace RogueEssence.Script
             return null;
         }
 
-        private void ModLoadFile(string loadPath)
+        private void ModLoadFile(string moduleName)
         {
-            foreach (string modPath in PathMod.FallforthPaths(SCRIPT_PATH))
+            foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
             {
-                string modulePath = GetModulePath(modPath, loadPath);
+                string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, moduleName));
                 if (modulePath != null)
                 {
-                    SetLoadPath(modPath);
                     LuaState.LoadFile(modulePath);
-                    //RunString(String.Format("require('{0}')", loadPath));
+                    //RunString(String.Format("require('{0}.{1}')", mod.Namespace, moduleName));
                 }
             }
-            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
         }
 
-        private void ModDoFile(string loadPath)
+        private void ModDoFile(string moduleName)
         {
-            foreach (string modPath in PathMod.FallforthPaths(SCRIPT_PATH))
+            foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
             {
-                string modulePath = GetModulePath(modPath, loadPath);
+                string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, moduleName));
                 if (modulePath != null)
                 {
-                    SetLoadPath(modPath);
                     LuaState.DoFile(modulePath);
-                    //RunString(String.Format("require('{0}')", loadPath));
+                    //RunString(String.Format("require('{0}.{1}')", mod.Namespace, moduleName));
                 }
             }
-            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
         }
 
-        private LuaTable ModLoadTable(string loadPath)
+        private LuaTable ModLoadTable(string loadPath, string importpath)
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             LuaFunction addmeta = LuaEngine.Instance.RunString(@"local mergeTables = function(t1, t2)
@@ -656,37 +654,20 @@ namespace RogueEssence.Script
             end
             return mergeTables").First() as LuaFunction;
             //we need to switch path using fallforth, then load each, then combine them into one table, then return
-            foreach (string modPath in PathMod.FallforthPaths(SCRIPT_PATH))
+            foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
             {
-                string modulePath = GetModulePath(modPath, loadPath);
+                string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, loadPath));
                 if (modulePath != null)
                 {
-                    SetLoadPath(modPath);
-                    object[] ret = LuaState.DoFile(modulePath);
-                    //object[] ret = RunString(String.Format("return require('{0}')", loadPath));
+                    LuaState.LoadFile(modulePath);
+                    object[] ret = RunString(String.Format("return require('{0}.{1}')", mod.Namespace, importpath));
                     if (ret[0] is not LuaTable)
-                        throw new InvalidDataException(String.Format("Script did not load a table at mod '{0}'", modPath));
+                        throw new InvalidDataException(String.Format("Script did not load a table at mod '{0}'", modulePath));
                     LuaTable tbl2 = (LuaTable)ret[0];
                     addmeta.Call(tbl, tbl2);
                 }
             }
-            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
             return tbl;
-        }
-
-        private void ModLoadService(string loadPath)
-        {
-            foreach (string modPath in PathMod.FallbackPaths(SCRIPT_PATH))
-            {
-                string modulePath = GetModulePath(modPath, loadPath);
-                if (modulePath != null)
-                {
-                    SetLoadPath(modPath);
-                    LuaState.DoFile(modulePath);
-                    break;
-                }
-            }
-            SetLoadPath(PathMod.NoMod(SCRIPT_PATH));
         }
 
         /// <summary>
@@ -926,7 +907,7 @@ namespace RogueEssence.Script
             DiagManager.Instance.LogInfo("[SE]:Setting up debug functions...");
             try
             {
-                LuaState.DoFile(PathMod.HardMod(String.Format("{0}{1}", SCRIPT_PATH, SCRIPT_DEBUG + ".lua")));
+                LuaState.DoFile(PathMod.NoMod(String.Format("{0}{1}", SCRIPT_PATH, SCRIPT_DEBUG + ".lua")));
             }
             catch (Exception ex)
             {
@@ -957,33 +938,6 @@ namespace RogueEssence.Script
 
             //Run main script
             ModDoFile(SCRIPT_MAIN);
-
-            HashSet<string> moduleNames = new HashSet<string>();
-            foreach (string modPath in PathMod.FallforthPaths(String.Format("{0}{1}", SCRIPT_PATH, "services")))
-            {
-                //we need to get all lua modules not named baseservice.lua in the folder location.
-                string[] dirs = Directory.GetDirectories(modPath);
-                foreach (string dir in dirs)
-                    moduleNames.Add(Path.GetFileNameWithoutExtension(dir));
-
-                string[] files = Directory.GetFiles(modPath);
-                foreach (string file in files)
-                {
-                    string fileName = Path.GetFileNameWithoutExtension(file);
-                    if (fileName != "baseservice")
-                        moduleNames.Add(fileName);
-                }
-            }
-
-            //LuaFunction createNew = LuaEngine.Instance.RunString("return function(tbl) return tbl:new() end").First() as LuaFunction;
-            foreach (string moduleName in moduleNames)
-            {
-                //LuaTable servicetbl = ModLoadTable(Path.Join("services", moduleName));
-                ModLoadService(Path.Join("services", moduleName));
-                //object[] obj = createNew.Call(servicetbl);
-                //register this variable
-                //m_scrsvc.AddService(moduleName, servicetbl);
-            }
         }
 
 
@@ -1389,10 +1343,10 @@ namespace RogueEssence.Script
         {
             //LuaState.LoadFile(abspath);
             //RunString(String.Format("{0} = require('{1}');", globalsymbol, importpath), abspath);
-            LuaState[globalsymbol] = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
-            ModDoFile(relpath);
-            //LuaTable state = ModLoadTable(relpath);
-            //LuaState[globalsymbol] = state;
+            //LuaState[globalsymbol] = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            //ModDoFile(relpath);
+            LuaTable state = ModLoadTable(relpath, importpath);
+            LuaState[globalsymbol] = state;
         }
 
         /// <summary>

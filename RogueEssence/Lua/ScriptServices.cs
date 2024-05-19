@@ -53,9 +53,9 @@ namespace RogueEssence.Script
         {
             //We can get the path 3 ways.
             if (ZoneManager.Instance.CurrentGround != null)
-                return Path.Join(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), "/");
+                return string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/');
             else if (ZoneManager.Instance.CurrentMap != null)
-                return Path.Join(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.DUNGEON_MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentMap.AssetName).Replace('.', '/'), "/");
+                return string.Format(LuaEngine.DUNGEON_MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentMap.AssetName).Replace('.', '/');
             else
                 throw new Exception("ScriptServices.CurrentScriptDir(): No map lua package currently loaded! And no map currently loaded either! Cannot assemble the current package path!");
         }

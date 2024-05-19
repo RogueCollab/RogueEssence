@@ -23,13 +23,17 @@ namespace RogueEssence.Script
                 string code = LocaleCode();
                 //order of string fallbacks:
                 //first go through all mods of the original language
-                foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + "." + code + ".resx"))
+                foreach (ModHeader mod in PathMod.FallbackMods(LuaEngine.SCRIPT_PATH))
                 {
-                    Dictionary<string, string> dict = Text.LoadStringResx(path);
-                    foreach (string key in dict.Keys)
+                    string modulePath = PathMod.HardMod(mod.Path, Path.Join(LuaEngine.SCRIPT_PATH, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + "." + code + ".resx"));
+                    if (File.Exists(modulePath))
                     {
-                        if (!xmlDict.ContainsKey(key))
-                            xmlDict.Add(key, dict[key]);
+                        Dictionary<string, string> dict = Text.LoadStringResx(modulePath);
+                        foreach (string key in dict.Keys)
+                        {
+                            if (!xmlDict.ContainsKey(key))
+                                xmlDict.Add(key, dict[key]);
+                        }
                     }
                 }
 
@@ -38,25 +42,33 @@ namespace RogueEssence.Script
                 {
                     foreach (string fallback in Text.LangNames[code].Fallbacks)
                     {
-                        foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + "." + fallback + ".resx"))
+                        foreach (ModHeader mod in PathMod.FallbackMods(LuaEngine.SCRIPT_PATH))
                         {
-                            Dictionary<string, string> dict = Text.LoadStringResx(path);
-                            foreach (string key in dict.Keys)
+                            string modulePath = PathMod.HardMod(mod.Path, Path.Join(LuaEngine.SCRIPT_PATH, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + "." + fallback + ".resx"));
+                            if (File.Exists(modulePath))
                             {
-                                if (!xmlDict.ContainsKey(key))
-                                    xmlDict.Add(key, dict[key]);
+                                Dictionary<string, string> dict = Text.LoadStringResx(modulePath);
+                                foreach (string key in dict.Keys)
+                                {
+                                    if (!xmlDict.ContainsKey(key))
+                                        xmlDict.Add(key, dict[key]);
+                                }
                             }
                         }
                     }
                 }
                 //then go through all mods of the default language
-                foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + ".resx"))
+                foreach (ModHeader mod in PathMod.FallbackMods(LuaEngine.SCRIPT_PATH))
                 {
-                    Dictionary<string, string> dict = Text.LoadStringResx(path);
-                    foreach (string key in dict.Keys)
+                    string modulePath = PathMod.HardMod(mod.Path, Path.Join(LuaEngine.SCRIPT_PATH, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + ".resx"));
+                    if (File.Exists(modulePath))
                     {
-                        if (!xmlDict.ContainsKey(key))
-                            xmlDict.Add(key, dict[key]);
+                        Dictionary<string, string> dict = Text.LoadStringResx(modulePath);
+                        foreach (string key in dict.Keys)
+                        {
+                            if (!xmlDict.ContainsKey(key))
+                                xmlDict.Add(key, dict[key]);
+                        }
                     }
                 }
 
