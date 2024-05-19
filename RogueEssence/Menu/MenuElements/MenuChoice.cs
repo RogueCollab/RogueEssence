@@ -4,6 +4,7 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
+using System.Linq;
 
 namespace RogueEssence.Menu
 {
@@ -138,6 +139,40 @@ namespace RogueEssence.Menu
         {
             foreach (IMenuElement element in Elements)
                 yield return element;
+        }
+
+        public virtual int GetChoiceIndexByLabel(string label)
+        {
+            return GetChoiceIndexesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        {
+            Dictionary<string, int> poss = new();
+            List<string> labelList = labels.ToList();
+            foreach (string label in labels)
+                poss.Add(label, -1);
+
+            for (int ii = 0; ii < Elements.Count; ii++)
+            {
+                bool found = false;
+                IMenuElement element = Elements[ii];
+                if (element.HasLabel())
+                {
+                    for (int kk = 0; kk < labelList.Count; kk++)
+                    {
+                        string label = labelList[kk];
+                        if (element.Label == label)
+                        {
+                            found = true;
+                            poss[label] = ii;
+                            labelList.RemoveAt(kk);
+                            break;
+                        }
+                    }
+                }
+                if (found && labelList.Count == 0) break;
+            }
+            return poss;
         }
     }
 }
