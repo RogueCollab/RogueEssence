@@ -8,7 +8,7 @@ namespace RogueEssence.Menu
 {
     public class SpeakerPortrait : IMenuElement
     {
-
+        public string Label { get; set; }
         public Loc Loc;
         public MonsterID Speaker;
         public EmoteStyle SpeakerEmotion;
