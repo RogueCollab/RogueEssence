@@ -110,10 +110,14 @@ namespace RogueEssence.Menu
     {
         public MenuText Text;
 
-        public MenuTextChoice(string text, Action choiceAction) : this(text, choiceAction, true, Color.White) { }
+        public MenuTextChoice(string text, Action choiceAction) : this("", text, choiceAction, true, Color.White) { }
 
-        public MenuTextChoice(string text, Action choiceAction, bool enabled, Color color)
-            : base(choiceAction, enabled)
+        public MenuTextChoice(string label, string text, Action choiceAction) : this(label, text, choiceAction, true, Color.White) { }
+
+        public MenuTextChoice(string text, Action choiceAction, bool enabled, Color color) : this("", text, choiceAction, enabled, color) { }
+
+        public MenuTextChoice(string label, string text, Action choiceAction, bool enabled, Color color)
+            : base(label, choiceAction, enabled)
         {
             Text = new MenuText(text, new Loc(2, 1), color);
         }
@@ -127,8 +131,9 @@ namespace RogueEssence.Menu
     public class MenuElementChoice : MenuChoice
     {
         public List<IMenuElement> Elements;
-        
-        public MenuElementChoice(Action choiceAction, bool enabled, params IMenuElement[] elements) : base(choiceAction, enabled)
+
+        public MenuElementChoice(Action choiceAction, bool enabled, params IMenuElement[] elements) : this("", choiceAction, enabled, elements) { }
+        public MenuElementChoice(string label, Action choiceAction, bool enabled, params IMenuElement[] elements) : base(label, choiceAction, enabled)
         {
             ChoiceAction = choiceAction;
             Enabled = enabled;
