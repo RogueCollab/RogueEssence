@@ -9,6 +9,7 @@ namespace RogueEssence.Menu
 {
     public abstract class MenuChoice : IChoosable
     {
+        public string Label { get; set; }
         public Rect Bounds { get; set; }
 
         public Action ChoiceAction;

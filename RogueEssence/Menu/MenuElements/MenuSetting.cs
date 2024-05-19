@@ -8,6 +8,7 @@ namespace RogueEssence.Menu
 {
     public class MenuSetting : IChoosable
     {
+        public string Label { get; set; }
         public MenuText SettingName;
         public MenuText Setting;
 

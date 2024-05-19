@@ -7,6 +7,7 @@ namespace RogueEssence.Menu
 {
     public class MenuStatBar : IMenuElement
     {
+        public string Label { get; set; }
         public int Length { get; set; }
         public Color Color { get; set; }
         public Loc Loc { get; set; }

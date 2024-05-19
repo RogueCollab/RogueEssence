@@ -10,6 +10,7 @@ namespace RogueEssence.Menu
 {
     public class DialogueText : IMenuElement
     {
+        public string Label { get; set; }
         public int LineHeight;
         public Rect Rect;
         public int CurrentCharIndex;

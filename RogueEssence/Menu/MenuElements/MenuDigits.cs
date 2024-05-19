@@ -7,6 +7,7 @@ namespace RogueEssence.Menu
 {
     public class MenuDigits : IMenuElement
     {
+        public string Label { get; set; }
         public const int DIGIT_SPACE = 9;
 
         public int Amount;

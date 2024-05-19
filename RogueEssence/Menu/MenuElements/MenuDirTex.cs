@@ -17,6 +17,7 @@ namespace RogueEssence.Menu
             BG
         }
 
+        public string Label { get; set; }
         public Loc Loc;
         public TexType Type;
         public AnimData Anim;

@@ -7,6 +7,7 @@ namespace RogueEssence.Menu
 {
     public class MenuDivider : IMenuElement
     {
+        public string Label { get; set; }
         public int Length { get; set; }
         public Loc Loc { get; set; }
 

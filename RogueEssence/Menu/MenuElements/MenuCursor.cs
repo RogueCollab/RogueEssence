@@ -7,6 +7,7 @@ namespace RogueEssence.Menu
 {
     public class MenuCursor : IMenuElement
     {
+        public string Label { get; set; }
         protected const int CURSOR_FLASH_TIME = 24;
 
         public ulong PrevTick;

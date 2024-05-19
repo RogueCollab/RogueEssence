@@ -12,6 +12,7 @@ namespace RogueEssence.Menu
             Button
         }
 
+        public string Label { get; set; }
         public Loc Loc { get; set; }
         public GraphicType Type { get; set; }
         public Loc Texture { get; set; }

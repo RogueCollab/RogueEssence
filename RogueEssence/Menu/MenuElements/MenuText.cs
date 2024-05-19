@@ -10,6 +10,7 @@ namespace RogueEssence.Menu
 {
     public class MenuText : IMenuElement
     {
+        public string Label { get; set; }
         public string Text { get; private set; }
         public Color Color;
         public DirV AlignV;
