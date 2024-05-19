@@ -17,13 +17,12 @@ namespace RogueEssence.Menu
         public Dir4 Direction;
 
         private IInteractable baseMenu;
-        public MenuCursor(IInteractable baseMenu)
+        public MenuCursor(IInteractable baseMenu) : this("", baseMenu, Dir4.Right) { }
+        public MenuCursor(string label, IInteractable baseMenu) : this(label, baseMenu, Dir4.Right) { }
+        public MenuCursor(IInteractable baseMenu, Dir4 dir) : this("", baseMenu, dir) { }
+        public MenuCursor(string label, IInteractable baseMenu, Dir4 dir)
         {
-            this.baseMenu = baseMenu;
-            this.Direction = Dir4.Right;
-        }
-        public MenuCursor(IInteractable baseMenu, Dir4 dir)
-        {
+            this.Label = label;
             this.baseMenu = baseMenu;
             this.Direction = dir;
         }
@@ -54,8 +53,6 @@ namespace RogueEssence.Menu
                         break;
                 }
             }
-
-
         }
     }
 }

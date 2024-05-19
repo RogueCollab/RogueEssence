@@ -20,13 +20,15 @@ namespace RogueEssence.Menu
 
         private bool hover;
         private bool click;
-        
-        protected MenuChoice(Action choiceAction, bool enabled)
+
+        protected MenuChoice(string label, Action choiceAction, bool enabled)
         {
+            Label = label;
             Bounds = new Rect();
             ChoiceAction = choiceAction;
             Enabled = enabled;
         }
+        protected MenuChoice(Action choiceAction, bool enabled) : this("", choiceAction, enabled) { }
 
         //chosen by clicking
         public void OnMouseState(bool clicked)
