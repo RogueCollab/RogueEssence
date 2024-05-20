@@ -614,7 +614,7 @@ namespace RogueEssence.Script
             return null;
         }
 
-        private void ModLoadFile(string moduleName)
+        private void ModRequireFile(string moduleName)
         {
             foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
             {
@@ -622,7 +622,7 @@ namespace RogueEssence.Script
                 if (modulePath != null)
                 {
                     LuaState.LoadFile(modulePath);
-                    //RunString(String.Format("require('{0}.{1}')", mod.Namespace, moduleName));
+                    RunString(String.Format("require('{0}.{1}')", mod.Namespace, moduleName));
                 }
             }
         }
@@ -919,7 +919,7 @@ namespace RogueEssence.Script
 
             DiagManager.Instance.LogInfo("[SE]:Caching common lib...");
             //Cache common lib
-            ModLoadFile(SCRIPT_COMMON);
+            ModRequireFile(SCRIPT_COMMON);
             DiagManager.Instance.LogInfo("[SE]:Loading events...");
             //load events
             ModDoFile(SCRIPT_EVENT);
