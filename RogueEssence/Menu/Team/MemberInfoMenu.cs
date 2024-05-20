@@ -70,19 +70,19 @@ namespace RogueEssence.Menu
             Promotions = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTION"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET));
             List<DialogueText> validPromotions = new List<DialogueText>();
 
-            int lineCount = 1;
+            int lineCount = 0;
             bool inDungeon = (GameManager.Instance.CurrentScene == DungeonScene.Instance);
             for (int ii = 0; ii < dexEntry.Promotions.Count; ii++)
             {
                 DialogueText promoteReqText = new DialogueText(DataManager.Instance.GetMonster(dexEntry.Promotions[ii].Result).GetColoredName() + ": " + dexEntry.Promotions[ii].GetReqString(), new Rect(
-                    new Loc(GraphicsManager.MenuBG.TileWidth * 3, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (lineCount * validPromotions.Count + 5) + TitledStripMenu.TITLE_OFFSET),
+                    new Loc(GraphicsManager.MenuBG.TileWidth * 3, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (lineCount + 5) + TitledStripMenu.TITLE_OFFSET),
                     new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, 0)), LINE_HEIGHT);
                 if (!DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(dexEntry.Promotions[ii].Result).Released)
                     continue;
                 if (dexEntry.Promotions[ii].IsQualified(player, inDungeon))
                 {
                     validPromotions.Add(promoteReqText);
-                    lineCount = promoteReqText.GetLineCount();
+                    lineCount += promoteReqText.GetLineCount();
                 }
                 else
                 {
@@ -99,7 +99,7 @@ namespace RogueEssence.Menu
                     {
                         promoteReqText.Color = Color.Red;
                         validPromotions.Add(promoteReqText);
-                        lineCount = promoteReqText.GetLineCount();
+                        lineCount += promoteReqText.GetLineCount();
                     }
                 }
             }
