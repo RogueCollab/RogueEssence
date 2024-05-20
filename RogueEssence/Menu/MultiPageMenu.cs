@@ -169,7 +169,7 @@ namespace RogueEssence.Menu
             {
                 bool found = false;
                 IChoosable[] page = TotalChoices[ii];
-                for (int jj = 0; jj < TotalChoices.Length; jj++)
+                for (int jj = 0; jj < TotalChoices[ii].Length; jj++)
                 {
                     IChoosable choice = page[jj];
                     if (choice.HasLabel())
