@@ -11,7 +11,7 @@ namespace RogueEssence.Menu
         public string Label { get; set; }
         public bool HasLabel()
         {
-            return string.IsNullOrEmpty(Label);
+            return !string.IsNullOrEmpty(Label);
         }
     }
 }
