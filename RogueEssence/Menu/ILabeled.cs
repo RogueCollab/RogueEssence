@@ -24,6 +24,7 @@ namespace RogueEssence.Menu
         TACTICS,
         TEAM,
         TEAM_SWITCH,
-        TEAM_SENDHOME
+        TEAM_SENDHOME,
+        OTHERS
     }
 }
