@@ -22,6 +22,8 @@ namespace RogueEssence.Menu
         INVENTORY,
         INVENTORY_REPLACE,
         TACTICS,
-        TEAM
+        TEAM,
+        TEAM_SWITCH,
+        TEAM_SENDHOME
     }
 }

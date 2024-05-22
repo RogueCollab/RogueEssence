@@ -991,7 +991,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TEAM_FULL")));
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(true)));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(MenuLabel.TEAM_SENDHOME.ToString(), true)));
             }
         }
         
