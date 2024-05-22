@@ -19,7 +19,7 @@ namespace RogueEssence.Menu
         private bool inReplay;
 
         MenuText menuTimer;
-        
+
         public List<MenuTextChoice> Choices { get; set; }
         public List<IMenuElement> TitleElements { get; set; }
         public List<IMenuElement> SummaryElements { get; set; }
@@ -29,6 +29,7 @@ namespace RogueEssence.Menu
         public Rect TitleMenuBounds { get; set; }
         public SummaryMenu SummaryMenu { get; set; }
         public Rect SummaryMenuBounds { get; set; }
+        public MainMenu(string label) : this() { Label = label; }
         public MainMenu()
         {
             Choices = new List<MenuTextChoice>();
