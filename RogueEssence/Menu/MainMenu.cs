@@ -9,6 +9,7 @@ using System;
 using KeraLua;
 using RogueEssence.Ground;
 using RogueEssence.Script;
+using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
@@ -29,8 +30,8 @@ namespace RogueEssence.Menu
         public Rect TitleMenuBounds { get; set; }
         public SummaryMenu SummaryMenu { get; set; }
         public Rect SummaryMenuBounds { get; set; }
-        public MainMenu(string label) : this() { Label = label; }
-        public MainMenu()
+        public MainMenu() : this(MenuLabel.MAIN.ToString()) { }
+        public MainMenu(string label)
         {
             Choices = new List<MenuTextChoice>();
             TitleElements = new List<IMenuElement>();

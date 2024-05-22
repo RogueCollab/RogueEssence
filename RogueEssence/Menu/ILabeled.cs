@@ -17,6 +17,7 @@ namespace RogueEssence.Menu
 
     public enum MenuLabel
     {
+        MAIN,
         SKILLS,
         INVENTORY,
     }
