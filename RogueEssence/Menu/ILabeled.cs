@@ -25,6 +25,9 @@ namespace RogueEssence.Menu
         TEAM,
         TEAM_SWITCH,
         TEAM_SENDHOME,
+        GROUND,
+        GROUND_ITEM,
+        GROUND_TILE,
         OTHERS
     }
 }

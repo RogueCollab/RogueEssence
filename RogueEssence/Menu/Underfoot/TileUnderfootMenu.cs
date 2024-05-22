@@ -11,8 +11,10 @@ namespace RogueEssence.Menu
     {
         TileSummary summaryMenu;
 
-        public TileUnderfootMenu(string tileIndex)
+        public TileUnderfootMenu(string tileIndex) : this(MenuLabel.GROUND_TILE.ToString(), tileIndex) { }
+        public TileUnderfootMenu(string label, string tileIndex)
         {
+            Label = label;
             Data.TileData entry = Data.DataManager.Instance.GetTile(tileIndex);
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             

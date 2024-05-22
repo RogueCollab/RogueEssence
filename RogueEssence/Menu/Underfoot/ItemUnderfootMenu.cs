@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
     {
         ItemSummary summaryMenu;
 
-        public ItemUnderfootMenu(int mapItemSlot)
+        public ItemUnderfootMenu(int mapItemSlot) : this(MenuLabel.GROUND_ITEM.ToString(), mapItemSlot) { }
+        public ItemUnderfootMenu(string label, int mapItemSlot)
         {
+            Label = label;
             MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[mapItemSlot];
             string itemName = mapItem.GetDungeonName();
 
