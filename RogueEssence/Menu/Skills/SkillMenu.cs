@@ -114,7 +114,7 @@ namespace RogueEssence.Menu
         private void choose(int choice)
         {
             if (DataManager.Instance.CurrentReplay == null)
-                MenuManager.Instance.AddMenu(new SkillChosenMenu(CurrentPage, choice), true);
+                MenuManager.Instance.AddMenu(new SkillChosenMenu(Label, CurrentPage, choice), true);
         }
 
         private int getMenuWidth(int min, int max, int chkWidth, int chargesWidth, int skillIndent, string title, List<Character> openPlayers)
