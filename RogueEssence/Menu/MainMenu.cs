@@ -86,9 +86,9 @@ namespace RogueEssence.Menu
             else if (!inReplay)
             {
                 if (((GameManager.Instance.CurrentScene == DungeonScene.Instance)) || DataManager.Instance.Save is RogueProgress)
-                    Choices.Add(new MenuTextChoice("REST", Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
+                    Choices.Add(new MenuTextChoice(MenuLabel.REST.ToString(), Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
                 else
-                    Choices.Add(new MenuTextChoice("SAVE", Text.FormatKey("MENU_MAIN_SAVE"), SaveAction));
+                    Choices.Add(new MenuTextChoice(MenuLabel.SAVE.ToString(), Text.FormatKey("MENU_MAIN_SAVE"), SaveAction));
             }
             else
             

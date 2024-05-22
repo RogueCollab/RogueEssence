@@ -32,6 +32,8 @@ namespace RogueEssence.Menu
         GROUND,
         GROUND_ITEM,
         GROUND_TILE,
-        OTHERS
+        OTHERS,
+        REST,
+        SAVE
     }
 }
