@@ -33,6 +33,7 @@ namespace RogueEssence.Menu
         public MainMenu() : this(MenuLabel.MAIN.ToString()) { }
         public MainMenu(string label)
         {
+            Label = label;
             Choices = new List<MenuTextChoice>();
             TitleElements = new List<IMenuElement>();
             SummaryElements = new List<IMenuElement>();
