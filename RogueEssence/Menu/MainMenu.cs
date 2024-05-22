@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
             bool hasTactics = (DataManager.Instance.Save.ActiveTeam.Players.Count > 1);
             inReplay = (DataManager.Instance.CurrentReplay != null);
             Choices.Add(new MenuTextChoice(MenuLabel.TACTICS.ToString(), Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
-            Choices.Add(new MenuTextChoice("TEAM", Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.TEAM.ToString(), Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {

@@ -20,8 +20,14 @@ namespace RogueEssence.Menu
 
         public TeamMenu(bool sendHome) : this(sendHome, -1)
         { }
-        public TeamMenu(bool sendHome, int teamSlot)
+        public TeamMenu(bool sendHome, int teamSlot) : this(MenuLabel.TEAM.ToString(), sendHome, teamSlot)
+        { }
+        public TeamMenu(string label, bool sendHome) : this(label, sendHome, -1)
+        { }
+        public TeamMenu(string label, bool sendHome, int teamSlot)
         {
+            Label = label;
+
             int menuWidth = 160;
             this.sendHome = sendHome;
             bool overrideSendHome = false;
