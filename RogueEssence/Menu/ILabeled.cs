@@ -13,6 +13,10 @@ namespace RogueEssence.Menu
         {
             return !string.IsNullOrEmpty(Label);
         }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
     }
 
     public enum MenuLabel
