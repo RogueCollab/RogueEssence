@@ -21,5 +21,6 @@ namespace RogueEssence.Menu
         SKILLS,
         INVENTORY,
         INVENTORY_REPLACE,
+        TACTICS
     }
 }
