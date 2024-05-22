@@ -3,7 +3,7 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public abstract class InteractableMenu : MenuBase, IInteractable
+    public abstract class InteractableMenu : MenuBase, IInteractable, ILabeled
     {
         const int INPUT_WAIT = 30;
         const int INPUT_GAP = 6;
@@ -14,6 +14,8 @@ namespace RogueEssence.Menu
             set;
         }
         public bool BlockPrevious { get; set; }
+
+        public virtual string Label { get; set; } = "";
 
         public abstract void Update(InputManager input);
 
