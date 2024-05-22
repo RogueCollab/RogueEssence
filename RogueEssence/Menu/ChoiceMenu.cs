@@ -3,6 +3,7 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
+using System.Linq;
 
 namespace RogueEssence.Menu
 {
@@ -19,6 +20,40 @@ namespace RogueEssence.Menu
             cursor = new MenuCursor(this, Dir4.Right);
             NonChoices = new List<IMenuElement>();
             Choices = new List<IChoosable>();
+        }
+
+        public virtual int GetChoiceIndexByLabel(string label)
+        {
+            return GetChoiceIndexesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        {
+            Dictionary<string, int> poss = new();
+            List<string> labelList = labels.ToList();
+            foreach (string label in labels)
+                poss.Add(label, -1);
+
+            for (int ii = 0; ii < Choices.Count; ii++)
+            {
+                bool found = false;
+                IChoosable choice = Choices[ii];
+                if (choice.HasLabel())
+                {
+                    for (int kk = 0; kk < labelList.Count; kk++)
+                    {
+                        string label = labelList[kk];
+                        if (choice.Label == label)
+                        {
+                            found = true;
+                            poss[label] = ii;
+                            labelList.RemoveAt(kk);
+                            break;
+                        }
+                    }
+                }
+                if (found && labelList.Count == 0) break;
+            }
+            return poss;
         }
 
         public override IEnumerable<IMenuElement> GetElements()

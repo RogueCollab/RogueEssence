@@ -17,12 +17,15 @@ namespace RogueEssence.Menu
             BG
         }
 
+        public string Label { get; set; }
         public Loc Loc;
         public TexType Type;
         public AnimData Anim;
 
-        public MenuDirTex(Loc loc, TexType type, AnimData texture)
+        public MenuDirTex(Loc loc, TexType type, AnimData texture) : this("", loc, type, texture) { }
+        public MenuDirTex(string label, Loc loc, TexType type, AnimData texture)
         {
+            Label = label;
             Loc = loc;
             Type = type;
             Anim = texture;

@@ -3,7 +3,7 @@ using RogueElements;
 
 namespace RogueEssence.Menu
 {
-    public interface IMenuElement
+    public interface IMenuElement : ILabeled
     {
         void Draw(SpriteBatch spriteBatch, Loc offset);
     }

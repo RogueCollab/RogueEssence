@@ -8,6 +8,7 @@ namespace RogueEssence.Menu
 {
     public class MenuSetting : IChoosable
     {
+        public string Label { get; set; }
         public MenuText SettingName;
         public MenuText Setting;
 
@@ -28,13 +29,20 @@ namespace RogueEssence.Menu
 
         public MenuSetting() { }
 
-        public MenuSetting(string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, Action choiceAction) : this(text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, defaultChoice, choiceAction) { }
+        public MenuSetting(string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, Action choiceAction) : this("", text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, defaultChoice, choiceAction) { }
 
-        public MenuSetting(string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, int savedChoice, Action choiceAction) : this(text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, savedChoice, choiceAction) { }
+        public MenuSetting(string label, string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, Action choiceAction) : this(label, text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, defaultChoice, choiceAction) { }
 
-        public MenuSetting(string text, Color nrmColor, Color chgColor, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, int savedChoice, Action choiceAction)
+        public MenuSetting(string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, int savedChoice, Action choiceAction) : this("", text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, savedChoice, choiceAction) { }
+
+        public MenuSetting(string label, string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, int savedChoice, Action choiceAction) : this(label, text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, savedChoice, choiceAction) { }
+
+        public MenuSetting(string text, Color nrmColor, Color chgColor, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, int savedChoice, Action choiceAction) : this("", text, nrmColor, chgColor, choiceOffset, choiceWidth, totalChoices, defaultChoice, savedChoice, choiceAction) { }
+
+        public MenuSetting(string label, string text, Color nrmColor, Color chgColor, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, int savedChoice, Action choiceAction)
             : this()
         {
+            Label = label;
             Bounds = new Rect();
             ChoiceAction = choiceAction;
             TotalChoices = totalChoices;

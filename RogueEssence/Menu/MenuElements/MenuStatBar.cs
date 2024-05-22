@@ -2,19 +2,24 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
+using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
     public class MenuStatBar : IMenuElement
     {
+        public string Label { get; set; }
         public int Length { get; set; }
         public Color Color { get; set; }
         public Loc Loc { get; set; }
         public bool Shadow { get; set; }
 
-        public MenuStatBar(Loc loc, int length, Color color) : this(loc, length, color, true) { }
-        public MenuStatBar(Loc loc, int length, Color color, bool shadow)
+        public MenuStatBar(Loc loc, int length, Color color) : this("", loc, length, color, true) { }
+        public MenuStatBar(string label, Loc loc, int length, Color color) : this(label, loc, length, color, true) { }
+        public MenuStatBar(Loc loc, int length, Color color, bool shadow) : this("", loc, length, color, true) { }
+        public MenuStatBar(string label, Loc loc, int length, Color color, bool shadow)
         {
+            Label = label;
             Length = length;
             Loc = loc;
             Color = color;

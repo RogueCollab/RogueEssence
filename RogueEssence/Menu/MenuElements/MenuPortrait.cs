@@ -8,15 +8,23 @@ namespace RogueEssence.Menu
 {
     public class MenuPortrait : IMenuElement
     {
+        public string Label { get; set; }
         public Loc Loc;
         public MonsterID Speaker;
         public EmoteStyle SpeakerEmotion;
 
-        public MenuPortrait(Loc loc, MonsterID speaker) : this(loc, speaker, new EmoteStyle())
+        public MenuPortrait(Loc loc, MonsterID speaker) : this("", loc, speaker, new EmoteStyle())
         { }
 
-        public MenuPortrait(Loc loc, MonsterID speaker, EmoteStyle emote)
+        public MenuPortrait(string label, Loc loc, MonsterID speaker) : this(label, loc, speaker, new EmoteStyle())
+        { }
+
+        public MenuPortrait(Loc loc, MonsterID speaker, EmoteStyle emote) : this("", loc, speaker, emote)
+        { }
+
+        public MenuPortrait(string label, Loc loc, MonsterID speaker, EmoteStyle emote)
         {
+            Label = label;
             Loc = loc;
             Speaker = speaker;
             SpeakerEmotion = emote;
