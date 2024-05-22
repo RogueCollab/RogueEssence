@@ -20,5 +20,6 @@ namespace RogueEssence.Menu
         MAIN,
         SKILLS,
         INVENTORY,
+        INVENTORY_REPLACE,
     }
 }

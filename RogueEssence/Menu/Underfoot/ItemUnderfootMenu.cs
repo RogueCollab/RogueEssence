@@ -116,7 +116,7 @@ namespace RogueEssence.Menu
 
         private void ReplaceAction()
         {
-            MenuManager.Instance.AddMenu(new ItemMenu(-1), false);
+            MenuManager.Instance.AddMenu(new ItemMenu(MenuLabel.INVENTORY_REPLACE.ToString(), -1), false);
         }
         private void UseSelfAction()
         {
