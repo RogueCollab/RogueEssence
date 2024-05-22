@@ -54,7 +54,7 @@ namespace RogueEssence.Menu
             Choices.Clear();
             if (CharData.MAX_SKILL_SLOTS > 0)
             {
-                Choices.Add(new MenuTextChoice("SKILLS", Text.FormatKey("MENU_MAIN_SKILLS"), () =>
+                Choices.Add(new MenuTextChoice(MenuLabel.SKILLS.ToString(), Text.FormatKey("MENU_MAIN_SKILLS"), () =>
                 {
                     int mainIndex = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
                     if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -66,11 +66,11 @@ namespace RogueEssence.Menu
                     MenuManager.Instance.AddMenu(new SkillMenu(mainIndex), false);
                 }));
             }
-            Choices.Add(new MenuTextChoice("INVENTORY", Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
+            Choices.Add(new MenuTextChoice(MenuLabel.INVENTORY.ToString(), Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
 
             bool hasTactics = (DataManager.Instance.Save.ActiveTeam.Players.Count > 1);
             inReplay = (DataManager.Instance.CurrentReplay != null);
-            Choices.Add(new MenuTextChoice("TACTICS", Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
+            Choices.Add(new MenuTextChoice(MenuLabel.TACTICS.ToString(), Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
             Choices.Add(new MenuTextChoice("TEAM", Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
