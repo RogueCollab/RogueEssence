@@ -23,7 +23,7 @@ namespace RogueEssence.Menu
 
         //-2 for no replace slot, -1 for replace with ground, positive numbers for replace held team index's item
         public ItemMenu() : this(-2) { }
-        public ItemMenu(int replaceSlot) : this("INVENTORY", replaceSlot) { }
+        public ItemMenu(int replaceSlot) : this(MenuLabel.INVENTORY.ToString(), replaceSlot) { }
         public ItemMenu(string label) : this(label, -2) { }
         public ItemMenu(string label, int replaceSlot)
         {

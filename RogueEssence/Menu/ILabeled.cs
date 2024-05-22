@@ -14,4 +14,10 @@ namespace RogueEssence.Menu
             return !string.IsNullOrEmpty(Label);
         }
     }
+
+    public enum MenuLabel
+    {
+        SKILLS,
+        INVENTORY,
+    }
 }
