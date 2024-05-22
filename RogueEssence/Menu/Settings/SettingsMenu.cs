@@ -13,9 +13,11 @@ namespace RogueEssence.Menu
     {
         //needs a summary menu?
         bool inGame;
-        
-        public SettingsMenu()
+
+        public SettingsMenu() : this(MenuLabel.SETTINGS.ToString()) { }
+        public SettingsMenu(string label)
         {
+            Label = label;
             this.inGame = false;
             if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                 this.inGame = true;
