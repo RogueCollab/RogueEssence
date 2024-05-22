@@ -15,7 +15,7 @@ namespace RogueEssence.Menu
         }
         public bool BlockPrevious { get; set; }
 
-        public virtual string Label { get; set; } = "";
+        public virtual string Label { get; protected set; } = "";
 
         public abstract void Update(InputManager input);
 

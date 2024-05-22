@@ -34,6 +34,10 @@ namespace RogueEssence.Menu
         GROUND_TILE,
         OTHERS,
         REST,
-        SAVE
+        SAVE,
+        MSG_LOG,
+        SETTINGS,
+        KEYBOARD,
+        GAMEPAD
     }
 }
