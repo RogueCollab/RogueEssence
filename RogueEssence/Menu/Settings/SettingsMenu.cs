@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         //needs a summary menu?
         bool inGame;
 
-        public SettingsMenu() : this(MenuLabel.SETTINGS.ToString()) { }
+        public SettingsMenu() : this(MenuLabel.SETTINGS) { }
         public SettingsMenu(string label)
         {
             Label = label;

@@ -11,7 +11,7 @@ namespace RogueEssence.Menu
     {
         TileSummary summaryMenu;
 
-        public TileUnderfootMenu(string tileIndex) : this(MenuLabel.GROUND_TILE.ToString(), tileIndex) { }
+        public TileUnderfootMenu(string tileIndex) : this(MenuLabel.GROUND_TILE, tileIndex) { }
         public TileUnderfootMenu(string label, string tileIndex)
         {
             Label = label;

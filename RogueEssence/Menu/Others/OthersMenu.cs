@@ -6,7 +6,7 @@ namespace RogueEssence.Menu
     public class OthersMenu : TitledStripMenu
     {
         public List<MenuTextChoice> Choices { get; set; }
-        public OthersMenu() : this(MenuLabel.OTHERS.ToString()) { }
+        public OthersMenu() : this(MenuLabel.OTHERS) { }
         public OthersMenu(string label)
         {
             Label = label;
@@ -24,10 +24,10 @@ namespace RogueEssence.Menu
         public void SetupChoices()
         {
             Choices.Clear();
-            Choices.Add(new MenuTextChoice(MenuLabel.MSG_LOG.ToString(), Text.FormatKey("MENU_MSG_LOG_TITLE"), () => { MenuManager.Instance.AddMenu(new MsgLogMenu(), false); }));
-            Choices.Add(new MenuTextChoice(MenuLabel.SETTINGS.ToString(), Text.FormatKey("MENU_SETTINGS_TITLE"), () => { MenuManager.Instance.AddMenu(new SettingsMenu(), false); }));
-            Choices.Add(new MenuTextChoice(MenuLabel.KEYBOARD.ToString(), Text.FormatKey("MENU_KEYBOARD_TITLE"), () => { MenuManager.Instance.AddMenu(new KeyControlsMenu(), false); }));
-            Choices.Add(new MenuTextChoice(MenuLabel.GAMEPAD.ToString(), Text.FormatKey("MENU_GAMEPAD_TITLE"), () => { MenuManager.Instance.AddMenu(new GamepadControlsMenu(), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.MSG_LOG, Text.FormatKey("MENU_MSG_LOG_TITLE"), () => { MenuManager.Instance.AddMenu(new MsgLogMenu(), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.SETTINGS, Text.FormatKey("MENU_SETTINGS_TITLE"), () => { MenuManager.Instance.AddMenu(new SettingsMenu(), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.KEYBOARD, Text.FormatKey("MENU_KEYBOARD_TITLE"), () => { MenuManager.Instance.AddMenu(new KeyControlsMenu(), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.GAMEPAD, Text.FormatKey("MENU_GAMEPAD_TITLE"), () => { MenuManager.Instance.AddMenu(new GamepadControlsMenu(), false); }));
         }
 
         public void InitMenu()

@@ -17,7 +17,7 @@ namespace RogueEssence.Menu
         SkillSummary summaryMenu;
 
         public SkillMenu(int teamIndex) : this(teamIndex, -1) { }
-        public SkillMenu(int teamIndex, int skillSlot) : this(MenuLabel.SKILLS.ToString(), teamIndex, skillSlot) { }
+        public SkillMenu(int teamIndex, int skillSlot) : this(MenuLabel.SKILLS, teamIndex, skillSlot) { }
         public SkillMenu(string label, int teamIndex) : this(label, teamIndex, -1) { }
         public SkillMenu(string label, int teamIndex, int skillSlot)
         { 

@@ -19,25 +19,25 @@ namespace RogueEssence.Menu
         }
     }
 
-    public enum MenuLabel
+    public abstract class MenuLabel
     {
-        MAIN,
-        SKILLS,
-        INVENTORY,
-        INVENTORY_REPLACE,
-        TACTICS,
-        TEAM,
-        TEAM_SWITCH,
-        TEAM_SENDHOME,
-        GROUND,
-        GROUND_ITEM,
-        GROUND_TILE,
-        OTHERS,
-        REST,
-        SAVE,
-        MSG_LOG,
-        SETTINGS,
-        KEYBOARD,
-        GAMEPAD
+        public const string MAIN = "MAIN";
+        public const string SKILLS = "SKILLS";
+        public const string INVENTORY = "INVENTORY";
+        public const string INVENTORY_REPLACE = "INVENTORY_REPLACE";
+        public const string TACTICS = "TACTICS";
+        public const string TEAM = "TEAM";
+        public const string TEAM_SWITCH = "TEAM_SWITCH";
+        public const string TEAM_SENDHOME = "TEAM_SENDHOME";
+        public const string GROUND = "GROUND";
+        public const string GROUND_ITEM = "GROUND_ITEM";
+        public const string GROUND_TILE = "GROUND_TILE";
+        public const string OTHERS = "OTHERS";
+        public const string REST = "REST";
+        public const string SAVE = "SAVE";
+        public const string MSG_LOG = "MSG_LOG";
+        public const string SETTINGS = "SETTINGS";
+        public const string KEYBOARD = "KEYBOARD";
+        public const string GAMEPAD = "GAMEPAD";
     }
 }
