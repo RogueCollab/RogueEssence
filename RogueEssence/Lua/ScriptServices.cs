@@ -97,7 +97,7 @@ namespace RogueEssence.Script
         public override void SetupLuaFunctions(LuaEngine state)
         {
             m_fncallsub = State.RunString("return function(med, svc) xpcall(svc.Subscribe, PrintStack, svc, med) end").First() as LuaFunction;
-            m_fncallunsub = State.RunString("return function(med, svc) xpcall(svc.UnSubscribe, svc, med) end").First() as LuaFunction;
+            m_fncallunsub = State.RunString("return function(med, svc) xpcall(svc.UnSubscribe, PrintStack, svc, med) end").First() as LuaFunction;
         }
 
         /// <summary>
@@ -107,6 +107,7 @@ namespace RogueEssence.Script
         /// <param name="instance"></param>
         public void AddService(string name, LuaTable instance)
         {
+            RemoveService(name);
             ServiceEntry svc = new ServiceEntry();
             svc.name = name;
             svc.lobj = instance;
