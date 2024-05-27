@@ -37,8 +37,8 @@ namespace RogueEssence.Menu
                     wildcards++;
                 else
                 {
-                    ItemData entry = DataManager.Instance.GetItem(reqItem);
-                    reqs.Add(new MenuText(entry.GetIconName(), Loc.Zero, itemPresence.Contains(reqItem) ? Color.White : Color.Red));
+                    ItemEntrySummary itemEntry = DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(reqItem) as ItemEntrySummary;
+                    reqs.Add(new MenuText(itemEntry.GetIconName(), Loc.Zero, itemPresence.Contains(reqItem) ? Color.White : Color.Red));
                 }
             }
             if (wildcards > 0)

@@ -392,54 +392,12 @@ namespace RogueEssence.Dev
         public static void ReserializeBase()
         {
             {
-                //TODO: Created v0.5.20, delete on v1.1
-                string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal.bin");
-                if (File.Exists(dir))
-                {
-                    object data = DataManager.LoadData<UniversalActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
-                    DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), data);
-
-                    File.Delete(dir);
-                }
-            }
-
-            {
-                //TODO: Created v0.5.20, delete on v1.1
                 string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
                 if (File.Exists(dir))
                 {
-
-                    Version oldVersion = GetVersion(dir);
-                    //TODO: Created v0.7.14, delete on v1.1
-                    if (oldVersion < new Version(0, 7, 14))
-                    {
-                        object data = DataManager.LoadData<ActiveEffect>(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
-                        UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
-                        universalActiveEffect.AddOther((ActiveEffect)data);
-                        DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), universalActiveEffect);
-                    }
-                    else
-                    {
-                        object data = DataManager.LoadData<ActiveEffect>(dir);
-                        DataManager.SaveData(dir, data);
-                    }
-
+                    object data = DataManager.LoadData<ActiveEffect>(dir);
+                    DataManager.SaveData(dir, data);
                 }
-            }
-
-            //TODO: Created v0.5.20, delete on v1.1
-            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*.fx"))
-            {
-                object data;
-                if (Path.GetFileName(dir) == "NoCharge.fx")
-                    data = DataManager.LoadData<EmoteFX>(dir);
-                else
-                    data = DataManager.LoadData<BattleFX>(dir);
-
-                string fileName = Path.GetFileNameWithoutExtension(dir);
-                DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.FX_PATH, fileName + DataManager.DATA_EXT)), data);
-
-                File.Delete(PathMod.HardMod(Path.Join(DataManager.FX_PATH, fileName + ".fx")));
             }
 
             foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*" + DataManager.DATA_EXT))
@@ -466,36 +424,7 @@ namespace RogueEssence.Dev
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                {
-                    //TODO: Created v0.5.20, delete on v1.1
-                    foreach (string dir in PathMod.GetHardModFiles(DataManager.DATA_PATH + type.ToString() + "/", "*.bin"))
-                    {
-                        object data = DataManager.LoadData(dir, type.GetClassType());
-                        if (data != null)
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(dir);
-                            if (data is MonsterData)
-                            {
-                                MonsterData monData = data as MonsterData;
-                                int dexNum = 0;
-                                foreach (string key in DataManager.Instance.Conversions[DataManager.DataType.Monster].Keys)
-                                {
-                                    if (DataManager.Instance.Conversions[DataManager.DataType.Monster][key] == fileName)
-                                    {
-                                        Int32.TryParse(key, out dexNum);
-                                        break;
-                                    }
-                                }
-                                monData.IndexNum = dexNum;
-                            }
-                            DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + DataManager.DATA_EXT)), data);
-
-                            File.Delete(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + ".bin")));
-                        }
-                    }
-
                     ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, type.GetClassType());
-                }
             }
         }
 
@@ -536,15 +465,9 @@ namespace RogueEssence.Dev
                 {
                     baseData.ReIndex();
                     DataManager.SaveData(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
-
-                    //TODO: Created v0.5.20, delete on v1.1
-                    File.Delete(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + ".bin"));
                 }
             }
             DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), DataManager.Instance.UniversalData);
-
-            //TODO: Created v0.5.20, delete on v1.1
-            File.Delete(PathMod.HardMod(DataManager.MISC_PATH + "Index.bin"));
         }
 
 

@@ -51,7 +51,7 @@ namespace RogueEssence.Ground
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
             object[] parameters = new object[] { context, args };
-            string name = "GROUND_ITEM_EVENT_SCRIPT." + Script;
+            string name = LuaEngine.EVENT_GROUNDITEM_NAME + "." + Script;
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
             yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));

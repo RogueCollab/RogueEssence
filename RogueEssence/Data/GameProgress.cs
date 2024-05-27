@@ -5,13 +5,11 @@ using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using RogueEssence.Content;
 using RogueEssence.Script;
 using RogueEssence.Menu;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace RogueEssence.Data
 {
@@ -1365,9 +1363,7 @@ namespace RogueEssence.Data
                     }
                 }
 
-                if (result == ResultType.Escaped)
-                    yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZoneId));
-                else if (newRecruits.Count > 0)
+                if (newRecruits.Count > 0)
                 {
                     yield return new WaitForFrames(10);
                     GameManager.Instance.Fanfare("Fanfare/NewArea");

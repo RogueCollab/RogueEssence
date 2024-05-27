@@ -26,6 +26,8 @@ namespace RogueEssence
     public static class Text
     {
         public const string DIVIDER_STR = "\n";
+        public const string STRINGS_FILE_EXT = ".resx";
+
         public static Dictionary<string, string> Strings;
         public static Dictionary<string, string> StringsEx;
         public static CultureInfo Culture;
@@ -58,12 +60,12 @@ namespace RogueEssence
                                                 @"|(?<il_la>\[il/la\]\W+?(?<il_lasex>\[male\]|\[female\])?(?<il_laval>\w\w?))" + //it
                                                 @"|(?<i_le>\[i/le\]\W+?(?<i_lesex>\[male\]|\[female\])?(?<i_leval>\w\w?))" + //it
                                                 @"|(?<uno_una>\[uno/una\]\W+?(?<uno_unasex>\[male\]|\[female\])?(?<uno_unaval>\w))" + //it
-                                                @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" + //ko
-                                                @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" + //ko
-                                                @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" + //ko
-                                                @"|(?<wa_gwa>(?<wa_gwaval>\w)\[와/과\])" + //ko
-                                                @"|(?<eu_lo>(?<eu_loval>\w)\[으/로\])" + //ko
-                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])", //ko
+                                                @"|(?<eun_neun>(?<eun_neunval>\w)[^가-힣]+?\[은/는\])" + //ko
+                                                @"|(?<eul_leul>(?<eul_leulval>\w)[^가-힣]+?\[을/를\])" + //ko
+                                                @"|(?<i_ga>(?<i_gaval>\w)[^가-힣]+?\[이/가\])" + //ko
+                                                @"|(?<wa_gwa>(?<wa_gwaval>\w)[^가-힣]+?\[와/과\])" + //ko
+                                                @"|(?<eu_lo>(?<eu_loval>\w)[^가-힣]+?\[으/로\])" + //ko
+                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)[^가-힣]+?\[이/라면\])", //ko
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
@@ -418,9 +420,9 @@ namespace RogueEssence
                                     string vowelcheck = match.Groups["eun_neunval"].Value;
                                     char vowelchar = vowelcheck[0];
                                     if ((int)(vowelchar - '가') % 28 == 0)
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "는"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[는/은]", "는"));
                                     else
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "은"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[는/은]", "은"));
                                 }
                                 break;
                             case "eul_leul":
@@ -428,9 +430,9 @@ namespace RogueEssence
                                     string vowelcheck = match.Groups["eul_leulval"].Value;
                                     char vowelchar = vowelcheck[0];
                                     if ((int)(vowelchar - '가') % 28 == 0)
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "를"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[를/을]", "를"));
                                     else
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "을"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[를/을]", "을"));
                                 }
                                 break;
                             case "i_ga":
@@ -438,9 +440,9 @@ namespace RogueEssence
                                     string vowelcheck = match.Groups["i_gaval"].Value;
                                     char vowelchar = vowelcheck[0];
                                     if ((int)(vowelchar - '가') % 28 == 0)
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "가"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[가/이]", "가"));
                                     else
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[가/이]", "이"));
                                 }
                                 break;
                             case "wa_gwa":
@@ -448,9 +450,9 @@ namespace RogueEssence
                                     string vowelcheck = match.Groups["wa_gwaval"].Value;
                                     char vowelchar = vowelcheck[0];
                                     if ((int)(vowelchar - '가') % 28 == 0)
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "과"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[과/와]", "과"));
                                     else
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "와"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[과/와]", "와"));
                                 }
                                 break;
                             case "eu_lo":
@@ -458,9 +460,9 @@ namespace RogueEssence
                                     string vowelcheck = match.Groups["eu_loval"].Value;
                                     char vowelchar = vowelcheck[0];
                                     if ((int)(vowelchar - '가') % 28 == 0)
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "로"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[로/으]", "로"));
                                     else
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "으"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[로/으]", "으"));
                                 }
                                 break;
                             case "i_lamyeon":
@@ -468,9 +470,9 @@ namespace RogueEssence
                                     string vowelcheck = match.Groups["i_lamyeonval"].Value;
                                     char vowelchar = vowelcheck[0];
                                     if ((int)(vowelchar - '가') % 28 == 0)
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[이/라면]", "라면"));
                                     else
-                                        replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
+                                        replacements.Add(chooseIndefiniteEnd(match, "[이/라면]", "이"));
                                 }
                                 break;
                         }
@@ -507,6 +509,11 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             return input;
+        }
+
+        private static (int, int, string) chooseIndefiniteEnd(Match match, string tag, string val)
+        {
+            return (match.Index + match.Length - tag.Length, tag.Length, val);
         }
 
         private static (int, int, string) chooseIndefinite(Match match, string tag, string val)
@@ -617,7 +624,7 @@ namespace RogueEssence
             strings.Clear();
             //order of string fallbacks:
             //first go through all mods of the original language
-            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + STRINGS_FILE_EXT))
             {
                 Dictionary<string, string> dict = LoadStringResx(path);
                 foreach (string key in dict.Keys)
@@ -632,7 +639,7 @@ namespace RogueEssence
             {
                 foreach (string fallback in LangNames[code].Fallbacks)
                 {
-                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
+                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + STRINGS_FILE_EXT))
                     {
                         Dictionary<string, string> dict = LoadStringResx(path);
                         foreach (string key in dict.Keys)
@@ -644,7 +651,7 @@ namespace RogueEssence
                 }
             }
             //then go through all mods of the default language
-            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + STRINGS_FILE_EXT))
             {
                 Dictionary<string, string> dict = LoadStringResx(path);
                 foreach (string key in dict.Keys)

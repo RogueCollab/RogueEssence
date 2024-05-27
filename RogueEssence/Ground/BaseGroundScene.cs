@@ -23,6 +23,8 @@ namespace RogueEssence.Ground
 
         protected List<(IDrawableSprite sprite, Loc viewOffset)> objectDraw;
 
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> frontDraw;
+
         protected List<(IDrawableSprite sprite, Loc viewOffset)> foregroundDraw;
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace RogueEssence.Ground
 
             groundDraw = new List<(IDrawableSprite, Loc)>();
             objectDraw = new List<(IDrawableSprite, Loc)>();
+            frontDraw = new List<(IDrawableSprite, Loc)>();
             foregroundDraw = new List<(IDrawableSprite, Loc)>();
             groundObjectDraw = new List<(GroundEntity sprite, Loc viewOffset)>();
 
@@ -163,6 +166,7 @@ namespace RogueEssence.Ground
 
                 groundDraw.Clear();
                 objectDraw.Clear();
+                frontDraw.Clear();
                 foregroundDraw.Clear();
                 groundObjectDraw.Clear();
 
@@ -217,7 +221,7 @@ namespace RogueEssence.Ground
                 if (layer.Visible)
                 {
                     foreach (IDrawableSprite effect in layer.Anims)
-                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? frontDraw : groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
                 }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
@@ -287,12 +291,12 @@ namespace RogueEssence.Ground
 
             //draw effects in top
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
-                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+                AddRelevantDraw(frontDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             charIndex = 0;
-            while (charIndex < objectDraw.Count)
+            while (charIndex < frontDraw.Count)
             {
-                objectDraw[charIndex].sprite.Draw(spriteBatch, objectDraw[charIndex].viewOffset);
+                frontDraw[charIndex].sprite.Draw(spriteBatch, frontDraw[charIndex].viewOffset);
                 charIndex++;
             }
 

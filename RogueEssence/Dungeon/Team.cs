@@ -244,26 +244,56 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public void SortItems()
         {
+            Dictionary<int, int> mapping = GetSortMapping(false);
             List<InvItem> newInv = new List<InvItem>();
             //for each inv item
             for (int kk = 0; kk < inventory.Count; kk++)
             {
-                //find its new place
-                for (int ii = newInv.Count; ii >= 0; ii--)
-                {
-                    if (ii == 0 || succeedsInvItem(inventory[kk], newInv[ii - 1]))
-                    {
-                        newInv.Insert(ii, inventory[kk]);
-                        break;
-                    }
-                }
+                //find its place on the old list and put in new one
+                newInv.Add(inventory[mapping[kk]]);
             }
             inventory = newInv;
         }
 
+        /// <summary>
+        /// Checks the current order of items and returns a dictionary that maps their current positions with the sorted ones.<br/>
+        /// It is important to note that this function does NOT actually sort the inventory. It only calculates a preview.<br/>
+        /// Keys: sorted order; Values: current order.
+        /// If swap is true, keys and values will be swapped with each other before returning.
+        /// </summary>
+        public Dictionary<int, int> GetSortMapping(bool swap)
+        {
+            List<int> newToOld = new List<int>();
+            //for each inv item
+            for (int kk = 0; kk < inventory.Count; kk++)
+            {
+                //find its new place
+                for (int ii = newToOld.Count; ii >= 0; ii--)
+                {
+                    if (ii == 0 || succeedsInvItem(inventory[kk], inventory[newToOld[ii - 1]]))
+                    {
+                        newToOld.Insert(ii, kk);
+                        break;
+                    }
+                }
+            }
+            Dictionary<int, int> ret = new Dictionary<int, int>();
+            if (swap)
+            {
+                for (int ii = 0; ii < newToOld.Count; ii++)
+                    ret[newToOld[ii]] = ii;
+            }
+            else
+            {
+                for (int ii = 0; ii < newToOld.Count; ii++)
+                    ret[ii] = newToOld[ii];
+            }
+            return ret;
+        }
+
         private bool succeedsInvItem(InvItem inv1, InvItem inv2)
         {
-            return DataManager.Instance.DataIndices[DataManager.DataType.Item].CompareWithSort(inv1.ID, inv2.ID) > 0;
+            return DataManager.Instance.DataIndices[DataManager.DataType.Item].CompareWithSort(inv1.ID, inv2.ID) >= 0;
         }
 
         public int GetInvValue()
@@ -565,7 +595,7 @@ namespace RogueEssence.Dungeon
                 if (Storage.GetValueOrDefault(key, 0) > 0)
                 {
                     if (DataManager.Instance.DataIndices[DataManager.DataType.Item].ContainsKey(key))
-                        invValue += DataManager.Instance.GetItem(key).Price;
+                        invValue += DataManager.Instance.GetItem(key).Price * Storage[key];
                 }
             }
             return invValue;

@@ -152,7 +152,7 @@ namespace RogueEssence.Dungeon
 
         public override int GetHashCode()
         {
-            return AutoTileset.GetHashCode() ^ Associates.GetHashCode() ^ Layers.GetHashCode();
+            return String.GetHashCode(AutoTileset) ^ Associates.GetHashCode() ^ Layers.GetHashCode();
         }
 
         public override string ToString()

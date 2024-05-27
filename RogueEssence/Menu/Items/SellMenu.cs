@@ -169,8 +169,52 @@ namespace RogueEssence.Menu
         
         public IEnumerator<YieldInstruction> SortCommand()
         {
+            //generate list of selected items
+            List<int> equip_selected = new List<int>();
+            List<int> selected = new List<int>();
+            int eqIndex = 0;
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
+            {
+                Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
+                if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
+                {
+                    if (GetTotalChoiceAtIndex(eqIndex).Selected)
+                        equip_selected.Add(eqIndex);
+                    eqIndex++;
+                }
+            }
+            
+            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
+            {
+                if (GetTotalChoiceAtIndex(eqIndex + ii).Selected)
+                    selected.Add(ii);
+            }
+
+            // get mapping
+            Dictionary<int, int> mapping = DataManager.Instance.Save.ActiveTeam.GetSortMapping(true);
+
+            // reorder the inventory
             yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.SortItems, Dir8.None)));
-            MenuManager.Instance.ReplaceMenu(new SellMenu(CurrentChoiceTotal, action));
+            // create the new menu
+            SellMenu menu = new SellMenu(CurrentChoiceTotal, action);
+
+            // reselect equip slots
+            for (int ii = 0; ii < equip_selected.Count; ii++)
+            {
+                int slot = equip_selected[ii];
+                ((MenuChoice)menu.GetTotalChoiceAtIndex(slot)).SilentSelect(true);
+            }
+            // reselect the rest of the inventory
+            for (int ii = selected.Count - 1; ii >= 0; ii--)
+            {
+                int oldPos = selected[ii];
+                int newPos = mapping[oldPos];
+                int index = newPos + eqIndex;
+                ((MenuChoice)menu.GetTotalChoiceAtIndex(index)).SilentSelect(true);
+            }
+
+            //replace the menu
+            MenuManager.Instance.ReplaceMenu(menu);
         }
     }
 }

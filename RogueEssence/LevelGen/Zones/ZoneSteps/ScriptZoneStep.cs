@@ -58,7 +58,7 @@ namespace RogueEssence.LevelGen
 
         public override void Apply(ZoneGenContext zoneContext, IGenContext context, StablePriorityQueue<Priority, IGenStep> queue)
         {
-            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction("ZONE_GEN_SCRIPT." + Script);
+            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction(LuaEngine.EVENT_ZONEGEN_NAME + "." + Script);
 
             if (luafun != null)
             {

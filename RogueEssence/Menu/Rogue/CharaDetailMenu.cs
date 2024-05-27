@@ -108,7 +108,7 @@ namespace RogueEssence.Menu
         {
             legalForms = GetPossibleForms(dex);
             baseMenu.FormSetting = origFormSetting;
-            if (baseMenu.FormSetting > legalForms.Count)
+            if (baseMenu.FormSetting >= legalForms.Count)
                 baseMenu.FormSetting = legalForms.Count - 1;
 
             List<string> choices = new List<string>();

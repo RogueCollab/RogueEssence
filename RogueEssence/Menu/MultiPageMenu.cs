@@ -128,5 +128,12 @@ namespace RogueEssence.Menu
             else
                 base.UpdateKeys(input);
         }
+
+        public IChoosable GetTotalChoiceAtIndex(int totalIndex)
+        {
+            int page = totalIndex / SpacesPerPage;
+            int index = totalIndex % SpacesPerPage;
+            return TotalChoices[page][index];
+        }
     }
 }

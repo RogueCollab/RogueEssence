@@ -35,18 +35,6 @@ namespace RogueEssence.LevelGen
             }
             return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
-
-        //TODO: Created v0.5.11, delete on v1.0.0
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            foreach (GenStep<MapGenContext> step in this.GenSteps.EnumerateInOrder())
-            {
-                WaterStep<MapGenContext> waterStep = step as WaterStep<MapGenContext>;
-                if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<MapGenContext>(false, true, false, false);
-            }
-        }
     }
 
     /// <summary>
@@ -78,18 +66,6 @@ namespace RogueEssence.LevelGen
             }
             return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
-
-        //TODO: Created v0.5.11, delete on v1.0.0
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            foreach (GenStep<ListMapGenContext> step in this.GenSteps.EnumerateInOrder())
-            {
-                WaterStep<ListMapGenContext> waterStep = step as WaterStep<ListMapGenContext>;
-                if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<ListMapGenContext>(false, true, false, false);
-            }
-        }
     }
 
     /// <summary>
@@ -120,17 +96,6 @@ namespace RogueEssence.LevelGen
             return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
 
-        //TODO: Created v0.5.11, delete on v1.0.0
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            foreach (GenStep<StairsMapGenContext> step in this.GenSteps.EnumerateInOrder())
-            {
-                WaterStep<StairsMapGenContext> waterStep = step as WaterStep<StairsMapGenContext>;
-                if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<StairsMapGenContext>(false, true, false, false);
-            }
-        }
     }
 
     /// <summary>
@@ -161,17 +126,6 @@ namespace RogueEssence.LevelGen
             return String.Format("{0}: {1}", this.GetType().GetFormattedTypeName(), startInfo);
         }
 
-        //TODO: Created v0.5.11, delete on v1.0.0
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            foreach (GenStep<MapLoadContext> step in this.GenSteps.EnumerateInOrder())
-            {
-                WaterStep<MapLoadContext> waterStep = step as WaterStep<MapLoadContext>;
-                if (waterStep != null && waterStep.TerrainStencil == null)
-                    waterStep.TerrainStencil = new MapTerrainStencil<MapLoadContext>(false, true, false, false);
-            }
-        }
     }
 
     [Serializable]

@@ -103,7 +103,7 @@ namespace RogueEssence.Dev.ViewModels
             Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = new Dictionary<string, Dictionary<string, (string, string)>>();
 
 
-            string FMTStr = String.Format("{0}{1}.{2}", Name, "{0}", ScriptStrings.STRINGS_FILE_EXT);
+            string FMTStr = String.Format("{0}{1}{2}", Name, "{0}", Text.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
@@ -151,7 +151,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             string stringsdir = "Strings/";
 
-            string FMTStr = String.Format("{0}{1}.{2}", Name, "{0}", Script.ScriptStrings.STRINGS_FILE_EXT);
+            string FMTStr = String.Format("{0}{1}{2}", Name, "{0}", Text.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
