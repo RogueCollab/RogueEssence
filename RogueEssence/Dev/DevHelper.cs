@@ -53,7 +53,7 @@ namespace RogueEssence.Dev
                 try
                 {
                     int index = Int32.Parse(file);
-                    IEntryData data = DataManager.LoadData<IEntryData>(dir);
+                    IEntryData data = DataManager.LoadObject<IEntryData>(dir);
                     while (intToName.Count <= index)
                         intToName.Add("");
                     if (data.Name.DefaultText != "")
@@ -395,8 +395,8 @@ namespace RogueEssence.Dev
                 string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
                 if (File.Exists(dir))
                 {
-                    object data = DataManager.LoadData<ActiveEffect>(dir);
-                    DataManager.SaveData(dir, data);
+                    object data = DataManager.LoadObject<ActiveEffect>(dir);
+                    DataManager.SaveObject(dir, data);
                 }
             }
 
@@ -404,18 +404,18 @@ namespace RogueEssence.Dev
             {
                 object data;
                 if (Path.GetFileName(dir) == "NoCharge" + DataManager.DATA_EXT)
-                    data = DataManager.LoadData<EmoteFX>(dir);
+                    data = DataManager.LoadObject<EmoteFX>(dir);
                 else
-                    data = DataManager.LoadData<BattleFX>(dir);
-                DataManager.SaveData(dir, data);
+                    data = DataManager.LoadObject<BattleFX>(dir);
+                DataManager.SaveObject(dir, data);
             }
 
 
             foreach (string dir in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
                 object data;
-                data = DataManager.LoadData<CharSheetOp>(dir);
-                DataManager.SaveData(dir, data);
+                data = DataManager.LoadObject<CharSheetOp>(dir);
+                DataManager.SaveObject(dir, data);
             }
         }
 
@@ -437,9 +437,9 @@ namespace RogueEssence.Dev
         {
             foreach (string dir in PathMod.GetHardModFiles(dataPath, "*" + ext))
             {
-                object data = DataManager.LoadData(dir, t);
+                object data = DataManager.LoadObject(t, dir);
                 if (data != null)
-                    DataManager.SaveData(dir, data);
+                    DataManager.SaveObject(dir, data);
             }
         }
 
@@ -464,10 +464,10 @@ namespace RogueEssence.Dev
                 if ((baseData.TriggerType & conversionFlags) != DataManager.DataType.None)
                 {
                     baseData.ReIndex();
-                    DataManager.SaveData(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
+                    DataManager.SaveObject(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
                 }
             }
-            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), DataManager.Instance.UniversalData);
+            DataManager.SaveObject(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), DataManager.Instance.UniversalData);
         }
 
 
@@ -479,7 +479,7 @@ namespace RogueEssence.Dev
                 foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
-                    IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
+                    IEntryData data = (IEntryData)DataManager.LoadObject(t, dir);
                     entries[file] = data.GenerateEntrySummary();
                 }
 
@@ -511,10 +511,10 @@ namespace RogueEssence.Dev
         {
             foreach (string dir in PathMod.GetModFiles(dataPath, "*" + ext))
             {
-                IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
+                IEntryData data = (IEntryData)DataManager.LoadObject(t, dir);
                 if (!data.Released)
                     data = (IEntryData)ReflectionExt.CreateMinimalInstance(data.GetType());
-                DataManager.SaveData(dir, data);
+                DataManager.SaveObject(dir, data);
             }
         }
 

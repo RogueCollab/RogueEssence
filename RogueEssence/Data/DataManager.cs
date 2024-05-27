@@ -318,24 +318,24 @@ namespace RogueEssence.Data
 
         public void InitBase()
         {
-            HealFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Heal" + DATA_EXT));
-            RestoreChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "RestoreCharge" + DATA_EXT));
-            LoseChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "LoseCharge" + DATA_EXT));
-            NoChargeFX = LoadData<EmoteFX>(PathMod.ModPath(FX_PATH + "NoCharge" + DATA_EXT));
-            ElementFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Element" + DATA_EXT));
-            IntrinsicFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Intrinsic" + DATA_EXT));
-            SendHomeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "SendHome" + DATA_EXT));
-            ItemLostFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "ItemLost" + DATA_EXT));
-            WarpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Warp" + DATA_EXT));
-            KnockbackFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Knockback" + DATA_EXT));
-            JumpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Jump" + DATA_EXT));
-            ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
+            HealFX = LoadData<BattleFX>(FX_PATH, "Heal", DATA_EXT);
+            RestoreChargeFX = LoadData<BattleFX>(FX_PATH, "RestoreCharge", DATA_EXT);
+            LoseChargeFX = LoadData<BattleFX>(FX_PATH, "LoseCharge", DATA_EXT);
+            NoChargeFX = LoadData<EmoteFX>(FX_PATH, "NoCharge", DATA_EXT);
+            ElementFX = LoadData<BattleFX>(FX_PATH, "Element", DATA_EXT);
+            IntrinsicFX = LoadData<BattleFX>(FX_PATH, "Intrinsic", DATA_EXT);
+            SendHomeFX = LoadData<BattleFX>(FX_PATH, "SendHome", DATA_EXT);
+            ItemLostFX = LoadData<BattleFX>(FX_PATH, "ItemLost", DATA_EXT);
+            WarpFX = LoadData<BattleFX>(FX_PATH, "Warp", DATA_EXT);
+            KnockbackFX = LoadData<BattleFX>(FX_PATH, "Knockback", DATA_EXT);
+            JumpFX = LoadData<BattleFX>(FX_PATH, "Jump", DATA_EXT);
+            ThrowFX = LoadData<BattleFX>(FX_PATH, "Throw", DATA_EXT);
 
 
             Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
-            UniversalEvent = LoadData<UniversalBaseEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
+            UniversalEvent = LoadData<UniversalBaseEffect>(DATA_PATH, "Universal", DATA_EXT);
 
-            UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
+            UniversalData = LoadData<TypeDict<BaseData>>(MISC_PATH, "Index", DATA_EXT);
             LoadStartParams();
         }
 
@@ -467,7 +467,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    BaseData data = LoadData<BaseData>(PathMod.ModPath(MISC_PATH + baseData.FileName + DATA_EXT));
+                    BaseData data = LoadData<BaseData>(MISC_PATH, baseData.FileName, DATA_EXT);
                     UniversalData.Set(data);
                 }
                 catch
@@ -676,7 +676,7 @@ namespace RogueEssence.Data
                     foreach ((Guid, EntrySummary) tuple in DataIndices[type].IterateKey(key))
                     {
                         ModHeader mod = PathMod.GetModFromUuid(tuple.Item1);
-                        T data = LoadModData<T>(mod, key, type.ToString());
+                        T data = LoadModEntryData<T>(mod, key, type.ToString());
                         if (data != null)
                         {
                             cache.Add(mod.Namespace + ":" + key, data);
@@ -707,7 +707,7 @@ namespace RogueEssence.Data
         {
             if (data != null)
             {
-                SaveData(entryNum, dataType.ToString(), data);
+                SaveEntryData(entryNum, dataType.ToString(), data);
                 EntrySummary entrySummary = data.GenerateEntrySummary();
                 DataIndices[dataType].Set(PathMod.Quest.UUID, entryNum, entrySummary);
             }
@@ -724,7 +724,7 @@ namespace RogueEssence.Data
                 if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
                 {
                     baseData.ContentChanged(entryNum);
-                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
+                    DataManager.SaveObject(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
                 }
             }
 
@@ -738,38 +738,48 @@ namespace RogueEssence.Data
             if (components.Length > 1)
             {
                 ModHeader mod = PathMod.GetModFromNamespace(components[0]);
-                result = LoadModData<T>(mod, components[1], subPath, ext);
+                result = LoadModEntryData<T>(mod, components[1], subPath, ext);
             }
             else
-                result = LoadData<T>(components[0], subPath, ext);
+                result = LoadEntryData<T>(components[0], subPath, ext);
             
             if (result == null)
                 throw new FileNotFoundException(String.Format("Could not find {0} ID: '{1}'", subPath, namespacedNum));
             return result;
         }
 
-        public static T LoadModData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        public static T LoadModEntryData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
-            string filePath = PathMod.HardMod(mod.Path, Path.Join(DATA_PATH + subPath, indexNum + ext));
+            return LoadModData<T>(mod, DATA_PATH + subPath, indexNum, ext);
+        }
+
+        public static T LoadEntryData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        {
+            return LoadData<T>(DATA_PATH + subPath, indexNum, ext);
+        }
+
+        public static T LoadModData<T>(ModHeader mod, string subpath, string file, string ext)
+        {
+            string filePath = PathMod.HardMod(mod.Path, Path.Join(subpath, file, ext));
             if (File.Exists(filePath))
-                return LoadData<T>(filePath);
+                return LoadObject<T>(filePath);
             return default(T);
         }
 
-        public static T LoadData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        public static T LoadData<T>(string subpath, string file, string ext)
         {
-            string filePath = PathMod.ModPath(Path.Join(DATA_PATH + subPath, indexNum + ext));
+            string filePath = PathMod.ModPath(Path.Join(subpath, file, ext));
             if (File.Exists(filePath))
-                return LoadData<T>(filePath);
+                return LoadObject<T>(filePath);
             return default(T);
         }
 
-        public static T LoadData<T>(string path)
+        public static T LoadObject<T>(string path)
         {
-            return (T)LoadData(path, typeof(T));
+            return (T)LoadObject(typeof(T), path);
         }
 
-        public static object LoadData(string path, Type t)
+        public static object LoadObject(Type t, string path)
         {
             try
             {
@@ -786,15 +796,15 @@ namespace RogueEssence.Data
         }
 
 
-        public static void SaveData(string indexNum, string subPath, IEntryData entry)
+        public static void SaveEntryData(string indexNum, string subPath, IEntryData entry)
         {
             string folder = PathMod.HardMod(DATA_PATH + subPath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-            SaveData(folder + "/" + indexNum + DATA_EXT, entry);
+            SaveObject(folder + "/" + indexNum + DATA_EXT, entry);
         }
 
-        public static void SaveData(string path, object entry)
+        public static void SaveObject(string path, object entry)
         {
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
@@ -905,7 +915,7 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
-                mapData = LoadData<GroundMap>(name, GROUND_FOLDER, ".rsground");
+                mapData = LoadEntryData<GroundMap>(name, GROUND_FOLDER, ".rsground");
                 mapData.AssetName = name;
                 return mapData;
             }

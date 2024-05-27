@@ -9,6 +9,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JsonDiffPatch.Net" Version="2.3.0" />
     <PackageReference Include="LiteNetLib" Version="0.9.5.2" />
 	<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
 	<PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
