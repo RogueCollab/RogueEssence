@@ -109,6 +109,7 @@ namespace RogueEssence.Data
         public const string MAP_PATH = DATA_PATH + MAP_FOLDER;
         public const string GROUND_PATH = DATA_PATH + GROUND_FOLDER;
         public const string DATA_EXT = ".json";
+        public const string PATCH_EXT = ".jsonpatch";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
 
@@ -760,26 +761,69 @@ namespace RogueEssence.Data
 
         public static T LoadModData<T>(ModHeader mod, string subpath, string file, string ext)
         {
-            string filePath = PathMod.HardMod(mod.Path, Path.Join(subpath, file, ext));
-            if (File.Exists(filePath))
-                return LoadObject<T>(filePath);
+            string fullPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + ext));
+            string diffPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + PATCH_EXT));
+
+            string filePath = null;
+            List<string> diffPaths = new List<string>();
+            foreach (string modPath in PathMod.FallbackPaths(subpath))
+            {
+                //do not add to diff list until we reach the desired hardmod
+                //and STOP when we get to a full file
+                //but do we want hardmod to be THIS mod's diff on top of base?
+                //or THIS mod's diff on top of everything else on top of base?
+                //...the latter!
+                string newPath = Path.Join(modPath, file + ext);
+                string newDiffPath = Path.Join(modPath, file + PATCH_EXT);
+                if (diffPaths.Count > 0 || newPath == fullPath || newDiffPath == diffPath)
+                {
+                    if (File.Exists(newPath))
+                    {
+                        filePath = newPath;
+                        break;
+                    }
+                    if (File.Exists(newDiffPath))
+                        diffPaths.Insert(0, newDiffPath);
+                }
+            }
+            if (filePath != null)
+                return LoadObject<T>(filePath, diffPaths.ToArray());
             return default(T);
         }
 
         public static T LoadData<T>(string subpath, string file, string ext)
         {
-            string filePath = PathMod.ModPath(Path.Join(subpath, file, ext));
-            if (File.Exists(filePath))
-                return LoadObject<T>(filePath);
+            //fall back on paths
+            //fall back until a file with ext is found
+            //all diff files found along the way need to be included in the argument pass
+            string filePath = null;
+            List<string> diffPaths = new List<string>();
+            foreach (string modPath in PathMod.FallbackPaths(subpath))
+            {
+                string newPath = Path.Join(modPath, file + ext);
+                if (File.Exists(newPath))
+                {
+                    filePath = newPath;
+                    break;
+                }
+                string newDiffPath = Path.Join(modPath, file + PATCH_EXT);
+                if (File.Exists(newDiffPath))
+                    diffPaths.Insert(0, newDiffPath);
+            }
+            if (filePath != null)
+                return LoadObject<T>(filePath, diffPaths.ToArray());
             return default(T);
         }
 
-        public static T LoadObject<T>(string path)
+        //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
+        //yes, this is so that they can load properly on the reserialization step
+        //presumably, it should be saved based on whether it was loaded as a diff or not...
+        public static T LoadObject<T>(string path, params string[] diffpaths)
         {
-            return (T)LoadObject(typeof(T), path);
+            return (T)loadObject(typeof(T), path, diffpaths);
         }
 
-        public static object LoadObject(Type t, string path)
+        private static object loadObject(Type t, string path, params string[] diffpaths)
         {
             try
             {
@@ -804,17 +848,21 @@ namespace RogueEssence.Data
             SaveObject(folder + "/" + indexNum + DATA_EXT, entry);
         }
 
+        //we need the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
+        //also need capability to save explicitly as a diff, or explicitly as a file
+
+        //create a method called SaveData(subpath, file, ext, entry) and hook all hardmodded saves there
         public static void SaveObject(string path, object entry)
         {
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                //using (BinaryWriter writer = new BinaryWriter(stream))
-                //{
                 Serializer.SerializeData(stream, entry);
-                //}
             }
         }
 
+        //TODO: need a way to save diff objects too
+
+        //TODO: need a way to delete diff objects
 
         public static void DeleteData(string indexNum, string subPath)
         {

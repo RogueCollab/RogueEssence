@@ -13,6 +13,7 @@ namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
+        //TODO: this is old conversion code and needs to be deleted, but maybe the code could be salvaged for somemass rename operation?
         public static Version StringAssetVersion = new Version(0, 6, 0);
 
         public static Version GetVersion(params string[] dirs)
@@ -400,7 +401,7 @@ namespace RogueEssence.Dev
                 }
             }
 
-            foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*" + DataManager.DATA_EXT))
+            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*" + DataManager.DATA_EXT))
             {
                 object data;
                 if (Path.GetFileName(dir) == "NoCharge" + DataManager.DATA_EXT)
@@ -424,20 +425,15 @@ namespace RogueEssence.Dev
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                    ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, type.GetClassType());
+                    ReserializeData<IEntryData>(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT);
             }
         }
 
         public static void ReserializeData<T>(string dataPath, string ext)
         {
-            ReserializeData(dataPath, ext, typeof(T));
-        }
-
-        public static void ReserializeData(string dataPath, string ext, Type t)
-        {
             foreach (string dir in PathMod.GetHardModFiles(dataPath, "*" + ext))
             {
-                object data = DataManager.LoadObject(t, dir);
+                T data = DataManager.LoadObject<T>(dir);
                 if (data != null)
                     DataManager.SaveObject(dir, data);
             }
@@ -453,7 +449,7 @@ namespace RogueEssence.Dev
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                    IndexNamedData(DataManager.DATA_PATH + type.ToString() + "/", type.GetClassType());
+                    IndexNamedData(DataManager.DATA_PATH + type.ToString() + "/");
             }
         }
         public static void RunExtraIndexing(DataManager.DataType conversionFlags)
@@ -471,7 +467,7 @@ namespace RogueEssence.Dev
         }
 
 
-        public static void IndexNamedData(string dataPath, Type t)
+        public static void IndexNamedData(string dataPath)
         {
             try
             {
@@ -479,7 +475,7 @@ namespace RogueEssence.Dev
                 foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
                 {
                     string file = Path.GetFileNameWithoutExtension(dir);
-                    IEntryData data = (IEntryData)DataManager.LoadObject(t, dir);
+                    IEntryData data = DataManager.LoadObject<IEntryData>(dir);
                     entries[file] = data.GenerateEntrySummary();
                 }
 
@@ -494,27 +490,6 @@ namespace RogueEssence.Dev
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(new Exception("Error importing index at " + dataPath + "\n", ex));
-            }
-        }
-
-        public static void DemoAllData(DataManager.DataType conversionFlags)
-        {
-
-            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
-            {
-                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                    DemoData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, type.GetClassType());
-            }
-        }
-
-        public static void DemoData(string dataPath, string ext, Type t)
-        {
-            foreach (string dir in PathMod.GetModFiles(dataPath, "*" + ext))
-            {
-                IEntryData data = (IEntryData)DataManager.LoadObject(t, dir);
-                if (!data.Released)
-                    data = (IEntryData)ReflectionExt.CreateMinimalInstance(data.GetType());
-                DataManager.SaveObject(dir, data);
             }
         }
 
