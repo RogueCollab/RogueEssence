@@ -460,10 +460,10 @@ namespace RogueEssence.Dev
                 if ((baseData.TriggerType & conversionFlags) != DataManager.DataType.None)
                 {
                     baseData.ReIndex();
-                    DataManager.SaveObject(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
+                    DataManager.SaveData(DataManager.MISC_PATH, baseData.FileName, DataManager.DATA_EXT, baseData);
                 }
             }
-            DataManager.SaveObject(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), DataManager.Instance.UniversalData);
+            DataManager.SaveData(DataManager.MISC_PATH, "Index", DataManager.DATA_EXT, DataManager.Instance.UniversalData);
         }
 
 

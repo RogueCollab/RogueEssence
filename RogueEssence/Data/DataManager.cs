@@ -725,7 +725,7 @@ namespace RogueEssence.Data
                 if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
                 {
                     baseData.ContentChanged(entryNum);
-                    DataManager.SaveObject(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
+                    DataManager.SaveData(DataManager.MISC_PATH, baseData.FileName, DATA_EXT, baseData);
                 }
             }
 
@@ -842,10 +842,16 @@ namespace RogueEssence.Data
 
         public static void SaveEntryData(string indexNum, string subPath, IEntryData entry)
         {
-            string folder = PathMod.HardMod(DATA_PATH + subPath);
+            SaveData(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT, entry);
+        }
+
+
+        public static void SaveData(string subpath, string file, string ext, object entry)
+        {
+            string folder = PathMod.HardMod(subpath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-            SaveObject(folder + "/" + indexNum + DATA_EXT, entry);
+            SaveObject(Path.Join(folder, file + ext), entry);
         }
 
         //we need the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
