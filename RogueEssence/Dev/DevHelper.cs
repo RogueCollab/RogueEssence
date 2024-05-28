@@ -408,7 +408,7 @@ namespace RogueEssence.Dev
                     data = DataManager.LoadObject<EmoteFX>(dir);
                 else
                     data = DataManager.LoadObject<BattleFX>(dir);
-                DataManager.SaveObject(dir, data);
+                DataManager.SaveObject(data, dir);
             }
 
 
@@ -416,7 +416,7 @@ namespace RogueEssence.Dev
             {
                 object data;
                 data = DataManager.LoadObject<CharSheetOp>(dir);
-                DataManager.SaveObject(dir, data);
+                DataManager.SaveObject(data, dir);
             }
         }
 
@@ -435,7 +435,7 @@ namespace RogueEssence.Dev
             {
                 T data = DataManager.LoadObject<T>(dir);
                 if (data != null)
-                    DataManager.SaveObject(dir, data);
+                    DataManager.SaveObject(data, dir);
             }
         }
 
@@ -460,10 +460,10 @@ namespace RogueEssence.Dev
                 if ((baseData.TriggerType & conversionFlags) != DataManager.DataType.None)
                 {
                     baseData.ReIndex();
-                    DataManager.SaveData(DataManager.MISC_PATH, baseData.FileName, DataManager.DATA_EXT, baseData);
+                    DataManager.SaveData(baseData, DataManager.MISC_PATH, baseData.FileName, DataManager.DATA_EXT);
                 }
             }
-            DataManager.SaveData(DataManager.MISC_PATH, "Index", DataManager.DATA_EXT, DataManager.Instance.UniversalData);
+            DataManager.SaveData(DataManager.Instance.UniversalData, DataManager.MISC_PATH, "Index", DataManager.DATA_EXT);
         }
 
 

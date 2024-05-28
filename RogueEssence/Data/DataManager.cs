@@ -725,7 +725,7 @@ namespace RogueEssence.Data
                 if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
                 {
                     baseData.ContentChanged(entryNum);
-                    DataManager.SaveData(DataManager.MISC_PATH, baseData.FileName, DATA_EXT, baseData);
+                    DataManager.SaveData(baseData, DataManager.MISC_PATH, baseData.FileName, DATA_EXT);
                 }
             }
 
@@ -842,23 +842,23 @@ namespace RogueEssence.Data
 
         public static void SaveEntryData(string indexNum, string subPath, IEntryData entry)
         {
-            SaveData(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT, entry);
+            SaveData(entry, Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
         }
 
 
-        public static void SaveData(string subpath, string file, string ext, object entry)
+        public static void SaveData(object entry, string subpath, string file, string ext)
         {
             string folder = PathMod.HardMod(subpath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-            SaveObject(Path.Join(folder, file + ext), entry);
+            SaveObject(entry, Path.Join(folder, file + ext));
         }
 
         //we need the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
         //also need capability to save explicitly as a diff, or explicitly as a file
 
         //create a method called SaveData(subpath, file, ext, entry) and hook all hardmodded saves there
-        public static void SaveObject(string path, object entry)
+        public static void SaveObject(object entry, string path)
         {
             using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
