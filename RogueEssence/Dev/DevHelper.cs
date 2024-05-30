@@ -392,26 +392,36 @@ namespace RogueEssence.Dev
 
         public static void ReserializeBase()
         {
+            //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
+            //yes, this is so that they can load properly on the reserialization step
             {
-                string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
-                if (File.Exists(dir))
+                ActiveEffect data = DataManager.LoadModData<ActiveEffect>(PathMod.Quest, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
+
+                //save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
+                //SaveData will do this automatically!
+                if (data != null)
+                    DataManager.SaveData(data, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
+            }
+
+            // search for data EXT as well as PATCH_EXT.
+            // This means searching for all files first
+            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*"))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string ext = Path.GetExtension(dir);
+                //then filtering just the data/patch ext
+                if (ext == DataManager.DATA_EXT || ext == DataManager.PATCH_EXT)
                 {
-                    object data = DataManager.LoadObject<ActiveEffect>(dir);
-                    DataManager.SaveObject(dir, data);
+                    object data;
+                    if (fileName == "NoCharge")
+                        data = DataManager.LoadModData<EmoteFX>(PathMod.Quest, DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                    else
+                        data = DataManager.LoadModData<BattleFX>(PathMod.Quest, DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                    DataManager.SaveData(data, DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
                 }
             }
 
-            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*" + DataManager.DATA_EXT))
-            {
-                object data;
-                if (Path.GetFileName(dir) == "NoCharge" + DataManager.DATA_EXT)
-                    data = DataManager.LoadObject<EmoteFX>(dir);
-                else
-                    data = DataManager.LoadObject<BattleFX>(dir);
-                DataManager.SaveObject(data, dir);
-            }
-
-
+            //no need for involving mod paths here
             foreach (string dir in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
                 object data;
@@ -431,11 +441,19 @@ namespace RogueEssence.Dev
 
         public static void ReserializeData<T>(string dataPath, string ext)
         {
-            foreach (string dir in PathMod.GetHardModFiles(dataPath, "*" + ext))
+            // search for data EXT as well as diff EXT...
+            // This means searching for all files first
+            foreach (string dir in PathMod.GetHardModFiles(dataPath, "*"))
             {
-                T data = DataManager.LoadObject<T>(dir);
-                if (data != null)
-                    DataManager.SaveObject(data, dir);
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string testExt = Path.GetExtension(dir);
+                //then filtering just the data/patch ext
+                if (testExt == ext || testExt == DataManager.PATCH_EXT)
+                {
+                    T data = DataManager.LoadModData<T>(PathMod.Quest, dataPath, fileName, ext);
+                    if (data != null)
+                        DataManager.SaveData(data, dataPath, fileName, ext);
+                }
             }
         }
 

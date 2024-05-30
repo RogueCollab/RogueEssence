@@ -714,7 +714,7 @@ namespace RogueEssence.Data
             }
             else
             {
-                DeleteData(entryNum, dataType.ToString());
+                DeleteEntryData(entryNum, dataType.ToString());
                 DataIndices[dataType].Remove(PathMod.Quest.UUID, entryNum);
             }
             SaveIndex(dataType);
@@ -827,10 +827,15 @@ namespace RogueEssence.Data
         {
             try
             {
-                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                if (diffpaths.Length == 0)
                 {
-                    return Serializer.DeserializeData(stream);
+                    using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        return Serializer.DeserializeData(stream);
+                    }
                 }
+                else
+                    return Serializer.DeserializeDataWithDiffs(path, diffpaths);
             }
             catch (Exception ex)
             {
@@ -851,34 +856,55 @@ namespace RogueEssence.Data
             string folder = PathMod.HardMod(subpath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-            SaveObject(entry, Path.Join(folder, file + ext));
+
+            //Check if a diff file is located here
+            if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
+                SaveObject(entry, Path.Join(folder, file + PATCH_EXT), PathMod.NoMod(Path.Join(subpath, file, ext)));
+            else //if not, just save as normal
+                SaveObject(entry, Path.Join(folder, file + ext));
         }
 
         //we need the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
         //also need capability to save explicitly as a diff, or explicitly as a file
 
-        //create a method called SaveData(subpath, file, ext, entry) and hook all hardmodded saves there
-        public static void SaveObject(object entry, string path)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="path"></param>
+        /// <param name="diffpath">The base file to diff the json against.  Do not save as a patch if left blank.</param>
+        public static void SaveObject(object entry, string path, string diffpath = "")
         {
-            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            if (diffpath == "")
             {
-                Serializer.SerializeData(stream, entry);
+                using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    Serializer.SerializeData(stream, entry);
+                }
             }
+            else
+                Serializer.SerializeDataAsDiff(path, diffpath, entry);
         }
 
-        //TODO: need a way to save diff objects too
-
-        //TODO: need a way to delete diff objects
-
-        public static void DeleteData(string indexNum, string subPath)
+        public static void DeleteEntryData(string indexNum, string subPath)
         {
-            string folder = PathMod.HardMod(DATA_PATH + subPath);
+            DeleteData(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
+        }
+
+        public static void DeleteData(string subpath, string file, string ext)
+        {
+            string folder = PathMod.HardMod(subpath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-            DeleteData(folder + "/" + indexNum + DATA_EXT);
+
+            //Check if a diff file is located here
+            if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call DeleteObject with the diff ext, and the additional argument consisting of the base item
+                DeleteObject(Path.Join(folder, file + PATCH_EXT));
+            else //if not, just save as normal
+                DeleteObject(Path.Join(folder, file + ext));
         }
 
-        public static void DeleteData(string path)
+        public static void DeleteObject(string path)
         {
             if (File.Exists(path))
                 File.Delete(path);

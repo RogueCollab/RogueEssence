@@ -112,6 +112,27 @@ namespace RogueEssence.Data
             }
             return objVersion;
         }
+        public static object DeserializeDataWithDiffs(string path, params string[] diffpaths)
+        {
+            //TODO
+            //string containerStr;
+            //using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            //{
+            //    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+            //    {
+            //        containerStr = reader.ReadToEnd();
+            //    }
+            //}
+            //string[] diffStr = new string[diffpaths.Length];
+            //for each diff, read into an array
+
+            //then, apply all diff patches (including version)
+
+            //then, load from this string
+            //SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
+            //return container.Object;
+            return null;
+        }
 
         public static object DeserializeData(Stream stream)
         {
@@ -128,6 +149,11 @@ namespace RogueEssence.Data
                     return container.Object;
                 }
             }
+        }
+
+        public static void SerializeDataAsDiff(string path, string basepath, object entry)
+        {
+
         }
 
         public static void SerializeData(Stream stream, object entry, bool min = false)
