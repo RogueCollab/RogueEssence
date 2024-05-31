@@ -359,7 +359,7 @@ namespace RogueEssence.Dev
                 //rename all the zone files
                 string[] intToName = convertAssetTypeFromTxt(DataManager.DataType.Zone);
 
-                string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
+                string scriptFolder = PathMod.HardMod(Path.Join(LuaEngine.SCRIPT_PATH, PathMod.GetCurrentNamespace(), LuaEngine.ZONE_SCRIPT_DIR));
                 //now rename the script paths
                 for (int ii = 0; ii < intToName.Length; ii++)
                 {

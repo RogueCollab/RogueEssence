@@ -85,6 +85,14 @@ namespace RogueEssence
             return header;
         }
 
+        public static string GetCurrentNamespace()
+        {
+            if (Quest.IsValid())
+                return Quest.Namespace;
+
+            return BaseNamespace;
+        }
+
         public static ModHeader GetModFromUuid(Guid uuid)
         {
             ModHeader header;
