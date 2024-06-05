@@ -1191,13 +1191,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public static string MakeZoneScriptPath(bool hard, string zonename, string file)
+        public static string MakeZoneScriptPath(string zonename, string file)
         {
-            string basePath = Path.Join(SCRIPT_PATH, string.Format(ZONE_SCRIPT_PATTERN, zonename).Replace('.', '/'), file);
-            if (hard)
-                return Path.GetFullPath(PathMod.HardMod(basePath));
-            else
-                return Path.GetFullPath(PathMod.ModPath(basePath));
+            string basePath = Path.Join(SCRIPT_PATH, PathMod.GetCurrentNamespace(), string.Format(ZONE_SCRIPT_PATTERN, zonename).Replace('.', '/'), file);
+            return Path.GetFullPath(PathMod.HardMod(basePath));
         }
 
         /// <summary>
@@ -1261,13 +1258,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public static string MakeDungeonMapScriptPath(bool hard, string mapname, string file)
+        public static string MakeDungeonMapScriptPath(string mapname, string file)
         {
-            string basePath = Path.Join(SCRIPT_PATH, string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'), file);
-            if (hard)
-                return Path.GetFullPath(PathMod.HardMod(basePath));
-            else
-                return Path.GetFullPath(PathMod.ModPath(basePath));
+            string basePath = Path.Join(SCRIPT_PATH, PathMod.GetCurrentNamespace(), string.Format(DUNGEON_MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'), file);
+            return Path.GetFullPath(PathMod.HardMod(basePath));
         }
 
         /// <summary>
@@ -1330,13 +1324,10 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="mapname">AssetName of the map to look for.</param>
         /// <returns>Absolute path to the map's script directory.</returns>
-        public static string MakeGroundMapScriptPath(bool hard, string mapname, string file)
+        public static string MakeGroundMapScriptPath(string mapname, string file)
         {
-            string basePath = Path.Join(SCRIPT_PATH, string.Format(MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'), file);
-            if (hard)
-                return Path.GetFullPath(PathMod.HardMod(basePath));
-            else
-                return Path.GetFullPath(PathMod.ModPath(basePath));
+            string basePath = Path.Join(SCRIPT_PATH, PathMod.GetCurrentNamespace(), string.Format(MAP_SCRIPT_PATTERN, mapname).Replace('.', '/'), file);
+            return Path.GetFullPath(PathMod.HardMod(basePath));
         }
 
         private void RunAssetScript(string relpath, string assetname, string importpath, string globalsymbol)
@@ -1408,7 +1399,7 @@ namespace RogueEssence.Script
         /// <param name="mapassetname"></param>
         public void CreateGroundMapScriptDir(string mapassetname)
         {
-            string mappath = MakeGroundMapScriptPath(true, mapassetname, "");
+            string mappath = MakeGroundMapScriptPath(mapassetname, "");
 
             try
             {
@@ -1496,7 +1487,7 @@ namespace RogueEssence.Script
         /// <param name="zoneassetname"></param>
         public void CreateZoneScriptDir(string zoneassetname)
         {
-            string zonepath = MakeZoneScriptPath(true, zoneassetname, "");
+            string zonepath = MakeZoneScriptPath(zoneassetname, "");
 
             try
             {

@@ -503,32 +503,20 @@ namespace RogueEssence.Dev.ViewModels
         /// <param name="newfilepath"></param>
         public static void CreateOrCopyScriptData(string oldfilepath, string newfilepath)
         {
-            string oldmapscriptdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, Path.GetFileNameWithoutExtension(oldfilepath), "/init.lua"));
-            string newmapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, Path.GetFileNameWithoutExtension(newfilepath), "");
-
-            //Check if we have anything to copy at all!
-            if (oldmapscriptdir != newmapscriptdir && !String.IsNullOrEmpty(oldfilepath))
-            {
-                Directory.CreateDirectory(newmapscriptdir);
-                foreach (string f in Directory.GetFiles(oldmapscriptdir, "*.*", SearchOption.AllDirectories)) //This lists all subfiles recursively
-                {
-                    //Path to the sub-directory within the script folder containing this file
-                    string subdirpath = f.Substring(oldmapscriptdir.Length + 1); //Count + 1 because of the last path separator!
-                    //Path to the sub-directory within the new script folder where we'll copy this file!
-                    string destpath = Path.Combine(newmapscriptdir, subdirpath);
-
-                    //Ensure all subdirectories are created recursively, if there are any!
-                    Directory.CreateDirectory(Path.GetDirectoryName(destpath));
-
-                    //Copy the file itself
-                    if (File.Exists(f))
-                        File.Copy(f, destpath, false);
-                }
-            }
-            else
+            //If we are not resaving an old map, create a new script file
+            if (String.IsNullOrEmpty(oldfilepath))
             {
                 //We just create a new one straight away!
                 LuaEngine.Instance.CreateGroundMapScriptDir(Path.GetFileNameWithoutExtension(newfilepath));
+            }
+            else
+            {
+                //just make the dir path
+                string mappath = LuaEngine.MakeGroundMapScriptPath(Path.GetFileNameWithoutExtension(newfilepath), "");
+
+                //Check if files exists already
+                if (!Directory.Exists(mappath))
+                    Directory.CreateDirectory(mappath);
             }
         }
 
