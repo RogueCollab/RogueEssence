@@ -640,9 +640,20 @@ namespace RogueEssence.Script
             }
         }
 
-        private LuaTable ModLoadTable(string loadPath, string importpath)
+        /// <summary>
+        /// Assigns a table to the specified variable in layers.
+        /// First the base game's table is applied
+        /// then each mod adds on top of it
+        /// </summary>
+        /// <param name="loadPath"></param>
+        /// <param name="importpath"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidDataException"></exception>
+        private void ModLayerTable(string assignVar, string loadPath, string importpath)
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaState[assignVar] = tbl;
+
             LuaFunction addmeta = LuaEngine.Instance.RunString(@"local mergeTables = function(t1, t2)
                 for k, v in pairs(t2) do
                     if (type(v) == ""table"") and (type(t1[k] or false) == ""table"") then
@@ -667,7 +678,6 @@ namespace RogueEssence.Script
                     addmeta.Call(tbl, tbl2);
                 }
             }
-            return tbl;
         }
 
         /// <summary>
@@ -1336,8 +1346,7 @@ namespace RogueEssence.Script
             //RunString(String.Format("{0} = require('{1}');", globalsymbol, importpath), abspath);
             //LuaState[globalsymbol] = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             //ModDoFile(relpath);
-            LuaTable state = ModLoadTable(relpath, importpath);
-            LuaState[globalsymbol] = state;
+            ModLayerTable(globalsymbol, relpath, importpath);
         }
 
         /// <summary>
