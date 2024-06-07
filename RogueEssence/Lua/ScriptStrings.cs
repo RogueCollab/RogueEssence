@@ -12,7 +12,14 @@ namespace RogueEssence.Script
     /// </summary>
     public class ScriptStrings : ILuaEngineComponent
     {
+        public LuaTable MapStrings { get; private set; }
+
         public LuaTable MakePackageStringTable(string packagefilepath)
+        {
+            return MapStrings;
+        }
+
+        private LuaTable makePackageStringTable(string packagefilepath)
         {
             try
             {
@@ -34,6 +41,11 @@ namespace RogueEssence.Script
             }
         }
 
+        public void LoadPackageStringTable(string packagefilepath)
+        {
+            LuaTable strings = makePackageStringTable(packagefilepath);
+            MapStrings = strings;
+        }
 
 
         /// <summary>

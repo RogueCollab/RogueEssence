@@ -1368,6 +1368,12 @@ namespace RogueEssence.Script
             }
         }
 
+        public void LoadGroundMapStrings(string mapassetname)
+        {
+            string relpath = string.Format(MAP_SCRIPT_PATTERN, mapassetname).Replace('.', '/');
+            m_scriptstr.LoadPackageStringTable(relpath);
+        }
+
         /// <summary>
         /// Use this to clean up the traces left behind by a map package.
         /// Also collects garbages.
@@ -1434,12 +1440,6 @@ namespace RogueEssence.Script
                         "-- Package name\n" +
                         "local {1} = {{}}\n\n" +
 
-                        "-- Local, localized strings table\n" +
-                        "-- Use this to display the named strings you added in the strings files for the map!\n" +
-                        "-- Ex:\n" +
-                        "--      local localizedstring = MapStrings['SomeStringName']\n" +
-                        "local MapStrings = {{}}\n\n" +
-
                         "-------------------------------\n" +
                         "-- Map Callbacks\n" +
                         "-------------------------------",
@@ -1452,11 +1452,7 @@ namespace RogueEssence.Script
                             fstream.WriteLine("---{0}\n--Engine callback function\nfunction {0}\n", callbackname);
                             if (fn == EMapCallbacks.Init)
                             {
-                                //Add the map string loader
-                                fstream.WriteLine(
-                                "  --This will fill the localized strings table automatically based on the locale the game is \n" +
-                                "  -- currently in. You can use the MapStrings table after this line!\n" +
-                                "  MapStrings = COMMON.AutoLoadLocalizedStrings()");
+
                             }
                             else if (fn == EMapCallbacks.Enter || fn == EMapCallbacks.GameLoad)
                             {
