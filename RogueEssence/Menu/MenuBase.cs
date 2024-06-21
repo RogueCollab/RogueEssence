@@ -136,5 +136,41 @@ namespace RogueEssence.Menu
             //center
             menu.DrawTile(spriteBatch, new Rectangle(Bounds.X + menu.TileWidth, Bounds.Y + menu.TileHeight, Bounds.End.X - Bounds.X - 2 * menu.TileWidth, Bounds.End.Y - Bounds.Y - 2 * menu.TileHeight), addX + 1, addY + 1, color);
         }
+
+
+        public virtual int GetElementIndexByLabel(string label)
+        {
+            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            return -1;
+        }
+        public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
+        {
+            Dictionary<string, int> poss = new();
+            List<string> labelList = labels.ToList();
+            foreach (string label in labels)
+                poss.Add(label, -1);
+
+            for (int ii = 0; ii < Elements.Count; ii++)
+            {
+                bool found = false;
+                IMenuElement choice = Elements[ii];
+                if (choice.HasLabel())
+                {
+                    for (int kk = 0; kk < labelList.Count; kk++)
+                    {
+                        string label = labelList[kk];
+                        if (choice.Label == label)
+                        {
+                            found = true;
+                            poss[label] = ii;
+                            labelList.RemoveAt(kk);
+                            break;
+                        }
+                    }
+                }
+                if (found && labelList.Count == 0) break;
+            }
+            return poss;
+        }
     }
 }
