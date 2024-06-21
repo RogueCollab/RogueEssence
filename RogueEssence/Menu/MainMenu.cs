@@ -191,10 +191,10 @@ namespace RogueEssence.Menu
             Initialize(new Loc(16, 16), MenuWidth, Choices.ToArray(), Math.Min(Math.Max(0, defaultChoice), Choices.Count - 1));
 
             TitleMenu = new SummaryMenu(TitleMenuBounds);
-            TitleMenu.Elements = TitleElements;
+            TitleMenu.Elements.AddRange(TitleElements);
 
             SummaryMenu = new SummaryMenu(SummaryMenuBounds);
-            SummaryMenu.Elements = SummaryElements;
+            SummaryMenu.Elements.AddRange(SummaryElements);
         }
 
         private void checkGround()

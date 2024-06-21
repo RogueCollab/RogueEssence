@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
         }
 
-        public List<IMenuElement> Elements = new();
+        public virtual List<IMenuElement> Elements { get; protected set; }
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)
