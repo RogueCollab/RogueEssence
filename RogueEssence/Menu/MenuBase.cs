@@ -58,8 +58,12 @@ namespace RogueEssence.Menu
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
         }
 
-
-        public abstract IEnumerable<IMenuElement> GetElements();
+        public List<IMenuElement> Elements = new();
+        public virtual IEnumerable<IMenuElement> GetElements()
+        {
+            foreach (IMenuElement element in Elements)
+                yield return element;
+        }
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {

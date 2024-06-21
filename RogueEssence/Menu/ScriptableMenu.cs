@@ -3,7 +3,6 @@ using System.Linq;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using RogueEssence.Content;
 using RogueEssence.Script;
 using NLua;
 using System.Collections;
@@ -13,7 +12,12 @@ namespace RogueEssence.Menu
 {
     public class ScriptableMenu : InteractableMenu
     {
-        public List<IMenuElement> MenuElements;
+        [Obsolete] //kept only for script compatibility, just redirected
+        public List<IMenuElement> MenuElements
+        {
+            get => Elements;
+            set => Elements = value;
+        }
 
         protected Action<InputManager> UpdateFunction;
 
@@ -23,13 +27,6 @@ namespace RogueEssence.Menu
         {
             UpdateFunction = updateFunction;
             Bounds = new Rect(x, y, w, h);
-            MenuElements = new List<IMenuElement>();
-        }
-
-        public override IEnumerable<IMenuElement> GetElements()
-        {
-            foreach (IMenuElement choice in MenuElements)
-                yield return choice;
         }
 
         public override void Update(InputManager input)
