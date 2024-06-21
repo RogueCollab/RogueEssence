@@ -1,5 +1,7 @@
-﻿using RogueElements;
+﻿using Microsoft.Xna.Framework.Graphics;
+using RogueElements;
 using RogueEssence.Content;
+using System.Collections.Generic;
 
 namespace RogueEssence.Menu
 {
@@ -15,6 +17,7 @@ namespace RogueEssence.Menu
         }
         public bool BlockPrevious { get; set; }
 
+        public List<SummaryMenu> SummaryMenus { get; set; } = new();
         public virtual string Label { get; protected set; } = "";
 
         public abstract void Update(InputManager input);
@@ -42,5 +45,14 @@ namespace RogueEssence.Menu
             return (choseDir && (!prevDir || atAdd));
         }
 
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            foreach (SummaryMenu menu in SummaryMenus)
+                menu.Draw(spriteBatch);
+        }
     }
 }
