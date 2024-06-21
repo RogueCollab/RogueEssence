@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
         }
 
-        public virtual List<IMenuElement> Elements { get; protected set; }
+        public virtual List<IMenuElement> Elements { get; protected set; } = new();
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)
@@ -106,7 +106,6 @@ namespace RogueEssence.Menu
 
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
-
         }
 
         private void DrawMenuPiece(SpriteBatch spriteBatch, TileSheet menu, Color color, int addX, int addY)
