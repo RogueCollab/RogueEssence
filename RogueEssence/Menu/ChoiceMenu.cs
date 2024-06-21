@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using RogueEssence.Content;
 using System.Linq;
 
 namespace RogueEssence.Menu
 {
     public abstract class ChoiceMenu : InteractableMenu
     {
+        public override List<IMenuElement> Elements {
+            get => NonChoices.Concat(Choices).ToList();
+            protected set { NonChoices = value; Choices = new(); } //Realistically only affects initialization
+        }
         public List<IMenuElement> NonChoices;
         public List<IChoosable> Choices;
 
