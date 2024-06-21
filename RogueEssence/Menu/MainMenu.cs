@@ -6,10 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
-using KeraLua;
 using RogueEssence.Ground;
-using RogueEssence.Script;
-using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
