@@ -12,13 +12,12 @@ namespace RogueEssence.Menu
         public List<IMenuElement> NonChoices;
         public List<IChoosable> Choices;
 
-        //TODO: add this into the non-choices list?
         protected MenuCursor cursor;
 
         public ChoiceMenu()
         {
-            cursor = new MenuCursor(this, Dir4.Right);
-            NonChoices = new List<IMenuElement>();
+            cursor = new MenuCursor(MenuLabel.CURSOR, this, Dir4.Right);
+            NonChoices = new List<IMenuElement> {cursor};
             Choices = new List<IChoosable>();
         }
 
@@ -55,23 +54,6 @@ namespace RogueEssence.Menu
                 if (found && labelList.Count == 0) break;
             }
             return poss;
-        }
-
-        public override IEnumerable<IMenuElement> GetElements()
-        {
-            yield return cursor;
-            foreach (IChoosable choice in Choices)
-                yield return choice;
-            foreach (IMenuElement nonChoice in NonChoices)
-                yield return nonChoice;
-        }
-
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
         }
     }
 }

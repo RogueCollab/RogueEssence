@@ -39,5 +39,7 @@ namespace RogueEssence.Menu
         public const string SETTINGS = "SETTINGS";
         public const string KEYBOARD = "KEYBOARD";
         public const string GAMEPAD = "GAMEPAD";
+
+        public const string CURSOR = "cursor";
     }
 }
