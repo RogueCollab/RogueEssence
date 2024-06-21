@@ -37,7 +37,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < Choices.Count; ii++)
             {
                 bool found = false;
-                IChoosable choice = Choices[ii];
+                ILabeled choice = Choices[ii];
                 if (choice.HasLabel())
                 {
                     for (int kk = 0; kk < labelList.Count; kk++)

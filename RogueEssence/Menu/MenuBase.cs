@@ -153,7 +153,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < Elements.Count; ii++)
             {
                 bool found = false;
-                IMenuElement choice = Elements[ii];
+                ILabeled choice = Elements[ii];
                 if (choice.HasLabel())
                 {
                     for (int kk = 0; kk < labelList.Count; kk++)
