@@ -2,7 +2,6 @@
 using System.Linq;
 using RogueElements;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Script;
 using NLua;
 using System.Collections;
@@ -12,7 +11,7 @@ namespace RogueEssence.Menu
 {
     public class ScriptableMenu : InteractableMenu
     {
-        [Obsolete] //kept only for script compatibility, just redirected
+        [Obsolete("Redirects to MenuBase.Elements. Kept only for script compatibility")]
         public List<IMenuElement> MenuElements
         {
             get => Elements;
