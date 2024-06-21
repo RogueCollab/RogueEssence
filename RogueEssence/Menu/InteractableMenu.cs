@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace RogueEssence.Menu
 {
-    public abstract class InteractableMenu : MenuBase, IInteractable, ILabeled
+    public abstract class InteractableMenu : MenuBase, IInteractable
     {
         const int INPUT_WAIT = 30;
         const int INPUT_GAP = 6;
@@ -17,7 +17,6 @@ namespace RogueEssence.Menu
         public bool BlockPrevious { get; set; }
 
         public List<SummaryMenu> SummaryMenus { get; set; } = new();
-        public virtual string Label { get; protected set; } = "";
 
         public abstract void Update(InputManager input);
 
