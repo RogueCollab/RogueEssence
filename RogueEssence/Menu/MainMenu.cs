@@ -2,7 +2,6 @@
 using RogueElements;
 using RogueEssence.Data;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using System;
@@ -27,7 +26,7 @@ namespace RogueEssence.Menu
         public Rect TitleMenuBounds { get; set; }
         public SummaryMenu SummaryMenu { get; set; }
         public Rect SummaryMenuBounds { get; set; }
-        public MainMenu() : this(MenuLabel.MAIN) { }
+        public MainMenu() : this(MenuLabel.MAIN_MENU) { }
         public MainMenu(string label)
         {
             Label = label;

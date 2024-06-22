@@ -6,7 +6,7 @@ namespace RogueEssence.Menu
     public class OthersMenu : TitledStripMenu
     {
         public List<MenuTextChoice> Choices { get; set; }
-        public OthersMenu() : this(MenuLabel.OTHERS) { }
+        public OthersMenu() : this(MenuLabel.OTHERS_MENU) { }
         public OthersMenu(string label)
         {
             Label = label;

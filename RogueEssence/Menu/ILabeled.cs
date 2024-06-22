@@ -32,7 +32,17 @@ namespace RogueEssence.Menu
 
     public abstract class MenuLabel
     {
-        public const string MAIN = "MAIN";
+        //MULTIPLE MENUS
+        public const string TITLE = "TITLE";
+        public const string DIV = "DIV";
+        public const string MESSAGE = "MESSAGE";
+        public const string CURSOR = "CURSOR";
+
+        //TOP MENU
+        public const string TOP_MENU = "TOP_MENU";
+        public const string TOP_TITLE_SUMMARY = "TOP_TITLE_SUMMARY";
+        //MAIN MENU
+        public const string MAIN_MENU = "MAIN_MENU";
         public const string SKILLS = "SKILLS";
         public const string INVENTORY = "INVENTORY";
         public const string INVENTORY_REPLACE = "INVENTORY_REPLACE";
@@ -46,12 +56,12 @@ namespace RogueEssence.Menu
         public const string OTHERS = "OTHERS";
         public const string REST = "REST";
         public const string SAVE = "SAVE";
+        //OTHERS MENU
+        public const string OTHERS_MENU = "OTHERS_MENU";
         public const string MSG_LOG = "MSG_LOG";
         public const string SETTINGS = "SETTINGS";
         public const string KEYBOARD = "KEYBOARD";
         public const string GAMEPAD = "GAMEPAD";
-
-        public const string CURSOR = "cursor";
         //INFO MENU
         public const string INFO_MENU = "INFO_MENU";
     }

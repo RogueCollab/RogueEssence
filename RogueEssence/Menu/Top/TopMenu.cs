@@ -16,9 +16,11 @@ namespace RogueEssence.Menu
 
         public override bool CanMenu { get { return false; } }
         public override bool CanCancel { get { return false; } }
-
-        public TopMenu()
+        
+        public TopMenu() : this(MenuLabel.TOP_MENU) { }
+        public TopMenu(string label)
         {
+            Label = label;
             bool inQuest = PathMod.Quest.IsValid();
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
