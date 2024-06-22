@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using System.Linq;
+using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
@@ -148,21 +149,21 @@ namespace RogueEssence.Menu
                 yield return element;
         }
 
-        public virtual int GetChoiceIndexByLabel(string label)
+        public LabeledElementIndex GetElementIndexByLabel(string label)
         {
-            return GetChoiceIndexesByLabel(label)[label];
+            if (GetElementIndexesByLabel(label).TryGetValue(label, out LabeledElementIndex ret)) return ret;
+            return new LabeledElementIndex();
         }
-        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, LabeledElementIndex> GetElementIndexesByLabel(params string[] labels)
         {
-            Dictionary<string, int> poss = new();
+            Dictionary<string, LabeledElementIndex> indexes = new();
             List<string> labelList = labels.ToList();
-            foreach (string label in labels)
-                poss.Add(label, -1);
+            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements; //this cast chain REALLY should not have a reason to break
 
-            for (int ii = 0; ii < Elements.Count; ii++)
+            for (int ii = 0; ii < list.Count; ii++)
             {
-                bool found = false;
-                IMenuElement element = Elements[ii];
+                if (labelList.Count == 0) break;
+                ILabeled element = list[ii];
                 if (element.HasLabel())
                 {
                     for (int kk = 0; kk < labelList.Count; kk++)
@@ -170,16 +171,14 @@ namespace RogueEssence.Menu
                         string label = labelList[kk];
                         if (element.Label == label)
                         {
-                            found = true;
-                            poss[label] = ii;
+                            indexes[label] = new(list, ii);
                             labelList.RemoveAt(kk);
                             break;
                         }
                     }
                 }
-                if (found && labelList.Count == 0) break;
             }
-            return poss;
+            return indexes;
         }
     }
 }

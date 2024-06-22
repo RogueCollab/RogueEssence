@@ -18,6 +18,17 @@ namespace RogueEssence.Menu
             return HasLabel() && Label.Contains(substr);
         }
     }
+    public struct LabeledElementIndex 
+    {
+        public List<ILabeled> List { get; private set; } = null;
+        public int Index { get; private set; } = -1;
+        public LabeledElementIndex(List<ILabeled> list, int index)
+        {
+            List = list;
+            Index = index;
+        }
+        public readonly bool Found() => List!=null && Index>=0 && Index<=List.Count;
+    }
 
     public abstract class MenuLabel
     {
@@ -41,5 +52,7 @@ namespace RogueEssence.Menu
         public const string GAMEPAD = "GAMEPAD";
 
         public const string CURSOR = "cursor";
+        //INFO MENU
+        public const string INFO_MENU = "INFO_MENU";
     }
 }

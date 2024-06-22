@@ -61,9 +61,15 @@ namespace RogueEssence.Menu
         }
 
         public virtual List<IMenuElement> Elements { get; protected set; } = new();
+        public virtual List<IMenuElement> UnboundElements { get; protected set; } = new();
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)
+                yield return element;
+        }
+        public virtual IEnumerable<IMenuElement> GetUnboundElements()
+        {
+            foreach (IMenuElement element in UnboundElements)
                 yield return element;
         }
 
@@ -106,6 +112,10 @@ namespace RogueEssence.Menu
 
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
+
+            //draw outside bounds
+            foreach (IMenuElement element in GetUnboundElements())
+                element.Draw(spriteBatch, new Loc()); //coords are screen-relative, here
         }
 
         private void DrawMenuPiece(SpriteBatch spriteBatch, TileSheet menu, Color color, int addX, int addY)
@@ -137,39 +147,40 @@ namespace RogueEssence.Menu
         }
 
 
-        public virtual int GetElementIndexByLabel(string label)
+        public LabeledElementIndex GetElementIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
+            if (GetElementIndexesByLabel(label).TryGetValue(label, out LabeledElementIndex ret)) return ret;
+            return new LabeledElementIndex();
         }
-        public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, LabeledElementIndex> GetElementIndexesByLabel(params string[] labels)
+            => SearchLabels(labels, Elements, UnboundElements);
+        
+        protected static Dictionary<string, LabeledElementIndex> SearchLabels(string[] labels, params IEnumerable<ILabeled>[] lists)
         {
-            Dictionary<string, int> poss = new();
+            Dictionary<string, LabeledElementIndex> indexes = new();
             List<string> labelList = labels.ToList();
-            foreach (string label in labels)
-                poss.Add(label, -1);
-
-            for (int ii = 0; ii < Elements.Count; ii++)
+            foreach (List<ILabeled> list in lists) //implicit cast REALLY should not have a reason to break
             {
-                bool found = false;
-                ILabeled choice = Elements[ii];
-                if (choice.HasLabel())
+                for (int ii = 0; ii < list.Count; ii++)
                 {
-                    for (int kk = 0; kk < labelList.Count; kk++)
+                    if (labelList.Count == 0) break;
+                    ILabeled element = list[ii];
+                    if (element.HasLabel())
                     {
-                        string label = labelList[kk];
-                        if (choice.Label == label)
+                        for (int kk = 0; kk < labelList.Count; kk++)
                         {
-                            found = true;
-                            poss[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
+                            string label = labelList[kk];
+                            if (element.Label == label)
+                            {
+                                indexes[label] = new(list, ii);
+                                labelList.RemoveAt(kk);
+                                break;
+                            }
                         }
                     }
                 }
-                if (found && labelList.Count == 0) break;
             }
-            return poss;
+            return indexes;
         }
     }
 }

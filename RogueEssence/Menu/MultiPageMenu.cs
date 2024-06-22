@@ -155,43 +155,7 @@ namespace RogueEssence.Menu
             SetPage(CurrentPage);
         }
 
-        public override int GetChoiceIndexByLabel(string label)
-        {
-            return GetChoiceIndexesByLabel(label)[label];
-        }
-        public override Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
-        {
-            Dictionary<string, int> poss = new();
-            List<string> labelList = labels.ToList();
-            foreach (string label in labels)
-                poss.Add(label, -1);
-
-            for (int ii = 0; ii < TotalChoices.Length; ii++)
-            {
-                bool found = false;
-                IChoosable[] page = TotalChoices[ii];
-                for (int jj = 0; jj < TotalChoices[ii].Length; jj++)
-                {
-                    IChoosable choice = page[jj];
-                    if (choice.HasLabel())
-                    {
-                        for (int kk = 0; kk < labelList.Count; kk++)
-                        {
-                            string label = labelList[kk];
-                            if(choice.Label == label)
-                            {
-                                found = true;
-                                poss[label] = ii * SpacesPerPage + jj;
-                                labelList.RemoveAt(kk);
-                                break;
-                            }
-                        }
-                    }
-                    if (found) break;
-                }
-                if (found && labelList.Count == 0) break;
-            }
-            return poss;
-        }
+        public override Dictionary<string, LabeledElementIndex> GetChoiceIndexesByLabel(params string[] labels)
+            => SearchLabels(labels, ExportTotalChoices());
     }
 }

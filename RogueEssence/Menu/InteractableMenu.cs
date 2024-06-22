@@ -53,39 +53,13 @@ namespace RogueEssence.Menu
             foreach (SummaryMenu menu in SummaryMenus)
                 menu.Draw(spriteBatch);
         }
-        public virtual int GetSummaryIndexByLabel(string label)
-        {
-            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
-        }
-        public virtual Dictionary<string, int> GetSummaryIndexesByLabel(params string[] labels)
-        {
-            Dictionary<string, int> poss = new();
-            List<string> labelList = labels.ToList();
-            foreach (string label in labels)
-                poss.Add(label, -1);
 
-            for (int ii = 0; ii < SummaryMenus.Count; ii++)
-            {
-                bool found = false;
-                ILabeled summary = SummaryMenus[ii];
-                if (summary.HasLabel())
-                {
-                    for (int kk = 0; kk < labelList.Count; kk++)
-                    {
-                        string label = labelList[kk];
-                        if (summary.Label == label)
-                        {
-                            found = true;
-                            poss[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
-                        }
-                    }
-                }
-                if (found && labelList.Count == 0) break;
-            }
-            return poss;
+        public LabeledElementIndex GetSummaryIndexByLabel(string label)
+        {
+            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out LabeledElementIndex ret)) return ret;
+            return new LabeledElementIndex();
         }
+        public virtual Dictionary<string, LabeledElementIndex> GetSummaryIndexesByLabel(params string[] labels)
+            => SearchLabels(labels, SummaryMenus);
     }
 }
