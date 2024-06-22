@@ -149,7 +149,7 @@ namespace RogueEssence.Menu
         {
             ImportTotalChoices(choices.ToArray());
         }
-        public void ImportTotalChoices(IChoosable[] choices)
+        public void ImportTotalChoices(params IChoosable[] choices)
         {
             TotalChoices = SortIntoPages(choices, SpacesPerPage);
             SetPage(CurrentPage);
