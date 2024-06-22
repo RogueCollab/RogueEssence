@@ -13,9 +13,10 @@ namespace RogueEssence.Menu
 
         private Action action;
 
-        public InfoMenu(string title, string message, Action action)
+        public InfoMenu(string title, string message, Action action) : this(MenuLabel.INFO_MENU, title, message, action) { }
+        public InfoMenu(string label, string title, string message, Action action)
         {
-            Label = MenuLabel.INFO_MENU;
+            Label = label;
             this.action = action;
 
             Bounds = new Rect(new Loc(40, 32), new Loc(240, 176));
