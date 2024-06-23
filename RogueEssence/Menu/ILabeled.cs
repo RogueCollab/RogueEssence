@@ -30,6 +30,17 @@ namespace RogueEssence.Menu
         //TOP MENU
         public const string TOP_MENU = "TOP_MENU";
         public const string TOP_TITLE_SUMMARY = "TOP_TITLE_SUMMARY";
+        public const string TOP_RESCUE = "TOP_RESCUE";
+        public const string TOP_CONTINUE = "TOP_CONTINUE";
+        public const string TOP_NEW = "TOP_NEW";
+        public const string TOP_ROGUE = "TOP_ROGUE";
+        public const string TOP_RECORD = "TOP_RECORD";
+        public const string TOP_OPTIONS = "TOP_OPTIONS";
+        public const string TOP_QUEST = "TOP_QUEST";
+        public const string TOP_QUEST_EXIT = "TOP_QUEST_EXIT";
+        public const string TOP_MODS = "TOP_MODS";
+        public const string TOP_QUIT = "TOP_QUIT";
+
         //MAIN MENU
         public const string MAIN_MENU = "MAIN_MENU";
         public const string SKILLS = "SKILLS";
