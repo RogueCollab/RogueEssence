@@ -29,14 +29,15 @@
         public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";
         public const string GROUND_MENU_TILE = "GROUND_MENU_TILE";
         public const string OTHERS_MENU = "OTHERS_MENU";
+        public const string SETTINGS_MENU = "SETTINGS_MENU";
 
-        //MULTIPLE MENUS
+        //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
         public const string DIV = "DIV";
         public const string MESSAGE = "MESSAGE";
         public const string CURSOR = "CURSOR";
 
-        //TOP MENU
+        //TOP MENU OPTIONS
         public const string TOP_TITLE_SUMMARY = "TOP_TITLE_SUMMARY";
         public const string TOP_RESCUE = "TOP_RESCUE";
         public const string TOP_CONTINUE = "TOP_CONTINUE";
@@ -49,24 +50,20 @@
         public const string TOP_MODS = "TOP_MODS";
         public const string TOP_QUIT = "TOP_QUIT";
 
-        //MAIN MENU
-        public const string SKILLS = "SKILLS";
-        public const string INVENTORY = "INVENTORY";
-        public const string TACTICS = "TACTICS";
-        public const string TEAM = "TEAM";
-        public const string TEAM_SWITCH = "TEAM_SWITCH";
-        public const string TEAM_SENDHOME = "TEAM_SENDHOME";
-        public const string GROUND = "GROUND";
-        public const string GROUND_ITEM = "GROUND_ITEM";
-        public const string GROUND_TILE = "GROUND_TILE";
-        public const string OTHERS = "OTHERS";
-        public const string REST = "REST";
-        public const string SAVE = "SAVE";
+        //MAIN MENU OPTIONS
+        public const string MAIN_SKILLS = "MAIN_SKILLS";
+        public const string MAIN_INVENTORY = "MAIN_INVENTORY";
+        public const string MAIN_TACTICS = "MAIN_TACTICS";
+        public const string MAIN_TEAM = "MAIN_TEAM";
+        public const string MAIN_GROUND = "MAIN_GROUND";
+        public const string MAIN_OTHERS = "MAIN_OTHERS";
+        public const string MAIN_REST = "MAIN_REST";
+        public const string MAIN_SAVE = "MAIN_SAVE";
 
-        //OTHERS MENU
-        public const string MSG_LOG = "MSG_LOG";
-        public const string SETTINGS = "SETTINGS";
-        public const string KEYBOARD = "KEYBOARD";
-        public const string GAMEPAD = "GAMEPAD";
+        //OTHERS MENU OPTIONS
+        public const string OTH_MSG_LOG = "OTH_MSG_LOG";
+        public const string OTH_SETTINGS = "OTH_SETTINGS";
+        public const string OTH_KEYBOARD = "OTH_KEYBOARD";
+        public const string OTH_GAMEPAD = "OTH_GAMEPAD";
     }
 }
