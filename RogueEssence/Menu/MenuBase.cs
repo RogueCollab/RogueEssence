@@ -61,15 +61,9 @@ namespace RogueEssence.Menu
         }
 
         public virtual List<IMenuElement> Elements { get; protected set; } = new();
-        public virtual List<IMenuElement> UnboundElements { get; protected set; } = new();
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)
-                yield return element;
-        }
-        public virtual IEnumerable<IMenuElement> GetUnboundElements()
-        {
-            foreach (IMenuElement element in UnboundElements)
                 yield return element;
         }
 
@@ -112,10 +106,6 @@ namespace RogueEssence.Menu
 
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
-
-            //draw outside bounds
-            foreach (IMenuElement element in GetUnboundElements())
-                element.Draw(spriteBatch, new Loc()); //coords are screen-relative, here
         }
 
         private void DrawMenuPiece(SpriteBatch spriteBatch, TileSheet menu, Color color, int addX, int addY)
