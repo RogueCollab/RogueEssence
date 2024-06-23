@@ -144,31 +144,30 @@ namespace RogueEssence.Menu
         }
         public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
             => SearchLabels(labels, Elements);
-        
+
         protected static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
         {
             Dictionary<string, int> indexes = new();
             List<string> labelList = labels.ToList();
-            List<ILabeled> ls = (List<ILabeled>)list; //this cast REALLY should not have any reason to break
+
+            int ii = 0;
+            foreach (ILabeled element in list)
             {
-                for (int ii = 0; ii < ls.Count; ii++)
+                if (labelList.Count == 0) break;
+                if (element.HasLabel())
                 {
-                    if (labelList.Count == 0) break;
-                    ILabeled element = ls[ii];
-                    if (element.HasLabel())
+                    for (int kk = 0; kk < labelList.Count; kk++)
                     {
-                        for (int kk = 0; kk < labelList.Count; kk++)
+                        string label = labelList[kk];
+                        if (element.Label == label)
                         {
-                            string label = labelList[kk];
-                            if (element.Label == label)
-                            {
-                                indexes[label] = ii;
-                                labelList.RemoveAt(kk);
-                                break;
-                            }
+                            indexes[label] = ii;
+                            labelList.RemoveAt(kk);
+                            break;
                         }
                     }
                 }
+                ii++;
             }
             return indexes;
         }
