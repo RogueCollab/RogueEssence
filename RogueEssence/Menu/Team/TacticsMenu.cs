@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
         //needs a summary menu
         private int releasedTactics;
 
-        public TacticsMenu() : this(MenuLabel.TACTICS) { }
+        public TacticsMenu() : this(MenuLabel.TACTICS_MENU) { }
         public TacticsMenu(string label)
         {
             Label = label;

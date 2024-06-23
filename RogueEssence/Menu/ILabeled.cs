@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RogueEssence.Menu
+﻿namespace RogueEssence.Menu
 {
     public interface ILabeled
     {
@@ -21,6 +15,21 @@ namespace RogueEssence.Menu
 
     public abstract class MenuLabel
     {
+        //MENU_LABELS
+        public const string TOP_MENU = "TOP_MENU";
+        public const string MAIN_MENU = "MAIN_MENU";
+        public const string INFO_MENU = "INFO_MENU";
+        public const string SKILLS_MENU = "SKILLS_MENU";
+        public const string INVENTORY_MENU = "INVENTORY_MENU";
+        public const string INVENTORY_MENU_REPLACE = "INVENTORY_MENU_REPLACE";
+        public const string TACTICS_MENU = "TACTICS_MENU";
+        public const string TEAM_MENU = "TEAM_MENU";
+        public const string TEAM_MENU_SWITCH = "TEAM_MENU_SWITCH";
+        public const string TEAM_MENU_SENDHOME = "TEAM_MENU_SENDHOME";
+        public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";
+        public const string GROUND_MENU_TILE = "GROUND_MENU_TILE";
+        public const string OTHERS_MENU = "OTHERS_MENU";
+
         //MULTIPLE MENUS
         public const string TITLE = "TITLE";
         public const string DIV = "DIV";
@@ -28,7 +37,6 @@ namespace RogueEssence.Menu
         public const string CURSOR = "CURSOR";
 
         //TOP MENU
-        public const string TOP_MENU = "TOP_MENU";
         public const string TOP_TITLE_SUMMARY = "TOP_TITLE_SUMMARY";
         public const string TOP_RESCUE = "TOP_RESCUE";
         public const string TOP_CONTINUE = "TOP_CONTINUE";
@@ -42,10 +50,8 @@ namespace RogueEssence.Menu
         public const string TOP_QUIT = "TOP_QUIT";
 
         //MAIN MENU
-        public const string MAIN_MENU = "MAIN_MENU";
         public const string SKILLS = "SKILLS";
         public const string INVENTORY = "INVENTORY";
-        public const string INVENTORY_REPLACE = "INVENTORY_REPLACE";
         public const string TACTICS = "TACTICS";
         public const string TEAM = "TEAM";
         public const string TEAM_SWITCH = "TEAM_SWITCH";
@@ -56,13 +62,11 @@ namespace RogueEssence.Menu
         public const string OTHERS = "OTHERS";
         public const string REST = "REST";
         public const string SAVE = "SAVE";
+
         //OTHERS MENU
-        public const string OTHERS_MENU = "OTHERS_MENU";
         public const string MSG_LOG = "MSG_LOG";
         public const string SETTINGS = "SETTINGS";
         public const string KEYBOARD = "KEYBOARD";
         public const string GAMEPAD = "GAMEPAD";
-        //INFO MENU
-        public const string INFO_MENU = "INFO_MENU";
     }
 }
