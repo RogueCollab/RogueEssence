@@ -54,12 +54,12 @@ namespace RogueEssence.Menu
                 menu.Draw(spriteBatch);
         }
 
-        public LabeledElementIndex GetSummaryIndexByLabel(string label)
+        public int GetSummaryIndexByLabel(string label)
         {
-            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out LabeledElementIndex ret)) return ret;
-            return new LabeledElementIndex();
+            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            return new int();
         }
-        public virtual Dictionary<string, LabeledElementIndex> GetSummaryIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetSummaryIndexesByLabel(params string[] labels)
             => SearchLabels(labels, SummaryMenus);
     }
 }

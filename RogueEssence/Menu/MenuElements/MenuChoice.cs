@@ -149,14 +149,14 @@ namespace RogueEssence.Menu
                 yield return element;
         }
 
-        public LabeledElementIndex GetElementIndexByLabel(string label)
+        public int GetElementIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out LabeledElementIndex ret)) return ret;
-            return new LabeledElementIndex();
+            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            return -1;
         }
-        public virtual Dictionary<string, LabeledElementIndex> GetElementIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
         {
-            Dictionary<string, LabeledElementIndex> indexes = new();
+            Dictionary<string, int> indexes = new();
             List<string> labelList = labels.ToList();
             List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements; //this cast chain REALLY should not have a reason to break
 
@@ -171,7 +171,7 @@ namespace RogueEssence.Menu
                         string label = labelList[kk];
                         if (element.Label == label)
                         {
-                            indexes[label] = new(list, ii);
+                            indexes[label] = ii;
                             labelList.RemoveAt(kk);
                             break;
                         }
