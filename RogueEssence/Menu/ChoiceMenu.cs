@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
 
         public int GetChoiceIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            if (GetChoiceIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
             return -1;
         }
         public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
