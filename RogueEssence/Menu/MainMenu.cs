@@ -191,9 +191,11 @@ namespace RogueEssence.Menu
 
             TitleMenu = new SummaryMenu(TitleMenuBounds);
             TitleMenu.Elements.AddRange(TitleElements);
+            SummaryMenus.Add(TitleMenu);
 
             SummaryMenu = new SummaryMenu(SummaryMenuBounds);
             SummaryMenu.Elements.AddRange(SummaryElements);
+            SummaryMenus.Add(SummaryMenu);
         }
 
         private void checkGround()
@@ -205,17 +207,6 @@ namespace RogueEssence.Menu
         {
             defaultChoice = CurrentChoice;
             base.ChoiceChanged();
-        }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
-
-            //draw other windows
-            TitleMenu.Draw(spriteBatch);
-            SummaryMenu.Draw(spriteBatch);
         }
 
 
