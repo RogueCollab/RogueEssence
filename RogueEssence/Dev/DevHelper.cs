@@ -5,15 +5,17 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using System.Text.RegularExpressions;
 using RogueEssence.Content;
 using System.Text;
 using RogueEssence.Script;
+using System.Linq;
 
 namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
-        //TODO: this is old conversion code and needs to be deleted, but maybe the code could be salvaged for somemass rename operation?
+        //TODO: this is old conversion code and needs to be deleted, but maybe the code could be salvaged for some mass rename operation?
         public static Version StringAssetVersion = new Version(0, 6, 0);
 
         public static Version GetVersion(params string[] dirs)

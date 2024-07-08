@@ -604,7 +604,7 @@ namespace RogueEssence.Script
                 LuaState.State.Encoding = Encoding.UTF8;
         }
 
-        private string GetModulePath(string scriptPath, string moduleName)
+        public static string GetModulePath(string scriptPath, string moduleName)
         {
             //check if the ?.lua or ?/init.lua exists
             if (File.Exists(Path.Join(scriptPath, moduleName + ".lua")))
