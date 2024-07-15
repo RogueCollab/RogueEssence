@@ -118,13 +118,6 @@ namespace RogueEssence.Ground
             get { return currentCharAction.Collider; }
         }
 
-        public override void DoCleanup()
-        {
-            base.DoCleanup();
-            //Clear the current character action so nothing will wait on it
-            currentCharAction = null;
-        }
-
 
         public GroundChar() : this(new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), new Loc(), Dir8.Down, "GroundChar")
         {
