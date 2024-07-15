@@ -12,54 +12,18 @@ namespace RogueEssence.Script
     /// </summary>
     public class ScriptStrings : ILuaEngineComponent
     {
-        public const string STRINGS_FILE_NAME = "strings";
+        public LuaTable MapStrings { get; private set; }
 
         public LuaTable MakePackageStringTable(string packagefilepath)
         {
+            return MapStrings;
+        }
+
+        private LuaTable makePackageStringTable(string packagefilepath)
+        {
             try
             {
-                Dictionary<string, string> xmlDict = new Dictionary<string, string>();
-
-                string code = LocaleCode();
-                //order of string fallbacks:
-                //first go through all mods of the original language
-                foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + "." + code + ".resx"))
-                {
-                    Dictionary<string, string> dict = Text.LoadStringResx(path);
-                    foreach (string key in dict.Keys)
-                    {
-                        if (!xmlDict.ContainsKey(key))
-                            xmlDict.Add(key, dict[key]);
-                    }
-                }
-
-                //then go through all mods of the official fallbacks
-                if (Text.LangNames.ContainsKey(code))
-                {
-                    foreach (string fallback in Text.LangNames[code].Fallbacks)
-                    {
-                        foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + "." + fallback + ".resx"))
-                        {
-                            Dictionary<string, string> dict = Text.LoadStringResx(path);
-                            foreach (string key in dict.Keys)
-                            {
-                                if (!xmlDict.ContainsKey(key))
-                                    xmlDict.Add(key, dict[key]);
-                            }
-                        }
-                    }
-                }
-                //then go through all mods of the default language
-                foreach (string path in PathMod.FallbackPaths(packagefilepath + "/" + STRINGS_FILE_NAME + ".resx"))
-                {
-                    Dictionary<string, string> dict = Text.LoadStringResx(path);
-                    foreach (string key in dict.Keys)
-                    {
-                        if (!xmlDict.ContainsKey(key))
-                            xmlDict.Add(key, dict[key]);
-                    }
-                }
-
+                Dictionary<string, string> xmlDict = Text.LoadStringDict(LocaleCode(), LuaEngine.SCRIPT_PATH, packagefilepath);
 
                 //Build a lua table as we go and return it
                 LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
@@ -77,7 +41,12 @@ namespace RogueEssence.Script
             }
         }
 
-        
+        public void LoadPackageStringTable(string packagefilepath)
+        {
+            LuaTable strings = makePackageStringTable(packagefilepath);
+            MapStrings = strings;
+        }
+
 
         /// <summary>
         /// Gets the current language setting of the game.

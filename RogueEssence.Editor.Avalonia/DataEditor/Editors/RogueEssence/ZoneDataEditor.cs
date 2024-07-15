@@ -28,7 +28,7 @@ namespace RogueEssence.Dev
             btnTest.Content = "Open Script Folder";
             btnTest.Click += async (object sender, RoutedEventArgs e) =>
             {
-                string zonescriptdir = LuaEngine.MakeZoneScriptPath(true, parent, "");
+                string zonescriptdir = LuaEngine.MakeZoneScriptPath(parent, "");
 
                 if (!Directory.Exists(zonescriptdir))
                 {
