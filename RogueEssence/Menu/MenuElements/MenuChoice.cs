@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using System.Linq;
-using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
@@ -21,6 +20,15 @@ namespace RogueEssence.Menu
 
         private bool hover;
         private bool click;
+
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
 
         protected MenuChoice(string label, Action choiceAction, bool enabled)
         {

@@ -15,6 +15,15 @@ namespace RogueEssence.Menu
         public Color Color;
         public Loc Loc;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuDigits(int digits, int minDigits, Loc loc)
             : this("", digits, minDigits, loc, Color.White)
         { }

@@ -36,6 +36,15 @@ namespace RogueEssence.Menu
         DepthStencilState s2;
         AlphaTestEffect alphaTest;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuBase()
         {
             Visible = true;

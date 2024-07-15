@@ -14,6 +14,15 @@ namespace RogueEssence.Menu
         public Loc Loc { get; set; }
         public bool Shadow { get; set; }
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuStatBar(Loc loc, int length, Color color) : this("", loc, length, color, true) { }
         public MenuStatBar(string label, Loc loc, int length, Color color) : this(label, loc, length, color, true) { }
         public MenuStatBar(Loc loc, int length, Color color, bool shadow) : this("", loc, length, color, true) { }

@@ -3,14 +3,8 @@
     public interface ILabeled
     {
         public string Label { get; }
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
+        public bool HasLabel();
+        public bool LabelContains(string substr);
     }
 
     public abstract class MenuLabel

@@ -14,6 +14,15 @@ namespace RogueEssence.Menu
         public EmoteStyle SpeakerEmotion;
         public bool Bordered;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public SpeakerPortrait(MonsterID speaker, EmoteStyle emotion, Loc loc, bool bordered)
         {
             Speaker = speaker;
