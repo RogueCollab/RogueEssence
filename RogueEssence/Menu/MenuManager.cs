@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Dungeon;
 using System.Text.RegularExpressions;
 using RogueElements;
+using RogueEssence.Script;
 
 namespace RogueEssence.Menu
 {
@@ -37,6 +38,7 @@ namespace RogueEssence.Menu
             if (menuModeDepth == 0)
                 throw new Exception("Can't add menu while not in menu mode");
 
+            LuaEngine.Instance.OnAddMenu(menu);
             if (menus.Count > 0)
                 menus[menus.Count - 1].Inactive = true;
             menu.Inactive = false;
@@ -49,6 +51,7 @@ namespace RogueEssence.Menu
             if (menuModeDepth == 0)
                 throw new Exception("Can't replace menu while not in menu mode");
 
+            LuaEngine.Instance.OnAddMenu(menu);
             menu.BlockPrevious = menus[menus.Count - 1].BlockPrevious;
             menus.RemoveAt(menus.Count - 1);
             menus.Add(menu);
@@ -79,6 +82,7 @@ namespace RogueEssence.Menu
 
         public IEnumerator<YieldInstruction> ProcessMenuCoroutine(IInteractable menu)
         {
+            LuaEngine.Instance.OnAddMenu(menu);
             if (menus.Count > 0)
                 menus[menus.Count - 1].Inactive = true;
             menu.Inactive = false;
