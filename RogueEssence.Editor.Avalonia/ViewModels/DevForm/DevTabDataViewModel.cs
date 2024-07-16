@@ -380,7 +380,7 @@ namespace RogueEssence.Dev.ViewModels
 
                     if (dataType == DataManager.DataType.Zone)
                     {
-                        string str = LuaEngine.MakeZoneScriptPath(assetName, "");
+                        string str = LuaEngine.MakeZoneScriptPath(true, assetName, "");
                         Directory.Delete(str, true);
                     }
                 }

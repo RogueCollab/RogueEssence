@@ -109,7 +109,6 @@ namespace RogueEssence.Data
         public const string MAP_PATH = DATA_PATH + MAP_FOLDER;
         public const string GROUND_PATH = DATA_PATH + GROUND_FOLDER;
         public const string DATA_EXT = ".json";
-        public const string PATCH_EXT = ".jsonpatch";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
 
@@ -319,24 +318,24 @@ namespace RogueEssence.Data
 
         public void InitBase()
         {
-            HealFX = LoadData<BattleFX>(FX_PATH, "Heal", DATA_EXT);
-            RestoreChargeFX = LoadData<BattleFX>(FX_PATH, "RestoreCharge", DATA_EXT);
-            LoseChargeFX = LoadData<BattleFX>(FX_PATH, "LoseCharge", DATA_EXT);
-            NoChargeFX = LoadData<EmoteFX>(FX_PATH, "NoCharge", DATA_EXT);
-            ElementFX = LoadData<BattleFX>(FX_PATH, "Element", DATA_EXT);
-            IntrinsicFX = LoadData<BattleFX>(FX_PATH, "Intrinsic", DATA_EXT);
-            SendHomeFX = LoadData<BattleFX>(FX_PATH, "SendHome", DATA_EXT);
-            ItemLostFX = LoadData<BattleFX>(FX_PATH, "ItemLost", DATA_EXT);
-            WarpFX = LoadData<BattleFX>(FX_PATH, "Warp", DATA_EXT);
-            KnockbackFX = LoadData<BattleFX>(FX_PATH, "Knockback", DATA_EXT);
-            JumpFX = LoadData<BattleFX>(FX_PATH, "Jump", DATA_EXT);
-            ThrowFX = LoadData<BattleFX>(FX_PATH, "Throw", DATA_EXT);
+            HealFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Heal" + DATA_EXT));
+            RestoreChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "RestoreCharge" + DATA_EXT));
+            LoseChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "LoseCharge" + DATA_EXT));
+            NoChargeFX = LoadData<EmoteFX>(PathMod.ModPath(FX_PATH + "NoCharge" + DATA_EXT));
+            ElementFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Element" + DATA_EXT));
+            IntrinsicFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Intrinsic" + DATA_EXT));
+            SendHomeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "SendHome" + DATA_EXT));
+            ItemLostFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "ItemLost" + DATA_EXT));
+            WarpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Warp" + DATA_EXT));
+            KnockbackFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Knockback" + DATA_EXT));
+            JumpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Jump" + DATA_EXT));
+            ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
 
 
             Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
-            UniversalEvent = LoadData<UniversalBaseEffect>(DATA_PATH, "Universal", DATA_EXT);
+            UniversalEvent = LoadData<UniversalBaseEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
 
-            UniversalData = LoadData<TypeDict<BaseData>>(MISC_PATH, "Index", DATA_EXT);
+            UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
             LoadStartParams();
         }
 
@@ -468,7 +467,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    BaseData data = LoadData<BaseData>(MISC_PATH, baseData.FileName, DATA_EXT);
+                    BaseData data = LoadData<BaseData>(PathMod.ModPath(MISC_PATH + baseData.FileName + DATA_EXT));
                     UniversalData.Set(data);
                 }
                 catch
@@ -677,7 +676,7 @@ namespace RogueEssence.Data
                     foreach ((Guid, EntrySummary) tuple in DataIndices[type].IterateKey(key))
                     {
                         ModHeader mod = PathMod.GetModFromUuid(tuple.Item1);
-                        T data = LoadModEntryData<T>(mod, key, type.ToString());
+                        T data = LoadModData<T>(mod, key, type.ToString());
                         if (data != null)
                         {
                             cache.Add(mod.Namespace + ":" + key, data);
@@ -708,13 +707,13 @@ namespace RogueEssence.Data
         {
             if (data != null)
             {
-                SaveEntryData(entryNum, dataType.ToString(), data);
+                SaveData(entryNum, dataType.ToString(), data);
                 EntrySummary entrySummary = data.GenerateEntrySummary();
                 DataIndices[dataType].Set(PathMod.Quest.UUID, entryNum, entrySummary);
             }
             else
             {
-                DeleteEntryData(entryNum, dataType.ToString());
+                DeleteData(entryNum, dataType.ToString());
                 DataIndices[dataType].Remove(PathMod.Quest.UUID, entryNum);
             }
             SaveIndex(dataType);
@@ -725,7 +724,7 @@ namespace RogueEssence.Data
                 if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
                 {
                     baseData.ContentChanged(entryNum);
-                    DataManager.SaveData(baseData, DataManager.MISC_PATH, baseData.FileName, DATA_EXT);
+                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
                 }
             }
 
@@ -739,103 +738,45 @@ namespace RogueEssence.Data
             if (components.Length > 1)
             {
                 ModHeader mod = PathMod.GetModFromNamespace(components[0]);
-                result = LoadModEntryData<T>(mod, components[1], subPath, ext);
+                result = LoadModData<T>(mod, components[1], subPath, ext);
             }
             else
-                result = LoadEntryData<T>(components[0], subPath, ext);
+                result = LoadData<T>(components[0], subPath, ext);
             
             if (result == null)
                 throw new FileNotFoundException(String.Format("Could not find {0} ID: '{1}'", subPath, namespacedNum));
             return result;
         }
 
-        public static T LoadModEntryData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        public static T LoadModData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
-            return LoadModData<T>(mod, DATA_PATH + subPath, indexNum, ext);
-        }
-
-        public static T LoadEntryData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
-        {
-            return LoadData<T>(DATA_PATH + subPath, indexNum, ext);
-        }
-
-        public static T LoadModData<T>(ModHeader mod, string subpath, string file, string ext)
-        {
-            string fullPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + ext));
-            string diffPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + PATCH_EXT));
-
-            string filePath = null;
-            List<string> diffPaths = new List<string>();
-            foreach (string modPath in PathMod.FallbackPaths(subpath))
-            {
-                //do not add to diff list until we reach the desired hardmod
-                //and STOP when we get to a full file
-                //but do we want hardmod to be THIS mod's diff on top of base?
-                //or THIS mod's diff on top of everything else on top of base?
-                //...the latter!
-                string newPath = Path.Join(modPath, file + ext);
-                string newDiffPath = Path.Join(modPath, file + PATCH_EXT);
-                if (diffPaths.Count > 0 || newPath == fullPath || newDiffPath == diffPath)
-                {
-                    if (File.Exists(newPath))
-                    {
-                        filePath = newPath;
-                        break;
-                    }
-                    if (File.Exists(newDiffPath))
-                        diffPaths.Insert(0, newDiffPath);
-                }
-            }
-            if (filePath != null)
-                return LoadObject<T>(filePath, diffPaths.ToArray());
+            string filePath = PathMod.HardMod(mod.Path, Path.Join(DATA_PATH + subPath, indexNum + ext));
+            if (File.Exists(filePath))
+                return LoadData<T>(filePath);
             return default(T);
         }
 
-        public static T LoadData<T>(string subpath, string file, string ext)
+        public static T LoadData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
-            //fall back on paths
-            //fall back until a file with ext is found
-            //all diff files found along the way need to be included in the argument pass
-            string filePath = null;
-            List<string> diffPaths = new List<string>();
-            foreach (string modPath in PathMod.FallbackPaths(subpath))
-            {
-                string newPath = Path.Join(modPath, file + ext);
-                if (File.Exists(newPath))
-                {
-                    filePath = newPath;
-                    break;
-                }
-                string newDiffPath = Path.Join(modPath, file + PATCH_EXT);
-                if (File.Exists(newDiffPath))
-                    diffPaths.Insert(0, newDiffPath);
-            }
-            if (filePath != null)
-                return LoadObject<T>(filePath, diffPaths.ToArray());
+            string filePath = PathMod.ModPath(Path.Join(DATA_PATH + subPath, indexNum + ext));
+            if (File.Exists(filePath))
+                return LoadData<T>(filePath);
             return default(T);
         }
 
-        //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
-        //yes, this is so that they can load properly on the reserialization step
-        //presumably, it should be saved based on whether it was loaded as a diff or not...
-        public static T LoadObject<T>(string path, params string[] diffpaths)
+        public static T LoadData<T>(string path)
         {
-            return (T)loadObject(typeof(T), path, diffpaths);
+            return (T)LoadData(path, typeof(T));
         }
 
-        private static object loadObject(Type t, string path, params string[] diffpaths)
+        public static object LoadData(string path, Type t)
         {
             try
             {
-                if (diffpaths.Length == 0)
+                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        return Serializer.DeserializeData(stream);
-                    }
+                    return Serializer.DeserializeData(stream);
                 }
-                else
-                    return Serializer.DeserializeDataWithDiffs(path, diffpaths);
             }
             catch (Exception ex)
             {
@@ -845,66 +786,35 @@ namespace RogueEssence.Data
         }
 
 
-        public static void SaveEntryData(string indexNum, string subPath, IEntryData entry)
+        public static void SaveData(string indexNum, string subPath, IEntryData entry)
         {
-            SaveData(entry, Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
-        }
-
-
-        public static void SaveData(object entry, string subpath, string file, string ext)
-        {
-            string folder = PathMod.HardMod(subpath);
+            string folder = PathMod.HardMod(DATA_PATH + subPath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-
-            //Check if a diff file is located here
-            if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
-                SaveObject(entry, Path.Join(folder, file + PATCH_EXT), PathMod.NoMod(Path.Join(subpath, file, ext)));
-            else //if not, just save as normal
-                SaveObject(entry, Path.Join(folder, file + ext));
+            SaveData(folder + "/" + indexNum + DATA_EXT, entry);
         }
 
-        //we need the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
-        //also need capability to save explicitly as a diff, or explicitly as a file
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="path"></param>
-        /// <param name="diffpath">The base file to diff the json against.  Do not save as a patch if left blank.</param>
-        public static void SaveObject(object entry, string path, string diffpath = "")
+        public static void SaveData(string path, object entry)
         {
-            if (diffpath == "")
+            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    Serializer.SerializeData(stream, entry);
-                }
+                //using (BinaryWriter writer = new BinaryWriter(stream))
+                //{
+                Serializer.SerializeData(stream, entry);
+                //}
             }
-            else
-                Serializer.SerializeDataAsDiff(path, diffpath, entry);
         }
 
-        public static void DeleteEntryData(string indexNum, string subPath)
-        {
-            DeleteData(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
-        }
 
-        public static void DeleteData(string subpath, string file, string ext)
+        public static void DeleteData(string indexNum, string subPath)
         {
-            string folder = PathMod.HardMod(subpath);
+            string folder = PathMod.HardMod(DATA_PATH + subPath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
-
-            //Check if a diff file is located here
-            if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call DeleteObject with the diff ext, and the additional argument consisting of the base item
-                DeleteObject(Path.Join(folder, file + PATCH_EXT));
-            else //if not, just save as normal
-                DeleteObject(Path.Join(folder, file + ext));
+            DeleteData(folder + "/" + indexNum + DATA_EXT);
         }
 
-        public static void DeleteObject(string path)
+        public static void DeleteData(string path)
         {
             if (File.Exists(path))
                 File.Delete(path);
@@ -995,7 +905,7 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
-                mapData = LoadEntryData<GroundMap>(name, GROUND_FOLDER, ".rsground");
+                mapData = LoadData<GroundMap>(name, GROUND_FOLDER, ".rsground");
                 mapData.AssetName = name;
                 return mapData;
             }
