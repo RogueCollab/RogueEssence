@@ -431,7 +431,7 @@ namespace RogueEssence.Dev.ViewModels
         private void DoSave(Map curmap, string filepath, string oldfname)
         {
             curmap.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
-            DataManager.SaveObject(curmap, filepath);
+            DataManager.SaveData(filepath, curmap);
 
             CurrentFile = filepath;
         }
@@ -510,7 +510,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             curgrnd.AssetName = Path.GetFileNameWithoutExtension(filepath); //Set the assetname to the file name!
-            DataManager.SaveObject(curgrnd, filepath);
+            DataManager.SaveData(filepath, curgrnd);
 
             //Actually create the script folder, and default script file.
             GroundEditViewModel.CreateOrCopyScriptData("", filepath);

@@ -85,14 +85,6 @@ namespace RogueEssence
             return header;
         }
 
-        public static string GetCurrentNamespace()
-        {
-            if (Quest.IsValid())
-                return Quest.Namespace;
-
-            return BaseNamespace;
-        }
-
         public static ModHeader GetModFromUuid(Guid uuid)
         {
             ModHeader header;
@@ -184,31 +176,6 @@ namespace RogueEssence
                 return Path.Join(ASSET_PATH, basePath);
             else
                 return Path.Join(ExePath, mod, basePath);
-        }
-
-        public static IEnumerable<ModHeader> FallforthMods(string basePath)
-        {
-            Stack<ModHeader> mods = new Stack<ModHeader>();
-            foreach (ModHeader mod in FallbackMods(basePath))
-                mods.Push(mod);
-
-            while (mods.Count > 0)
-                yield return mods.Pop();
-        }
-
-        public static IEnumerable<ModHeader> FallbackMods(string basePath)
-        {
-            for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
-            {
-                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
-                string fullPath = HardMod(mod.Path, basePath);
-                if (File.Exists(fullPath) || Directory.Exists(fullPath))
-                    yield return mod;
-            }
-
-            ModHeader header = ModHeader.Invalid;
-            header.Namespace = BaseNamespace;
-            yield return header;
         }
 
         public static IEnumerable<string> FallforthPaths(string basePath)
