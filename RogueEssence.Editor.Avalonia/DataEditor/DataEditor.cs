@@ -68,11 +68,6 @@ namespace RogueEssence.Dev
             TrackTypeSize(editor, editType);
         }
 
-        /// <summary>
-        /// Sets the editor window based on saved values (if there are any), and sets the event to save editor dimensions when changed.
-        /// </summary>
-        /// <param name="editor"></param>
-        /// <param name="editType"></param>
         public static void TrackTypeSize(DataEditForm editor, Type editType)
         {
             Size savedSize;

@@ -180,10 +180,7 @@ namespace RogueEssence.Ground
         public void OnEditorInit()
         {
             if (AssetName != "")
-            {
                 LuaEngine.Instance.RunGroundMapScript(AssetName);
-                LuaEngine.Instance.LoadGroundMapStrings(AssetName);
-            }
 
             //Reload the map events
             LoadScriptEvents();
@@ -200,10 +197,7 @@ namespace RogueEssence.Ground
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
             if (AssetName != "")
-            {
                 LuaEngine.Instance.RunGroundMapScript(AssetName);
-                LuaEngine.Instance.LoadGroundMapStrings(AssetName);
-            }
 
             //Reload the map events
             LoadScriptEvents();
