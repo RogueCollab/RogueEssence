@@ -12,12 +12,15 @@ namespace RogueEssence.Menu
             Button
         }
 
+        public string Label { get; set; }
         public Loc Loc { get; set; }
         public GraphicType Type { get; set; }
         public Loc Texture { get; set; }
 
-        public MenuGraphic(Loc loc, GraphicType type, Loc texture)
+        public MenuGraphic(Loc loc, GraphicType type, Loc texture) : this("", loc, type, texture) { }
+        public MenuGraphic(string label, Loc loc, GraphicType type, Loc texture)
         {
+            Label = label;
             Loc = loc;
             Type = type;
             Texture = texture;

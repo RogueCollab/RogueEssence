@@ -4,11 +4,13 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
+using System.Linq;
 
 namespace RogueEssence.Menu
 {
     public abstract class MenuChoice : IChoosable
     {
+        public string Label { get; set; }
         public Rect Bounds { get; set; }
 
         public Action ChoiceAction;
@@ -18,13 +20,15 @@ namespace RogueEssence.Menu
 
         private bool hover;
         private bool click;
-        
-        protected MenuChoice(Action choiceAction, bool enabled)
+
+        protected MenuChoice(string label, Action choiceAction, bool enabled)
         {
+            Label = label;
             Bounds = new Rect();
             ChoiceAction = choiceAction;
             Enabled = enabled;
         }
+        protected MenuChoice(Action choiceAction, bool enabled) : this("", choiceAction, enabled) { }
 
         //chosen by clicking
         public void OnMouseState(bool clicked)
@@ -106,10 +110,14 @@ namespace RogueEssence.Menu
     {
         public MenuText Text;
 
-        public MenuTextChoice(string text, Action choiceAction) : this(text, choiceAction, true, Color.White) { }
+        public MenuTextChoice(string text, Action choiceAction) : this("", text, choiceAction, true, Color.White) { }
 
-        public MenuTextChoice(string text, Action choiceAction, bool enabled, Color color)
-            : base(choiceAction, enabled)
+        public MenuTextChoice(string label, string text, Action choiceAction) : this(label, text, choiceAction, true, Color.White) { }
+
+        public MenuTextChoice(string text, Action choiceAction, bool enabled, Color color) : this("", text, choiceAction, enabled, color) { }
+
+        public MenuTextChoice(string label, string text, Action choiceAction, bool enabled, Color color)
+            : base(label, choiceAction, enabled)
         {
             Text = new MenuText(text, new Loc(2, 1), color);
         }
@@ -123,8 +131,9 @@ namespace RogueEssence.Menu
     public class MenuElementChoice : MenuChoice
     {
         public List<IMenuElement> Elements;
-        
-        public MenuElementChoice(Action choiceAction, bool enabled, params IMenuElement[] elements) : base(choiceAction, enabled)
+
+        public MenuElementChoice(Action choiceAction, bool enabled, params IMenuElement[] elements) : this("", choiceAction, enabled, elements) { }
+        public MenuElementChoice(string label, Action choiceAction, bool enabled, params IMenuElement[] elements) : base(label, choiceAction, enabled)
         {
             ChoiceAction = choiceAction;
             Enabled = enabled;
@@ -137,6 +146,40 @@ namespace RogueEssence.Menu
         {
             foreach (IMenuElement element in Elements)
                 yield return element;
+        }
+
+        public virtual int GetChoiceIndexByLabel(string label)
+        {
+            return GetChoiceIndexesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        {
+            Dictionary<string, int> poss = new();
+            List<string> labelList = labels.ToList();
+            foreach (string label in labels)
+                poss.Add(label, -1);
+
+            for (int ii = 0; ii < Elements.Count; ii++)
+            {
+                bool found = false;
+                IMenuElement element = Elements[ii];
+                if (element.HasLabel())
+                {
+                    for (int kk = 0; kk < labelList.Count; kk++)
+                    {
+                        string label = labelList[kk];
+                        if (element.Label == label)
+                        {
+                            found = true;
+                            poss[label] = ii;
+                            labelList.RemoveAt(kk);
+                            break;
+                        }
+                    }
+                }
+                if (found && labelList.Count == 0) break;
+            }
+            return poss;
         }
     }
 }
