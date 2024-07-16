@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +13,7 @@ namespace RogueEssence.Menu
         {
             return !string.IsNullOrEmpty(Label);
         }
+
         public bool LabelContains(string substr)
         {
             return HasLabel() && Label.Contains(substr);
