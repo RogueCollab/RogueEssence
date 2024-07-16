@@ -158,7 +158,7 @@ namespace RogueEssence.Dev.ViewModels
             //Data
             DataManager.InitDataDirs(fullPath);
             //Script
-            LuaEngine.InitScriptFolders(fullPath);
+            LuaEngine.InitScriptFolders(fullPath, vm.Namespace);
 
             //add node
             Mods.Add(newNode);
