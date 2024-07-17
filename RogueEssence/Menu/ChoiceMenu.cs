@@ -35,10 +35,10 @@ namespace RogueEssence.Menu
 
         public int GetNonChoiceIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            if (GetNonChoiceIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
             return -1;
         }
         public virtual Dictionary<string, int> GetNonChoiceIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, Choices);
+            => SearchLabels(labels, NonChoices);
     }
 }
