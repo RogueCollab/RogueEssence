@@ -159,21 +159,25 @@ namespace RogueEssence.Menu
             Dictionary<string, int> indexes = new();
             List<string> labelList = labels.ToList();
 
+            int totalFound = 0;
             int ii = 0;
+            foreach (string label in labels)
+                indexes.Add(label, -1);
+
             foreach (ILabeled element in list)
             {
-                if (labelList.Count == 0) break;
-                if (element.HasLabel())
+                int curIndex;
+                if (element.HasLabel() && indexes.TryGetValue(element.Label, out curIndex))
                 {
-                    for (int kk = 0; kk < labelList.Count; kk++)
+                    // case for duplicate labels somehow; only get the first index found
+                    if (curIndex == -1)
                     {
-                        string label = labelList[kk];
-                        if (element.Label == label)
-                        {
-                            indexes[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
-                        }
+                        indexes[element.Label] = ii;
+                        totalFound++;
+
+                        // short-circuit case for having found all indices
+                        if (totalFound == indexes.Count)
+                            return indexes;
                     }
                 }
                 ii++;
