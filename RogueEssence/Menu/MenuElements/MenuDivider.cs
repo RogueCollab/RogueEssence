@@ -11,6 +11,15 @@ namespace RogueEssence.Menu
         public int Length { get; set; }
         public Loc Loc { get; set; }
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuDivider(Loc loc, int length) : this("", loc, length) { }
         public MenuDivider(string label, Loc loc, int length)
         {

@@ -17,6 +17,15 @@ namespace RogueEssence.Menu
         public GraphicType Type { get; set; }
         public Loc Texture { get; set; }
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuGraphic(Loc loc, GraphicType type, Loc texture) : this("", loc, type, texture) { }
         public MenuGraphic(string label, Loc loc, GraphicType type, Loc texture)
         {

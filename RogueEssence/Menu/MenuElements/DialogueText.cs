@@ -20,6 +20,15 @@ namespace RogueEssence.Menu
         public Color Color;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= formattedTextLength; } }
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         /// <summary>
         /// Text color starts and stops.
         /// </summary>

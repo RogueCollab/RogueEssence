@@ -21,6 +21,15 @@ namespace RogueEssence.Menu
         private bool hover;
         private bool click;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         protected MenuChoice(string label, Action choiceAction, bool enabled)
         {
             Label = label;
@@ -148,21 +157,21 @@ namespace RogueEssence.Menu
                 yield return element;
         }
 
-        public virtual int GetChoiceIndexByLabel(string label)
+        public int GetElementIndexByLabel(string label)
         {
-            return GetChoiceIndexesByLabel(label)[label];
+            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            return -1;
         }
-        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
         {
-            Dictionary<string, int> poss = new();
+            Dictionary<string, int> indexes = new();
             List<string> labelList = labels.ToList();
-            foreach (string label in labels)
-                poss.Add(label, -1);
+            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements; //this cast chain REALLY should not have a reason to break
 
-            for (int ii = 0; ii < Elements.Count; ii++)
+            for (int ii = 0; ii < list.Count; ii++)
             {
-                bool found = false;
-                IMenuElement element = Elements[ii];
+                if (labelList.Count == 0) break;
+                ILabeled element = list[ii];
                 if (element.HasLabel())
                 {
                     for (int kk = 0; kk < labelList.Count; kk++)
@@ -170,16 +179,14 @@ namespace RogueEssence.Menu
                         string label = labelList[kk];
                         if (element.Label == label)
                         {
-                            found = true;
-                            poss[label] = ii;
+                            indexes[label] = ii;
                             labelList.RemoveAt(kk);
                             break;
                         }
                     }
                 }
-                if (found && labelList.Count == 0) break;
             }
-            return poss;
+            return indexes;
         }
     }
 }

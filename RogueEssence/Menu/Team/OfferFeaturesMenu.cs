@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         public MenuText LevelLabel;
         public MenuText Level;
 
-        public MenuText Elements;
+        public MenuText CharElements;
 
         public MenuDivider MainDiv;
         public MenuText[] Skills;
@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
 
             LevelLabel = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2));
             Level = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2), DirH.Left);
-            Elements = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
+            CharElements = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 3));
 
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 - 2), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
@@ -77,7 +77,7 @@ namespace RogueEssence.Menu
             if (formData.Element2 != DataManager.Instance.DefaultElement)
                 typeString += "/" + element2.GetIconName();
 
-            Elements.SetText(typeString);
+            CharElements.SetText(typeString);
 
             for (int ii = 0; ii < CharData.MAX_SKILL_SLOTS; ii++)
             {
@@ -104,7 +104,7 @@ namespace RogueEssence.Menu
 
             yield return LevelLabel;
             yield return Level;
-            yield return Elements;
+            yield return CharElements;
 
             yield return MainDiv;
 

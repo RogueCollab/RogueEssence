@@ -1934,7 +1934,7 @@ namespace RogueEssence.Script
         {
             DiagManager.Instance.LogInfo("LuaEngine.OnAddMenu()...");
             m_scrsvc.Publish(EServiceEvents.AddMenu.ToString(), menu);
-            if (menu is InteractableMenu interactable && ((ILabeled)interactable).HasLabel())
+            if (menu is InteractableMenu interactable && interactable.HasLabel())
                 DiagManager.Instance.LogInfo("Menu label is: " + interactable.Label);
         }
 

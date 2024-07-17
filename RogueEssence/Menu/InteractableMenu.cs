@@ -1,9 +1,10 @@
-﻿using RogueElements;
-using RogueEssence.Content;
+﻿using Microsoft.Xna.Framework.Graphics;
+using RogueElements;
+using System.Collections.Generic;
 
 namespace RogueEssence.Menu
 {
-    public abstract class InteractableMenu : MenuBase, IInteractable, ILabeled
+    public abstract class InteractableMenu : MenuBase, IInteractable
     {
         const int INPUT_WAIT = 30;
         const int INPUT_GAP = 6;
@@ -15,7 +16,7 @@ namespace RogueEssence.Menu
         }
         public bool BlockPrevious { get; set; }
 
-        public virtual string Label { get; protected set; } = "";
+        public List<SummaryMenu> SummaryMenus { get; set; } = new();
 
         public abstract void Update(InputManager input);
 
@@ -42,5 +43,22 @@ namespace RogueEssence.Menu
             return (choseDir && (!prevDir || atAdd));
         }
 
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            foreach (SummaryMenu menu in SummaryMenus)
+                menu.Draw(spriteBatch);
+        }
+
+        public int GetSummaryIndexByLabel(string label)
+        {
+            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            return new int();
+        }
+        public virtual Dictionary<string, int> GetSummaryIndexesByLabel(params string[] labels)
+            => SearchLabels(labels, SummaryMenus);
     }
 }

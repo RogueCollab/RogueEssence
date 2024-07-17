@@ -6,7 +6,6 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Script;
 using RogueEssence.Content;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
@@ -16,9 +15,11 @@ namespace RogueEssence.Menu
 
         public override bool CanMenu { get { return false; } }
         public override bool CanCancel { get { return false; } }
-
-        public TopMenu()
+        
+        public TopMenu() : this(MenuLabel.TOP_MENU) { }
+        public TopMenu(string label)
         {
+            Label = label;
             bool inQuest = PathMod.Quest.IsValid();
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
@@ -27,45 +28,49 @@ namespace RogueEssence.Menu
                 if (DataManager.Instance.Save.Rescue != null)
                 {
                     if (DataManager.Instance.Save.Rescue.SOS.RescuingTeam == null)
-                        choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_RESCUE_AWAIT"), () => { MenuManager.Instance.AddMenu(new RescueMenu(), false); }));
+                        choices.Add(new MenuTextChoice(MenuLabel.TOP_RESCUE, Text.FormatKey("MENU_TOP_RESCUE_AWAIT"), () => { MenuManager.Instance.AddMenu(new RescueMenu(), false); }));
                     else
-                        choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(DataManager.Instance.Save.Rescue.SOS); }));
+                        choices.Add(new MenuTextChoice(MenuLabel.TOP_CONTINUE, Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(DataManager.Instance.Save.Rescue.SOS); }));
                 }
                 else
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(null); }));
+                    choices.Add(new MenuTextChoice(MenuLabel.TOP_CONTINUE, Text.FormatKey("MENU_TOP_CONTINUE"), () => { Continue(null); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_NEW"), () => { StartFlow(MonsterID.Invalid, null, -1); }));
+                choices.Add(new MenuTextChoice(MenuLabel.TOP_NEW, Text.FormatKey("MENU_TOP_NEW"), () => { StartFlow(MonsterID.Invalid, null, -1); }));
 
             if (DiagManager.Instance.DevMode || DataManager.Instance.Save != null)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
+                choices.Add(new MenuTextChoice(MenuLabel.TOP_ROGUE, Text.FormatKey("MENU_TOP_ROGUE"), () => { MenuManager.Instance.AddMenu(new RogueMenu(), false); }));
 
 
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION) || DataManager.Instance.Save != null || RecordHeaderData.LoadHighScores().Count > 0)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TOP_RECORD"), () => { MenuManager.Instance.AddMenu(new RecordsMenu(), false); }));
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_OPTIONS_TITLE"), () => { MenuManager.Instance.AddMenu(new OptionsMenu(), false); }));
+                choices.Add(new MenuTextChoice(MenuLabel.TOP_RECORD, Text.FormatKey("MENU_TOP_RECORD"), () => { MenuManager.Instance.AddMenu(new RecordsMenu(), false); }));
+            choices.Add(new MenuTextChoice(MenuLabel.TOP_OPTIONS, Text.FormatKey("MENU_OPTIONS_TITLE"), () => { MenuManager.Instance.AddMenu(new OptionsMenu(), false); }));
 
             if (!inQuest)
             {
                 string[] questsPath = Directory.GetDirectories(PathMod.MODS_PATH);
                 if (PathMod.GetEligibleMods(PathMod.ModType.Quest).Count > 0)
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_TITLE"), () => { MenuManager.Instance.AddMenu(new QuestsMenu(), false); }));
+                    choices.Add(new MenuTextChoice(MenuLabel.TOP_QUEST, Text.FormatKey("MENU_QUESTS_TITLE"), () => { MenuManager.Instance.AddMenu(new QuestsMenu(), false); }));
             }
             else
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUESTS_EXIT"), exitQuest));
+                choices.Add(new MenuTextChoice(MenuLabel.TOP_QUEST_EXIT, Text.FormatKey("MENU_QUESTS_EXIT"), exitQuest));
 
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             if (PathMod.GetEligibleMods(PathMod.ModType.Mod).Count > 0)
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
+                choices.Add(new MenuTextChoice(MenuLabel.TOP_MODS, Text.FormatKey("MENU_MODS_TITLE"), () => { MenuManager.Instance.AddMenu(new ModsMenu(), false); }));
 
-            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_QUIT_GAME"), exitGame));
+            choices.Add(new MenuTextChoice(MenuLabel.TOP_QUIT, Text.FormatKey("MENU_QUIT_GAME"), exitGame));
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
-            titleMenu = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-            MenuText title = new MenuText(PathMod.Quest.GetMenuName(), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
-            titleMenu.Elements.Add(title);
 
+            if (PathMod.Quest.IsValid())
+            {
+                titleMenu = new SummaryMenu(MenuLabel.TOP_TITLE_SUMMARY, Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
+                MenuText title = new MenuText(MenuLabel.TOP_TITLE_SUMMARY, PathMod.Quest.GetMenuName(), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+                titleMenu.Elements.Add(title);
+                SummaryMenus.Add(titleMenu);
+            }
         }
 
         protected override void MenuPressed()
@@ -76,17 +81,6 @@ namespace RogueEssence.Menu
         protected override void Canceled()
         {
 
-        }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
-
-            //draw other windows
-            if (PathMod.Quest.IsValid())
-                titleMenu.Draw(spriteBatch);
         }
 
         private void exitQuest()

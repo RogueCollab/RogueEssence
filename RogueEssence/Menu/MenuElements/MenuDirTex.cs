@@ -22,6 +22,15 @@ namespace RogueEssence.Menu
         public TexType Type;
         public AnimData Anim;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuDirTex(Loc loc, TexType type, AnimData texture) : this("", loc, type, texture) { }
         public MenuDirTex(string label, Loc loc, TexType type, AnimData texture)
         {
