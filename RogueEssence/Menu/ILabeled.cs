@@ -1,4 +1,4 @@
-﻿namespace RogueEssence.Menu
+namespace RogueEssence.Menu
 {
     public interface ILabeled
     {

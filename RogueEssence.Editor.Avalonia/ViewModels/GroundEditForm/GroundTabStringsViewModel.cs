@@ -56,45 +56,15 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         /// <summary>
-        /// Loads the strings files content into the data grid view for editing
+        /// Loads the strings files content into the data grid view for editing.  In mods, it loads the base game strings plus all modded strings.
         /// </summary>
         /// <param name="stringsdir">Directory in which string resx files are stored!</param>
         public void LoadStrings()
         {
-            string stringsdir = Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, ZoneManager.Instance.CurrentGround.AssetName, "/init.lua"));
-            //Clear old strings
-            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = new Dictionary<string, Dictionary<string, (string, string)>>();
-
-            string FMTStr = String.Format("{0}{1}{2}", ScriptStrings.STRINGS_FILE_NAME, "{0}", Text.STRINGS_FILE_EXT);
-            foreach (string code in Text.SupportedLangs)
-            {
-                string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
-                string path = Path.Combine(stringsdir, fname);
-
-                if (File.Exists(path))
-                {
-                    Dictionary<string, (string val, string comment)> xmlDict = Text.LoadDevStringResx(path);
-                    foreach (string name in xmlDict.Keys)
-                    {
-                        if (!rawStrings.ContainsKey(name))
-                            rawStrings.Add(name, new Dictionary<string, (string val, string comment)>());
-
-                        if (!rawStrings[name].ContainsKey(code))
-                            rawStrings[name].Add(code, xmlDict[name]);
-                        else
-                            rawStrings[name][code] = xmlDict[name];
-                    }
-
-                    DiagManager.Instance.LogInfo(String.Format("GroundEditor.LoadStrings({0}): Loaded succesfully the \"{1}\" strings file for this map!", stringsdir, fname));
-                }
-                else
-                {
-                    DiagManager.Instance.LogInfo(String.Format("GroundEditor.LoadStrings({0}): Couldn't open the \"{1}\" strings file for this map!", stringsdir, fname));
-                }
-
-            }
-
             MapStrings.Clear();
+
+            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = Text.LoadDevStringDict(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), false);
+            
             foreach (string key in rawStrings.Keys)
             {
                 Dictionary<string, string> comments = new Dictionary<string, string>();
@@ -113,9 +83,12 @@ namespace RogueEssence.Dev.ViewModels
         /// </summary>
         public void SaveStrings()
         {
-            string stringsdir = LuaEngine.MakeGroundMapScriptPath(true, ZoneManager.Instance.CurrentGround.AssetName, "");
+            string stringsdir = LuaEngine.MakeGroundMapScriptPath(ZoneManager.Instance.CurrentGround.AssetName, "");
 
-            string FMTStr = String.Format("{0}{1}{2}", Script.ScriptStrings.STRINGS_FILE_NAME, "{0}", Text.STRINGS_FILE_EXT);
+            //load the existing strings of the base game + all mods except this one
+            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = Text.LoadDevStringDict(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), true);
+
+            string FMTStr = String.Format("{0}{1}{2}", Text.STRINGS_FILE_NAME, "{0}", Text.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)
             {
                 string fname = String.Format(FMTStr, code == "en" ? "" : ("." + code));//special case for english, which is default
@@ -129,10 +102,32 @@ namespace RogueEssence.Dev.ViewModels
                         cm = "";
                     if (!str.Translations.TryGetValue(code, out tl))
                         tl = "";
-                    if (tl != "" || code == "en")
-                        stringDict[str.Key] = (tl, cm);
+
+                    //check if the base string table already has this string.  only save if not
+                    string baseCm = null;
+                    string baseTl = null;
+                    Dictionary<string, (string val, string comment)> baseDict;
+                    if (rawStrings.TryGetValue(str.Key, out baseDict))
+                    {
+                        if (baseDict.ContainsKey(code))
+                        {
+                            baseCm = baseDict[code].comment;
+                            baseTl = baseDict[code].val;
+                        }
+                    }
+
+                    if (baseCm != cm || baseTl != tl)
+                    {
+                        //also, only save if the language is english (default) or there exists a translation
+                        if (tl != "" || code == "en")
+                            stringDict[str.Key] = (tl, cm);
+                    }
                 }
-                Text.SaveStringResx(path, stringDict);
+
+                if (stringDict.Count > 0)
+                    Text.SaveStringResx(path, stringDict);
+                else
+                    File.Delete(path);
             }
         }
 

@@ -622,7 +622,7 @@ namespace RogueEssence.Content
                 // New format (image data & auto tiles):
                 Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TileDtef/", PathMod.HardMod(TILE_PATTERN));
                 
-                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/", typeof(AutoTileData));
+                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
             }
             
             if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
