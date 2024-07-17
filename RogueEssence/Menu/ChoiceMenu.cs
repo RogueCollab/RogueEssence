@@ -28,30 +28,28 @@ namespace RogueEssence.Menu
         }
         public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
         {
-            Dictionary<string, int> poss = new();
-            List<string> labelList = labels.ToList();
+            Dictionary<string, int> poss = new Dictionary<string, int>();
+            int totalFound = 0;
             foreach (string label in labels)
                 poss.Add(label, -1);
 
             for (int ii = 0; ii < Choices.Count; ii++)
             {
-                bool found = false;
                 IChoosable choice = Choices[ii];
-                if (choice.HasLabel())
+                int curIndex;
+                if (choice.HasLabel() && poss.TryGetValue(choice.Label, out curIndex))
                 {
-                    for (int kk = 0; kk < labelList.Count; kk++)
+                    // case for duplicate labels somehow; only get the first index found
+                    if (curIndex == -1)
                     {
-                        string label = labelList[kk];
-                        if (choice.Label == label)
-                        {
-                            found = true;
-                            poss[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
-                        }
+                        poss[choice.Label] = ii;
+                        totalFound++;
+
+                        // short-circuit case for having found all indices
+                        if (totalFound == poss.Count)
+                            return poss;
                     }
                 }
-                if (found && labelList.Count == 0) break;
             }
             return poss;
         }
