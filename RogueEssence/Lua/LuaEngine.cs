@@ -1933,9 +1933,9 @@ namespace RogueEssence.Script
         public void OnAddMenu(IInteractable menu)
         {
             DiagManager.Instance.LogInfo("LuaEngine.OnAddMenu()...");
-            m_scrsvc.Publish(EServiceEvents.AddMenu.ToString(), menu);
             if (menu is InteractableMenu interactable && ((ILabeled)interactable).HasLabel())
-                DiagManager.Instance.LogInfo("Menu label is: " + interactable.Label);
+                DiagManager.Instance.LogInfo("Menu Label: " + interactable.Label);
+            m_scrsvc.Publish(EServiceEvents.AddMenu.ToString(), menu);
         }
 
         public void OnNewGame()
