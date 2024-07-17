@@ -183,7 +183,7 @@ namespace RogueEssence.Menu
         public IEnumerator<YieldInstruction> MoveCommand(GameAction action, int switchSlot)
         {
             yield return CoroutineManager.Instance.StartCoroutine((GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(action) : GroundScene.Instance.ProcessInput(action));
-            MenuManager.Instance.ReplaceMenu(new TeamMenu(false, switchSlot));
+            MenuManager.Instance.ReplaceMenu(new TeamMenu(MenuLabel.TEAM_SWITCH, false, switchSlot));
         }
     }
 }

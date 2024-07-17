@@ -9,6 +9,7 @@ using System;
 using KeraLua;
 using RogueEssence.Ground;
 using RogueEssence.Script;
+using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
@@ -19,7 +20,7 @@ namespace RogueEssence.Menu
         private bool inReplay;
 
         MenuText menuTimer;
-        
+
         public List<MenuTextChoice> Choices { get; set; }
         public List<IMenuElement> TitleElements { get; set; }
         public List<IMenuElement> SummaryElements { get; set; }
@@ -29,8 +30,10 @@ namespace RogueEssence.Menu
         public Rect TitleMenuBounds { get; set; }
         public SummaryMenu SummaryMenu { get; set; }
         public Rect SummaryMenuBounds { get; set; }
-        public MainMenu()
+        public MainMenu() : this(MenuLabel.MAIN) { }
+        public MainMenu(string label)
         {
+            Label = label;
             Choices = new List<MenuTextChoice>();
             TitleElements = new List<IMenuElement>();
             SummaryElements = new List<IMenuElement>();
@@ -52,7 +55,7 @@ namespace RogueEssence.Menu
             Choices.Clear();
             if (CharData.MAX_SKILL_SLOTS > 0)
             {
-                Choices.Add(new MenuTextChoice("SKILLS", Text.FormatKey("MENU_MAIN_SKILLS"), () =>
+                Choices.Add(new MenuTextChoice(MenuLabel.SKILLS, Text.FormatKey("MENU_MAIN_SKILLS"), () =>
                 {
                     int mainIndex = DataManager.Instance.Save.ActiveTeam.LeaderIndex;
                     if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
@@ -64,29 +67,29 @@ namespace RogueEssence.Menu
                     MenuManager.Instance.AddMenu(new SkillMenu(mainIndex), false);
                 }));
             }
-            Choices.Add(new MenuTextChoice("INVENTORY", Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
+            Choices.Add(new MenuTextChoice(MenuLabel.INVENTORY, Text.FormatKey("MENU_MAIN_INVENTORY"), () => { MenuManager.Instance.AddMenu(new ItemMenu(), false); }, invEnabled, invEnabled ? Color.White : Color.Red));
 
             bool hasTactics = (DataManager.Instance.Save.ActiveTeam.Players.Count > 1);
             inReplay = (DataManager.Instance.CurrentReplay != null);
-            Choices.Add(new MenuTextChoice("TACTICS", Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
-            Choices.Add(new MenuTextChoice("TEAM", Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.TACTICS, Text.FormatKey("MENU_TACTICS_TITLE"), () => { MenuManager.Instance.AddMenu(new TacticsMenu(), false); }, (hasTactics && !inReplay), (hasTactics && !inReplay) ? Color.White : Color.Red));
+            Choices.Add(new MenuTextChoice(MenuLabel.TEAM, Text.FormatKey("MENU_TEAM_TITLE"), () => { MenuManager.Instance.AddMenu(new TeamMenu(false), false); }));
 
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 bool hasGround = DungeonScene.Instance.CanCheckGround();
-                Choices.Add(new MenuTextChoice("GROUND", Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
+                Choices.Add(new MenuTextChoice(MenuLabel.GROUND, Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
             }
 
-            Choices.Add(new MenuTextChoice("OTHERS", Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(OthersMenu.InitDefaultOthersMenu(), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.OTHERS, Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(OthersMenu.InitDefaultOthersMenu(), false); }));
             
             if (ZoneManager.Instance.InDevZone)
                 Choices.Add(new MenuTextChoice("EDITOR_RETURN", Text.FormatKey("MENU_MAIN_EDITOR_RETURN"), ReturnToEditorAction));
             else if (!inReplay)
             {
                 if (((GameManager.Instance.CurrentScene == DungeonScene.Instance)) || DataManager.Instance.Save is RogueProgress)
-                    Choices.Add(new MenuTextChoice("REST", Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
+                    Choices.Add(new MenuTextChoice(MenuLabel.REST, Text.FormatKey("MENU_REST_TITLE"), () => { MenuManager.Instance.AddMenu(new RestMenu(), false); }));
                 else
-                    Choices.Add(new MenuTextChoice("SAVE", Text.FormatKey("MENU_MAIN_SAVE"), SaveAction));
+                    Choices.Add(new MenuTextChoice(MenuLabel.SAVE, Text.FormatKey("MENU_MAIN_SAVE"), SaveAction));
             }
             else
             
