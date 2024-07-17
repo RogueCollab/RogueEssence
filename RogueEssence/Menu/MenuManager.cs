@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using RogueEssence.Data;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Dungeon;

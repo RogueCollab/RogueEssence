@@ -12,6 +12,15 @@ namespace RogueEssence.Menu
 
         public ulong PrevTick;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public Loc Loc { get; set; }
 
         public Dir4 Direction;
