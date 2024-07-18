@@ -617,7 +617,7 @@ namespace RogueEssence.Script
 
         private void ModRequireFile(string moduleName)
         {
-            foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
+            foreach (ModHeader mod in PathMod.FallforthScriptMods(SCRIPT_PATH))
             {
                 string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, moduleName));
                 if (modulePath != null)
@@ -630,7 +630,7 @@ namespace RogueEssence.Script
 
         private void ModDoFile(string moduleName)
         {
-            foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
+            foreach (ModHeader mod in PathMod.FallforthScriptMods(SCRIPT_PATH))
             {
                 string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, moduleName));
                 if (modulePath != null)
@@ -666,7 +666,7 @@ namespace RogueEssence.Script
             end
             return mergeTables").First() as LuaFunction;
             //we need to switch path using fallforth, then load each, then combine them into one table, then return
-            foreach (ModHeader mod in PathMod.FallforthMods(SCRIPT_PATH))
+            foreach (ModHeader mod in PathMod.FallforthScriptMods(SCRIPT_PATH))
             {
                 string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, loadPath));
                 if (modulePath != null)

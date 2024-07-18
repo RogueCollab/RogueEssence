@@ -91,7 +91,6 @@ namespace RogueEssence.Content
 
         public const string SCREENSHOT_PATH = "SCREENSHOT/";
 
-        public static string BASE_PATH { get => PathMod.ASSET_PATH + "Base/"; }
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
@@ -301,7 +300,7 @@ namespace RogueEssence.Content
 
         public static void InitParams()
         {
-            string path = BASE_PATH + "GFXParams.xml";
+            string path = PathMod.BASE_PATH + "GFXParams.xml";
             //try to load from file
 
             try
@@ -422,10 +421,10 @@ namespace RogueEssence.Content
             Pixel = new BaseSheet(1, 1);
             Pixel.BlitColor(Color.White, 1, 1, 0, 0);
 
-            Splash = BaseSheet.Import(BASE_PATH + "Splash.png");
-            MarkerShadow = BaseSheet.Import(BASE_PATH + "MarkerShadow.png");
+            Splash = BaseSheet.Import(PathMod.BASE_PATH + "Splash.png");
+            MarkerShadow = BaseSheet.Import(PathMod.BASE_PATH + "MarkerShadow.png");
 
-            SysFont = LoadFontFull(BASE_PATH + "system.font");
+            SysFont = LoadFontFull(PathMod.BASE_PATH + "system.font");
         }
 
         public static void loadStatic()
@@ -584,7 +583,7 @@ namespace RogueEssence.Content
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
             {
-                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", BASE_PATH + "{0}.font", "system");
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.BASE_PATH + "{0}.font", "system");
                 Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "text.zh-hans", "banner");
             }
             if ((conversionFlags & AssetType.Chara) != AssetType.None)

@@ -487,6 +487,7 @@ namespace RogueEssence.Dev
         }
 
 
+
         public static void IndexNamedData(string dataPath)
         {
             try
@@ -518,7 +519,7 @@ namespace RogueEssence.Dev
         {
             DiagManager.Instance.LogInfo(String.Format("Creating standalone from quest: {0}", String.Join(", ", quest)));
 
-            string outputPath = Path.Combine(PathMod.ExePath, "Build", quest);
+            string outputPath = Path.Combine(PathMod.ExePath, "BUILD", quest);
 
             if (Directory.Exists(outputPath))
                 Directory.Delete(outputPath, true);
@@ -532,7 +533,15 @@ namespace RogueEssence.Dev
                 File.Copy(Path.Combine(PathMod.ExePath, pngName), Path.Combine(outputPath, pngName));
 
             //Base - direct copy from game
-            copyRecursive(GraphicsManager.BASE_PATH, Path.Combine(outputPath, "Base"));
+            copyRecursive(PathMod.BASE_PATH, Path.Combine(outputPath, "Base"));
+            {
+                //Except for Path Params: the namespace of the mod must be added in script
+                List<string> newList = new List<string>();
+                newList.AddRange(PathMod.BaseScriptNamespaces);
+                if (!newList.Contains(PathMod.Quest.Namespace))
+                    newList.Add(PathMod.Quest.Namespace);
+                PathMod.SaveNamespaces(Path.Combine(outputPath, "Base"), PathMod.BaseNamespace, newList);
+            }
 
             //Strings - deep merge files
             Directory.CreateDirectory(outputPath);
@@ -580,7 +589,7 @@ namespace RogueEssence.Dev
 
             //Data - merge copy everything including script
             //script will do fine with duplicate files being merged over, EXCEPT for strings files
-            //TODO: only copy what is indexed for characters and portraits
+            //TODO: only copy what is indexed for data
             Directory.CreateDirectory(Path.Combine(outputPath, DataManager.DATA_PATH));
 
             //universal data, start params, etc.
@@ -603,7 +612,7 @@ namespace RogueEssence.Dev
 
                 EntryDataIndex idx = DataManager.GetIndex(type);
                 using (Stream stream = new FileStream(Path.Combine(outputPath, DataManager.DATA_PATH + type.ToString() + "/" + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
-                    Serializer.SerializeData(stream, idx);
+                    Serializer.SerializeData(stream, idx.GetEntriesWithoutGuid());
             }
 
 

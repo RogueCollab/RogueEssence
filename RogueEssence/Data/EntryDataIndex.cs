@@ -15,9 +15,19 @@ namespace RogueEssence.Data
             entries = new Dictionary<string, List<(Guid, EntrySummary)>>();
         }
 
-        public void Setentries(Dictionary<string, List<(Guid, EntrySummary)>> entries)
+        public void SetEntries(Dictionary<string, List<(Guid, EntrySummary)>> entries)
         {
             this.entries = entries;
+        }
+
+        public Dictionary<string, EntrySummary> GetEntriesWithoutGuid()
+        {
+            Dictionary<string, EntrySummary> result = new Dictionary<string, EntrySummary>();
+            foreach (string key in entries.Keys)
+            {
+                result[key] = entries[key][0].Item2;
+            }
+            return result;
         }
 
         public EntrySummary Get(string index)
