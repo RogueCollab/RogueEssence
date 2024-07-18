@@ -11,11 +11,18 @@ namespace RogueEssence.Menu
 {
     public class ScriptableMenu : InteractableMenu
     {
-        [Obsolete("Redirects to MenuBase.Elements. Kept only for script compatibility")]
         public List<IMenuElement> MenuElements
         {
-            get => Elements;
-            set => Elements = value;
+            get
+            {
+                DiagManager.Instance.LogInfo("WARNING: MenuElements is DEPRECATED.  PLEASE USE Elements INSTEAD.");
+                return elements;
+            }
+            set
+            {
+                DiagManager.Instance.LogInfo("WARNING: Setter for MenuElements is DEPRECATED.  YOU MUST ADD/DELETE/CLEAR FROM Elements INSTEAD.");
+                elements = value;
+            }
         }
 
         protected Action<InputManager> UpdateFunction;

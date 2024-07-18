@@ -69,10 +69,12 @@ namespace RogueEssence.Menu
             };
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
 
-            Elements = new List<IMenuElement>();
+            elements = new List<IMenuElement>();
         }
 
-        public virtual List<IMenuElement> Elements { get; protected set; }
+        // TODO: set to private when deprecated setters are removed.
+        protected List<IMenuElement> elements;
+        public virtual List<IMenuElement> Elements { get { return elements; } }
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)

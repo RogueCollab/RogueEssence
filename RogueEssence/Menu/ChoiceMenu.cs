@@ -6,18 +6,6 @@ namespace RogueEssence.Menu
 {
     public abstract class ChoiceMenu : InteractableMenu
     {
-        public override List<IMenuElement> Elements {
-            get
-            {
-                return NonChoices.Concat(Choices).ToList();
-            }
-            protected set
-            {
-                //Realistically only affects initialization
-                NonChoices = value;
-                Choices = new List<IChoosable>();
-            }
-        }
         public List<IMenuElement> NonChoices;
         public List<IChoosable> Choices;
 
@@ -26,8 +14,17 @@ namespace RogueEssence.Menu
         public ChoiceMenu()
         {
             cursor = new MenuCursor(MenuLabel.CURSOR, this, Dir4.Right);
-            NonChoices = new List<IMenuElement> {cursor};
+            NonChoices = new List<IMenuElement>();
             Choices = new List<IChoosable>();
+        }
+
+        public override IEnumerable<IMenuElement> GetElements()
+        {
+            yield return cursor;
+            foreach (IChoosable choice in Choices)
+                yield return choice;
+            foreach (IMenuElement nonChoice in NonChoices)
+                yield return nonChoice;
         }
 
         public override Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
