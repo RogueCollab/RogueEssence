@@ -155,7 +155,7 @@ namespace RogueEssence.Menu
             SetPage(CurrentPage);
         }
 
-        public override Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        public override Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
         {
             return SearchLabels(labels, ExportTotalChoices());
         }

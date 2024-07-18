@@ -30,25 +30,25 @@ namespace RogueEssence.Menu
             Choices = new List<IChoosable>();
         }
 
-        public override Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
+        public override Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
         {
             return SearchLabels(labels, Elements);
         }
 
         public int GetChoiceIndexByLabel(string label)
         {
-            return GetChoiceIndexesByLabel(label)[label];
+            return GetChoiceIndicesByLabel(label)[label];
         }
-        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
         {
             return SearchLabels(labels, Choices);
         }
 
         public int GetNonChoiceIndexByLabel(string label)
         {
-            return GetNonChoiceIndexesByLabel(label)[label];
+            return GetNonChoiceIndicesByLabel(label)[label];
         }
-        public virtual Dictionary<string, int> GetNonChoiceIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetNonChoiceIndicesByLabel(params string[] labels)
         {
             return SearchLabels(labels, NonChoices);
         }

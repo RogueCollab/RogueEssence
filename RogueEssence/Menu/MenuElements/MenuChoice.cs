@@ -159,10 +159,10 @@ namespace RogueEssence.Menu
 
         public int GetElementIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
+            if (GetElementIndicesByLabel(label).TryGetValue(label, out int ret)) return ret;
             return -1;
         }
-        public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
         {
             Dictionary<string, int> indexes = new Dictionary<string, int>();
             List<string> labelList = labels.ToList();
