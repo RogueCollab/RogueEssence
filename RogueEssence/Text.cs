@@ -211,13 +211,13 @@ namespace RogueEssence
         }
 
 
-        public static Dictionary<string, string> LoadStringDict(string code, string basePath, string packagefilepath)
+        public static Dictionary<string, string> LoadScriptStringDict(string code, string basePath, string packagefilepath)
         {
             Dictionary<string, string> xmlDict = new Dictionary<string, string>();
 
             //order of string fallbacks:
             //first go through all mods of the original language
-            foreach (ModHeader mod in PathMod.FallbackMods(basePath))
+            foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
             {
                 string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + "." + code + ".resx"));
                 if (File.Exists(modulePath))
@@ -236,7 +236,7 @@ namespace RogueEssence
             {
                 foreach (string fallback in Text.LangNames[code].Fallbacks)
                 {
-                    foreach (ModHeader mod in PathMod.FallbackMods(basePath))
+                    foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
                     {
                         string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + "." + fallback + ".resx"));
                         if (File.Exists(modulePath))
@@ -252,7 +252,7 @@ namespace RogueEssence
                 }
             }
             //then go through all mods of the default language
-            foreach (ModHeader mod in PathMod.FallbackMods(basePath))
+            foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
             {
                 string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + ".resx"));
                 if (File.Exists(modulePath))
@@ -268,13 +268,13 @@ namespace RogueEssence
             return xmlDict;
         }
 
-        public static Dictionary<string, Dictionary<string, (string val, string comment)>> LoadDevStringDict(string basePath, string packagefilepath, bool excludeEdit)
+        public static Dictionary<string, Dictionary<string, (string val, string comment)>> LoadDevScriptStringDict(string basePath, string packagefilepath, bool excludeEdit)
         {
             Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = new Dictionary<string, Dictionary<string, (string, string)>>();
             foreach (string code in Text.SupportedLangs)
             {
                 //go through all mods of the original language
-                foreach (ModHeader mod in PathMod.FallbackMods(basePath))
+                foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
                 {
                     if (excludeEdit && mod.Namespace == PathMod.GetCurrentNamespace())
                         continue;

@@ -23,7 +23,7 @@ namespace RogueEssence.Script
         {
             try
             {
-                Dictionary<string, string> xmlDict = Text.LoadStringDict(LocaleCode(), LuaEngine.SCRIPT_PATH, packagefilepath);
+                Dictionary<string, string> xmlDict = Text.LoadScriptStringDict(LocaleCode(), LuaEngine.SCRIPT_PATH, packagefilepath);
 
                 //Build a lua table as we go and return it
                 LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;

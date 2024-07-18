@@ -63,7 +63,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             MapStrings.Clear();
 
-            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = Text.LoadDevStringDict(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), false);
+            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = Text.LoadDevScriptStringDict(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), false);
             
             foreach (string key in rawStrings.Keys)
             {
@@ -86,7 +86,7 @@ namespace RogueEssence.Dev.ViewModels
             string stringsdir = LuaEngine.MakeGroundMapScriptPath(ZoneManager.Instance.CurrentGround.AssetName, "");
 
             //load the existing strings of the base game + all mods except this one
-            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = Text.LoadDevStringDict(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), true);
+            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = Text.LoadDevScriptStringDict(LuaEngine.SCRIPT_PATH, string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/'), true);
 
             string FMTStr = String.Format("{0}{1}{2}", Text.STRINGS_FILE_NAME, "{0}", Text.STRINGS_FILE_EXT);
             foreach (string code in Text.SupportedLangs)

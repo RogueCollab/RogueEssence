@@ -601,8 +601,11 @@ namespace RogueEssence.Dev
 
             //actual data files
             copyRecursive(PathMod.NoMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
+            //copy the startparams
+            //copy the universal json
+            //copy the systemfx
+            //copy the main datatypes
             copyRecursive(PathMod.HardMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
-            //TODO: merge strings files for ground map strings instead of overwrite
 
             //save merged data indices
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
