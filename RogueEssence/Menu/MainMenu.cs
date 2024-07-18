@@ -96,7 +96,8 @@ namespace RogueEssence.Menu
         public void SetupTitleAndSummary()
         {
             MenuWidth = CalculateChoiceLength(Choices, 72);
-            
+            SummaryMenus.Clear();
+
             TitleElements.Clear();
             TitleMenuBounds = Rect.FromPoints(new Loc(MenuWidth + 16, 32),
                 new Loc(GraphicsManager.ScreenWidth - 16, 32 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2));
