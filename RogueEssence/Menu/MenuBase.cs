@@ -67,9 +67,11 @@ namespace RogueEssence.Menu
                 DepthBufferEnable = false,
             };
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
+
+            Elements = new List<IMenuElement>();
         }
 
-        public virtual List<IMenuElement> Elements { get; protected set; } = new();
+        public virtual List<IMenuElement> Elements { get; protected set; }
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)
@@ -156,7 +158,7 @@ namespace RogueEssence.Menu
 
         protected static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
         {
-            Dictionary<string, int> indexes = new();
+            Dictionary<string, int> indexes = new Dictionary<string, int>();
             List<string> labelList = labels.ToList();
 
             int totalFound = 0;

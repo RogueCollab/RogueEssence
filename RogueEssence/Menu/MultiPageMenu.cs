@@ -139,7 +139,7 @@ namespace RogueEssence.Menu
 
         public List<IChoosable> ExportTotalChoices()
         {
-            List<IChoosable> allChoices = new();
+            List<IChoosable> allChoices = new List<IChoosable>();
             foreach (IChoosable[] page in TotalChoices)
                 foreach (IChoosable choice in page)
                     allChoices.Add(choice);

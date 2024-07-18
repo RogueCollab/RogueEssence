@@ -7,8 +7,16 @@ namespace RogueEssence.Menu
     public abstract class ChoiceMenu : InteractableMenu
     {
         public override List<IMenuElement> Elements {
-            get => NonChoices.Concat(Choices).ToList();
-            protected set { NonChoices = value; Choices = new(); } //Realistically only affects initialization
+            get
+            {
+                return NonChoices.Concat(Choices).ToList();
+            }
+            protected set
+            {
+                //Realistically only affects initialization
+                NonChoices = value;
+                Choices = new List<IChoosable>();
+            }
         }
         public List<IMenuElement> NonChoices;
         public List<IChoosable> Choices;

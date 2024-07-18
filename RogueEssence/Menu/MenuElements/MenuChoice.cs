@@ -164,7 +164,7 @@ namespace RogueEssence.Menu
         }
         public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
         {
-            Dictionary<string, int> indexes = new();
+            Dictionary<string, int> indexes = new Dictionary<string, int>();
             List<string> labelList = labels.ToList();
             List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements; //this cast chain REALLY should not have a reason to break
 
