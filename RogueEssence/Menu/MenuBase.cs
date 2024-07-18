@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
         public static readonly Color TextPale = new Color(255,206,206); // #FFCEFF
         public static readonly Color TextTan = new Color(255, 198, 99); // #FFC663
 
-        public virtual string Label { get; protected set; } = "";
+        public virtual string Label { get; protected set; }
         public Rect Bounds;
 
         public bool Visible { get; set; }
@@ -47,6 +47,7 @@ namespace RogueEssence.Menu
 
         public MenuBase()
         {
+            Label = "";
             Visible = true;
 
             s1 = new DepthStencilState
@@ -157,7 +158,7 @@ namespace RogueEssence.Menu
             return SearchLabels(labels, Elements);
         }
 
-        protected static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
+        public static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
         {
             Dictionary<string, int> indices = new Dictionary<string, int>();
             int totalFound = 0;

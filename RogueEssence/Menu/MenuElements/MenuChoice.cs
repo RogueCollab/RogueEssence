@@ -159,34 +159,12 @@ namespace RogueEssence.Menu
 
         public int GetElementIndexByLabel(string label)
         {
-            if (GetElementIndicesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
+            return GetElementIndicesByLabel(label)[label];
         }
         public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
         {
-            Dictionary<string, int> indexes = new Dictionary<string, int>();
-            List<string> labelList = labels.ToList();
-            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements; //this cast chain REALLY should not have a reason to break
-
-            for (int ii = 0; ii < list.Count; ii++)
-            {
-                if (labelList.Count == 0) break;
-                ILabeled element = list[ii];
-                if (element.HasLabel())
-                {
-                    for (int kk = 0; kk < labelList.Count; kk++)
-                    {
-                        string label = labelList[kk];
-                        if (element.Label == label)
-                        {
-                            indexes[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
-                        }
-                    }
-                }
-            }
-            return indexes;
+            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements;
+            return MenuBase.SearchLabels(labels, list);
         }
     }
 }
