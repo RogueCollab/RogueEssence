@@ -27,6 +27,15 @@ namespace RogueEssence.Menu
         public Color NormalColor;
         public Color ChangedColor;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuSetting() { }
 
         public MenuSetting(string text, int choiceOffset, int choiceWidth, List<string> totalChoices, int defaultChoice, Action choiceAction) : this("", text, Color.White, Color.Yellow, choiceOffset, choiceWidth, totalChoices, defaultChoice, defaultChoice, choiceAction) { }

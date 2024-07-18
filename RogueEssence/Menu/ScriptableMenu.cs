@@ -2,8 +2,6 @@
 using System.Linq;
 using RogueElements;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using RogueEssence.Content;
 using RogueEssence.Script;
 using NLua;
 using System.Collections;
@@ -13,8 +11,19 @@ namespace RogueEssence.Menu
 {
     public class ScriptableMenu : InteractableMenu
     {
-        public List<IMenuElement> MenuElements;
-        public List<SummaryMenu> SummaryMenus;
+        public List<IMenuElement> MenuElements
+        {
+            get
+            {
+                DiagManager.Instance.LogInfo("WARNING: MenuElements is DEPRECATED.  PLEASE USE Elements INSTEAD.");
+                return elements;
+            }
+            set
+            {
+                DiagManager.Instance.LogInfo("WARNING: Setter for MenuElements is DEPRECATED.  YOU MUST ADD/DELETE/CLEAR FROM Elements INSTEAD.");
+                elements = value;
+            }
+        }
 
         protected Action<InputManager> UpdateFunction;
 
@@ -24,14 +33,6 @@ namespace RogueEssence.Menu
         {
             UpdateFunction = updateFunction;
             Bounds = new Rect(x, y, w, h);
-            MenuElements = new List<IMenuElement>();
-            SummaryMenus = new List<SummaryMenu>();
-        }
-
-        public override IEnumerable<IMenuElement> GetElements()
-        {
-            foreach (IMenuElement choice in MenuElements)
-                yield return choice;
         }
 
         public override void Update(InputManager input)
@@ -39,23 +40,11 @@ namespace RogueEssence.Menu
             if (UpdateFunction != null)
             UpdateFunction(input);
         }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
-
-            foreach (SummaryMenu menu in SummaryMenus)
-                menu.Draw(spriteBatch);
-        }
     }
 
 
     public class ScriptableSingleStripMenu : SingleStripMenu
     {
-        public List<SummaryMenu> SummaryMenus;
-
         public Action<InputManager> UpdateFunction;
 
         public Action CancelFunction;
@@ -124,8 +113,6 @@ namespace RogueEssence.Menu
 
             int choice_width = CalculateChoiceLength(choices, minWidth);
             Initialize(new Loc(x, y), choice_width, choices.ToArray(), mappedDefault.Value, choices.Count, multiSelect);
-
-            SummaryMenus = new List<SummaryMenu>();
         }
 
         protected override void ChoiceChanged()
@@ -138,17 +125,6 @@ namespace RogueEssence.Menu
         {
             if (MultiSelectChangedFunction != null)
                 MultiSelectChangedFunction();
-        }
-
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
-
-            foreach (SummaryMenu menu in SummaryMenus)
-                menu.Draw(spriteBatch);
         }
 
         public override void Update(InputManager input)
@@ -186,8 +162,6 @@ namespace RogueEssence.Menu
 
     public class ScriptableMultiPageMenu : MultiPageMenu
     {
-        public List<SummaryMenu> SummaryMenus;
-
         public Action<InputManager> UpdateFunction;
 
         public Action CancelFunction;
@@ -219,8 +193,6 @@ namespace RogueEssence.Menu
             int defaultPage = defaultTotalChoice / spacesPerPage;
             int defaultChoice = defaultTotalChoice % spacesPerPage;
             Initialize(start, width, title, pagedChoices, defaultChoice, defaultPage, spacesPerPage, showPagesOnSingle, multiSelect);
-
-            SummaryMenus = new List<SummaryMenu>();
         }
 
         protected override void ChoiceChanged()
@@ -233,16 +205,6 @@ namespace RogueEssence.Menu
         {
             if (MultiSelectChangedFunction != null)
                 MultiSelectChangedFunction();
-        }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
-
-            foreach (SummaryMenu menu in SummaryMenus)
-                menu.Draw(spriteBatch);
         }
 
         public override void Update(InputManager input)

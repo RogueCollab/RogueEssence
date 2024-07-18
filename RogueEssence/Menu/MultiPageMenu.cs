@@ -139,7 +139,7 @@ namespace RogueEssence.Menu
 
         public List<IChoosable> ExportTotalChoices()
         {
-            List<IChoosable> allChoices = new();
+            List<IChoosable> allChoices = new List<IChoosable>();
             foreach (IChoosable[] page in TotalChoices)
                 foreach (IChoosable choice in page)
                     allChoices.Add(choice);
@@ -149,46 +149,15 @@ namespace RogueEssence.Menu
         {
             ImportTotalChoices(choices.ToArray());
         }
-        public void ImportTotalChoices(IChoosable[] choices)
+        public void ImportTotalChoices(params IChoosable[] choices)
         {
             TotalChoices = SortIntoPages(choices, SpacesPerPage);
             SetPage(CurrentPage);
         }
 
-        public override int GetChoiceIndexByLabel(string label)
+        public override Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
         {
-            return GetChoiceIndexesByLabel(label)[label];
-        }
-        public override Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
-        {
-            Dictionary<string, int> poss = new Dictionary<string, int>();
-            int totalFound = 0;
-            foreach (string label in labels)
-                poss.Add(label, -1);
-
-            for (int ii = 0; ii < TotalChoices.Length; ii++)
-            {
-                IChoosable[] page = TotalChoices[ii];
-                for (int jj = 0; jj < page.Length; jj++)
-                {
-                    IChoosable choice = page[jj];
-                    int curIndex;
-                    if (choice.HasLabel() && poss.TryGetValue(choice.Label, out curIndex))
-                    {
-                        // case for duplicate labels somehow; only get the first index found
-                        if (curIndex == -1)
-                        {
-                            poss[choice.Label] = ii * SpacesPerPage + jj;
-                            totalFound++;
-
-                            // short-circuit case for having found all indices
-                            if (totalFound == poss.Count)
-                                return poss;
-                        }
-                    }
-                }
-            }
-            return poss;
+            return SearchLabels(labels, ExportTotalChoices());
         }
     }
 }

@@ -18,6 +18,15 @@ namespace RogueEssence.Menu
         public Loc Loc;
         private List<(int idx, Color color)> textColor;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuText(string text, Loc loc)
             : this("", text, loc, DirH.Left)
         { }

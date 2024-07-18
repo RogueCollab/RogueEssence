@@ -21,18 +21,10 @@ namespace RogueEssence.Menu
             summaryMenu.Elements.Add(new MenuText(name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET)));
             if (!String.IsNullOrEmpty(price))
                 summaryMenu.Elements.Add(new MenuText(price, new Loc(summaryMenu.Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET), DirH.Right));
+            SummaryMenus.Add(summaryMenu);
 
             Initialize(start, width, choices, defaultChoice);
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
-
-            //draw other windows
-            summaryMenu.Draw(spriteBatch);
-        }
     }
 }

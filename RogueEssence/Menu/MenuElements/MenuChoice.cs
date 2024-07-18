@@ -21,6 +21,15 @@ namespace RogueEssence.Menu
         private bool hover;
         private bool click;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         protected MenuChoice(string label, Action choiceAction, bool enabled)
         {
             Label = label;
@@ -148,38 +157,14 @@ namespace RogueEssence.Menu
                 yield return element;
         }
 
-        public virtual int GetChoiceIndexByLabel(string label)
+        public int GetElementIndexByLabel(string label)
         {
-            return GetChoiceIndexesByLabel(label)[label];
+            return GetElementIndicesByLabel(label)[label];
         }
-        public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
+        public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
         {
-            Dictionary<string, int> poss = new();
-            List<string> labelList = labels.ToList();
-            foreach (string label in labels)
-                poss.Add(label, -1);
-
-            for (int ii = 0; ii < Elements.Count; ii++)
-            {
-                bool found = false;
-                IMenuElement element = Elements[ii];
-                if (element.HasLabel())
-                {
-                    for (int kk = 0; kk < labelList.Count; kk++)
-                    {
-                        string label = labelList[kk];
-                        if (element.Label == label)
-                        {
-                            found = true;
-                            poss[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
-                        }
-                    }
-                }
-                if (found && labelList.Count == 0) break;
-            }
-            return poss;
+            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements;
+            return MenuBase.SearchLabels(labels, list);
         }
     }
 }
