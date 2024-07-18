@@ -57,10 +57,11 @@ namespace RogueEssence.Menu
 
         public int GetSummaryIndexByLabel(string label)
         {
-            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return new int();
+            return GetSummaryIndexesByLabel(label)[label];
         }
         public virtual Dictionary<string, int> GetSummaryIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, SummaryMenus);
+        {
+            return SearchLabels(labels, SummaryMenus);
+        }
     }
 }

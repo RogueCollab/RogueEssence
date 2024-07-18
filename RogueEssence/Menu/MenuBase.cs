@@ -150,41 +150,40 @@ namespace RogueEssence.Menu
 
         public int GetElementIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
+            return GetElementIndexesByLabel(label)[label];
         }
         public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, Elements);
+        {
+            return SearchLabels(labels, Elements);
+        }
 
         protected static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
         {
-            Dictionary<string, int> indexes = new Dictionary<string, int>();
-            List<string> labelList = labels.ToList();
-
+            Dictionary<string, int> indices = new Dictionary<string, int>();
             int totalFound = 0;
             int ii = 0;
             foreach (string label in labels)
-                indexes.Add(label, -1);
+                indices.Add(label, -1);
 
             foreach (ILabeled element in list)
             {
                 int curIndex;
-                if (element.HasLabel() && indexes.TryGetValue(element.Label, out curIndex))
+                if (element.HasLabel() && indices.TryGetValue(element.Label, out curIndex))
                 {
                     // case for duplicate labels somehow; only get the first index found
                     if (curIndex == -1)
                     {
-                        indexes[element.Label] = ii;
+                        indices[element.Label] = ii;
                         totalFound++;
 
                         // short-circuit case for having found all indices
-                        if (totalFound == indexes.Count)
-                            return indexes;
+                        if (totalFound == indices.Count)
+                            return indices;
                     }
                 }
                 ii++;
             }
-            return indexes;
+            return indices;
         }
     }
 }
