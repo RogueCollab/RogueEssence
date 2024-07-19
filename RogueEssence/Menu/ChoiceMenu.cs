@@ -22,22 +22,13 @@ namespace RogueEssence.Menu
             Choices = new List<IChoosable>();
         }
 
-        public override Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, Elements);
-
         public int GetChoiceIndexByLabel(string label)
-        {
-            if (GetChoiceIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
-        }
+            => GetChoiceIndexesByLabel(label)[label];
         public virtual Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
             => SearchLabels(labels, Choices);
 
         public int GetNonChoiceIndexByLabel(string label)
-        {
-            if (GetNonChoiceIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
-        }
+            => GetNonChoiceIndexesByLabel(label)[label];
         public virtual Dictionary<string, int> GetNonChoiceIndexesByLabel(params string[] labels)
             => SearchLabels(labels, NonChoices);
     }

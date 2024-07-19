@@ -148,8 +148,7 @@ namespace RogueEssence.Menu
 
         public int GetElementIndexByLabel(string label)
         {
-            if (GetElementIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return -1;
+            return GetElementIndexesByLabel(label)[label];
         }
         public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
             => MenuBase.SearchLabels(labels, Elements);
