@@ -117,43 +117,52 @@ namespace RogueEssence.Data
         }
         public static object DeserializeDataWithDiffs(string path, params string[] diffpaths)
         {
-            //read the base string
-            JToken containerToken;
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            lock (lockObj)
             {
-                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
-                {
-                    string containerStr = reader.ReadToEnd();
-                    containerToken = JToken.Parse(containerStr);
-                }
-            }
-
-            //for each diff, read into an array
-            JToken[] diffTokens = new JToken[diffpaths.Length];
-            for (int ii = 0; ii < diffpaths.Length; ii++)
-            {
-                using (Stream stream = new FileStream(diffpaths[ii], FileMode.Open, FileAccess.Read, FileShare.Read))
+                //read the base string
+                JToken containerToken;
+                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
                     {
                         string containerStr = reader.ReadToEnd();
-                        diffTokens[ii] = JToken.Parse(containerStr);
+                        containerToken = JToken.Parse(containerStr);
                     }
                 }
-            }
 
-            //then, apply all diff patches (including version)
-            foreach(JToken diff in diffTokens)
-                containerToken = jdp.Patch(containerToken, diff);
+                //for each diff, read and apply
+                for (int ii = 0; ii < diffpaths.Length; ii++)
+                {
+                    try
+                    {
+                        using (Stream stream = new FileStream(diffpaths[ii], FileMode.Open, FileAccess.Read, FileShare.Read))
+                        {
+                            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                            {
+                                string diffStr = reader.ReadToEnd();
+                                JToken diff = JToken.Parse(diffStr);
+                                // Apply the patch
+                                // Note: version is also changed: is this a problem?
+                                JToken newToken = jdp.Patch(containerToken, diff);
+                                containerToken = newToken;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
+                }
 
-            //then, load from this string
-            {
-                string containerStr = containerToken.ToString();
-                Version pastVersion = OldVersion;
-                OldVersion = GetVersion(containerStr);
-                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
-                OldVersion = pastVersion;
-                return container.Object;
+                //then, load from this string
+                {
+                    string containerStr = containerToken.ToString();
+                    Version pastVersion = OldVersion;
+                    OldVersion = GetVersion(containerStr);
+                    SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
+                    OldVersion = pastVersion;
+                    return container.Object;
+                }
             }
         }
 
