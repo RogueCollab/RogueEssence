@@ -138,7 +138,7 @@ namespace RogueEssence.Menu
 
         public List<IChoosable> ExportTotalChoices()
         {
-            List<IChoosable> allChoices = new();
+            List<IChoosable> allChoices = new List<IChoosable>();
             foreach (IChoosable[] page in TotalChoices)
                 foreach (IChoosable choice in page)
                     allChoices.Add(choice);
@@ -154,7 +154,9 @@ namespace RogueEssence.Menu
             SetPage(CurrentPage);
         }
 
-        public override Dictionary<string, int> GetChoiceIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, ExportTotalChoices());
+        public override Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, ExportTotalChoices());
+        }
     }
 }

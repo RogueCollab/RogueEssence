@@ -24,7 +24,7 @@ namespace RogueEssence.Menu
         public static readonly Color TextPale = new Color(255,206,206); // #FFCEFF
         public static readonly Color TextTan = new Color(255, 198, 99); // #FFC663
 
-        public virtual string Label { get; protected set; } = "";
+        public virtual string Label { get; protected set; }
         public Rect Bounds;
 
         public bool Visible { get; set; }
@@ -47,6 +47,7 @@ namespace RogueEssence.Menu
 
         public MenuBase()
         {
+            Label = "";
             Visible = true;
 
             s1 = new DepthStencilState
@@ -67,9 +68,13 @@ namespace RogueEssence.Menu
                 DepthBufferEnable = false,
             };
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
+
+            elements = new List<IMenuElement>();
         }
 
-        public virtual List<IMenuElement> Elements { get; protected set; } = new();
+        // TODO: set to private when deprecated setters are removed.
+        protected List<IMenuElement> elements;
+        public virtual List<IMenuElement> Elements { get { return elements; } }
         public virtual IEnumerable<IMenuElement> GetElements()
         {
             foreach (IMenuElement element in Elements)
@@ -147,39 +152,41 @@ namespace RogueEssence.Menu
 
 
         public int GetElementIndexByLabel(string label)
-            => GetElementIndexesByLabel(label)[label];
-        public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, Elements);
+        {
+            return GetElementIndicesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, Elements);
+        }
 
         public static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
         {
-            Dictionary<string, int> indexes = new();
-            List<string> labelList = labels.ToList();
-
+            Dictionary<string, int> indices = new Dictionary<string, int>();
             int totalFound = 0;
             int ii = 0;
             foreach (string label in labels)
-                indexes.Add(label, -1);
+                indices.Add(label, -1);
 
             foreach (ILabeled element in list)
             {
                 int curIndex;
-                if (element.HasLabel() && indexes.TryGetValue(element.Label, out curIndex))
+                if (element.HasLabel() && indices.TryGetValue(element.Label, out curIndex))
                 {
                     // case for duplicate labels somehow; only get the first index found
                     if (curIndex == -1)
                     {
-                        indexes[element.Label] = ii;
+                        indices[element.Label] = ii;
                         totalFound++;
 
                         // short-circuit case for having found all indices
-                        if (totalFound == indexes.Count)
-                            return indexes;
+                        if (totalFound == indices.Count)
+                            return indices;
                     }
                 }
                 ii++;
             }
-            return indexes;
+            return indices;
         }
     }
 }

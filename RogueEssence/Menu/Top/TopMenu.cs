@@ -63,14 +63,11 @@ namespace RogueEssence.Menu
 
             Initialize(new Loc(16, 16), CalculateChoiceLength(choices, 72), choices.ToArray(), 0);
 
-
-            if (PathMod.Quest.IsValid())
-            {
-                titleMenu = new SummaryMenu(MenuLabel.TOP_TITLE_SUMMARY, Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
-                MenuText title = new MenuText(MenuLabel.TOP_TITLE_SUMMARY, PathMod.Quest.GetMenuName(), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
-                titleMenu.Elements.Add(title);
-                SummaryMenus.Add(titleMenu);
-            }
+            titleMenu = new SummaryMenu(MenuLabel.TOP_TITLE_SUMMARY, Rect.FromPoints(new Loc(Bounds.End.X + 16, 16), new Loc(GraphicsManager.ScreenWidth - 16, 16 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
+            MenuText title = new MenuText(MenuLabel.TOP_TITLE_SUMMARY, PathMod.Quest.GetMenuName(), new Loc(titleMenu.Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight), DirH.None);
+            titleMenu.Elements.Add(title);
+            titleMenu.Visible = PathMod.Quest.IsValid();
+            SummaryMenus.Add(titleMenu);
         }
 
         protected override void MenuPressed()

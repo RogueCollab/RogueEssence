@@ -10,13 +10,15 @@ namespace RogueEssence.Menu
         const int INPUT_GAP = 6;
 
         public virtual bool IsCheckpoint { get { return false; } }
-        public bool Inactive {
-            get;
-            set;
-        }
+        public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
 
-        public List<SummaryMenu> SummaryMenus { get; set; } = new();
+        public List<SummaryMenu> SummaryMenus { get; set; }
+
+        public InteractableMenu()
+        {
+            SummaryMenus = new List<SummaryMenu>();
+        }
 
         public abstract void Update(InputManager input);
 
@@ -55,10 +57,11 @@ namespace RogueEssence.Menu
 
         public int GetSummaryIndexByLabel(string label)
         {
-            if (GetSummaryIndexesByLabel(label).TryGetValue(label, out int ret)) return ret;
-            return new int();
+            return GetSummaryIndicesByLabel(label)[label];
         }
-        public virtual Dictionary<string, int> GetSummaryIndexesByLabel(params string[] labels)
-            => SearchLabels(labels, SummaryMenus);
+        public virtual Dictionary<string, int> GetSummaryIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, SummaryMenus);
+        }
     }
 }
