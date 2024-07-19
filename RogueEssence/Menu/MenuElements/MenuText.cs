@@ -8,24 +8,14 @@ using System;
 
 namespace RogueEssence.Menu
 {
-    public class MenuText : IMenuElement
+    public class MenuText : BaseMenuElement
     {
-        public string Label { get; set; }
         public string Text { get; private set; }
         public Color Color;
         public DirV AlignV;
         public DirH AlignH;
         public Loc Loc;
         private List<(int idx, Color color)> textColor;
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public MenuText(string text, Loc loc)
             : this("", text, loc, DirH.Left)
@@ -194,7 +184,7 @@ namespace RogueEssence.Menu
             Text = text;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Stack<Color> colorStack = new Stack<Color>();
             colorStack.Push(textColor[0].color);

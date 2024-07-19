@@ -5,21 +5,11 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public class MenuCursor : IMenuElement
+    public class MenuCursor : BaseMenuElement
     {
-        public string Label { get; set; }
         protected const int CURSOR_FLASH_TIME = 24;
 
         public ulong PrevTick;
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public Loc Loc { get; set; }
 
@@ -41,7 +31,7 @@ namespace RogueEssence.Menu
             PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             //draw cursor
             if (((GraphicsManager.TotalFrameTick - PrevTick) / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0 || baseMenu.Inactive)
