@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using JsonDiffPatchDotNet;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using RogueEssence.Dev;
 using RogueEssence.LevelGen;
@@ -22,6 +24,7 @@ namespace RogueEssence.Data
     public static class Serializer
     {
         public static JsonSerializerSettings Settings { get; private set; }
+        private static JsonDiffPatch jdp;
 
         public static void InitSettings(IContractResolver resolver, ISerializationBinder binder)
         {
@@ -32,7 +35,7 @@ namespace RogueEssence.Data
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 TypeNameHandling = TypeNameHandling.Auto,
             };
-
+            jdp = new JsonDiffPatch();
         }
 
         /// <summary>
@@ -114,24 +117,44 @@ namespace RogueEssence.Data
         }
         public static object DeserializeDataWithDiffs(string path, params string[] diffpaths)
         {
-            //TODO
-            //string containerStr;
-            //using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            //{
-            //    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
-            //    {
-            //        containerStr = reader.ReadToEnd();
-            //    }
-            //}
-            //string[] diffStr = new string[diffpaths.Length];
+            //read the base string
+            JToken containerToken;
+            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                {
+                    string containerStr = reader.ReadToEnd();
+                    containerToken = JToken.Parse(containerStr);
+                }
+            }
+
             //for each diff, read into an array
+            JToken[] diffTokens = new JToken[diffpaths.Length];
+            for (int ii = 0; ii < diffpaths.Length; ii++)
+            {
+                using (Stream stream = new FileStream(diffpaths[ii], FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                    {
+                        string containerStr = reader.ReadToEnd();
+                        diffTokens[ii] = JToken.Parse(containerStr);
+                    }
+                }
+            }
 
             //then, apply all diff patches (including version)
+            foreach(JToken diff in diffTokens)
+                containerToken = jdp.Patch(containerToken, diff);
 
             //then, load from this string
-            //SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
-            //return container.Object;
-            return null;
+            {
+                string containerStr = containerToken.ToString();
+                Version pastVersion = OldVersion;
+                OldVersion = GetVersion(containerStr);
+                SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
+                OldVersion = pastVersion;
+                return container.Object;
+            }
         }
 
         public static object DeserializeData(Stream stream)
@@ -153,7 +176,48 @@ namespace RogueEssence.Data
 
         public static void SerializeDataAsDiff(string path, string basepath, object entry)
         {
+            //save the current object json to a string
+            JToken currentToken;
+            {
+                SerializationContainer container = new SerializationContainer();
+                container.Object = entry;
+                container.Version = Versioning.GetVersion();
+                string containerStr = SerializeObjectInternal(container, Settings, true);
+                currentToken = JToken.Parse(containerStr);
+            }
 
+            //load the original object json
+            JToken baseToken;
+            using (Stream stream = new FileStream(basepath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
+                {
+                    string containerStr = reader.ReadToEnd();
+                    baseToken = JToken.Parse(containerStr);
+                }
+            }
+
+            //diff the two
+            JToken diffToken = jdp.Diff(baseToken, currentToken);
+
+            //null diff?  no diff!
+            if (diffToken == null)
+            {
+                //no need to save anything
+                //delete if exists
+                if (File.Exists(path))
+                    File.Delete(path);
+                return;
+            }
+
+            //save the resulting diff string to the path
+            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8, -1, true))
+                {
+                    writer.Write(diffToken.ToString());
+                }
+            }
         }
 
         public static void SerializeData(Stream stream, object entry, bool min = false)

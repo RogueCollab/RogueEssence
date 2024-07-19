@@ -95,6 +95,13 @@ namespace RogueEssence.Data
             Verifying
         }
 
+        public enum SavePolicy
+        {
+            FileDiff,
+            File,
+            Diff
+        }
+
         private static DataManager instance;
         public static void InitInstance()
         {
@@ -332,8 +339,6 @@ namespace RogueEssence.Data
             JumpFX = LoadData<BattleFX>(FX_PATH, "Jump", DATA_EXT);
             ThrowFX = LoadData<BattleFX>(FX_PATH, "Throw", DATA_EXT);
 
-
-            Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
             UniversalEvent = LoadData<UniversalBaseEffect>(DATA_PATH, "Universal", DATA_EXT);
 
             UniversalData = LoadData<TypeDict<BaseData>>(MISC_PATH, "Index", DATA_EXT);
@@ -845,35 +850,55 @@ namespace RogueEssence.Data
         }
 
 
-        public static void SaveEntryData(string indexNum, string subPath, IEntryData entry)
+        public static void SaveEntryData(string indexNum, string subPath, IEntryData entry, SavePolicy savePolicy = SavePolicy.FileDiff)
         {
-            SaveData(entry, Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
+            SaveData(entry, Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT, savePolicy);
         }
 
-
-        public static void SaveData(object entry, string subpath, string file, string ext)
+        /// <summary>
+        /// Provides the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not.
+        /// Can also save explicitly as a file or diff.
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="subpath"></param>
+        /// <param name="file"></param>
+        /// <param name="ext"></param>
+        /// <param name="savePolicy"></param>
+        public static void SaveData(object entry, string subpath, string file, string ext, SavePolicy savePolicy = SavePolicy.FileDiff)
         {
             string folder = PathMod.HardMod(subpath);
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
             //Check if a diff file is located here
-            if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
-                SaveObject(entry, Path.Join(folder, file + PATCH_EXT), PathMod.NoMod(Path.Join(subpath, file, ext)));
+            bool saveAsDiff;
+            switch (savePolicy)
+            {
+                case SavePolicy.File:
+                    saveAsDiff = false;
+                    break;
+                case SavePolicy.Diff:
+                    saveAsDiff = true;
+                    break;
+                default:
+                    saveAsDiff = File.Exists(Path.Join(folder, file + PATCH_EXT));
+                    break;
+            }
+
+            if (saveAsDiff) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
+                SaveObject(entry, Path.Join(folder, file + ext), Path.Join(folder, file + PATCH_EXT), PathMod.NoMod(Path.Join(subpath, file + ext)));
             else //if not, just save as normal
                 SaveObject(entry, Path.Join(folder, file + ext));
         }
-
-        //we need the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
-        //also need capability to save explicitly as a diff, or explicitly as a file
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="entry"></param>
-        /// <param name="path"></param>
-        /// <param name="diffpath">The base file to diff the json against.  Do not save as a patch if left blank.</param>
-        public static void SaveObject(object entry, string path, string diffpath = "")
+        /// <param name="path">The location to save the file if not as a patch.</param>
+        /// <param name="diffpath">The location to save the patch file.  Do not save as a patch if left blank.</param>
+        /// <param name="basePath">The base file to diff the json against.  Do not save as a patch if left blank.</param>
+        public static void SaveObject(object entry, string path, string diffpath = "", string basePath = "")
         {
             if (diffpath == "")
             {
@@ -883,7 +908,13 @@ namespace RogueEssence.Data
                 }
             }
             else
-                Serializer.SerializeDataAsDiff(path, diffpath, entry);
+            {
+                Serializer.SerializeDataAsDiff(diffpath, basePath, entry);
+
+                //Delete the non-diff file, if it exists
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
         }
 
         public static void DeleteEntryData(string indexNum, string subPath)
