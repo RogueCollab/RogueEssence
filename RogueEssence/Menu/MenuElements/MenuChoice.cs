@@ -163,30 +163,6 @@ namespace RogueEssence.Menu
             return -1;
         }
         public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
-        {
-            Dictionary<string, int> indexes = new();
-            List<string> labelList = labels.ToList();
-            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements; //this cast chain REALLY should not have a reason to break
-
-            for (int ii = 0; ii < list.Count; ii++)
-            {
-                if (labelList.Count == 0) break;
-                ILabeled element = list[ii];
-                if (element.HasLabel())
-                {
-                    for (int kk = 0; kk < labelList.Count; kk++)
-                    {
-                        string label = labelList[kk];
-                        if (element.Label == label)
-                        {
-                            indexes[label] = ii;
-                            labelList.RemoveAt(kk);
-                            break;
-                        }
-                    }
-                }
-            }
-            return indexes;
-        }
+            => MenuBase.SearchLabels(labels, Elements);
     }
 }

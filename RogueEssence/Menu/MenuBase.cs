@@ -154,7 +154,7 @@ namespace RogueEssence.Menu
         public virtual Dictionary<string, int> GetElementIndexesByLabel(params string[] labels)
             => SearchLabels(labels, Elements);
 
-        protected static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
+        public static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
         {
             Dictionary<string, int> indexes = new();
             List<string> labelList = labels.ToList();
