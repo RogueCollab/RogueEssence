@@ -24,7 +24,14 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <Button Name="btnEditStartParams" Command="{Binding btnEditStartParams_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Start Parameters</Button>
-    <Button Name="btnEditUniversal" Command="{Binding btnEditUniversal_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Universal</Button>
+    <Button Name="btnEditUniversal" Command="{Binding btnEditUniversal_Click}" Margin="4" Grid.Row="0" Grid.Column="1" Content="Universal" >
+      <Button.ContextMenu>
+        <ContextMenu >
+          <MenuItem Header="Resave as File" Command="{Binding mnuUniversalFile_Click}"/>
+          <MenuItem Header="Resave as Patch" Command="{Binding mnuUniversalDiff_Click}"/>
+        </ContextMenu>
+      </Button.ContextMenu>
+    </Button>
     <Button Name="btnEditStrings" Command="{Binding btnEditStrings_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Menu Text</Button>
     <Button Name="btnEditStringsEx" Command="{Binding btnEditStringsEx_Click}" Margin="4" Grid.Row="1" Grid.Column="1" >Gameplay Text</Button>
     <Button Name="btnEditHeal" Command="{Binding btnEditHeal_Click}" Margin="4" Grid.Row="2" Grid.Column="0" >Heal FX</Button>

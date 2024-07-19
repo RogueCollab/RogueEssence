@@ -885,10 +885,12 @@ namespace RogueEssence.Data
                     break;
             }
 
-            if (saveAsDiff) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
-                SaveObject(entry, Path.Join(folder, file + ext), Path.Join(folder, file + PATCH_EXT), PathMod.NoMod(Path.Join(subpath, file + ext)));
+            string saveDest = Path.Join(folder, file + ext);
+            string baseFile = PathMod.NoMod(Path.Join(subpath, file + ext));
+            if (saveAsDiff && saveDest != baseFile) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
+                SaveObject(entry, saveDest, baseFile);
             else //if not, just save as normal
-                SaveObject(entry, Path.Join(folder, file + ext));
+                SaveObject(entry, saveDest);
         }
 
         /// <summary>
@@ -896,20 +898,28 @@ namespace RogueEssence.Data
         /// </summary>
         /// <param name="entry"></param>
         /// <param name="path">The location to save the file if not as a patch.</param>
-        /// <param name="diffpath">The location to save the patch file.  Do not save as a patch if left blank.</param>
         /// <param name="basePath">The base file to diff the json against.  Do not save as a patch if left blank.</param>
-        public static void SaveObject(object entry, string path, string diffpath = "", string basePath = "")
+        public static void SaveObject(object entry, string path, string basePath = "")
         {
-            if (diffpath == "")
+            //The location of a hypothetical patch file.
+            //if basePath is not empty, save as the patch file.  if basePath is empty, save as a full file
+            string directory = Path.GetDirectoryName(path);
+            string file = Path.GetFileNameWithoutExtension(path);
+            string diffPath = Path.Join(directory, file + PATCH_EXT);
+            if (basePath == "")
             {
                 using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     Serializer.SerializeData(stream, entry);
                 }
+
+                //Delete the diff file, if it exists
+                if (File.Exists(diffPath))
+                    File.Delete(diffPath);
             }
             else
             {
-                Serializer.SerializeDataAsDiff(diffpath, basePath, entry);
+                Serializer.SerializeDataAsDiff(diffPath, basePath, entry);
 
                 //Delete the non-diff file, if it exists
                 if (File.Exists(path))

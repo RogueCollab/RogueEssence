@@ -28,6 +28,16 @@ namespace RogueEssence.Dev.ViewModels
                 DataManager.SaveData(obj, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
             });
         }
+        public void mnuUniversalFile_Click()
+        {
+            DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.File);
+        }
+        public void mnuUniversalDiff_Click()
+        {
+            //TODO: yell at the user or prevent them from doing this, if they do not have a mod currently selected.
+            //you can't make a diff for the base game!
+            DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.Diff);
+        }
 
         public void btnEditStrings_Click()
         {
