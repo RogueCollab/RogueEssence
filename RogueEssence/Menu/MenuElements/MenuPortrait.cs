@@ -6,21 +6,11 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Menu
 {
-    public class MenuPortrait : IMenuElement
+    public class MenuPortrait : BaseMenuElement
     {
-        public string Label { get; set; }
         public Loc Loc;
         public MonsterID Speaker;
         public EmoteStyle SpeakerEmotion;
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public MenuPortrait(Loc loc, MonsterID speaker) : this("", loc, speaker, new EmoteStyle())
         { }
@@ -39,7 +29,7 @@ namespace RogueEssence.Menu
             SpeakerEmotion = emote;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             PortraitSheet portrait = GraphicsManager.GetPortrait(Speaker.ToCharID());
 

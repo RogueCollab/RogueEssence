@@ -5,26 +5,16 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public class MenuGraphic : IMenuElement
+    public class MenuGraphic : BaseMenuElement
     {
         public enum GraphicType
         {
             Button
         }
 
-        public string Label { get; set; }
         public Loc Loc { get; set; }
         public GraphicType Type { get; set; }
         public Loc Texture { get; set; }
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public MenuGraphic(Loc loc, GraphicType type, Loc texture) : this("", loc, type, texture) { }
         public MenuGraphic(string label, Loc loc, GraphicType type, Loc texture)
@@ -35,7 +25,7 @@ namespace RogueEssence.Menu
             Texture = texture;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             switch (Type)
             {

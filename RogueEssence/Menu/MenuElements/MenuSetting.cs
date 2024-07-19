@@ -6,9 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
-    public class MenuSetting : IChoosable
+    public class MenuSetting : BaseMenuElement, IChoosable
     {
-        public string Label { get; set; }
         public MenuText SettingName;
         public MenuText Setting;
 
@@ -26,15 +25,6 @@ namespace RogueEssence.Menu
 
         public Color NormalColor;
         public Color ChangedColor;
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public MenuSetting() { }
 
@@ -95,7 +85,7 @@ namespace RogueEssence.Menu
             Setting.Color = (CurrentChoice == SavedChoice) ? NormalColor : ChangedColor;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             //draw all elements with offset added
             SettingName.Draw(spriteBatch, Bounds.Start + offset);
