@@ -8,9 +8,8 @@ using System.Text.RegularExpressions;
 
 namespace RogueEssence.Menu
 {
-    public class DialogueText : IMenuElement
+    public class DialogueText : BaseMenuElement
     {
-        public string Label { get; set; }
         public int LineHeight;
         public Rect Rect;
         public int CurrentCharIndex;
@@ -19,15 +18,6 @@ namespace RogueEssence.Menu
         public float TextOpacity;
         public Color Color;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= formattedTextLength; } }
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         /// <summary>
         /// Text color starts and stops.
@@ -283,7 +273,7 @@ namespace RogueEssence.Menu
             return fullLines.Length;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : formattedTextLength;
             Stack<Color> colorStack = new Stack<Color>();

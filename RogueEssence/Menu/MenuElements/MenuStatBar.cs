@@ -2,26 +2,15 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
-using System.Reflection.Emit;
 
 namespace RogueEssence.Menu
 {
-    public class MenuStatBar : IMenuElement
+    public class MenuStatBar : BaseMenuElement
     {
-        public string Label { get; set; }
         public int Length { get; set; }
         public Color Color { get; set; }
         public Loc Loc { get; set; }
         public bool Shadow { get; set; }
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public MenuStatBar(Loc loc, int length, Color color) : this("", loc, length, color, true) { }
         public MenuStatBar(string label, Loc loc, int length, Color color) : this(label, loc, length, color, true) { }
@@ -35,7 +24,7 @@ namespace RogueEssence.Menu
             Shadow = shadow;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             if (Shadow)
                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(offset.X + Loc.X + 1, offset.Y + Loc.Y + 1, Length, 8), null, Color.Black);

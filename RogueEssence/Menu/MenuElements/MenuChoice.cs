@@ -4,13 +4,11 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
-using System.Linq;
 
 namespace RogueEssence.Menu
 {
-    public abstract class MenuChoice : IChoosable
+    public abstract class MenuChoice : BaseMenuElement, IChoosable
     {
-        public string Label { get; set; }
         public Rect Bounds { get; set; }
 
         public Action ChoiceAction;
@@ -20,15 +18,6 @@ namespace RogueEssence.Menu
 
         private bool hover;
         private bool click;
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         protected MenuChoice(string label, Action choiceAction, bool enabled)
         {
@@ -101,7 +90,7 @@ namespace RogueEssence.Menu
         }
         public abstract IEnumerable<IMenuElement> GetElements();
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             //draw the highlight
             if (Selected)
@@ -163,8 +152,7 @@ namespace RogueEssence.Menu
         }
         public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
         {
-            List<ILabeled> list = (List<ILabeled>)(IEnumerable<ILabeled>)Elements;
-            return MenuBase.SearchLabels(labels, list);
+            return MenuBase.SearchLabels(labels, Elements);
         }
     }
 }

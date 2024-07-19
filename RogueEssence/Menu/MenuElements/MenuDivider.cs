@@ -5,20 +5,10 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public class MenuDivider : IMenuElement
+    public class MenuDivider : BaseMenuElement
     {
-        public string Label { get; set; }
         public int Length { get; set; }
         public Loc Loc { get; set; }
-
-        public bool HasLabel()
-        {
-            return !string.IsNullOrEmpty(Label);
-        }
-        public bool LabelContains(string substr)
-        {
-            return HasLabel() && Label.Contains(substr);
-        }
 
         public MenuDivider(Loc loc, int length) : this("", loc, length) { }
         public MenuDivider(string label, Loc loc, int length)
@@ -27,7 +17,7 @@ namespace RogueEssence.Menu
             Loc = loc;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             GraphicsManager.DivTex.Draw(spriteBatch, new Rectangle(Loc.X + offset.X, Loc.Y + offset.Y, Length, 2), null, Color.White);
         }

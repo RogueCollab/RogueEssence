@@ -17,7 +17,6 @@ namespace RogueEssence.Menu
             NonChoices = new List<IMenuElement>();
             Choices = new List<IChoosable>();
         }
-
         public override IEnumerable<IMenuElement> GetElements()
         {
             yield return cursor;
