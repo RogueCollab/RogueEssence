@@ -4,7 +4,6 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
-using System.Linq;
 
 namespace RogueEssence.Menu
 {
