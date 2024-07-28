@@ -115,6 +115,14 @@ namespace RogueEssence.Data
             }
             return objVersion;
         }
+
+        public static void SetVersion(JToken containerToken, Version version)
+        {
+            string versionStr = version.ToString();
+            containerToken["Version"] = versionStr;
+        }
+
+
         public static object DeserializeDataWithDiffs(string path, params string[] diffpaths)
         {
             lock (lockObj)
@@ -207,6 +215,7 @@ namespace RogueEssence.Data
                 {
                     string containerStr = reader.ReadToEnd();
                     baseToken = JToken.Parse(containerStr);
+                    SetVersion(baseToken, new Version());
                 }
             }
 
