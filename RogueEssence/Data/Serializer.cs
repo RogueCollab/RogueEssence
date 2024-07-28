@@ -121,11 +121,15 @@ namespace RogueEssence.Data
             {
                 //read the base string
                 JToken containerToken;
+                //Currently, we can only load the base version when deserializing
+                //TODO: diffs must ALWAYS have a version attached.  This way we can point the modder to go back to a version before failure
+                Version baseOldVersion;
                 using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true, -1, true))
                     {
                         string containerStr = reader.ReadToEnd();
+                        baseOldVersion = GetVersion(containerStr);
                         containerToken = JToken.Parse(containerStr);
                     }
                 }
@@ -158,7 +162,7 @@ namespace RogueEssence.Data
                 {
                     string containerStr = containerToken.ToString();
                     Version pastVersion = OldVersion;
-                    OldVersion = GetVersion(containerStr);
+                    OldVersion = baseOldVersion;
                     SerializationContainer container = (SerializationContainer)JsonConvert.DeserializeObject(containerStr, typeof(SerializationContainer), Settings);
                     OldVersion = pastVersion;
                     return container.Object;
