@@ -32,9 +32,9 @@ namespace RogueEssence.Dev.ViewModels
         public async void mnuUniversalFile_Click()
         {
             DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
-            if (!PathMod.Quest.IsValid())
+            if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
             {
-                await MessageBox.Show(parent, "This operation can only be performed when a quest is being edited!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(parent, "Universal data must have saved edits first!", "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -45,16 +45,19 @@ namespace RogueEssence.Dev.ViewModels
         public async void mnuUniversalDiff_Click()
         {
             DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
-            if (!PathMod.Quest.IsValid())
+            if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
             {
-                await MessageBox.Show(parent, "This operation can only be performed when a quest is being edited!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBox.Show(parent, "Universal data must have saved edits first!", "Error", MessageBox.MessageBoxButtons.Ok);
                 return;
             }
 
             //you can't make a diff for the base game!
             DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.Diff);
 
-            await MessageBox.Show(parent, "Universal is now saved as a patch.", "Complete", MessageBox.MessageBoxButtons.Ok);
+            if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
+                await MessageBox.Show(parent, "Modded Universal was identical to base. Unneeded patch removed.", "Complete", MessageBox.MessageBoxButtons.Ok);
+            else
+                await MessageBox.Show(parent, "Universal is now saved as a patch.", "Complete", MessageBox.MessageBoxButtons.Ok);
         }
 
         public void btnEditStrings_Click()

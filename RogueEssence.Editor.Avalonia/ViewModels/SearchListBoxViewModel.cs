@@ -235,5 +235,6 @@ namespace RogueEssence.Dev.ViewModels
         {
             ListBoxMouseDoubleClick?.Invoke(sender, e);
         }
+
     }
 }

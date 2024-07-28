@@ -46,7 +46,7 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <views:SearchListBox DataContext="{Binding SearchList}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
+      <views:SearchListBox Name="lbxItems" DataContext="{Binding SearchList}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
       <Button Name="btnAdd" Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="1" Grid.Column="0" >Add</Button>
       <Button Name="btnDelete" Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Delete</Button>
     </Grid>

@@ -11,8 +11,7 @@ using RogueEssence.Dev.Views;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Script;
-using SkiaSharp;
-using static System.Net.Mime.MediaTypeNames;
+using Avalonia.Interactivity;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -97,7 +96,7 @@ namespace RogueEssence.Dev.ViewModels
                 string animName = Path.GetFileNameWithoutExtension(folder);
 
                 bool conflict = false;
-                foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+                foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
                 {
                     if (name.ToLower() == animName.ToLower())
                     {
@@ -186,7 +185,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             List<string> conflicts = new List<string>();
 
-            foreach (string name in Content.GraphicsManager.TileIndex.Nodes.Keys)
+            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
             {
                 foreach (string suffix in DtefImportHelper.TileTitles)
                 {
@@ -245,9 +244,12 @@ namespace RogueEssence.Dev.ViewModels
                 DataListForm dataListForm = new DataListForm();
                 DataListFormViewModel choices = createChoices(dataListForm, dataType, entryOp, createOp);
                 DataOpContainer reindexOp = createReindexOp(dataType, choices);
-                choices.SetOps(reindexOp);
+                DataOpContainer resaveFileOp = createResaveFileDiffOp(dataType, choices, entryOp, false);
+                DataOpContainer resaveDiffOp = createResaveFileDiffOp(dataType, choices, entryOp, true);
+                choices.SetOps(reindexOp, resaveFileOp, resaveDiffOp);
 
                 dataListForm.DataContext = choices;
+                dataListForm.SetListContextMenu(CreateContextMenu(choices));
                 dataListForm.Show();
             }
         }
@@ -271,6 +273,24 @@ namespace RogueEssence.Dev.ViewModels
                 }
             };
             return new DataOpContainer("Re-Index", reindexAction);
+        }
+
+
+        private DataOpContainer createResaveFileDiffOp(DataManager.DataType dataType, DataListFormViewModel choices, GetEntry entryOp, bool asDiff)
+        {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            DataOpContainer.TaskAction reindexAction = async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                lock (GameBase.lockObj)
+                {
+                    //IEntryData data = entryOp(entryNum);
+                    //DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.File);
+
+                    //TODO: indices?
+                }
+            };
+            return new DataOpContainer("Resave all as File", reindexAction);
         }
 
         private DataListFormViewModel createChoices(DataListForm form, DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
@@ -339,32 +359,23 @@ namespace RogueEssence.Dev.ViewModels
             {
                 string assetName = choices.ChosenAsset;
 
-                bool hasBase = false;
-                bool fromCurrentMod = false;
-                string testPath = Path.Join(DataManager.DATA_PATH + dataType.ToString(), assetName + DataManager.DATA_EXT);
-                foreach ((ModHeader, string) modWithPath in PathMod.FallforthPathsWithHeader(testPath))
-                {
-                    if (modWithPath.Item1.Path == PathMod.Quest.Path)
-                    {
-                        fromCurrentMod = true;
-                        break;
-                    }
-                    else
-                        hasBase = true;
-                }
+                DataManager.ModStatus modStatus = DataManager.GetEntryDataModStatus(assetName, dataType.ToString());
 
-                if (!fromCurrentMod)
+                if (PathMod.Quest.IsValid() && modStatus == DataManager.ModStatus.Base)
                 {
-                    await MessageBox.Show(form, String.Format("The {0} {1} is part of another mod or the base game and cannot be deleted.", dataType.ToString(), assetName), "Delete " + dataType.ToString(),
+                    await MessageBox.Show(form, String.Format("The {0} {1} is not a part of the currently edited mod cannot be deleted.", dataType.ToString(), assetName), "Delete " + dataType.ToString(),
                         MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
 
-                string extraWarning = "";
-                if (hasBase)
-                    extraWarning = String.Format("\n\nThis asset is a mod over the base game's {0}", assetName);
-                MessageBox.MessageBoxResult result = await MessageBox.Show(form, String.Format("Are you sure you want to delete the following {0}:\n{1}{2}", dataType.ToString(), assetName, extraWarning), "Delete " + dataType.ToString(),
-                    MessageBox.MessageBoxButtons.YesNo);
+                MessageBox.MessageBoxResult result;
+                if (modStatus == DataManager.ModStatus.Base || modStatus == DataManager.ModStatus.Added)
+                    result = await MessageBox.Show(form, String.Format("Are you sure you want to delete the following {0}:\n{1}", dataType.ToString(), assetName), "Delete " + dataType.ToString(),
+                        MessageBox.MessageBoxButtons.YesNo);
+                else
+                    result = await MessageBox.Show(form, String.Format("The following {0} will be reset back to the base game:\n{1}", dataType.ToString(), assetName), "Delete " + dataType.ToString(),
+                        MessageBox.MessageBoxButtons.YesNo);
+
                 if (result == MessageBox.MessageBoxResult.No)
                     return;
 
@@ -388,34 +399,86 @@ namespace RogueEssence.Dev.ViewModels
 
             choices.SelectedSaveFileEvent += async () =>
             {
+                string entryNum = choices.ChosenAsset;
+                if (DataManager.GetEntryDataModStatus(entryNum, dataType.ToString()) == DataManager.ModStatus.Base)
+                {
+                    await MessageBox.Show(form, String.Format("{0} must have saved edits first!", entryNum), "Error", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+
                 lock (GameBase.lockObj)
                 {
-                    string entryNum = choices.ChosenAsset;
                     IEntryData data = entryOp(entryNum);
                     DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.File);
                     //TODO: indexing?
 
-                    //TODO: popup?
                 }
+
+                await MessageBox.Show(form, String.Format("{0} is now saved as a file.", entryNum), "Complete", MessageBox.MessageBoxButtons.Ok);
             };
 
             choices.SelectedSaveDiffEvent += async () =>
             {
+                string entryNum = choices.ChosenAsset;
+                DataManager.ModStatus modStatus = DataManager.GetEntryDataModStatus(entryNum, dataType.ToString());
+                if (modStatus == DataManager.ModStatus.Base)
+                {
+                    await MessageBox.Show(form, String.Format("{0} must have saved edits first!", entryNum), "Error", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+                else if (modStatus == DataManager.ModStatus.Added)
+                {
+                    await MessageBox.Show(form, String.Format("{0} is newly added in this mod and cannot be saved as patch.", entryNum), "Error", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+
                 lock (GameBase.lockObj)
                 {
-                    string entryNum = choices.ChosenAsset;
                     IEntryData data = entryOp(entryNum);
                     DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.Diff);
                     //TODO: indexing?
 
-                    //TODO: popup?
                 }
+
+                if (DataManager.GetEntryDataModStatus(entryNum, dataType.ToString()) == DataManager.ModStatus.Base)
+                    await MessageBox.Show(form, String.Format("Modded {0} was identical to base. Unneeded patch removed.", entryNum), "Complete", MessageBox.MessageBoxButtons.Ok);
+                else
+                    await MessageBox.Show(form, String.Format("{0} is now saved as a patch.", entryNum), "Complete", MessageBox.MessageBoxButtons.Ok);
             };
 
             return choices;
         }
 
 
+        public static ContextMenu CreateContextMenu(DataListFormViewModel vm)
+        {
+            ContextMenu saveAsStrip = new ContextMenu();
+
+            MenuItem saveAsFileMenuItem = new MenuItem();
+            MenuItem saveAsDiffMenuItem = new MenuItem();
+
+            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)saveAsStrip.Items;
+            list.AddRange(new MenuItem[] {
+                            saveAsFileMenuItem,
+                            saveAsDiffMenuItem});
+
+            saveAsFileMenuItem.Header = "Resave as File";
+            saveAsDiffMenuItem.Header = "Resave as Patch";
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            saveAsFileMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                vm.mnuDataFile_Click();
+            };
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            saveAsDiffMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                vm.mnuDataDiff_Click();
+            };
+            return saveAsStrip;
+        }
 
 
         public void btnMapEditor_Click()

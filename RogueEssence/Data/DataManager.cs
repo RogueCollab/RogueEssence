@@ -102,6 +102,14 @@ namespace RogueEssence.Data
             Diff
         }
 
+        public enum ModStatus
+        {
+            Base,
+            Added,
+            Modded,
+            DiffModded
+        }
+
         private static DataManager instance;
         public static void InitInstance()
         {
@@ -850,6 +858,34 @@ namespace RogueEssence.Data
         }
 
 
+        public static ModStatus GetEntryDataModStatus(string indexNum, string subPath)
+        {
+            return GetDataModStatus(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
+        }
+
+        /// <summary>
+        /// Returns information of how a file has been modded, if at all.
+        /// </summary>
+        /// <param name="subpath"></param>
+        /// <param name="file"></param>
+        /// <param name="ext"></param>
+        /// <returns></returns>
+        public static ModStatus GetDataModStatus(string subpath, string file, string ext)
+        {
+            string folder = PathMod.HardMod(subpath);
+            if (File.Exists(Path.Join(folder, file + ext)))
+            {
+                string baseFolder = PathMod.NoMod(subpath);
+                if (!File.Exists(Path.Join(baseFolder, file + ext)))
+                    return ModStatus.Added;
+                else
+                    return ModStatus.Modded;
+            }
+            if (File.Exists(Path.Join(folder, file + PATCH_EXT)))
+                return ModStatus.DiffModded;
+            return ModStatus.Base;
+        }
+
         public static void SaveEntryData(string indexNum, string subPath, IEntryData entry, SavePolicy savePolicy = SavePolicy.FileDiff)
         {
             SaveData(entry, Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT, savePolicy);
@@ -941,7 +977,7 @@ namespace RogueEssence.Data
             //Check if a diff file is located here
             if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call DeleteObject with the diff ext, and the additional argument consisting of the base item
                 DeleteObject(Path.Join(folder, file + PATCH_EXT));
-            else //if not, just save as normal
+            else //if not, just delete the normal mod file
                 DeleteObject(Path.Join(folder, file + ext));
         }
 
