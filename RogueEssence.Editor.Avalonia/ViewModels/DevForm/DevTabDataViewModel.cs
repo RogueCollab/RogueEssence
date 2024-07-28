@@ -385,6 +385,33 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 }
             };
+
+            choices.SelectedSaveFileEvent += async () =>
+            {
+                lock (GameBase.lockObj)
+                {
+                    string entryNum = choices.ChosenAsset;
+                    IEntryData data = entryOp(entryNum);
+                    DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.File);
+                    //TODO: indexing?
+
+                    //TODO: popup?
+                }
+            };
+
+            choices.SelectedSaveDiffEvent += async () =>
+            {
+                lock (GameBase.lockObj)
+                {
+                    string entryNum = choices.ChosenAsset;
+                    IEntryData data = entryOp(entryNum);
+                    DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.Diff);
+                    //TODO: indexing?
+
+                    //TODO: popup?
+                }
+            };
+
             return choices;
         }
 
