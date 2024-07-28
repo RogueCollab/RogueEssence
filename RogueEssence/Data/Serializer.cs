@@ -222,8 +222,14 @@ namespace RogueEssence.Data
             //diff the two
             JToken diffToken = jdp.Diff(baseToken, currentToken);
 
+            bool nullDiff = false;
             //null diff?  no diff!
             if (diffToken == null)
+                nullDiff = true;
+            else if (diffToken["Object"] == null)
+                nullDiff = true;
+
+            if (nullDiff)
             {
                 //no need to save anything
                 //delete if exists

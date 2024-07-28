@@ -284,13 +284,23 @@ namespace RogueEssence.Dev.ViewModels
             {
                 lock (GameBase.lockObj)
                 {
-                    //IEntryData data = entryOp(entryNum);
-                    //DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.File);
+                    DevHelper.Resave(dataType, asDiff);
 
-                    //TODO: indices?
+                    //then you have to reindex everything anyway
+                    DevHelper.RunIndexing(dataType);
+                    DevHelper.RunExtraIndexing(dataType);
+                    DataManager.Instance.LoadIndex(dataType);
+                    DataManager.Instance.LoadUniversalIndices();
+                    DataManager.Instance.ClearCache(dataType);
+                    DiagManager.Instance.DevEditor.ReloadData(dataType);
+                    Dictionary<string, string> entries = DataManager.Instance.DataIndices[dataType].GetLocalStringArray(true);
+                    choices.SetEntries(entries);
                 }
             };
-            return new DataOpContainer("Resave all as File", reindexAction);
+            if (asDiff)
+                return new DataOpContainer("Resave all as Diff", reindexAction);
+            else
+                return new DataOpContainer("Resave all as File", reindexAction);
         }
 
         private DataListFormViewModel createChoices(DataListForm form, DataManager.DataType dataType, GetEntry entryOp, CreateEntry createOp)
@@ -409,9 +419,10 @@ namespace RogueEssence.Dev.ViewModels
                 lock (GameBase.lockObj)
                 {
                     IEntryData data = entryOp(entryNum);
-                    DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.File);
-                    //TODO: indexing?
+                    DataManager.Instance.ContentResaved(dataType, entryNum, data, false);
 
+                    string newName = DataManager.Instance.DataIndices[dataType].Get(entryNum).GetLocalString(true);
+                    choices.ModifyEntry(entryNum, newName);
                 }
 
                 await MessageBox.Show(form, String.Format("{0} is now saved as a file.", entryNum), "Complete", MessageBox.MessageBoxButtons.Ok);
@@ -435,9 +446,10 @@ namespace RogueEssence.Dev.ViewModels
                 lock (GameBase.lockObj)
                 {
                     IEntryData data = entryOp(entryNum);
-                    DataManager.SaveEntryData(entryNum, dataType.ToString(), data, DataManager.SavePolicy.Diff);
-                    //TODO: indexing?
+                    DataManager.Instance.ContentResaved(dataType, entryNum, data, true);
 
+                    string newName = DataManager.Instance.DataIndices[dataType].Get(entryNum).GetLocalString(true);
+                    choices.ModifyEntry(entryNum, newName);
                 }
 
                 if (DataManager.GetEntryDataModStatus(entryNum, dataType.ToString()) == DataManager.ModStatus.Base)

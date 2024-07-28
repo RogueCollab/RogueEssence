@@ -8,6 +8,7 @@ namespace RogueEssence.Data
     {
         public int Count { get { return entries.Count; } }
 
+        //TODO: add the modding status of the entry: diff-modded, or not?
         private Dictionary<string, List<(Guid, EntrySummary)>> entries;
 
         public EntryDataIndex()

@@ -717,6 +717,27 @@ namespace RogueEssence.Data
             }
         }
 
+        public void ContentResaved(DataType dataType, string entryNum, IEntryData data, bool asDiff)
+        {
+            SaveEntryData(entryNum, dataType.ToString(), data, asDiff ? SavePolicy.Diff : SavePolicy.File);
+
+            ModStatus modStatus = GetEntryDataModStatus(entryNum, dataType.ToString());
+            if (modStatus != ModStatus.Base)
+            {
+                EntrySummary entrySummary = data.GenerateEntrySummary();
+                DataIndices[dataType].Set(PathMod.Quest.UUID, entryNum, entrySummary);
+            }
+            else
+                DataIndices[dataType].Remove(PathMod.Quest.UUID, entryNum);
+            SaveIndex(dataType);
+
+            //Don't need to clear cache
+
+            //don't need to save universal indices
+
+            //don't need to reload editor data
+        }
+
         public void ContentChanged(DataType dataType, string entryNum, IEntryData data)
         {
             if (data != null)
@@ -923,7 +944,7 @@ namespace RogueEssence.Data
 
             string saveDest = Path.Join(folder, file + ext);
             string baseFile = PathMod.NoMod(Path.Join(subpath, file + ext));
-            if (saveAsDiff && saveDest != baseFile) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
+            if (saveAsDiff && saveDest != baseFile && File.Exists(baseFile)) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
                 SaveObject(entry, saveDest, baseFile);
             else //if not, just save as normal
                 SaveObject(entry, saveDest);

@@ -392,6 +392,20 @@ namespace RogueEssence.Dev
             return String.Join(' ', words);
         }
 
+        public static void ResaveBase(bool useDiff)
+        {
+            //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
+            //yes, this is so that they can load properly on the reserialization step
+            {
+                ActiveEffect data = DataManager.LoadModData<ActiveEffect>(PathMod.Quest, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
+
+                //save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
+                //SaveData will do this automatically!
+                if (data != null)
+                    DataManager.SaveData(data, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, useDiff ? DataManager.SavePolicy.Diff : DataManager.SavePolicy.File);
+            }
+        }
+
         public static void ReserializeBase()
         {
             //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
@@ -431,6 +445,34 @@ namespace RogueEssence.Dev
                 DataManager.SaveObject(data, dir);
             }
         }
+
+        public static void Resave(DataManager.DataType conversionFlags, bool useDiff)
+        {
+            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+            {
+                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
+                    ResaveData<IEntryData>(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, useDiff);
+            }
+        }
+
+        public static void ResaveData<T>(string dataPath, string ext, bool useDiff)
+        {
+            // search for data EXT as well as diff EXT...
+            // This means searching for all files first
+            foreach (string dir in PathMod.GetHardModFiles(dataPath, "*"))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string testExt = Path.GetExtension(dir);
+                //then filtering just the data/patch ext
+                if (testExt == ext || testExt == DataManager.PATCH_EXT)
+                {
+                    T data = DataManager.LoadModData<T>(PathMod.Quest, dataPath, fileName, ext);
+                    if (data != null)
+                        DataManager.SaveData(data, dataPath, fileName, ext, useDiff ? DataManager.SavePolicy.Diff : DataManager.SavePolicy.File);
+                }
+            }
+        }
+
 
         public static void Reserialize(DataManager.DataType conversionFlags)
         {
@@ -493,11 +535,16 @@ namespace RogueEssence.Dev
             try
             {
                 Dictionary<string, EntrySummary> entries = new Dictionary<string, EntrySummary>();
-                foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*"))
                 {
-                    string file = Path.GetFileNameWithoutExtension(dir);
-                    IEntryData data = DataManager.LoadObject<IEntryData>(dir);
-                    entries[file] = data.GenerateEntrySummary();
+                    string fileName = Path.GetFileNameWithoutExtension(dir);
+                    string testExt = Path.GetExtension(dir);
+                    //then filtering just the data/patch ext
+                    if (testExt == DataManager.DATA_EXT || testExt == DataManager.PATCH_EXT)
+                    {
+                        IEntryData data = DataManager.LoadModData<IEntryData>(PathMod.Quest, dataPath, fileName, DataManager.DATA_EXT);
+                        entries[fileName] = data.GenerateEntrySummary();
+                    }
                 }
 
                 if (entries.Count > 0)
