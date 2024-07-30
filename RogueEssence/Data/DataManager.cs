@@ -793,6 +793,16 @@ namespace RogueEssence.Data
             return LoadData<T>(DATA_PATH + subPath, indexNum, ext);
         }
 
+        /// <summary>
+        /// Loads the data of the specified mod, and does not fall back to base if there is no mod.
+        /// Used for reserializing/resaving where either the base or the mod's files ONLY need to be resaved.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mod"></param>
+        /// <param name="subpath"></param>
+        /// <param name="file"></param>
+        /// <param name="ext"></param>
+        /// <returns></returns>
         public static T LoadModData<T>(ModHeader mod, string subpath, string file, string ext)
         {
             string fullPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + ext));
