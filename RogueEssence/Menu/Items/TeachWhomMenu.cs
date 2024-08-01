@@ -133,7 +133,7 @@ namespace RogueEssence.Menu
             return TeachState.CannotLearn;
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return SkillName;
             yield return SkillCharges;

@@ -95,7 +95,7 @@ namespace RogueEssence.Menu
             Intrinsic.SetText(entry.GetColoredName());
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
 
             yield return Portrait;

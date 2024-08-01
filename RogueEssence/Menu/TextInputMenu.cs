@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
             AltChar = new Dictionary<char, char>();
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return Text;

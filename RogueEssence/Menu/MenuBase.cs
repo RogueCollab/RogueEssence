@@ -75,7 +75,13 @@ namespace RogueEssence.Menu
         // TODO: set to private when deprecated setters are removed.
         protected List<IMenuElement> elements;
         public virtual List<IMenuElement> Elements { get { return elements; } }
-        public virtual IEnumerable<IMenuElement> GetElements()
+
+
+        /// <summary>
+        /// Returns an iterator of all elements for the purpose of drawing.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IEnumerable<IMenuElement> GetDrawElements()
         {
             foreach (IMenuElement element in Elements)
                 yield return element;
@@ -107,7 +113,7 @@ namespace RogueEssence.Menu
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s2, null, null, zoomMatrix);
 
             //draw Texts
-            foreach (IMenuElement element in GetElements())
+            foreach (IMenuElement element in GetDrawElements())
                 element.Draw(spriteBatch, Bounds.Start);
 
             spriteBatch.End();

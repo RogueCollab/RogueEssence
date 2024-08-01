@@ -87,7 +87,7 @@ namespace RogueEssence.Menu
                 skillText.Color = preview ? Color.Yellow : skillCharges.Color;
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return skillText;
             yield return skillCharges;
@@ -105,7 +105,7 @@ namespace RogueEssence.Menu
             menuText = new MenuText("", Loc.Zero, DirH.Right);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return menuText;
         }

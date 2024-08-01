@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             Portraits = new SpeakerPortrait[0];
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Name;
             yield return Stats;

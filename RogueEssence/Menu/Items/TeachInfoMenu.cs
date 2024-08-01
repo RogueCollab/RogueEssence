@@ -55,7 +55,7 @@ namespace RogueEssence.Menu
             base.Initialize(Bounds.Top + (Bounds.Height) / 2);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return SkillName;
             yield return SkillCharges;

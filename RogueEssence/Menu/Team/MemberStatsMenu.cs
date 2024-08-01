@@ -196,7 +196,7 @@ namespace RogueEssence.Menu
                 return new Color(88, 192, 248);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return PageText;

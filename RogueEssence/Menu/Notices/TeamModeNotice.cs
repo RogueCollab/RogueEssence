@@ -20,7 +20,7 @@ namespace RogueEssence.Menu
             Visible = false;
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return menuText;
         }

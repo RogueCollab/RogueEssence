@@ -39,7 +39,7 @@ namespace RogueEssence.Menu
             base.Initialize();
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return Div;

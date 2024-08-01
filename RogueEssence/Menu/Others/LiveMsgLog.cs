@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             Visible = false;
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             foreach (IMenuElement entry in entries)
                 yield return entry;

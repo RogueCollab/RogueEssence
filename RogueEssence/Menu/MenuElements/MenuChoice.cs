@@ -88,7 +88,12 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SE("Menu/Cancel");
 
         }
-        public abstract IEnumerable<IMenuElement> GetElements();
+
+        /// <summary>
+        /// Returns an iterator of all elements for the purpose of drawing.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract IEnumerable<IMenuElement> GetDrawElements();
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
@@ -98,7 +103,7 @@ namespace RogueEssence.Menu
             if (hover && Enabled)
                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X + offset.X, Bounds.Y + offset.Y, Bounds.Size.X, Bounds.Size.Y), null, Color.White * (click ? 0.5f : 0.2f));
             //draw all elements with offset added
-            foreach (IMenuElement element in GetElements())
+            foreach (IMenuElement element in GetDrawElements())
                 element.Draw(spriteBatch, Bounds.Start + offset);
         }
     }
@@ -120,7 +125,7 @@ namespace RogueEssence.Menu
             Text = new MenuText(text, new Loc(2, 1), color);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Text;
         }
@@ -140,7 +145,7 @@ namespace RogueEssence.Menu
             foreach (IMenuElement element in elements)
                 Elements.Add(element);
         }
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             foreach (IMenuElement element in Elements)
                 yield return element;

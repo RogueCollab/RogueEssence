@@ -41,7 +41,7 @@ namespace RogueEssence.Menu
 
         public int GetChoiceCount() { return Digits.GetDigitLength(); }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Digits;
             foreach (IMenuElement nonChoice in NonChoices)

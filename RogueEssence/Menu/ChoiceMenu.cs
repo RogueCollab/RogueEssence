@@ -6,7 +6,7 @@ namespace RogueEssence.Menu
 {
     public abstract class ChoiceMenu : InteractableMenu
     {
-        public List<IMenuElement> NonChoices;
+        public List<IMenuElement> NonChoices { get { return Elements; } }
         public List<IChoosable> Choices;
 
         protected MenuCursor cursor;
@@ -14,10 +14,9 @@ namespace RogueEssence.Menu
         public ChoiceMenu()
         {
             cursor = new MenuCursor(MenuLabel.CURSOR, this, Dir4.Right);
-            NonChoices = new List<IMenuElement>();
             Choices = new List<IChoosable>();
         }
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return cursor;
             foreach (IChoosable choice in Choices)
