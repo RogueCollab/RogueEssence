@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
-using System.Linq;
 
 namespace RogueEssence.Menu
 {
