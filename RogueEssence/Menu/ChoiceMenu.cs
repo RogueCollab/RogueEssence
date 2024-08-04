@@ -25,6 +25,12 @@ namespace RogueEssence.Menu
                 yield return nonChoice;
         }
 
+        public virtual List<IChoosable> ExportChoices() => Choices;
+        public void ImportChoices(List<IChoosable> choices)
+        {
+            ImportChoices(choices.ToArray());
+        }
+        public abstract void ImportChoices(params IChoosable[] choices);
 
         public int GetChoiceIndexByLabel(string label)
         {
@@ -32,7 +38,7 @@ namespace RogueEssence.Menu
         }
         public virtual Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
         {
-            return SearchLabels(labels, Choices);
+            return SearchLabels(labels, ExportChoices());
         }
 
         public int GetNonChoiceIndexByLabel(string label)
