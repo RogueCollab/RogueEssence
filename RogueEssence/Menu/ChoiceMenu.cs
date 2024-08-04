@@ -25,10 +25,6 @@ namespace RogueEssence.Menu
                 yield return nonChoice;
         }
 
-        public override Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
-        {
-            return SearchLabels(labels, Elements);
-        }
 
         public int GetChoiceIndexByLabel(string label)
         {
