@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
         {
             Choices.Clear();
             Choices.Add(new MenuTextChoice(MenuLabel.OTH_MSG_LOG, Text.FormatKey("MENU_MSG_LOG_TITLE"), () => { MenuManager.Instance.AddMenu(new MsgLogMenu(), false); }));
-            Choices.Add(new MenuTextChoice(MenuLabel.OTH_SETTINGS, Text.FormatKey("MENU_SETTINGS_TITLE"), () => { MenuManager.Instance.AddMenu(new SettingsMenu(), false); }));
+            Choices.Add(new MenuTextChoice(MenuLabel.OTH_SETTINGS, Text.FormatKey("MENU_SETTINGS_TITLE"), () => { MenuManager.Instance.AddMenu(new SettingsTitleMenu(), false); }));
             Choices.Add(new MenuTextChoice(MenuLabel.OTH_KEYBOARD, Text.FormatKey("MENU_KEYBOARD_TITLE"), () => { MenuManager.Instance.AddMenu(new KeyControlsMenu(), false); }));
             Choices.Add(new MenuTextChoice(MenuLabel.OTH_GAMEPAD, Text.FormatKey("MENU_GAMEPAD_TITLE"), () => { MenuManager.Instance.AddMenu(new GamepadControlsMenu(), false); }));
         }
