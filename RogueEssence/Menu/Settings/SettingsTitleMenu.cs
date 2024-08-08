@@ -1,4 +1,5 @@
-﻿using RogueElements;
+﻿using NLua;
+using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
@@ -36,6 +37,13 @@ namespace RogueEssence.Menu
         public SettingsPage(string title)
         {
             Title = title;
+        }
+        public void AddSetting(string name, LuaTable options, int defaultValue, Action<MenuSetting> action, Action<MenuSetting> settingChangedAction = null)
+        {
+            Object[] arr = new Object[options.Values.Count];
+            options.Values.CopyTo(arr, 0);
+            List<string> list = arr.Select(a => a.ToString()).ToList();
+            AddSetting(name, list, defaultValue, action, settingChangedAction);
         }
         public void AddSetting(string name, string[] options, int defaultValue, Action<MenuSetting> action, Action<MenuSetting> settingChangedAction = null)
         {
