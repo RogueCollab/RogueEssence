@@ -218,6 +218,10 @@ namespace RogueEssence.Menu
         protected abstract void MenuPressed();
         protected abstract void Canceled();
         protected abstract void ChoseMultiIndex(List<int> slots);
+        public override void ImportChoices(params IChoosable[] choices)
+        {
+            Initialize(Bounds.Start, CalculateChoiceLength(choices, 72), choices, Math.Min(CurrentChoice, choices.Length));
+        }
     }
 
     public abstract class SingleStripMenu : VertChoiceMenu

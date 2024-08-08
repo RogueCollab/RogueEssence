@@ -1932,9 +1932,12 @@ namespace RogueEssence.Script
         /// </summary>
         public void OnAddMenu(IInteractable menu)
         {
-            DiagManager.Instance.LogInfo("LuaEngine.OnAddMenu()...");
             if (menu is InteractableMenu interactable && ((ILabeled)interactable).HasLabel())
-                DiagManager.Instance.LogInfo("Menu Label: " + interactable.Label);
+            {
+                DiagManager.Instance.LogInfo("Opening labeled menu...");
+                string type = interactable is MultiPageMenu ? "MultiPageMenu" : interactable is ChoiceMenu ? "ChoiceMenu" : "InteractableMenu";
+                DiagManager.Instance.LogInfo($"Menu Type: {type}. Label: {interactable.Label}");
+            }
             m_scrsvc.Publish(EServiceEvents.AddMenu.ToString(), menu);
         }
 

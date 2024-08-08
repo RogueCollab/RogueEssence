@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Data;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
 
