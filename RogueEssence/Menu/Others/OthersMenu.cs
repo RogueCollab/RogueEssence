@@ -34,6 +34,5 @@ namespace RogueEssence.Menu
         {
             Initialize(new Loc(16, 16), CalculateChoiceLength(Choices, 72), Text.FormatKey("MENU_OTHERS_TITLE"), Choices.ToArray(), 0);
         }
-
     }
 }
