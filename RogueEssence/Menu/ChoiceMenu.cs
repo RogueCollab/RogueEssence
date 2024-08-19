@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
-using System.Linq;
 
 namespace RogueEssence.Menu
 {
@@ -25,10 +24,12 @@ namespace RogueEssence.Menu
                 yield return nonChoice;
         }
 
-        public override Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
+        public virtual List<IChoosable> ExportChoices() => new(Choices);
+        public void ImportChoices(List<IChoosable> choices)
         {
-            return SearchLabels(labels, Elements);
+            ImportChoices(choices.ToArray());
         }
+        public abstract void ImportChoices(params IChoosable[] choices);
 
         public int GetChoiceIndexByLabel(string label)
         {
