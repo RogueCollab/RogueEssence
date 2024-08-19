@@ -9,6 +9,7 @@ using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
+    //This menu is unused since 0.8.4
     public class SettingsMenu : BaseSettingsMenu
     {
         //needs a summary menu?
