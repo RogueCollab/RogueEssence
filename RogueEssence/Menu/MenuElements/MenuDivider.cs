@@ -13,6 +13,7 @@ namespace RogueEssence.Menu
         public MenuDivider(Loc loc, int length) : this("", loc, length) { }
         public MenuDivider(string label, Loc loc, int length)
         {
+            Label = label;
             Length = length;
             Loc = loc;
         }

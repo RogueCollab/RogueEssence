@@ -33,5 +33,13 @@ namespace RogueEssence.Menu
             NonChoices.Add(Title);
             NonChoices.Add(new MenuDivider(MenuLabel.DIV, new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2));
         }
+
+        public override void ImportChoices(params IChoosable[] choices)
+        {
+            base.ImportChoices(choices);
+            int index = GetNonChoiceIndexByLabel(MenuLabel.DIV);
+            if (index >= 0 && NonChoices[index] is MenuDivider divider)
+                divider.Length = Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2;
+        }
     }
 }
