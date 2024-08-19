@@ -52,7 +52,7 @@ namespace RogueEssence.Dev.ViewModels
                     if (OperatingSystem.IsWindows())
                         Process.Start("explorer.exe", mapscriptdir);
                     else if (OperatingSystem.IsLinux())
-                        Process.Start("mimeopen", mapscriptdir);
+                        Process.Start("xdg-open", mapscriptdir);
                     else if (OperatingSystem.IsMacOS())
                         Process.Start("open", mapscriptdir);
                     else
