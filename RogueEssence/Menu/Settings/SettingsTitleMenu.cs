@@ -32,7 +32,7 @@ namespace RogueEssence.Menu
     public class SettingsPage
     {
         public string Title = "";
-        public List<SettingData> Choices = new();
+        public List<SettingData> Choices = new List<SettingData>();
         public Action GlobalSaveAction;
         public SettingsPage(string title)
         {
@@ -58,8 +58,8 @@ namespace RogueEssence.Menu
     public class SettingsTitleMenu : InteractableMenu
     {
         private static string _originId = PathMod.BaseNamespace;
-        private readonly List<string> PageIds = new();
-        private readonly Dictionary<string, SettingsPage> Pages = new();
+        private readonly List<string> PageIds = new List<string>();
+        private readonly Dictionary<string, SettingsPage> Pages = new Dictionary<string, SettingsPage>();
         private bool checkedPages = false;
         public static bool InGame
         {
