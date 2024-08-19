@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
 
     public class SettingsTitleMenu : InteractableMenu
     {
-        private static string _originId = "origin";
+        private static string _originId = PathMod.BaseNamespace;
         private readonly List<string> PageIds = new();
         private readonly Dictionary<string, SettingsPage> Pages = new();
         private bool checkedPages = false;
