@@ -8,11 +8,13 @@ namespace RogueEssence.Menu
     {
         public SettingsTitleMenu Parent;
         public SettingsPage Page;
-        public Dictionary<MenuSetting, SettingData> SettingsData = new Dictionary<MenuSetting, SettingData>();
+        public Dictionary<MenuSetting, SettingData> SettingsData;
         public SettingsPageMenu(SettingsTitleMenu parent, SettingsPage page)
         {
+            SettingsData = new Dictionary<MenuSetting, SettingData>();
             Page = page;
             Parent = parent;
+
             Bounds = new Rect(new Loc(16, parent.Bounds.Bottom), new Loc(parent.Bounds.Width, page.Choices.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2));
 
             SetChoices(GenerateChoices(Page).ToArray());

@@ -57,7 +57,7 @@ namespace RogueEssence.Menu
 
     public class SettingsTitleMenu : InteractableMenu
     {
-        private static string _originId = PathMod.BaseNamespace;
+        private static string originId { get { return PathMod.BaseNamespace; } }
         private readonly List<string> PageIds = new List<string>();
         private readonly Dictionary<string, SettingsPage> Pages = new Dictionary<string, SettingsPage>();
         private bool checkedPages = false;
@@ -71,7 +71,7 @@ namespace RogueEssence.Menu
                 return false;
             }
         }
-        public int CurrentPage = 0;
+        public int CurrentPage;
         public string CurrentPageId => PageIds[CurrentPage];
         public MenuText Title;
         public MenuCursor Left;
@@ -100,7 +100,7 @@ namespace RogueEssence.Menu
         private bool changeLanguage = false;
         private void SetupDefaultSettingsPage()
         {
-            SettingsPage origin = AddPage(_originId, Text.FormatKey("MENU_SETTINGS_TITLE"));
+            SettingsPage origin = AddPage(originId, Text.FormatKey("MENU_SETTINGS_TITLE"));
 
             List<string> musicChoices = new List<string>();
             for (int ii = 0; ii <= 10; ii++)
@@ -208,8 +208,8 @@ namespace RogueEssence.Menu
             PageIds.Sort((s1, s2) =>
             {
                 //origin must always be at the start
-                if (s1 == _originId) return -1;
-                if (s2 == _originId) return 1;
+                if (s1 == originId) return -1;
+                if (s2 == originId) return 1;
                 //the rest is in id order
                 return s1.CompareTo(s2);
             });
