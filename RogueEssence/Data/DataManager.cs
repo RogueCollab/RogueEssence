@@ -2238,8 +2238,10 @@ namespace RogueEssence.Data
                                 int build = reader.ReadInt32();
                                 int rev = reader.ReadInt32();
                                 Version version;
-                                if (build > -1)
+                                if (rev > -1)
                                     version = new Version(major, minor, build, rev);
+                                else if (build > -1)
+                                    version = new Version(major, minor, build);
                                 else
                                     version = new Version(major, minor);
                                 ModVersion diff = new ModVersion(name, uuid, version);
