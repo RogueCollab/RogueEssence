@@ -426,14 +426,16 @@ namespace RogueEssence.Script
                     gent.SetMapLoc(new Loc(x, y));
                     gent.SetLocHeight(height);
                     gent.UpdateFrame();
-                    gent.Direction = direction;
+                    if (direction > Dir8.None)
+                        gent.Direction = direction;
                     return;
                 }
                 else if (ent is GroundObject)
                 {
                     GroundObject gent = ent as GroundObject;
                     ent.SetMapLoc(new Loc(x, y));
-                    ent.Direction = direction;
+                    if (direction > Dir8.None)
+                        ent.Direction = direction;
                     return;
                 }
                 throw new ArgumentException("Entity is not a valid type.");
