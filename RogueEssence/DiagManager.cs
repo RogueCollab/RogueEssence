@@ -405,7 +405,7 @@ namespace RogueEssence
                     settings.Minimap = Int32.Parse(xmldoc.SelectSingleNode("Config/Minimap").InnerText);
                     settings.MinimapColor = Enum.Parse<Settings.MinimapStyle>(xmldoc.SelectSingleNode("Config/MinimapColor").InnerText);
 
-                    settings.TextSpeed = Int32.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
+                    settings.TextSpeed = Double.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
