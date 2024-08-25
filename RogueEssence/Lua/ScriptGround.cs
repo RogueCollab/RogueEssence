@@ -478,11 +478,11 @@ namespace RogueEssence.Script
         /// GROUND:MoveInDirection(player, 200, 240, false, 2)
         /// </example>
         public LuaFunction MoveToPosition;
-        public YieldInstruction _MoveToPosition(GroundEntity chara, int x, int y, bool run = false, int speed = 2)
+        public YieldInstruction _MoveToPosition(GroundEntity chara, int x, int y, bool run = false, float speed = 2)
         {
             try
             {
-                if (speed < 1)
+                if (speed <= 0f)
                     throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
                 if (chara is GroundChar)
@@ -644,11 +644,11 @@ namespace RogueEssence.Script
 
 
         public LuaFunction ActionToPosition;
-        public YieldInstruction _ActionToPosition(GroundEntity ent, GroundAction baseAction, int x, int y, float animSpeed, int speed, int height)
+        public YieldInstruction _ActionToPosition(GroundEntity ent, GroundAction baseAction, int x, int y, float animSpeed, float speed, int height)
         {
             try
             {
-                if (speed < 1)
+                if (speed <= 0f)
                     throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
                 if (ent is GroundChar)

@@ -479,7 +479,7 @@ namespace RogueEssence.Ground
     public class AnimateToPositionGroundAction : GroundAction
     {
         private float animSpeed;
-        private int moveRate;
+        private float moveRate;
         private Loc goalDiff;
         private Loc curDiff;
         private int goalHeightDiff;
@@ -495,7 +495,7 @@ namespace RogueEssence.Ground
 
         public override bool Complete { get { return (curDiff == goalDiff) && (curHeightDiff == goalHeightDiff); } }
 
-        public AnimateToPositionGroundAction(GroundAction animType, float animSpeed, int moveRate, FrameTick prevTime, Loc destination, int destHeight)
+        public AnimateToPositionGroundAction(GroundAction animType, float animSpeed, float moveRate, FrameTick prevTime, Loc destination, int destHeight)
         {
             this.baseAction = animType;
             MapLoc = animType.MapLoc;
@@ -544,16 +544,16 @@ namespace RogueEssence.Ground
             if (highestScalar < Math.Abs(goalDiff.Y))
                 highestScalar = Math.Abs(goalDiff.Y);
 
-            int mainMove = moveRate * framesPassed;
-            int moveX = (int)Math.Round((double)mainMove * goalDiff.X / highestScalar);
-            int moveY = (int)Math.Round((double)mainMove * goalDiff.Y / highestScalar);
+            float mainMove = moveRate * framesPassed;
+            int moveX = (int)Math.Round(mainMove * goalDiff.X / highestScalar);
+            int moveY = (int)Math.Round(mainMove * goalDiff.Y / highestScalar);
             Loc newDiff = new Loc(moveX, moveY);
             if (mainMove >= highestScalar)
                 newDiff = goalDiff;
             Move = newDiff - curDiff;
             curDiff = newDiff;
 
-            int newHeightDiff = (int)Math.Round((double)mainMove * goalHeightDiff / highestScalar);
+            int newHeightDiff = (int)Math.Round(mainMove * goalHeightDiff / highestScalar);
             if (mainMove >= highestScalar)
                 newHeightDiff = goalHeightDiff;
             HeightMove = newHeightDiff - curHeightDiff;
