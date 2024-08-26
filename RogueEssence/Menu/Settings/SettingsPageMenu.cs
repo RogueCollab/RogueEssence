@@ -75,9 +75,11 @@ namespace RogueEssence.Menu
         }
         protected void SetCurrentSetting(int index, int choice)
         {
-            MenuSetting setting = Choices[index] as MenuSetting;
-            setting.SetChoice(choice);
-            SettingsData[setting].SettingChangeAction?.Invoke(setting);
+            if (Choices[index] is MenuSetting setting)
+            {
+                setting.SetChoice(choice);
+                SettingsData[setting].SettingChangeAction?.Invoke(setting);
+            }
         }
 
         protected override void MenuPressed()
@@ -96,13 +98,13 @@ namespace RogueEssence.Menu
         private void resetExamples()
         {
             for (int i = 0; i < Choices.Count; i++) {
-                if (Choices[i] is MenuSetting)
+                if (Choices[i] is MenuSetting setting)
                 {
-                    SettingData data = SettingsData[Choices[i] as MenuSetting];
+                    SettingData data = SettingsData[setting];
                     if (data.SettingChangeAction != null)
                     {
                         SetCurrentSetting(i, data.Default);
-                        ConfirmAction();
+                        SettingsData[setting].SaveAction.Invoke(setting);
                     }
                 }
             }
