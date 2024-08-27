@@ -398,6 +398,47 @@ namespace RogueEssence.Examples
                     return;
                 }
 
+                //For exporting to data
+                if (dump)
+                {
+                    LuaEngine.InitInstance();
+
+                    DataManager.InitInstance();
+                    DataManager.Instance.LoadConversions();
+                    DataInfo.AddEditorOps();
+                    DataInfo.AddSystemFX();
+                    DataInfo.AddUniversalEvent();
+                    DataInfo.AddUniversalData();
+
+                    DataInfo.AddElementData();
+                    DataInfo.AddGrowthGroupData();
+                    DataInfo.AddSkillGroupData();
+                    DataInfo.AddEmoteData();
+                    DataInfo.AddAIData();
+                    DataInfo.AddTileData();
+                    DataInfo.AddTerrainData();
+                    DataInfo.AddRankData();
+                    DataInfo.AddSkinData();
+                    DataInfo.AddMonsterData();
+                    DataInfo.AddSkillData();
+                    DataInfo.AddIntrinsicData();
+                    DataInfo.AddStatusData();
+                    DataInfo.AddMapStatusData();
+
+                    DataInfo.AddItemData();
+                    DataInfo.AddMapData();
+                    DataInfo.AddGroundData();
+                    DataInfo.AddZoneData();
+
+                    DataManager.DataType reserializeType = DataManager.DataType.None;
+                    reserializeType |= DataManager.DataType.Zone;
+                    reserializeType |= DataManager.DataType.Item;
+                    RogueEssence.Dev.DevHelper.RunIndexing(DataManager.DataType.All);
+
+                    RogueEssence.Dev.DevHelper.RunExtraIndexing(DataManager.DataType.All);
+                    return;
+                }
+
                 if (convertIndices != DataManager.DataType.None)
                 {
                     //we need the datamanager for this, but only while data is hardcoded

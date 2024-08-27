@@ -25,8 +25,9 @@
 },
 "WideAngle": 0,
 "CharAnimData": {
-"$type": "RogueEssence.Dungeon.CharAnimFrameType, RogueEssence",
-"ActionType": 0
+"$type": "RogueEssence.Dungeon.CharAnimProcess, RogueEssence",
+"Process": 0,
+"AnimOverride": 0
 },
 "TargetAlignments": 0,
 "TileEmitter": {
@@ -78,7 +79,7 @@
 }
 },
 "Data": {
-"Element": "",
+"Element": null,
 "Category": 0,
 "HitRate": -1,
 "SkillStates": [],
@@ -107,7 +108,8 @@
 },
 "HitCharAction": {
 "$type": "RogueEssence.Dungeon.CharAnimProcess, RogueEssence",
-"Process": 0
+"Process": 0,
+"AnimOverride": 0
 }
 }
 }

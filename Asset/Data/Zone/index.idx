@@ -4,17 +4,31 @@
 "$type": "System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib],[RogueEssence.Data.EntrySummary, RogueEssence]], System.Private.CoreLib",
 "Zone_0": {
 "$type": "RogueEssence.Data.ZoneEntrySummary, RogueEssence",
-"NoEXP": false,
+"ExpPercent": 100,
 "Level": -1,
 "LevelCap": false,
+"KeepSkills": false,
 "TeamRestrict": false,
 "TeamSize": -1,
 "MoneyRestrict": false,
 "BagRestrict": -1,
+"KeepTreasure": false,
 "BagSize": -1,
 "Rescues": 0,
 "CountedFloors": 0,
 "Rogue": 0,
+"Grounds": [
+"test_map"
+],
+"Maps": [
+[
+0,
+1,
+2,
+3,
+4
+]
+],
 "Name": {
 "DefaultText": "Debug Zone",
 "LocalTexts": {}
@@ -25,17 +39,27 @@
 },
 "Zone_1": {
 "$type": "RogueEssence.Data.ZoneEntrySummary, RogueEssence",
-"NoEXP": false,
+"ExpPercent": 100,
 "Level": -1,
 "LevelCap": false,
+"KeepSkills": false,
 "TeamRestrict": false,
 "TeamSize": -1,
 "MoneyRestrict": false,
 "BagRestrict": -1,
+"KeepTreasure": false,
 "BagSize": -1,
 "Rescues": 0,
 "CountedFloors": 0,
 "Rogue": 0,
+"Grounds": [
+"test_map"
+],
+"Maps": [
+[
+0
+]
+],
 "Name": {
 "DefaultText": "Main Zone",
 "LocalTexts": {}

@@ -9,12 +9,15 @@
 "Released": false,
 "Comment": "",
 "NoEXP": false,
+"ExpPercent": 100,
 "Level": -1,
 "LevelCap": false,
+"KeepSkills": false,
 "TeamRestrict": false,
 "TeamSize": -1,
 "MoneyRestrict": false,
 "BagRestrict": -1,
+"KeepTreasure": false,
 "BagSize": -1,
 "Persistent": false,
 "Rescues": 0,
@@ -37,11 +40,13 @@
 "MapID": "test_map"
 }
 }
-]
+],
+"Comment": ""
 }
 ],
 "ZoneSteps": [],
-"IsRelevant": false
+"IsRelevant": false,
+"Comment": ""
 }
 ],
 "GroundMaps": [

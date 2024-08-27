@@ -13,6 +13,10 @@
 "BlockDiagonal": false,
 "BlockLight": false,
 "ShadowType": 0,
+"ItemLand": 0,
+"ItemDraw": 0,
+"ItemAllow": 0,
+"TerrainStates": [],
 "LandedOnTiles": []
 }
 }

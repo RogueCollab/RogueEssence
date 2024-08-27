@@ -597,6 +597,9 @@
   <data name="DLG_WHAT_DO" xml:space="preserve">
     <value>What will you do?</value>
     <comment></comment>  </data>
+  <data name="GAME_LOAD_READY" xml:space="preserve">
+    <value>Press any key to continue</value>
+    <comment></comment>  </data>
   <data name="GAME_SPLASH" xml:space="preserve">
     <value>This is the splash screen.</value>
     <comment></comment>  </data>

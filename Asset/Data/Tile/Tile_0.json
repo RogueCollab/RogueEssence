@@ -21,7 +21,11 @@
 "Alpha": 255,
 "AnimFlip": 0
 },
-"ObjectLayer": false,
+"Offset": {
+"X": 0,
+"Y": 0
+},
+"Layer": 0,
 "BlockItem": false,
 "StepType": 0,
 "MinimapIcon": {

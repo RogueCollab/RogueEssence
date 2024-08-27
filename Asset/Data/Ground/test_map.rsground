@@ -3,7 +3,6 @@
 "Object": {
 "$type": "RogueEssence.Ground.GroundMap, RogueEssence",
 "TexSize": 3,
-"AssetName": "test_map",
 "Name": {
 "DefaultText": "Ground 0",
 "LocalTexts": {}
@@ -8841,6 +8840,7 @@
 ]
 }
 ],
+"AssetName": "test_map",
 "Music": "",
 "EdgeView": 0,
 "NoSwitching": false,

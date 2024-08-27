@@ -4,6 +4,7 @@
 "$type": "System.Collections.Generic.Dictionary`2[[System.String, System.Private.CoreLib],[RogueEssence.Data.EntrySummary, RogueEssence]], System.Private.CoreLib",
 "Item_0": {
 "$type": "RogueEssence.Data.ItemEntrySummary, RogueEssence",
+"Icon": -1,
 "UsageType": 0,
 "States": [],
 "Name": {
@@ -16,6 +17,7 @@
 },
 "Item_1": {
 "$type": "RogueEssence.Data.ItemEntrySummary, RogueEssence",
+"Icon": -1,
 "UsageType": 0,
 "States": [],
 "Name": {
@@ -28,6 +30,7 @@
 },
 "Item_2": {
 "$type": "RogueEssence.Data.ItemEntrySummary, RogueEssence",
+"Icon": -1,
 "UsageType": 0,
 "States": [],
 "Name": {
