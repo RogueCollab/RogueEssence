@@ -60,6 +60,7 @@ namespace RogueEssence.Menu
         public bool BlockPrevious { get; set; }
         public bool Visible { get; set; }
 
+        public virtual string Label { get; protected set; }
         public Rect Bounds;
         public int MaxLines;
 
@@ -67,9 +68,19 @@ namespace RogueEssence.Menu
         DepthStencilState s2;
         AlphaTestEffect alphaTest;
 
-
-        public TitleDialog(string msg, bool fadeIn, int holdTime, Rect bounds, object[] scripts, Action action)
+        public bool HasLabel()
         {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
+        public TitleDialog(string msg, bool fadeIn, int holdTime, Rect bounds, object[] scripts, Action action) : this("", msg, fadeIn, holdTime, bounds, scripts, action) { }
+        public TitleDialog(string label, string msg, bool fadeIn, int holdTime, Rect bounds, object[] scripts, Action action)
+        {
+            Label = label;
             s1 = new DepthStencilState
             {
                 StencilEnable = true,
