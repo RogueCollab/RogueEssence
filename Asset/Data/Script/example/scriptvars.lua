@@ -14,7 +14,8 @@
     SV.AnotherVariable = { something={somethingelse={} } }
     SV.AnotherVariable = function() print('lmao') end
 ]]--
-print('Loading default script variable values..')
+SV = {}
+
 -----------------------------------------------
 -- Services Defaults
 -----------------------------------------------

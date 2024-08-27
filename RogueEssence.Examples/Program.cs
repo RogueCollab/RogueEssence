@@ -42,7 +42,7 @@ namespace RogueEssence.Examples
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             string[] args = Environment.GetCommandLineArgs();
-            PathMod.InitPathMod(args[0], "origin");
+            PathMod.InitPathMod(args[0]);
             DiagManager.InitInstance();
             Serializer.InitSettings(new SerializerContractResolver(), new DefaultSerializationBinder());
             DiagManager.Instance.CurSettings = DiagManager.Instance.LoadSettings();
@@ -62,6 +62,7 @@ namespace RogueEssence.Examples
                 DataManager.DataType reserializeIndices = DataManager.DataType.None;
                 string langArgs = "";
                 bool dev = false;
+                bool devLua = false;
                 string quest = "";
                 List<string> mod = new List<string>();
                 bool buildQuest = false;
@@ -72,7 +73,10 @@ namespace RogueEssence.Examples
                 for (int ii = 1; ii < args.Length; ii++)
                 {
                     if (args[ii] == "-dev")
+                    {
                         dev = true;
+                        devLua = true;
+                    }
                     else if (args[ii] == "-play" && args.Length > ii + 1)
                     {
                         playInputs = args[ii + 1];
@@ -202,10 +206,12 @@ namespace RogueEssence.Examples
                     }
                 }
 
-                DiagManager.Instance.SetupGamepad();
+                PathMod.InitNamespaces();
                 GraphicsManager.InitParams();
+                DiagManager.Instance.SetupInputs();
 
                 DiagManager.Instance.DevMode = dev;
+                DiagManager.Instance.DebugLua = devLua;
 
                 ModHeader newQuest = ModHeader.Invalid;
                 ModHeader[] newMods = new ModHeader[0] { };
@@ -265,7 +271,10 @@ namespace RogueEssence.Examples
                                 break;
                             case ModRelationship.DependsOn:
                                 {
-                                    errorMsgs.Add(String.Format("{0} depends on missing mod {1}.", involved[0].Namespace, involved[1].Namespace));
+                                    if (String.IsNullOrEmpty(involved[1].Namespace))
+                                        errorMsgs.Add(String.Format("{0} depends on game version {1}.", involved[0].Namespace, involved[1].Version));
+                                    else
+                                        errorMsgs.Add(String.Format("{0} depends on missing mod {1}.", involved[0].Namespace, involved[1].Namespace));
                                     errorMsgs.Add("\n");
                                 }
                                 break;
@@ -284,13 +293,14 @@ namespace RogueEssence.Examples
                     DiagManager.Instance.LogError(new Exception("Errors detected in mod load:\n" + String.Join("", errorMsgs.ToArray())));
                     DiagManager.Instance.LogInfo(String.Format("The game will continue execution with mods loaded, but order will be broken!"));
                 }
+                DiagManager.Instance.PrintModSettings();
 
 
                 if (playInputs != null)
                     DiagManager.Instance.LoadInputs(playInputs);
 
                 Text.Init();
-                if (langArgs != "" && DiagManager.Instance.CurSettings.Language == "")
+                if (langArgs != "")
                 {
                     if (langArgs.Length > 0)
                     {
@@ -309,11 +319,17 @@ namespace RogueEssence.Examples
                         DiagManager.Instance.LogInfo("No quest specified to build.");
                         return;
                     }
+
+                    //we need the datamanager for this, but only while data is hardcoded
+                    //TODO: remove when data is no longer hardcoded
+                    LuaEngine.InitInstance();
+                    LuaEngine.Instance.LoadScripts();
+                    DataManager.InitInstance();
+
                     RogueEssence.Dev.DevHelper.MergeQuest(quest);
 
                     return;
                 }
-
                 if (convertAssets != GraphicsManager.AssetType.None)
                 {
                     //run conversions
@@ -334,6 +350,7 @@ namespace RogueEssence.Examples
                     }
 
                     LuaEngine.InitInstance();
+                    LuaEngine.Instance.LoadScripts();
                     DataManager.InitInstance();
                     DataManager.Instance.LoadConversions();
                     RogueEssence.Dev.DevHelper.PrepareAssetConversion();
@@ -353,11 +370,11 @@ namespace RogueEssence.Examples
                     //we need the datamanager for this, but only while data is hardcoded
                     //TODO: remove when data is no longer hardcoded
                     LuaEngine.InitInstance();
+                    LuaEngine.Instance.LoadScripts();
                     DataManager.InitInstance();
                     DataManager.Instance.LoadConversions();
 
                     DataManager.InitDataDirs(PathMod.ModPath(""));
-                    RogueEssence.Dev.DevHelper.ConvertAssetNames();
 
                     //load conversions a second time because it mightve changed
                     DataManager.Instance.LoadConversions();
@@ -376,53 +393,8 @@ namespace RogueEssence.Examples
                     DataManager.InitInstance();
                     DataManager.Instance.LoadConversions();
 
-                    //TODO: Created v0.5.20, delete on v1.1
-                    if (File.Exists(PathMod.HardMod(DataManager.MISC_PATH + "Index.bin")))
-                        DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(PathMod.ModPath(DataManager.MISC_PATH + "Index.bin"));
-                    else
-                        DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT));
+                    DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(DataManager.MISC_PATH, "Index", DataManager.DATA_EXT);
                     RogueEssence.Dev.DevHelper.RunExtraIndexing(reserializeIndices);
-                    return;
-                }
-
-                //For exporting to data
-                if (dump)
-                {
-                    LuaEngine.InitInstance();
-
-                    DataManager.InitInstance();
-                    DataManager.Instance.LoadConversions();
-                    DataInfo.AddEditorOps();
-                    DataInfo.AddSystemFX();
-                    DataInfo.AddUniversalEvent();
-                    DataInfo.AddUniversalData();
-
-                    DataInfo.AddElementData();
-                    DataInfo.AddGrowthGroupData();
-                    DataInfo.AddSkillGroupData();
-                    DataInfo.AddEmoteData();
-                    DataInfo.AddAIData();
-                    DataInfo.AddTileData();
-                    DataInfo.AddTerrainData();
-                    DataInfo.AddRankData();
-                    DataInfo.AddSkinData();
-                    DataInfo.AddMonsterData();
-                    DataInfo.AddSkillData();
-                    DataInfo.AddIntrinsicData();
-                    DataInfo.AddStatusData();
-                    DataInfo.AddMapStatusData();
-
-                    DataInfo.AddItemData();
-                    DataInfo.AddMapData();
-                    DataInfo.AddGroundData();
-                    DataInfo.AddZoneData();
-
-                    DataManager.DataType reserializeType = DataManager.DataType.None;
-                    reserializeType |= DataManager.DataType.Zone;
-                    reserializeType |= DataManager.DataType.Item;
-                    RogueEssence.Dev.DevHelper.RunIndexing(DataManager.DataType.All);
-
-                    RogueEssence.Dev.DevHelper.RunExtraIndexing(DataManager.DataType.All);
                     return;
                 }
 
@@ -431,12 +403,13 @@ namespace RogueEssence.Examples
                     //we need the datamanager for this, but only while data is hardcoded
                     //TODO: remove when data is no longer hardcoded
                     LuaEngine.InitInstance();
+                    LuaEngine.Instance.LoadScripts();
                     DataManager.InitInstance();
                     DiagManager.Instance.LogInfo("Reserializing indices");
                     DataManager.InitDataDirs(PathMod.ModPath(""));
                     RogueEssence.Dev.DevHelper.RunIndexing(convertIndices);
 
-                    DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT));
+                    DataManager.Instance.UniversalData = DataManager.LoadData<TypeDict<BaseData>>(DataManager.MISC_PATH, "Index", DataManager.DATA_EXT);
                     RogueEssence.Dev.DevHelper.RunExtraIndexing(convertIndices);
                     return;
                 }

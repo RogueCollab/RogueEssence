@@ -67,7 +67,7 @@ namespace RogueEssence.Examples
         }
 
 
-        public override int GetMaxStat(Stat stat)
+        public override int GetMaxStat(Stat stat, int level)
         {
             return 1;
         }

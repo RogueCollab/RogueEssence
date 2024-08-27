@@ -5,8 +5,8 @@
     
     **NOTE:** After declaring you service, you have to include your package inside the main.lua file!
 ]]--
-require 'common'
-require 'services.baseservice'
+require 'example.common'
+require 'example.services.baseservice'
 
 --Declare class DebugTools
 local DebugTools = Class('DebugTools', BaseService)
