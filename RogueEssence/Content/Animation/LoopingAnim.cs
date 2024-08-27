@@ -61,8 +61,11 @@ namespace RogueEssence.Content
         {
             ActionTime += elapsedTime;
 
-            if (ActionTime >= TotalTime)
-                finished = true;
+            if (TotalTime >= 0)
+            {
+                if (ActionTime >= TotalTime)
+                    finished = true;
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch, Loc offset)
@@ -93,6 +96,13 @@ namespace RogueEssence.Content
         public override string ToString()
         {
             return Anim.ToString();
+        }
+
+
+        public void EndAnim()
+        {
+            int frame = ActionTime.ToFrames();
+            TotalTime = frame;
         }
     }
 }

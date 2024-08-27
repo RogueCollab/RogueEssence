@@ -47,11 +47,12 @@ namespace RogueEssence
             Ctrl,
             Pause,
             AdvanceFrame,
-            Test,
+            Screenshot,
             SpeedDown,
             SpeedUp,
             SeeAll,
             Restart,
+            Test,
             Count
         }
 
@@ -212,6 +213,7 @@ namespace RogueEssence
                     //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F7);
                     //inputStates[(int)InputType.] |= keyboard.IsKeyDown(Keys.F8);
                     inputStates[(int)InputType.SeeAll] |= keyboard.IsKeyDown(Keys.F9);
+                    inputStates[(int)InputType.Screenshot] |= keyboard.IsKeyDown(Keys.F11);
                     inputStates[(int)InputType.Restart] |= keyboard.IsKeyDown(Keys.F12);
                 }
             }

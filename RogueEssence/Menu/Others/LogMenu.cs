@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
         protected abstract IEnumerable<string> GetRecentMsgs(int entries);
         protected abstract IEnumerable<string> GetRecentMsgs(int entriesStart, int entriesEnd);
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return Div;

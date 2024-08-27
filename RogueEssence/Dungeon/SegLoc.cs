@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEssence.Dungeon
 {
@@ -28,6 +29,16 @@ namespace RogueEssence.Dungeon
         public override string ToString()
         {
             return String.Format("{0} {1}", Segment, ID);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is SegLoc))
+                return false;
+
+            SegLoc other = (SegLoc)obj;
+
+            return this.Segment == other.Segment && this.ID == other.ID;
         }
     }
 }

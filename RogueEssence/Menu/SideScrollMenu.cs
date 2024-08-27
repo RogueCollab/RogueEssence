@@ -9,10 +9,16 @@ namespace RogueEssence.Menu
         protected const int CURSOR_FLASH_TIME = 24;
 
         public ulong PrevTick;
+        public int arrowHeight;
 
         public void Initialize()
         {
+            Initialize(GraphicsManager.ScreenHeight / 2);
+        }
+        public void Initialize(int arrowH)
+        {
             PrevTick = GraphicsManager.TotalFrameTick % (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME);
+            arrowHeight = arrowH;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -24,8 +30,8 @@ namespace RogueEssence.Menu
             //draw cursor
             if (((GraphicsManager.TotalFrameTick - PrevTick) / (ulong)FrameTick.FrameToTick(CURSOR_FLASH_TIME / 2)) % 2 == 0 || Inactive)
             {
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.X - 11, GraphicsManager.ScreenHeight / 2), 0, 0, Color.White, SpriteEffects.FlipHorizontally);
-                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.End.X, GraphicsManager.ScreenHeight / 2), 0, 0);
+                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.X - GraphicsManager.Cursor.TileWidth, arrowHeight), 0, 0, Color.White, SpriteEffects.FlipHorizontally);
+                GraphicsManager.Cursor.DrawTile(spriteBatch, new Vector2(Bounds.End.X, arrowHeight), 0, 0);
             }
 
         }

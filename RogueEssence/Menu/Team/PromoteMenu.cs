@@ -66,7 +66,8 @@ namespace RogueEssence.Menu
 
         private void choose(int choice)
         {
-            MenuManager.Instance.AddMenu(new FacilityTeamChosenMenu(choice, chooseSlotAction), true);
+            bool eligible = true;// eligibleCheck();
+            MenuManager.Instance.AddMenu(new FacilityTeamChosenMenu(choice, eligible ? chooseSlotAction : null), true);
         }
 
 

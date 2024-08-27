@@ -10,31 +10,65 @@ namespace RogueEssence.Data
     [Serializable]
     public abstract class BaseMonsterForm
     {
+        /// <summary>
+        /// Monster's form title
+        /// </summary>
         public LocalText FormName;
 
+        /// <summary>
+        /// Is it released and allowed to show up in the game?
+        /// </summary>
         public bool Released { get; set; }
 
+        /// <summary>
+        /// Is it a temporary form?  Cannot be picked in rogue mode if so.
+        /// </summary>
         public bool Temporary;
 
+        /// <summary>
+        /// Monster FORM this was promoted from
+        /// </summary>
+        public int PromoteForm;
+
+        /// <summary>
+        /// elemental typing 1
+        /// </summary>
         [JsonConverter(typeof(ElementConverter))]
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public string Element1;
 
+        /// <summary>
+        /// elemental typing 2
+        /// </summary>
         [JsonConverter(typeof(ElementConverter))]
         [Dev.SharedRow, Dev.DataType(0, DataManager.DataType.Element, false)]
         public string Element2;
 
+        /// <summary>
+        /// possible intrinsic 1
+        /// </summary>
         [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
         public string Intrinsic1;
+
+        /// <summary>
+        /// possible intrinsic 2
+        /// </summary>
         [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
         public string Intrinsic2;
+
+        /// <summary>
+        /// possible intrinsic 3
+        /// </summary>
         [JsonConverter(typeof(IntrinsicConverter))]
         [Dev.DataType(0, DataManager.DataType.Intrinsic, false)]
         public string Intrinsic3;
 
 
+        /// <summary>
+        /// skills learned on level up
+        /// </summary>
         public List<LevelUpSkill> LevelSkills;
 
 
@@ -72,7 +106,7 @@ namespace RogueEssence.Data
 
 
         public abstract int GetStat(int level, Stat stat, int bonus);
-        public abstract int GetMaxStat(Stat stat);
+        public abstract int GetMaxStat(Stat stat, int level);
         public abstract int ReverseGetStat(Stat stat, int val, int level);
         public abstract int GetMaxStatBonus(Stat stat);
         public abstract bool CanLearnSkill(string skill);

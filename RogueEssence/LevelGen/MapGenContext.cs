@@ -53,7 +53,11 @@ namespace RogueEssence.LevelGen
         public ITile GetTile(Loc loc) { return Map.GetTile(loc); }
         public virtual bool CanSetTile(Loc loc, ITile tile)
         {
-            if (UnbreakableTerrain.TileEquivalent(Map.GetTile(loc)))
+            Tile curTile = Map.GetTile(loc);
+            if (curTile == null)
+                return false;
+
+            if (UnbreakableTerrain.TileEquivalent(curTile))
             {
                 if (!UnbreakableTerrain.TileEquivalent(tile))
                     return false;
@@ -277,7 +281,7 @@ namespace RogueEssence.LevelGen
             return true;
         }
 
-        public bool BaseCanPlaceTeam(Loc loc)
+        public virtual bool CanPlaceTeam(Loc loc)
         {
             if (TileBlocked(loc))
                 return false;
@@ -413,6 +417,26 @@ namespace RogueEssence.LevelGen
         }
         bool IPlaceableGenContext<MapGenEntrance>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<MapGenExit>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
+
+
+        public override bool CanPlaceTeam(Loc loc)
+        {
+            if (!base.CanPlaceTeam(loc))
+                return false;
+
+            for (int ii = 0; ii < GenEntrances.Count; ii++)
+            {
+                if (GenEntrances[ii].Loc == loc)
+                    return false;
+            }
+            for (int ii = 0; ii < GenExits.Count; ii++)
+            {
+                if (GenExits[ii].Loc == loc)
+                    return false;
+            }
+
+            return true;
+        }
 
         void IPlaceableGenContext<MapGenEntrance>.PlaceItem(Loc loc, MapGenEntrance item)
         {

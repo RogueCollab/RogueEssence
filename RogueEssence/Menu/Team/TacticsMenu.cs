@@ -12,8 +12,11 @@ namespace RogueEssence.Menu
         //needs a summary menu
         private int releasedTactics;
 
-        public TacticsMenu()
+        public TacticsMenu() : this(MenuLabel.TACTICS_MENU) { }
+        public TacticsMenu(string label)
         {
+            Label = label;
+
             //individual tactics
             MenuSetting[] totalChoices = new MenuSetting[DataManager.Instance.Save.ActiveTeam.Players.Count + 1];
             

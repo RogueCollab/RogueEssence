@@ -38,6 +38,8 @@ namespace RogueEssence.Dev.ViewModels
         public event Action SelectedOKEvent;
         public event Action SelectedAddEvent;
         public event Action SelectedDeleteEvent;
+        public event Action SelectedSaveFileEvent;
+        public event Action SelectedSaveDiffEvent;
 
         public ObservableCollection<DataOpContainer> OpList { get; }
 
@@ -68,6 +70,7 @@ namespace RogueEssence.Dev.ViewModels
         public void SetEntries(Dictionary<string, string> entries)
         {
             SearchList.Clear();
+            keys.Clear();
             List<string> items = new List<string>();
             foreach (string key in entries.Keys)
             {
@@ -123,6 +126,17 @@ namespace RogueEssence.Dev.ViewModels
 
             if (SearchList.InternalIndex > -1)
                 SelectedOKEvent?.Invoke();
+        }
+
+        public void mnuDataFile_Click()
+        {
+            if (SearchList.InternalIndex > -1)
+                SelectedSaveFileEvent?.Invoke();
+        }
+        public void mnuDataDiff_Click()
+        {
+            if (SearchList.InternalIndex > -1)
+                SelectedSaveDiffEvent?.Invoke();
         }
     }
 }

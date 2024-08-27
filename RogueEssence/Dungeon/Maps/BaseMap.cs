@@ -62,10 +62,25 @@ namespace RogueEssence.Dungeon
         /// Height in tiles
         /// </summary>
         public int Height { get { return Tiles[0].Length; } }
+
+        /// <summary>
+        /// Size in tiles
+        /// </summary>
         public Loc Size { get { return new Loc(Width, Height); } }
 
+        /// <summary>
+        /// Width in pixels
+        /// </summary>
         public int GroundWidth { get { return Width * GraphicsManager.TileSize; } }
+
+        /// <summary>
+        /// Height in pixels
+        /// </summary>
         public int GroundHeight { get { return Height * GraphicsManager.TileSize; } }
+
+        /// <summary>
+        /// Size in pixels
+        /// </summary>
         public Loc GroundSize { get { return Size * GraphicsManager.TileSize; } }
 
         public List<MapItem> Items;
@@ -202,15 +217,18 @@ namespace RogueEssence.Dungeon
 
         public bool CanItemLand(Loc loc, bool voluntary, bool ignoreItem)
         {
-            TerrainData.Mobility mobility = TerrainData.Mobility.Water;
+            TerrainData.TileItemAllowance threshold = TerrainData.TileItemAllowance.Allow;
             if (!voluntary)
-            {
-                mobility |= TerrainData.Mobility.Lava;
-                mobility |= TerrainData.Mobility.Abyss;
-            }
-            if (TileBlocked(loc, mobility, false))
+                threshold = TerrainData.TileItemAllowance.Force;
+
+            if (!GetLocInMapBounds(ref loc))
                 return false;
-            loc = WrapLoc(loc);
+
+            Tile tile = Tiles[loc.X][loc.Y];
+            TerrainData terrain = tile.Data.GetData();
+            if (terrain.ItemAllow > threshold)
+                return false;
+
             if (!String.IsNullOrEmpty(Tiles[loc.X][loc.Y].Effect.ID))
             {
                 TileData tileData = DataManager.Instance.GetTile(Tiles[loc.X][loc.Y].Effect.ID);

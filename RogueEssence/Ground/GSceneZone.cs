@@ -18,16 +18,6 @@ namespace RogueEssence.Ground
             EnterGround(entry.Loc, entry.Dir);
         }
 
-        public void EnterGround(string entryPoint)
-        {
-            LocRay8 entry = ZoneManager.Instance.CurrentGround.GetEntryPoint(entryPoint);
-
-            if (entry.Dir == Dir8.None)
-                entry.Dir = DataManager.Instance.Save.ActiveTeam.Leader.CharDir;
-
-            EnterGround(entry.Loc, entry.Dir);
-        }
-
 
         public void EnterGround(Loc entrypos, Dir8 entrydir)
         {
@@ -79,6 +69,7 @@ namespace RogueEssence.Ground
 
         public IEnumerator<YieldInstruction> BeginGround()
         {
+            DataManager.Instance.Save.LocTrail.Add(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentZone.CurrentMapID));
             DataManager.Instance.Save.Trail.Add(ZoneManager.Instance.CurrentGround.GetColoredName());
             LogMsg(Text.FormatKey("MSG_ENTER_MAP", DataManager.Instance.Save.ActiveTeam.GetDisplayName(), ZoneManager.Instance.CurrentGround.GetColoredName()));
             //psy's note: might as well help encapsulate map stuff
@@ -167,16 +158,7 @@ namespace RogueEssence.Ground
                     }
                 case GameAction.ActionType.ShiftTeam:
                     {
-                        int charIndex = action[0];
-                        Character targetChar = DataManager.Instance.Save.ActiveTeam.Players[charIndex];
-                        DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(charIndex);
-                        DataManager.Instance.Save.ActiveTeam.Players.Insert(charIndex + 1, targetChar);
-
-                        //update the leader indices
-                        if (DataManager.Instance.Save.ActiveTeam.LeaderIndex == charIndex)
-                            DataManager.Instance.Save.ActiveTeam.LeaderIndex++;
-                        else if (DataManager.Instance.Save.ActiveTeam.LeaderIndex == charIndex + 1)
-                            DataManager.Instance.Save.ActiveTeam.LeaderIndex--;
+                        SwitchTeam(action[0], action[0] + 1);
                         break;
                     }
                 case GameAction.ActionType.SetLeader:
@@ -241,6 +223,27 @@ namespace RogueEssence.Ground
             }
         }
 
+        public void SwitchTeam(int index1, int index2)
+        {
+            if (index1 > index2)
+            {
+                int tmp = index1;
+                index1 = index2;
+                index2 = tmp;
+            }
+            Character targetChar = DataManager.Instance.Save.ActiveTeam.Players[index2];
+            DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(index2);
+            DataManager.Instance.Save.ActiveTeam.Players.Insert(index1, targetChar);
+            targetChar = DataManager.Instance.Save.ActiveTeam.Players[index1+1];
+            DataManager.Instance.Save.ActiveTeam.Players.RemoveAt(index1+1);
+            DataManager.Instance.Save.ActiveTeam.Players.Insert(index2, targetChar);
+
+            //update the leader indices
+            if (DataManager.Instance.Save.ActiveTeam.LeaderIndex == index1)
+                DataManager.Instance.Save.ActiveTeam.LeaderIndex = index2;
+            else if (DataManager.Instance.Save.ActiveTeam.LeaderIndex == index2)
+                DataManager.Instance.Save.ActiveTeam.LeaderIndex = index1;
+        }
 
         private bool canSwitchToChar(int charIndex)
         {

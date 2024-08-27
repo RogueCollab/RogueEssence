@@ -7,7 +7,7 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public abstract class MenuChoice : IChoosable
+    public abstract class MenuChoice : BaseMenuElement, IChoosable
     {
         public Rect Bounds { get; set; }
 
@@ -18,13 +18,15 @@ namespace RogueEssence.Menu
 
         private bool hover;
         private bool click;
-        
-        protected MenuChoice(Action choiceAction, bool enabled)
+
+        protected MenuChoice(string label, Action choiceAction, bool enabled)
         {
+            Label = label;
             Bounds = new Rect();
             ChoiceAction = choiceAction;
             Enabled = enabled;
         }
+        protected MenuChoice(Action choiceAction, bool enabled) : this("", choiceAction, enabled) { }
 
         //chosen by clicking
         public void OnMouseState(bool clicked)
@@ -46,6 +48,14 @@ namespace RogueEssence.Menu
             }
 
             this.click = clicked && hover;
+        }
+
+        public void SilentSelect(bool select)
+        {
+            if (Enabled)
+            {
+                Selected = select;
+            }
         }
 
         public void OnSelect(bool select)
@@ -78,9 +88,14 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SE("Menu/Cancel");
 
         }
-        public abstract IEnumerable<IMenuElement> GetElements();
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        /// <summary>
+        /// Returns an iterator of all elements for the purpose of drawing.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract IEnumerable<IMenuElement> GetDrawElements();
+
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             //draw the highlight
             if (Selected)
@@ -88,7 +103,7 @@ namespace RogueEssence.Menu
             if (hover && Enabled)
                 GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X + offset.X, Bounds.Y + offset.Y, Bounds.Size.X, Bounds.Size.Y), null, Color.White * (click ? 0.5f : 0.2f));
             //draw all elements with offset added
-            foreach (IMenuElement element in GetElements())
+            foreach (IMenuElement element in GetDrawElements())
                 element.Draw(spriteBatch, Bounds.Start + offset);
         }
     }
@@ -98,15 +113,19 @@ namespace RogueEssence.Menu
     {
         public MenuText Text;
 
-        public MenuTextChoice(string text, Action choiceAction) : this(text, choiceAction, true, Color.White) { }
+        public MenuTextChoice(string text, Action choiceAction) : this("", text, choiceAction, true, Color.White) { }
 
-        public MenuTextChoice(string text, Action choiceAction, bool enabled, Color color)
-            : base(choiceAction, enabled)
+        public MenuTextChoice(string label, string text, Action choiceAction) : this(label, text, choiceAction, true, Color.White) { }
+
+        public MenuTextChoice(string text, Action choiceAction, bool enabled, Color color) : this("", text, choiceAction, enabled, color) { }
+
+        public MenuTextChoice(string label, string text, Action choiceAction, bool enabled, Color color)
+            : base(label, choiceAction, enabled)
         {
             Text = new MenuText(text, new Loc(2, 1), color);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Text;
         }
@@ -115,8 +134,9 @@ namespace RogueEssence.Menu
     public class MenuElementChoice : MenuChoice
     {
         public List<IMenuElement> Elements;
-        
-        public MenuElementChoice(Action choiceAction, bool enabled, params IMenuElement[] elements) : base(choiceAction, enabled)
+
+        public MenuElementChoice(Action choiceAction, bool enabled, params IMenuElement[] elements) : this("", choiceAction, enabled, elements) { }
+        public MenuElementChoice(string label, Action choiceAction, bool enabled, params IMenuElement[] elements) : base(label, choiceAction, enabled)
         {
             ChoiceAction = choiceAction;
             Enabled = enabled;
@@ -125,10 +145,19 @@ namespace RogueEssence.Menu
             foreach (IMenuElement element in elements)
                 Elements.Add(element);
         }
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             foreach (IMenuElement element in Elements)
                 yield return element;
+        }
+
+        public int GetElementIndexByLabel(string label)
+        {
+            return GetElementIndicesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
+        {
+            return MenuBase.SearchLabels(labels, Elements);
         }
     }
 }

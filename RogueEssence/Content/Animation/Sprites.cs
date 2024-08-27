@@ -47,6 +47,7 @@ namespace RogueEssence.Content
         void Draw(SpriteBatch spriteBatch, Loc offset);
 
         Loc GetDrawLoc(Loc offset);
+        Loc GetSheetOffset();
         Loc GetDrawSize();
     }
 
@@ -98,6 +99,7 @@ namespace RogueEssence.Content
         public abstract void Draw(SpriteBatch spriteBatch, Loc offset);
 
         public abstract Loc GetDrawLoc(Loc offset);
+        public Loc GetSheetOffset() { return Loc.Zero; }
         public abstract Loc GetDrawSize();
     }
 

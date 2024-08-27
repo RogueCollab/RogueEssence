@@ -89,7 +89,8 @@ namespace RogueEssence.Content
             }
         }
 
-        public static string BASE_PATH { get => PathMod.ASSET_PATH + "Base/"; }
+        public const string SCREENSHOT_PATH = "SCREENSHOT/";
+
 
         public const string MUSIC_PATH = CONTENT_PATH + "Music/";
         public const string SOUND_PATH = CONTENT_PATH + "Sound/";
@@ -299,7 +300,7 @@ namespace RogueEssence.Content
 
         public static void InitParams()
         {
-            string path = BASE_PATH + "GFXParams.xml";
+            string path = PathMod.BASE_PATH + "GFXParams.xml";
             //try to load from file
 
             try
@@ -420,10 +421,10 @@ namespace RogueEssence.Content
             Pixel = new BaseSheet(1, 1);
             Pixel.BlitColor(Color.White, 1, 1, 0, 0);
 
-            Splash = BaseSheet.Import(BASE_PATH + "Splash.png");
-            MarkerShadow = BaseSheet.Import(BASE_PATH + "MarkerShadow.png");
+            Splash = BaseSheet.Import(PathMod.BASE_PATH + "Splash.png");
+            MarkerShadow = BaseSheet.Import(PathMod.BASE_PATH + "MarkerShadow.png");
 
-            SysFont = LoadFontFull(BASE_PATH + "system.font");
+            SysFont = LoadFontFull(PathMod.BASE_PATH + "system.font");
         }
 
         public static void loadStatic()
@@ -582,8 +583,8 @@ namespace RogueEssence.Content
         {
             if ((conversionFlags & AssetType.Font) != AssetType.None)
             {
-                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", BASE_PATH + "{0}.font", "system");
-                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "banner");
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.BASE_PATH + "{0}.font", "system");
+                Dev.ImportHelper.ImportFonts(PathMod.DEV_PATH + "Font/", PathMod.HardMod(FONT_PATTERN), "green", "blue", "yellow", "text", "text.zh-hans", "banner");
             }
             if ((conversionFlags & AssetType.Chara) != AssetType.None)
             {
@@ -620,7 +621,7 @@ namespace RogueEssence.Content
                 // New format (image data & auto tiles):
                 Dev.DtefImportHelper.ImportAllDtefTiles(PathMod.DEV_PATH + "TileDtef/", PathMod.HardMod(TILE_PATTERN));
                 
-                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/", typeof(AutoTileData));
+                Dev.DevHelper.IndexNamedData(DataManager.DATA_PATH + "AutoTile/");
             }
             
             if ((conversionFlags & AssetType.Tile) != AssetType.None || (conversionFlags & AssetType.Autotile) != AssetType.None)
@@ -754,7 +755,7 @@ namespace RogueEssence.Content
 
         private static FontSheet LoadFont(string prefix)
         {
-            return LoadFontFull(PathMod.ModPath(String.Format(FONT_PATTERN, prefix)));
+            return LoadFontFull(Text.ModLangPath(PathMod.ModPath(String.Format(FONT_PATTERN, prefix))));
         }
         private static FontSheet LoadFontFull(string path)
         {
@@ -1153,6 +1154,14 @@ namespace RogueEssence.Content
             obj.Dispose();
         }
 
+        public static void SaveScreenshot(Texture2D gameScreen)
+        {
+            if (!Directory.Exists(PathMod.FromExe(SCREENSHOT_PATH)))
+                Directory.CreateDirectory(PathMod.FromExe(SCREENSHOT_PATH));
+            string outPath = Text.GetNonConflictingSavePath(PathMod.FromExe(SCREENSHOT_PATH), String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now), ".png");
+            using (Stream stream = new FileStream(PathMod.FromExe(SCREENSHOT_PATH) + outPath + ".png", FileMode.Create, FileAccess.Write, FileShare.None))
+                BaseSheet.ExportTex(stream, gameScreen);
+        }
     }
 
 }

@@ -27,7 +27,7 @@ namespace RogueEssence.Menu
             Elements.Add(Artist);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Name;
             yield return OriginName;

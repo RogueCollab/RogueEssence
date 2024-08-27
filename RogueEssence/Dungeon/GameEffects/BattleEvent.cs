@@ -34,12 +34,30 @@ namespace RogueEssence.Dungeon
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
             object[] parameters = new object[] { owner, ownerChar, context, args };
-            string name = "BATTLE_SCRIPT." + Script;
+            string name = LuaEngine.EVENT_BATTLE_NAME + "." + Script;
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
             yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));
         }
     }
 
+
+    [Serializable]
+    public class BattleScriptStateEvent : BattleEvent
+    {
+        public BattleScriptStateEvent() {  }
+        public override GameEvent Clone() { return new BattleScriptStateEvent(); }
+
+        public override IEnumerator<YieldInstruction> Apply(GameEventOwner owner, Character ownerChar, BattleContext context)
+        {
+            ScriptCallState call = ((StatusEffect)owner).StatusStates.Get<ScriptCallState>();
+            LuaTable args = LuaEngine.Instance.RunString("return " + call.ArgTable).First() as LuaTable;
+            object[] parameters = new object[] { owner, ownerChar, context, args };
+            string name = LuaEngine.EVENT_BATTLE_NAME + "." + call.Script;
+            LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
+
+            yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));
+        }
+    }
 }
 

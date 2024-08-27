@@ -22,9 +22,13 @@ namespace RogueEssence.Data
             Eat,
             Drink,
             Learn,
-            Box
+            Box,
+            Treasure
         }
 
+        /// <summary>
+        /// The name of the data
+        /// </summary>
         public LocalText Name { get; set; }
 
         /// <summary>
@@ -39,21 +43,35 @@ namespace RogueEssence.Data
         [Alias(0, "Item_Icon")]
         public int Icon;
 
+
+        /// <summary>
+        /// The description of the item
+        /// </summary>
         [Dev.Multiline(0)]
         public LocalText Desc { get; set; }
 
+        /// <summary>
+        /// Is it released and allowed to show up in the game?
+        /// </summary>
         public bool Released { get; set; }
+
+        /// <summary>
+        /// Comments visible to only developers
+        /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         public EntrySummary GenerateEntrySummary()
         {
-            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, SortCategory, UsageType);
+            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, SortCategory, Icon, UsageType);
             foreach (ItemState state in ItemStates)
                 summary.States.Add(new FlagType(state.GetType()));
             return summary;
         }
 
+        /// <summary>
+        /// The number order of the item for sorting
+        /// </summary>
         public int SortCategory;
 
         /// <summary>
@@ -87,6 +105,7 @@ namespace RogueEssence.Data
         /// Special variables that this item contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<ItemState> ItemStates;
         
         /// <summary>
@@ -150,11 +169,22 @@ namespace RogueEssence.Data
         }
 
 
+        /// <summary>
+        /// Gets the colored text string of the item
+        /// </summary>
+        /// <returns></returns>
         public string GetColoredName()
         {
-            return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+            if (UsageType == UseType.Treasure)
+                return String.Format("[color=#6384E6]{0}[color]", Name.ToLocal());
+            else
+                return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
         }
 
+        /// <summary>
+        /// Gets the colored text string of the item, with icon included
+        /// </summary>
+        /// <returns></returns>
         public string GetIconName()
         {
             string prefix = "";
@@ -169,6 +199,7 @@ namespace RogueEssence.Data
     [Serializable]
     public class ItemEntrySummary : EntrySummary
     {
+        public int Icon;
         public ItemData.UseType UsageType;
         public List<FlagType> States;
 
@@ -177,15 +208,32 @@ namespace RogueEssence.Data
             States = new List<FlagType>();
         }
 
-        public ItemEntrySummary(LocalText name, bool released, string comment, int sort, ItemData.UseType useType) : base(name, released, comment, sort)
+        public ItemEntrySummary(LocalText name, bool released, string comment, int sort, int icon, ItemData.UseType useType) : base(name, released, comment, sort)
         {
+            Icon = icon;
             UsageType = useType;
             States = new List<FlagType>();
         }
 
         public override string GetColoredName()
         {
-            return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+            if (UsageType == ItemData.UseType.Treasure)
+                return String.Format("[color=#6384E6]{0}[color]", Name.ToLocal());
+            else
+                return String.Format("[color=#FFCEFF]{0}[color]", Name.ToLocal());
+        }
+
+        /// <summary>
+        /// Gets the colored text string of the item, with icon included
+        /// </summary>
+        /// <returns></returns>
+        public string GetIconName()
+        {
+            string prefix = "";
+            if (Icon > -1)
+                prefix += ((char)(Icon + 0xE0A0)).ToString();
+
+            return String.Format("{0}{1}", prefix, GetColoredName());
         }
 
         public bool ContainsState<T>() where T : ItemState

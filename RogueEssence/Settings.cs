@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 using RogueEssence.Menu;
+using Microsoft.Xna.Framework;
 
 namespace RogueEssence
 {
@@ -42,6 +43,12 @@ namespace RogueEssence
             Attacks,
             All
         }
+        public enum MinimapStyle
+        {
+            White,
+            Black,
+            Blue
+        }
 
         public int BGMBalance;
         public int SEBalance;
@@ -50,6 +57,7 @@ namespace RogueEssence
 
         public SkillDefault DefaultSkills;
         public int Minimap;
+        public MinimapStyle MinimapColor;
 
         private double textSpeed;
         public double TextSpeed
@@ -93,6 +101,7 @@ namespace RogueEssence
         public static HashSet<FrameInput.InputType> ActionConflicts;
         public static HashSet<Keys> ForbiddenKeys;
         public static HashSet<Buttons> ForbiddenButtons;
+        public static List<(Color explored, Color unexplored)> MinimapColors;
 
         public static void InitStatic()
         {
@@ -141,14 +150,54 @@ namespace RogueEssence
             ActionConflicts.Add(FrameInput.InputType.SkillPreview);
 
             ForbiddenKeys = new HashSet<Keys>();
+            ForbiddenKeys.Add(Keys.None);
+            ForbiddenKeys.Add(Keys.CapsLock);
+            ForbiddenKeys.Add(Keys.PageUp);
+            ForbiddenKeys.Add(Keys.PageDown);
+            ForbiddenKeys.Add(Keys.End);
+            ForbiddenKeys.Add(Keys.Home);
+            ForbiddenKeys.Add(Keys.Select);
+            ForbiddenKeys.Add(Keys.Print);
+            ForbiddenKeys.Add(Keys.Execute);
+            ForbiddenKeys.Add(Keys.PrintScreen);
+            ForbiddenKeys.Add(Keys.Insert);
+            ForbiddenKeys.Add(Keys.Delete);
+            ForbiddenKeys.Add(Keys.Help);
+            ForbiddenKeys.Add(Keys.LeftWindows);
+            ForbiddenKeys.Add(Keys.RightWindows);
+            ForbiddenKeys.Add(Keys.Sleep);
+
             for (int ii = 0; ii < 24; ii++)
                 ForbiddenKeys.Add(Keys.F1 + ii);
+
+            ForbiddenKeys.Add(Keys.NumLock);
+            ForbiddenKeys.Add(Keys.Scroll);
             ForbiddenKeys.Add(Keys.LeftControl);
             ForbiddenKeys.Add(Keys.RightControl);
             ForbiddenKeys.Add(Keys.LeftAlt);
             ForbiddenKeys.Add(Keys.RightAlt);
-            ForbiddenKeys.Add(Keys.LeftWindows);
-            ForbiddenKeys.Add(Keys.RightWindows);
+            for (int ii = 0; ii < 20; ii++)
+                ForbiddenKeys.Add(Keys.BrowserBack + ii);
+            ForbiddenKeys.Add(Keys.Oem8);
+            ForbiddenKeys.Add(Keys.ProcessKey);
+            ForbiddenKeys.Add(Keys.Attn);
+            ForbiddenKeys.Add(Keys.Crsel);
+            ForbiddenKeys.Add(Keys.Exsel);
+            ForbiddenKeys.Add(Keys.EraseEof);
+            ForbiddenKeys.Add(Keys.Play);
+            ForbiddenKeys.Add(Keys.Zoom);
+            ForbiddenKeys.Add(Keys.Pa1);
+            ForbiddenKeys.Add(Keys.OemClear);
+            ForbiddenKeys.Add(Keys.ChatPadGreen);
+            ForbiddenKeys.Add(Keys.ChatPadOrange);
+            ForbiddenKeys.Add(Keys.Pause);
+            ForbiddenKeys.Add(Keys.ImeConvert);
+            ForbiddenKeys.Add(Keys.ImeNoConvert);
+            ForbiddenKeys.Add(Keys.Kana);
+            ForbiddenKeys.Add(Keys.Kanji);
+            ForbiddenKeys.Add(Keys.OemAuto);
+            ForbiddenKeys.Add(Keys.OemCopy);
+            ForbiddenKeys.Add(Keys.OemEnlW);
 
             ForbiddenButtons = new HashSet<Buttons>();
 
@@ -165,6 +214,11 @@ namespace RogueEssence
             ForbiddenButtons.Add(Buttons.RightThumbstickLeft);
             ForbiddenButtons.Add(Buttons.RightThumbstickUp);
             ForbiddenButtons.Add(Buttons.RightThumbstickRight);
+
+            MinimapColors = new List<(Color, Color)>();
+            MinimapColors.Add((Color.White, Color.DarkGray));
+            MinimapColors.Add((Color.DimGray, Color.DarkGray));
+            MinimapColors.Add((Color.Blue, Color.DarkGray));
         }
 
         public Settings()

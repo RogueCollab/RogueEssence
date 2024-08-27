@@ -28,7 +28,7 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_COPY_UUID"), CopyAction));
             if (!rescueMode)
             {
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_RENAME"), () => { MenuManager.Instance.AddMenu(new TeamNameMenu(Text.FormatKey("INPUT_TEAM_TITLE"), "", CHAR_NAME_SIZE, RenameAction), false); }));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_TEAM_RENAME"), () => { MenuManager.Instance.AddMenu(new TeamNameMenu(Text.FormatKey("INPUT_TEAM_TITLE"), "", CHAR_NAME_SIZE, DataManager.Instance.Save.ActiveTeam.Name, RenameAction), false); }));
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_UPDATE_TEAM"), UpdateAction));
             }
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));

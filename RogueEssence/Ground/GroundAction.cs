@@ -48,7 +48,7 @@ namespace RogueEssence.Ground
         }
 
         public virtual void UpdateInput(GameAction action) { }
-        public void Begin(CharID appearance)
+        public virtual void Begin(CharID appearance)
         {
             AnimRushTime = GraphicsManager.GetChara(appearance).GetRushTime(AnimFrameType, CharDir);
             AnimHitTime = GraphicsManager.GetChara(appearance).GetHitTime(AnimFrameType, CharDir);
@@ -117,6 +117,12 @@ namespace RogueEssence.Ground
         {
             return new Loc(MapLoc.X + Collider.Width / 2 - sheet.TileWidth / 2,
                 MapLoc.Y + Collider.Height / 2 - sheet.TileHeight / 2) + DrawOffset - offset;
+        }
+
+        public Loc GetSheetOffset(CharSheet sheet)
+        {
+            //draw sprite at current frame
+            return sheet.GetSheetOffset(AnimFrameType, true, DirExt.AddAngles(CharDir, dirOffset), FrameMethod);
         }
 
         public void GetCurrentSprite(CharSheet sheet, out int currentAnim, out int currentTime, out int currentFrame)
@@ -434,12 +440,46 @@ namespace RogueEssence.Ground
         }
     }
 
+    [Serializable]
+    public class ReverseGroundAction : GroundAction
+    {
+        public override int FrameMethod(List<CharAnimFrame> frames)
+        {
+            long totalTick = FrameTick.FrameToTick(AnimTotalTime);
+            return CharSheet.TrueFrame(frames, totalTick - (ActionTime.Ticks % totalTick), true);
+        }
+        public override int AnimFrameType { get { return AnimID; } }
+        public override bool Complete { get { return ActionTime >= AnimTotalTime; } }
+
+        int AnimID;
+
+        public ReverseGroundAction(Loc pos, Dir8 dir, int animid)
+        {
+            MapLoc = pos;
+            CharDir = dir;
+            AnimID = animid;
+        }
+
+        public ReverseGroundAction(Loc pos, int height, Dir8 dir, int animid)
+        {
+            MapLoc = pos;
+            LocHeight = height;
+            CharDir = dir;
+            AnimID = animid;
+        }
+
+        public override void UpdateInput(GameAction action)
+        {
+
+        }
+    }
+
 
     [Serializable]
     public class AnimateToPositionGroundAction : GroundAction
     {
         private float animSpeed;
-        private int moveRate;
+        private float moveRate;
         private Loc goalDiff;
         private Loc curDiff;
         private int goalHeightDiff;
@@ -455,7 +495,7 @@ namespace RogueEssence.Ground
 
         public override bool Complete { get { return (curDiff == goalDiff) && (curHeightDiff == goalHeightDiff); } }
 
-        public AnimateToPositionGroundAction(GroundAction animType, float animSpeed, int moveRate, FrameTick prevTime, Loc destination, int destHeight)
+        public AnimateToPositionGroundAction(GroundAction animType, float animSpeed, float moveRate, FrameTick prevTime, Loc destination, int destHeight)
         {
             this.baseAction = animType;
             MapLoc = animType.MapLoc;
@@ -467,6 +507,12 @@ namespace RogueEssence.Ground
             this.moveRate = moveRate;
             this.goalDiff = destination - MapLoc;
             this.goalHeightDiff = destHeight - LocHeight;
+        }
+
+        public override void Begin(CharID appearance)
+        {
+            base.Begin(appearance);
+            baseAction.Begin(appearance);
         }
 
         public override void UpdateFrameInternal()
@@ -498,16 +544,16 @@ namespace RogueEssence.Ground
             if (highestScalar < Math.Abs(goalDiff.Y))
                 highestScalar = Math.Abs(goalDiff.Y);
 
-            int mainMove = moveRate * framesPassed;
-            int moveX = (int)Math.Round((double)mainMove * goalDiff.X / highestScalar);
-            int moveY = (int)Math.Round((double)mainMove * goalDiff.Y / highestScalar);
+            float mainMove = moveRate * framesPassed;
+            int moveX = (int)Math.Round(mainMove * goalDiff.X / highestScalar);
+            int moveY = (int)Math.Round(mainMove * goalDiff.Y / highestScalar);
             Loc newDiff = new Loc(moveX, moveY);
             if (mainMove >= highestScalar)
                 newDiff = goalDiff;
             Move = newDiff - curDiff;
             curDiff = newDiff;
 
-            int newHeightDiff = (int)Math.Round((double)mainMove * goalHeightDiff / highestScalar);
+            int newHeightDiff = (int)Math.Round(mainMove * goalHeightDiff / highestScalar);
             if (mainMove >= highestScalar)
                 newHeightDiff = goalHeightDiff;
             HeightMove = newHeightDiff - curHeightDiff;

@@ -20,27 +20,51 @@ namespace RogueEssence.Dungeon
             context.User = character;
             context.UsageSlot = skillSlot;
 
+            //if cancel occurs on a BeforeTryAction, it will automatically return with a FAIL result.
+            //this is the only way to fail; everything else after this point returns a success or turntaken
             yield return CoroutineManager.Instance.StartCoroutine(InitActionData(context));
             yield return CoroutineManager.Instance.StartCoroutine(context.User.BeforeTryAction(context));
             if (context.CancelState.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(context.User.CharLoc)); yield break; }
 
             context.TurnCancel.Cancel = false;
 
-            //move has been made; end-turn must be done from this point onwards
+            //move has been made; TurnTaken or Success must be done from this point onwards:
+
+            //Normal, everything ran to completion
+            //Cancel = False, TurnCancel = False
+            //TurnTaken
+
+            //Cancelled mid-execution, want to leave but still spent the turn
+            //Cancel = True, TurnCancel = False
+            //TurnTaken
+
+            //Ran to completion, but don't want to move to the next turn yet
+            //Cancel = False, TurnCancel = True
+            //Success
+
+            //Cancelled mid-execution, want to leave ASAP without doing anything else, even the slightest turn-end
+            //Cancel = True, TurnCancel = True
+            //Success
+
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteSkill));
 
-            if (!String.IsNullOrEmpty(context.SkillUsedUp) && !context.User.Dead)
+            if (!context.CancelState.Cancel || !context.TurnCancel.Cancel)
             {
-                SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp);
-                LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
+                if (!String.IsNullOrEmpty(context.SkillUsedUp.Skill) && !context.User.Dead)
+                {
+                    SkillData entry = DataManager.Instance.GetSkill(context.SkillUsedUp.Skill);
+                    LogMsg(Text.FormatKey("MSG_OUT_OF_CHARGES", context.User.GetDisplayName(false), entry.GetIconName()));
 
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
+                    yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessEmoteFX(context.User, DataManager.Instance.NoChargeFX));
+                }
+
+                if (DungeonScene.Instance.FocusedCharacter == context.User)
+                {
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
+                }
+                
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
             }
-
-            if (!context.CancelState.Cancel)
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
 
             result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
@@ -67,10 +91,11 @@ namespace RogueEssence.Dungeon
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteItem));
-            if (!context.CancelState.Cancel)
+            if (!context.CancelState.Cancel || !context.TurnCancel.Cancel)
+            {
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+            }
 
             result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
@@ -89,10 +114,11 @@ namespace RogueEssence.Dungeon
 
             //move has been made; end-turn must be done from this point onwards
             yield return CoroutineManager.Instance.StartCoroutine(CheckExecuteAction(context, PreExecuteItem));
-            if (!context.CancelState.Cancel)
+            if (!context.CancelState.Cancel || !context.TurnCancel.Cancel)
+            {
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(20, context.User.CharLoc));
-
-            yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+                yield return CoroutineManager.Instance.StartCoroutine(FinishTurn(context.User, !context.TurnCancel.Cancel));
+            }
 
             result.Success = context.TurnCancel.Cancel ? ActionResult.ResultType.Success : ActionResult.ResultType.TurnTaken;
         }
@@ -118,64 +144,77 @@ namespace RogueEssence.Dungeon
             {
                 yield return CoroutineManager.Instance.StartCoroutine(context.User.DeductCharges(context.UsageSlot, 1, false, false, false));
                 if (context.User.Skills[context.UsageSlot].Element.Charges == 0)
-                    context.SkillUsedUp = context.User.Skills[context.UsageSlot].Element.SkillNum;
+                    context.SkillUsedUp.Skill = context.User.Skills[context.UsageSlot].Element.SkillNum;
             }
             yield return new WaitUntil(AnimationsOver);
 
             context.PrintActionMsg();
-
-            yield break;
         }
 
         public IEnumerator<YieldInstruction> PreExecuteItem(BattleContext context)
         {
+            yield return CoroutineManager.Instance.StartCoroutine(ExpendItem(context.User, context.UsageSlot, context.ActionType));
+
+            yield return new WaitUntil(AnimationsOver);
+
+            context.PrintActionMsg();
+        }
+
+        public IEnumerator<YieldInstruction> ExpendItem(Character ownerChar, int itemSlot, BattleActionType actionType)
+        {
             //remove the item from the inventory/ground/hold
-            if (context.UsageSlot > BattleContext.EQUIP_ITEM_SLOT)
+            if (itemSlot > BattleContext.EQUIP_ITEM_SLOT)
             {
-                InvItem item = ((ExplorerTeam)context.User.MemberTeam).GetInv(context.UsageSlot);
+                InvItem item = ownerChar.MemberTeam.GetInv(itemSlot);
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    //TODO: Price needs to be multiplied by amount instead of dividing
+                    item.Price -= item.Price / item.Amount;
                     item.Amount--;
-                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
+                }
+                else if (entry.MaxStack < 0 && actionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
                 else
-                    ((ExplorerTeam)context.User.MemberTeam).RemoveFromInv(context.UsageSlot);
+                    ownerChar.MemberTeam.RemoveFromInv(itemSlot);
             }
-            else if (context.UsageSlot == BattleContext.EQUIP_ITEM_SLOT)
+            else if (itemSlot == BattleContext.EQUIP_ITEM_SLOT)
             {
-                InvItem item = context.User.EquippedItem;
+                InvItem item = ownerChar.EquippedItem;
                 ItemData entry = (ItemData)item.GetData();
                 if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    //TODO: Price needs to be multiplied by amount instead of dividing
+                    item.Price -= item.Price / item.Amount;
                     item.Amount--;
-                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
+                }
+                else if (entry.MaxStack < 0 && actionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
                 else
-                    yield return CoroutineManager.Instance.StartCoroutine(context.User.DequipItem());
+                    yield return CoroutineManager.Instance.StartCoroutine(ownerChar.DequipItem());
             }
-            else if (context.UsageSlot == BattleContext.FLOOR_ITEM_SLOT)
+            else if (itemSlot == BattleContext.FLOOR_ITEM_SLOT)
             {
-                int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(context.User.CharLoc);
+                int mapSlot = ZoneManager.Instance.CurrentMap.GetItem(ownerChar.CharLoc);
                 MapItem item = ZoneManager.Instance.CurrentMap.Items[mapSlot];
                 ItemData entry = DataManager.Instance.GetItem(item.Value);
                 if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    //TODO: Price needs to be multiplied by amount instead of dividing
+                    item.Price -= item.Price / item.Amount;
                     item.Amount--;
-                else if (entry.MaxStack < 0 && context.ActionType == BattleActionType.Item)
+                }
+                else if (entry.MaxStack < 0 && actionType == BattleActionType.Item)
                 {
                     //reusable, do nothing.
                 }
                 else
                     ZoneManager.Instance.CurrentMap.Items.RemoveAt(mapSlot);
             }
-
-            yield return new WaitUntil(AnimationsOver);
-
-            context.PrintActionMsg();
-
-            yield break;
         }
 
 

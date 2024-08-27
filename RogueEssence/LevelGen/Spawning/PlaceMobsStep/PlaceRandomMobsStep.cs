@@ -26,6 +26,9 @@ namespace RogueEssence.LevelGen
         /// </summary>
         public List<BaseRoomFilter> Filters { get; set; }
 
+
+        public bool IncludeHalls { get; set; }
+
         public PlaceRandomMobsStep()
         {
             Filters = new List<BaseRoomFilter>();
@@ -46,7 +49,7 @@ namespace RogueEssence.LevelGen
             if (spawns.Count == 0)
                 return;
             
-            SpawnList<int> spawningRooms = new SpawnList<int>();
+            SpawnList<RoomHallIndex> spawningRooms = new SpawnList<RoomHallIndex>();
 
             //get all places that spawnings are eligible
             for (int ii = 0; ii < map.RoomPlan.RoomCount; ii++)
@@ -56,7 +59,20 @@ namespace RogueEssence.LevelGen
                 if (!BaseRoomFilter.PassesAllFilters(map.RoomPlan.GetRoomPlan(ii), this.Filters))
                     continue;
 
-                spawningRooms.Add(ii, 10000);
+                spawningRooms.Add(new RoomHallIndex(ii, false), 10000);
+            }
+
+            if (IncludeHalls)
+            {
+                for (int ii = 0; ii < map.RoomPlan.HallCount; ii++)
+                {
+                    IRoomGen room = map.RoomPlan.GetHall(ii);
+
+                    if (!BaseRoomFilter.PassesAllFilters(map.RoomPlan.GetHallPlan(ii), this.Filters))
+                        continue;
+
+                    spawningRooms.Add(new RoomHallIndex(ii, true), 10000);
+                }
             }
 
             int trials = 10 * spawns.Count;
@@ -65,11 +81,11 @@ namespace RogueEssence.LevelGen
                 if (spawningRooms.SpawnTotal == 0)//check to make sure there's still spawn choices left
                     break;
                 int spawnIndex = spawningRooms.PickIndex(map.Rand);
-                int roomNum = spawningRooms.GetSpawn(spawnIndex);
+                RoomHallIndex roomNum = spawningRooms.GetSpawn(spawnIndex);
                 int teamIndex = map.Rand.Next(spawns.Count);
                 Team newTeam = spawns[teamIndex];
 
-                List<Loc> freeTiles = Grid.FindTilesInBox(map.RoomPlan.GetRoom(roomNum).Draw.Start, map.RoomPlan.GetRoom(roomNum).Draw.Size,
+                List<Loc> freeTiles = Grid.FindTilesInBox(map.RoomPlan.GetRoomHall(roomNum).RoomGen.Draw.Start, map.RoomPlan.GetRoomHall(roomNum).RoomGen.Draw.Size,
                     (Loc testLoc) =>
                     {
                         return ((IGroupPlaceableGenContext<TeamSpawn>)map).CanPlaceItem(testLoc);

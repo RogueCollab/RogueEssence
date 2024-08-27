@@ -6,7 +6,7 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public abstract class MenuBase
+    public abstract class MenuBase : ILabeled
     {
         public const int VERT_SPACE = 14;
         public const int LINE_HEIGHT = 12;
@@ -23,6 +23,7 @@ namespace RogueEssence.Menu
         public static readonly Color TextPale = new Color(255,206,206); // #FFCEFF
         public static readonly Color TextTan = new Color(255, 198, 99); // #FFC663
 
+        public virtual string Label { get; protected set; }
         public Rect Bounds;
 
         public bool Visible { get; set; }
@@ -34,8 +35,18 @@ namespace RogueEssence.Menu
         DepthStencilState s2;
         AlphaTestEffect alphaTest;
 
+        public bool HasLabel()
+        {
+            return !string.IsNullOrEmpty(Label);
+        }
+        public bool LabelContains(string substr)
+        {
+            return HasLabel() && Label.Contains(substr);
+        }
+
         public MenuBase()
         {
+            Label = "";
             Visible = true;
 
             s1 = new DepthStencilState
@@ -56,10 +67,24 @@ namespace RogueEssence.Menu
                 DepthBufferEnable = false,
             };
             alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
+
+            elements = new List<IMenuElement>();
         }
 
+        // TODO: set to private when deprecated setters are removed.
+        protected List<IMenuElement> elements;
+        public virtual List<IMenuElement> Elements { get { return elements; } }
 
-        public abstract IEnumerable<IMenuElement> GetElements();
+
+        /// <summary>
+        /// Returns an iterator of all elements for the purpose of drawing.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IEnumerable<IMenuElement> GetDrawElements()
+        {
+            foreach (IMenuElement element in Elements)
+                yield return element;
+        }
 
         public virtual void Draw(SpriteBatch spriteBatch)
         {
@@ -87,7 +112,7 @@ namespace RogueEssence.Menu
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s2, null, null, zoomMatrix);
 
             //draw Texts
-            foreach (IMenuElement element in GetElements())
+            foreach (IMenuElement element in GetDrawElements())
                 element.Draw(spriteBatch, Bounds.Start);
 
             spriteBatch.End();
@@ -100,7 +125,6 @@ namespace RogueEssence.Menu
 
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
-
         }
 
         private void DrawMenuPiece(SpriteBatch spriteBatch, TileSheet menu, Color color, int addX, int addY)
@@ -129,6 +153,45 @@ namespace RogueEssence.Menu
 
             //center
             menu.DrawTile(spriteBatch, new Rectangle(Bounds.X + menu.TileWidth, Bounds.Y + menu.TileHeight, Bounds.End.X - Bounds.X - 2 * menu.TileWidth, Bounds.End.Y - Bounds.Y - 2 * menu.TileHeight), addX + 1, addY + 1, color);
+        }
+
+
+        public int GetElementIndexByLabel(string label)
+        {
+            return GetElementIndicesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetElementIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, Elements);
+        }
+
+        public static Dictionary<string, int> SearchLabels(string[] labels, IEnumerable<ILabeled> list)
+        {
+            Dictionary<string, int> indices = new Dictionary<string, int>();
+            int totalFound = 0;
+            int ii = 0;
+            foreach (string label in labels)
+                indices.Add(label, -1);
+
+            foreach (ILabeled element in list)
+            {
+                int curIndex;
+                if (element.HasLabel() && indices.TryGetValue(element.Label, out curIndex))
+                {
+                    // case for duplicate labels somehow; only get the first index found
+                    if (curIndex == -1)
+                    {
+                        indices[element.Label] = ii;
+                        totalFound++;
+
+                        // short-circuit case for having found all indices
+                        if (totalFound == indices.Count)
+                            return indices;
+                    }
+                }
+                ii++;
+            }
+            return indices;
         }
     }
 }

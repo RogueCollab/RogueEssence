@@ -39,4 +39,21 @@ namespace RogueEssence.Dev
                 DataEditor.GetString(obj.BranchRatio, branchInfo.GetMemberInfoType(), branchInfo.GetCustomAttributes(false)));
         }
     }
+
+    public class GridPathGridEditor : Editor<IGridPathGrid>
+    {
+        public override string GetString(IGridPathGrid obj, Type type, object[] attributes)
+        {
+            PropertyInfo fillInfo = typeof(IGridPathGrid).GetProperty(nameof(obj.RoomRatio));
+            PropertyInfo branchInfo = typeof(IGridPathGrid).GetProperty(nameof(obj.HallRatio));
+            return string.Format("{0}: Fill:{1}% Branch:{2}%", obj.GetType().GetFormattedTypeName(),
+                DataEditor.GetString(obj.RoomRatio, fillInfo.GetMemberInfoType(), fillInfo.GetCustomAttributes(false)),
+                DataEditor.GetString(obj.HallRatio, branchInfo.GetMemberInfoType(), branchInfo.GetCustomAttributes(false)));
+        }
+        
+        public override string GetTypeString()
+        {
+            return "Grid Path Crossroads";
+        }
+    }
 }

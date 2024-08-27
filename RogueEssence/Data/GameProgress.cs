@@ -5,13 +5,11 @@ using RogueEssence.Dungeon;
 using RogueEssence.Ground;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using RogueEssence.Content;
 using RogueEssence.Script;
 using RogueEssence.Menu;
 using Newtonsoft.Json;
 using RogueEssence.Dev;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace RogueEssence.Data
 {
@@ -118,6 +116,7 @@ namespace RogueEssence.Data
         public ProfilePic[] ProfilePics;
 
         public bool NoSwitching;
+        public bool NoRecruiting;
         public RescueState Rescue;
 
         public ZoneLoc NextDest;
@@ -144,6 +143,7 @@ namespace RogueEssence.Data
         public string EndDate;
         public string Location;
         public List<string> Trail;
+        public List<ZoneLoc> LocTrail;
         public DungeonStakes Stakes;
         public bool MidAdventure;
         public ResultType Outcome;
@@ -177,6 +177,7 @@ namespace RogueEssence.Data
             EndDate = "";
             Location = "";
             Trail = new List<string>();
+            LocTrail = new List<ZoneLoc>();
             Outcome = ResultType.Unknown;
         }
 
@@ -330,7 +331,7 @@ namespace RogueEssence.Data
         }
 
         public abstract IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, DungeonStakes stakes, bool recorded, bool noRestrict);
-        public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare);
+        public abstract IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare, string completedZoneId);
 
         /// <summary>
         /// Begin counting play time for session
@@ -368,6 +369,33 @@ namespace RogueEssence.Data
 
         public abstract int GetTotalScore();
 
+        public static bool ShouldRemoveItem(ZoneEntrySummary zone, string itemID)
+        {
+            if (zone.KeepTreasure)
+            {
+                //check if the item's a treasure
+                ItemEntrySummary summary = (ItemEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(itemID);
+                return (summary.UsageType != ItemData.UseType.Treasure);
+            }
+            return true;
+        }
+
+        public int GetTotalRemovableItems(ZoneEntrySummary zone)
+        {
+            int removableSlots = 0;
+            foreach (Character player in ActiveTeam.Players)
+            {
+                if (!String.IsNullOrEmpty(player.EquippedItem.ID) && ShouldRemoveItem(zone, player.EquippedItem.ID))
+                    removableSlots++;
+            }
+            for (int ii = 0; ii < ActiveTeam.GetInvCount(); ii++)
+            {
+                if (ShouldRemoveItem(zone, ActiveTeam.GetInv(ii).ID))
+                    removableSlots++;
+            }
+            return removableSlots;
+        }
+
         public IEnumerator<YieldInstruction> RestrictTeam(ZoneEntrySummary zone, bool silent)
         {
             List<string> teamRestrictions = new List<string>();
@@ -402,42 +430,58 @@ namespace RogueEssence.Data
 
                 if (zone.BagRestrict > -1)
                 {
-                    bool removedItems = false;
-                    int heldSlots = 0;
+                    int totalSlots = 0;
                     foreach (Character player in ActiveTeam.Players)
                     {
                         if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                            heldSlots++;
+                            totalSlots++;
                     }
-                    List<InvItem> itemsToStore = new List<InvItem>();
-                    while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict && ActiveTeam.GetInvCount() > 0)
-                    {
-                        removedItems = true;
-                        itemsToStore.Add(ActiveTeam.GetInv(ActiveTeam.GetInvCount() - 1));
+                    totalSlots += ActiveTeam.GetInvCount();
 
-                        ActiveTeam.RemoveFromInv(ActiveTeam.GetInvCount() - 1);
-                    }
-                    while (ActiveTeam.GetInvCount() + heldSlots > zone.BagRestrict)
+                    bool removedItems = false;
+                    int removableSlots = GetTotalRemovableItems(zone);
+                    bool hasTreasure = removableSlots < totalSlots;
+
+                    List<InvItem> itemsToStore = new List<InvItem>();
+                    for (int ii = ActiveTeam.GetInvCount() - 1; ii >= 0 && removableSlots > zone.BagRestrict; ii--)
                     {
-                        foreach (Character player in ActiveTeam.Players)
+                        InvItem item = ActiveTeam.GetInv(ii);
+                        if (ShouldRemoveItem(zone, item.ID))
                         {
-                            if (!String.IsNullOrEmpty(player.EquippedItem.ID))
-                            {
-                                removedItems = true;
-                                itemsToStore.Add(player.EquippedItem);
-                                player.SilentDequipItem();
-                                heldSlots--;
-                                break;
-                            }
+                            removedItems = true;
+                            itemsToStore.Add(item);
+                            ActiveTeam.RemoveFromInv(ii);
+                            removableSlots--;
+                        }
+                    }
+                    for (int ii = ActiveTeam.Players.Count - 1; ii >= 0 && removableSlots > zone.BagRestrict; ii--)
+                    {
+                        InvItem item = ActiveTeam.Players[ii].EquippedItem;
+                        if (!String.IsNullOrEmpty(item.ID) && ShouldRemoveItem(zone, item.ID))
+                        {
+                            removedItems = true;
+                            itemsToStore.Add(item);
+                            ActiveTeam.Players[ii].SilentDequipItem();
+                            removableSlots--;
                         }
                     }
                     ActiveTeam.StoreItems(itemsToStore);
                     if (!silent && removedItems)
                     {
                         if (zone.BagRestrict > 0)
-                            bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT", zone.BagRestrict));
+                        {
+                            if (hasTreasure)
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT_NON_TREASURE", zone.BagRestrict));
+                            else
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_SLOT", zone.BagRestrict));
+                        }
                         else
-                            bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
+                        {
+                            if (hasTreasure)
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL_NON_TREASURE"));
+                            else
+                                bagRestrictions.Add(Text.FormatKey("DLG_RESTRICT_ITEM_ALL"));
+                        }
                     }
                 }
             }
@@ -469,27 +513,38 @@ namespace RogueEssence.Data
         {
             MidAdventure = true;
 
+            AITactic defaultTactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
+
             //clear defeat destinations, set absentee status, reload tactics
             for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
             {
                 ActiveTeam.Players[ii].Absentee = false;
                 ActiveTeam.Players[ii].DefeatAt = "";
                 ActiveTeam.Players[ii].DefeatLoc = ZoneLoc.Invalid;
-                ActiveTeam.Players[ii].Tactic = new AITactic(ActiveTeam.Players[ii].Tactic);
+                if (ActiveTeam.Players[ii].Tactic != null)
+                    ActiveTeam.Players[ii].Tactic = new AITactic(ActiveTeam.Players[ii].Tactic);
+                else
+                    ActiveTeam.Players[ii].Tactic = new AITactic(defaultTactic);
             }
             for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
             {
                 ActiveTeam.Guests[ii].Absentee = false;
                 ActiveTeam.Guests[ii].DefeatAt = "";
                 ActiveTeam.Guests[ii].DefeatLoc = ZoneLoc.Invalid;
-                ActiveTeam.Guests[ii].Tactic = new AITactic(ActiveTeam.Guests[ii].Tactic);
+                if (ActiveTeam.Guests[ii].Tactic != null)
+                    ActiveTeam.Guests[ii].Tactic = new AITactic(ActiveTeam.Guests[ii].Tactic);
+                else
+                    ActiveTeam.Guests[ii].Tactic = new AITactic(defaultTactic);
             }
             for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
             {
                 ActiveTeam.Assembly[ii].Absentee = true;
                 ActiveTeam.Assembly[ii].DefeatAt = "";
                 ActiveTeam.Assembly[ii].DefeatLoc = ZoneLoc.Invalid;
-                ActiveTeam.Assembly[ii].Tactic = new AITactic(ActiveTeam.Assembly[ii].Tactic);
+                if (ActiveTeam.Assembly[ii].Tactic != null)
+                    ActiveTeam.Assembly[ii].Tactic = new AITactic(ActiveTeam.Assembly[ii].Tactic);
+                else
+                    ActiveTeam.Assembly[ii].Tactic = new AITactic(defaultTactic);
             }
         }
 
@@ -523,21 +578,27 @@ namespace RogueEssence.Data
         /// <param name="permanent"></param>
         /// <param name="silent"></param>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent)
+        public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent, bool keepSkills)
         {
             StartLevel = level;
             try
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills);
                     if (!permanent)
                         ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills);
                     //no backref for guests
+                }
+                for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
+                {
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills);
+                    if (!permanent)
+                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
                 }
             }
             catch (Exception ex)
@@ -555,7 +616,7 @@ namespace RogueEssence.Data
         /// <param name="character"></param>
         /// <param name="level"></param>
         /// <param name="capOnly">Will force lower level to specified level if false.</param>
-        public void RestrictCharLevel(Character character, int level, bool capOnly)
+        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills)
         {
             //set level
             if (capOnly)
@@ -575,15 +636,19 @@ namespace RogueEssence.Data
 
             if (!character.Dead)
                 character.HP = character.MaxHP;
-            
-            //reroll skills
-            BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species).Forms[character.BaseForm.Form];
 
-            while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                character.DeleteSkill(0);
-            List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
-            foreach (string skill in final_skills)
-                character.LearnSkill(skill, GetDefaultEnable(skill));
+            //reroll skills
+            BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species)
+                .Forms[character.BaseForm.Form];
+
+            if (!keepSkills) {
+                while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
+                    character.DeleteSkill(0);
+                List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
+                foreach (string skill in final_skills)
+                    character.LearnSkill(skill, GetDefaultEnable(skill));
+            }
+
             character.Relearnables = new Dictionary<string, bool>();
         }
 
@@ -781,6 +846,7 @@ namespace RogueEssence.Data
             EndDate = "";
             Location = "";
             Trail = new List<string>();
+            LocTrail = new List<ZoneLoc>();
 
             Rand = new ReRandom(seed);//reseed own random
             DataManager.Instance.MsgLog.Clear();
@@ -968,7 +1034,7 @@ namespace RogueEssence.Data
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false));
+                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;
@@ -978,7 +1044,7 @@ namespace RogueEssence.Data
                 DataManager.Instance.BeginPlay(PathMod.ModSavePath(DataManager.SAVE_PATH, DataManager.QUICKSAVE_FILE_PATH), zoneID, false, false, SessionStartTime);
         }
 
-        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
+        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare, string completedZoneId)
         {
             EndSession();
 
@@ -1044,7 +1110,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
+                    CompleteDungeon(completedZoneId);
 
                     Location = ZoneManager.Instance.CurrentZone.GetDisplayName();
 
@@ -1093,7 +1159,7 @@ namespace RogueEssence.Data
             {
                 if (mainSave != null)
                     DataManager.Instance.SetProgress(mainSave);
-                DataManager.Instance.Save.CompleteDungeon(ZoneManager.Instance.CurrentZoneID);
+                DataManager.Instance.Save.CompleteDungeon(completedZoneId);
                 DataManager.Instance.Save.NextDest = NextDest;
             }
 
@@ -1228,7 +1294,7 @@ namespace RogueEssence.Data
             Stakes = stakes;
             Outcome = ResultType.Unknown;
 
-            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, false, true, true));
+            yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, false, true, true, false));
 
             BeginSession();
 
@@ -1242,12 +1308,11 @@ namespace RogueEssence.Data
             yield break;
         }
 
-        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare)
+        public override IEnumerator<YieldInstruction> EndGame(ResultType result, ZoneLoc nextArea, bool display, bool fanfare, string completedZoneId)
         {
             EndSession();
 
             bool recorded = DataManager.Instance.RecordingReplay;
-            string completedZone = ZoneManager.Instance.CurrentZoneID;
             //if lose, end the play, display plaque, and go to title
             if (result != ResultType.Cleared)
             {
@@ -1298,9 +1363,7 @@ namespace RogueEssence.Data
                     }
                 }
 
-                if (result == ResultType.Escaped)
-                    yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZone));
-                else if (newRecruits.Count > 0)
+                if (newRecruits.Count > 0)
                 {
                     yield return new WaitForFrames(10);
                     GameManager.Instance.Fanfare("Fanfare/NewArea");
@@ -1329,7 +1392,7 @@ namespace RogueEssence.Data
                 if (state != null)
                 {
                     MergeDexTo(state.Save, true);
-                    state.Save.CompleteDungeon(completedZone);
+                    state.Save.CompleteDungeon(completedZoneId);
                     DataManager.Instance.SaveGameState(state);
                 }
                 
@@ -1349,7 +1412,7 @@ namespace RogueEssence.Data
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new ScoreMenu(scores, ZoneManager.Instance.CurrentZoneID, PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile))));
                 }
 
-                yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZone));
+                yield return CoroutineManager.Instance.StartCoroutine(askTransfer(state, completedZoneId));
             }
             yield return new WaitForFrames(20);
         }

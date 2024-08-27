@@ -34,4 +34,18 @@ namespace RogueEssence.Dungeon
         protected CountDownState(CountDownState other) { Counter = other.Counter; }
         public override GameplayState Clone() { return new CountDownState(this); }
     }
+
+    [Serializable]
+    public class ScriptCallState : StatusState
+    {
+        [RogueEssence.Dev.Sanitize(0)]
+        public string Script;
+        [RogueEssence.Dev.Multiline(0)]
+        public string ArgTable;
+
+        public ScriptCallState() { Script = ""; ArgTable = "{}"; }
+        public ScriptCallState(string script, string argTable) { Script = script; ArgTable = argTable; }
+        protected ScriptCallState(ScriptCallState other) { Script = other.Script; ArgTable = other.ArgTable; }
+        public override GameplayState Clone() { return new ScriptCallState(this); }
+    }
 }

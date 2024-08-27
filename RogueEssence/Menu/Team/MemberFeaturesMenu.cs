@@ -30,7 +30,7 @@ namespace RogueEssence.Menu
         public MenuText FullnessLabel;
         public MenuText Fullness;
 
-        public MenuText Elements;
+        public MenuText CharElements;
 
         public MenuDivider MainDiv;
         public MenuText SkillTitle;
@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             
-            int totalLearnsetPages = (int) Math.Ceiling((double) formEntry.LevelSkills.Count / MemberLearnsetMenu.SLOTS_PER_PAGE);
+            int totalLearnsetPages = (int) Math.Ceiling((double) MemberLearnsetMenu.getEligibleSkills(formEntry) / MemberLearnsetMenu.SLOTS_PER_PAGE);
             int totalOtherMemberPages = 3;
             int totalPages = totalLearnsetPages + totalOtherMemberPages;
 
@@ -73,7 +73,7 @@ namespace RogueEssence.Menu
                 typeString += "/" + element2.GetIconName();
             bool origElements = (player.Element1 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element1);
             origElements &= (player.Element2 == DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form].Element2);
-            Elements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
+            CharElements = new MenuText(Text.FormatKey("MENU_TEAM_ELEMENT", typeString), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET), origElements ? Color.White : Color.Yellow);
 
             LevelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
             Level = new MenuText(player.Level.ToString(), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48 + GraphicsManager.TextFont.SubstringWidth(Text.FormatKey("MENU_TEAM_LEVEL_SHORT")), GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.Left);
@@ -115,7 +115,7 @@ namespace RogueEssence.Menu
                 new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 3, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 3)), LINE_HEIGHT);
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return PageText;
@@ -127,7 +127,7 @@ namespace RogueEssence.Menu
             yield return LevelLabel;
             yield return Level;
             
-            yield return Elements;
+            yield return CharElements;
 
             yield return HPLabel;
             yield return HP;

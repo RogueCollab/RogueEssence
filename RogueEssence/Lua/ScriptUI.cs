@@ -27,6 +27,9 @@ namespace RogueEssence.Script
 
         //Variables for storing multi-step operations, like setting the speaker in a dialog
         private object                 m_choiceresult = -1;
+        private IEnumerator<YieldInstruction> m_curdialogue;
+        private IInteractable m_curchoice;
+
         private MonsterID       m_curspeakerID = MonsterID.Invalid;
         private string              m_curspeakerName= "";
         private bool m_curcenter_h = false;
@@ -39,10 +42,41 @@ namespace RogueEssence.Script
         private Rect m_curbounds = DialogueBox.DefaultBounds;
         private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
         private Loc m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
-        
-        private IEnumerator<YieldInstruction> m_curdialogue;
 
-        private IInteractable m_curchoice;
+
+        public LuaTable ExportSpeakerSettings()
+        {
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, itm) tbl[key] = itm end").First() as LuaFunction;
+            addfn.Call(tbl, "SpeakerID", m_curspeakerID);
+            addfn.Call(tbl, "SpeakerName", m_curspeakerName);
+            addfn.Call(tbl, "TextCenterH", m_curcenter_h);
+            addfn.Call(tbl, "TextCenterV", m_curcenter_v);
+            addfn.Call(tbl, "AutoFinish", m_curautoFinish);
+            addfn.Call(tbl, "SpeakerEmotion", m_curspeakerEmo);
+            addfn.Call(tbl, "SpeakerSound", m_curspeakerSnd);
+            addfn.Call(tbl, "SpeakerSE", m_curspeakerSe);
+            addfn.Call(tbl, "SpeakTime", m_curspeakTime);
+            addfn.Call(tbl, "TextBounds", m_curbounds);
+            addfn.Call(tbl, "SpeakerLoc", m_curspeakerLoc);
+            addfn.Call(tbl, "ChoiceLoc", m_curchoiceLoc);
+            return tbl;
+        }
+        public void ImportSpeakerSettings(LuaTable tbl)
+        {
+            m_curspeakerID = (MonsterID)tbl["SpeakerID"];
+            m_curspeakerName = (string)tbl["SpeakerName"];
+            m_curcenter_h = (bool)tbl["TextCenterH"];
+            m_curcenter_v = (bool)tbl["TextCenterV"];
+            m_curautoFinish = (bool)tbl["AutoFinish"];
+            m_curspeakerEmo = (EmoteStyle)tbl["SpeakerEmotion"];
+            m_curspeakerSnd = (bool)tbl["SpeakerSound"];
+            m_curspeakerSe = (string)tbl["SpeakerSE"];
+            m_curspeakTime = (int)(long)tbl["SpeakTime"];
+            m_curbounds = (Rect)tbl["TextBounds"];
+            m_curspeakerLoc = (Loc)tbl["SpeakerLoc"];
+            m_curchoiceLoc = (Loc)tbl["ChoiceLoc"];
+        }
 
         public ScriptUI()
         {
@@ -370,7 +404,7 @@ namespace RogueEssence.Script
         {
             if (chara != null)
             {
-                m_curspeakerID = chara.CurrentForm;
+                m_curspeakerID = chara.Appearance;
                 m_curspeakerName = chara.GetDisplayName(true);
             }
             else
@@ -607,13 +641,14 @@ namespace RogueEssence.Script
         /// <param name="title">The text to show above the input line.</param>
         /// <param name="desc">The text to show below the input line.</param>
         /// <param name="maxLength">The length of the text in pixels.</param>
-        public void NameMenu(string title, string desc, int maxLength = 116)
+        /// <param name="defaultName">Name to start the textbox with.</param>
+        public void NameMenu(string title, string desc, int maxLength = 116, string defaultName = "")
         {
             try
             {
                 m_choiceresult = "";
                 //TODO: allow this to work in dungeon mode by skipping replays
-                m_curchoice = new TeamNameMenu(title, desc, maxLength, (string name) => { m_choiceresult = name; });
+                m_curchoice = new TeamNameMenu(title, desc, maxLength, defaultName, (string name) => { m_choiceresult = name; });
             }
             catch (Exception e)
             {
@@ -751,25 +786,24 @@ namespace RogueEssence.Script
             foreach (InvItem item in items)
             {
                 ItemData entry = DataManager.Instance.GetItem(item.ID);
-                int existingStack = -1;
                 if (entry.MaxStack > 1)
                 {
-                    for (int jj = 0; jj < DataManager.Instance.Save.ActiveTeam.GetInvCount(); jj++)
+                    foreach (InvItem inv in DataManager.Instance.Save.ActiveTeam.EnumerateInv())
                     {
-                        if (DataManager.Instance.Save.ActiveTeam.GetInv(jj).ID == item.ID && DataManager.Instance.Save.ActiveTeam.GetInv(jj).Amount < entry.MaxStack)
+                        if (inv.ID == item.ID && inv.Cursed == item.Cursed && inv.Amount < entry.MaxStack)
                         {
-                            existingStack = jj;
-                            break;
+                            int addValue = Math.Min(entry.MaxStack - inv.Amount, item.Amount);
+                            inv.Amount += addValue;
+                            item.Amount -= addValue;
+                            if (item.Amount <= 0)
+                                break;
                         }
                     }
+                    //after this point, may be still some stacks left to take care of
+                    if (item.Amount <= 0)
+                        continue;
                 }
-                if (existingStack > -1)
-                {
-                    DataManager.Instance.Save.ActiveTeam.GetInv(existingStack).Amount += item.Amount;
-                    DataManager.Instance.Save.ActiveTeam.UpdateInv(DataManager.Instance.Save.ActiveTeam.GetInv(existingStack), DataManager.Instance.Save.ActiveTeam.GetInv(existingStack));
-                }
-                else
-                    DataManager.Instance.Save.ActiveTeam.AddToInv(item);
+                DataManager.Instance.Save.ActiveTeam.AddToInv(item);
             }
         }
 
@@ -860,7 +894,7 @@ namespace RogueEssence.Script
         /// and for execution to suspend until the choice is returned.
         /// Then to recover the integer representing the chosen team member, UI:ChoiceResult() must be called.
         /// </summary>
-        public void TutorTeamMenu()
+        public void TutorTeamMenu(LuaFunction eligibleCheck = null)
         {
             if (DataManager.Instance.CurrentReplay != null)
             {
@@ -870,9 +904,16 @@ namespace RogueEssence.Script
 
             try
             {
+                bool isEligible(Character chara)
+                {
+                    if (eligibleCheck == null)
+                        return true;
+                    return (bool)eligibleCheck.Call(chara)[0];
+                };
+                
+                //yields = LuaEngine.Instance.CallScriptFunction(luaFun);
                 m_choiceresult = -1;
-                //TODO: allow this to work in dungeon mode by skipping replays
-                m_curchoice = new TutorTeamMenu(-1,
+                m_curchoice = new TutorTeamMenu(-1, isEligible,
                     (int teamSlot) => { m_choiceresult = teamSlot; DataManager.Instance.LogUIPlay(teamSlot); },
                     () => { DataManager.Instance.LogUIPlay(-1); });
             }
@@ -1139,28 +1180,39 @@ namespace RogueEssence.Script
         /// Then to recover the ZoneLoc indicating the chosen destination, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="destinations">A lua table representing the list of destinations with each element in the format of { Name=string, Dest=ZoneLoc }</param>
-        public void DestinationMenu(LuaTable destinations)
+        public void DestinationMenu(LuaTable destinations, object defaultChoice)
         {
             try
             {
+                int? mappedDefault = null;
+
                 List<string> names = new List<string>();
                 List<string> titles = new List<string>();
                 List<ZoneLoc> dests = new List<ZoneLoc>();
+                List<object> keys = new List<object>();
                 foreach (object key in destinations.Keys)
                 {
                     LuaTable entry = destinations[key] as LuaTable;
                     string name = (string)entry["Name"];
                     string title = entry["Title"] != null ? (string)entry["Title"] : name;
                     ZoneLoc item = (ZoneLoc)entry["Dest"];
+
+                    if (defaultChoice.Equals(key))
+                        mappedDefault = names.Count;
+
                     names.Add(name);
                     titles.Add(title);
                     dests.Add(item);
+                    keys.Add(key);
                 }
 
+                if (mappedDefault == null)
+                    mappedDefault = 0;
+
                 //give the player the choice between all the possible dungeons
-                m_choiceresult = ZoneLoc.Invalid;
-                m_curchoice = new DungeonsMenu(names, titles, dests,
-                    (int choice) => { m_choiceresult = dests[choice]; });
+                m_choiceresult = null;
+                m_curchoice = new DungeonsMenu(names, titles, dests, mappedDefault.Value,
+                    (int choice) => { m_choiceresult = keys[choice]; });
             }
             catch (Exception e)
             {
@@ -1480,10 +1532,12 @@ namespace RogueEssence.Script
 
                 Action cancelAction = null;
                 if (mappedCancel != null)
+                {
                     cancelAction = () => { MenuManager.Instance.RemoveMenu(); m_choiceresult = (int)(long)cancelChoice; DataManager.Instance.LogUIPlay((int)(long)cancelChoice); };
+                }
 
                 //Make a choice menu, and check if we display a speaker or not
-                m_curchoice = new CustomMultiPageMenu(new RogueElements.Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, cancelAction);
+                m_curchoice = new ScriptableMultiPageMenu(new Loc(x, y), width, title, choices.ToArray(), mappedDefault.Value, linesPerPage, cancelAction, cancelAction);
             }
             catch (Exception e)
             {

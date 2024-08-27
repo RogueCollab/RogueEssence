@@ -31,7 +31,7 @@ namespace RogueEssence.Dev
             if (heightAtt != null)
                 lbxValue.MaxHeight = heightAtt.Height;
             else
-                lbxValue.MaxHeight = 180;
+                lbxValue.MaxHeight = 200;
 
             DictionaryBoxViewModel vm = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
 

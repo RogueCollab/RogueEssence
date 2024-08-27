@@ -9,13 +9,16 @@ using RogueEssence.Ground;
 
 namespace RogueEssence.Menu
 {
+    //This menu is unused since 0.8.4
     public class SettingsMenu : BaseSettingsMenu
     {
         //needs a summary menu?
         bool inGame;
-        
-        public SettingsMenu()
+
+        public SettingsMenu() : this(MenuLabel.SETTINGS_MENU) { }
+        public SettingsMenu(string label)
         {
+            Label = label;
             this.inGame = false;
             if (GameManager.Instance.CurrentScene == GroundScene.Instance)
                 this.inGame = true;
@@ -54,6 +57,11 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < 10; ii++)
                 minimapChoices.Add(String.Format("{0}%", (ii+1) * 10));
             totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MINIMAP_VISIBILITY"), 88, 72, minimapChoices, DiagManager.Instance.CurSettings.Minimap / 10 - 1, confirmAction));
+
+            List<string> minimapColorChoices = new List<string>();
+            for (int ii = 0; ii <= (int)Settings.MinimapStyle.Blue; ii++)
+                minimapColorChoices.Add(((Settings.MinimapStyle)ii).ToLocal());
+            totalChoices.Add(new MenuSetting(Text.FormatKey("MENU_SETTINGS_MINIMAP_COLOR"), 88, 72, minimapColorChoices, (int)DiagManager.Instance.CurSettings.MinimapColor, confirmAction));
 
             List<string> borderChoices = new List<string>();
             for (int ii = 0; ii < 5; ii++)
@@ -97,16 +105,17 @@ namespace RogueEssence.Menu
             if (this.inGame)
                 DataManager.Instance.Save.UpdateOptions();
             DiagManager.Instance.CurSettings.Minimap = (TotalChoices[5].CurrentChoice + 1) * 10;
-            DiagManager.Instance.CurSettings.Border = TotalChoices[6].CurrentChoice;
-            DiagManager.Instance.CurSettings.Window = TotalChoices[7].CurrentChoice;
+            DiagManager.Instance.CurSettings.MinimapColor = (Settings.MinimapStyle)TotalChoices[6].CurrentChoice;
+            DiagManager.Instance.CurSettings.Border = TotalChoices[7].CurrentChoice;
+            DiagManager.Instance.CurSettings.Window = TotalChoices[8].CurrentChoice;
             GraphicsManager.SetWindowMode(DiagManager.Instance.CurSettings.Window);
 
 
             bool changeLanguage = false;
             if (!inGame)
             {
-                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[8].CurrentChoice];
-                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[8].CurrentChoice];
+                changeLanguage = DiagManager.Instance.CurSettings.Language != Text.SupportedLangs[TotalChoices[9].CurrentChoice];
+                DiagManager.Instance.CurSettings.Language = Text.SupportedLangs[TotalChoices[9].CurrentChoice];
 
                 Text.SetCultureCode(DiagManager.Instance.CurSettings.Language);
             }
@@ -131,7 +140,7 @@ namespace RogueEssence.Menu
                 SoundManager.BGMBalance = TotalChoices[index].CurrentChoice * 0.1f;
             else if (index == 1)
                 SoundManager.SEBalance = TotalChoices[index].CurrentChoice * 0.1f;
-            else if (index == 6)
+            else if (index == 7)
                 MenuBase.BorderStyle = TotalChoices[index].CurrentChoice;
 
             base.SettingChanged(index);

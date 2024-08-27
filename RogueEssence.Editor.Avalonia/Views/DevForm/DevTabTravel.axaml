@@ -34,7 +34,7 @@
     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="2">Zone:</TextBlock>
     <views:SearchComboBox Margin="4" Items="{Binding Zones}" SelectedIndex="{Binding ChosenZone}" VirtualizationMode="Simple" Grid.Row="3" Grid.ColumnSpan="2"/>
     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="4" Grid.ColumnSpan="2" >Structure:</TextBlock>
-    <views:SearchComboBox Margin="4" Items="{Binding Structures}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenStructure}" Grid.Row="5" Grid.ColumnSpan="2" />
+    <views:SearchComboBox Margin="4" Items="{Binding Structures}" IsEnabled="{Binding Path=Structures, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenStructure}" Grid.Row="5" Grid.ColumnSpan="2" />
     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="0">Ground:</TextBlock>
     <views:SearchComboBox Margin="4" Items="{Binding Grounds}" SelectedIndex="{Binding ChosenGround}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" VirtualizationMode="Simple" Grid.Row="7" Grid.Column="0"/>
     <Button Margin="4" Command="{Binding btnEnterGround_Click}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="8" Grid.Column="0">Enter Ground</Button>

@@ -363,7 +363,7 @@ namespace RogueEssence.Dungeon
             //assumes they have the space
             MapItem item = ZoneManager.Instance.CurrentMap.Items[itemSlot];
 
-            ItemCheckContext context = new ItemCheckContext(character, item, new MapItem());
+            ItemCheckContext context = new ItemCheckContext(character, new MapItem(item), new MapItem());
 
             Team memberTeam = character.MemberTeam;
             if (item.IsMoney)
@@ -600,7 +600,7 @@ namespace RogueEssence.Dungeon
             }
         }
         
-        public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, ActionResult result)
+        public IEnumerator<YieldInstruction> ProcessTileInteract(Character character, bool inFront, ActionResult result)
         {
             if (character.CantInteract)
             {
@@ -608,7 +608,10 @@ namespace RogueEssence.Dungeon
                 yield break;
             }
 
-            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[character.CharLoc.X][character.CharLoc.Y];
+            Loc destLoc = character.CharLoc;
+            if (inFront)
+                destLoc = destLoc + character.CharDir.GetLoc();
+            Tile tile = ZoneManager.Instance.CurrentMap.Tiles[destLoc.X][destLoc.Y];
             if (String.IsNullOrEmpty(tile.Effect.ID))
                 throw new Exception("Attempted to trigger a nonexistent tile effect.  This should never happen.");
             else
@@ -616,6 +619,10 @@ namespace RogueEssence.Dungeon
                 SingleCharContext singleContext = new SingleCharContext(character);
                 yield return CoroutineManager.Instance.StartCoroutine(tile.Effect.InteractWithTile(singleContext));
 
+                //This behaves like ProcessUseSkill, ProcessUseItem, ProcessThrowItem
+                //with ONE exception: if both cancel and turnCancel are on, then the result is a FAIL not a Success
+                //if there was a PreInteract where fail checks could occur, then this code would be allowed to behave the same as the aforementioned functions
+                //but there isn't, so the only way to fail is after interaction itself.
                 if (singleContext.CancelState.Cancel && singleContext.TurnCancel.Cancel) { yield return CoroutineManager.Instance.StartCoroutine(CancelWait(singleContext.User.CharLoc)); yield break; }
 
                 if (!singleContext.TurnCancel.Cancel)
@@ -753,7 +760,7 @@ namespace RogueEssence.Dungeon
 
         public void HandoutEXP()
         {
-            if (ZoneManager.Instance.CurrentZone.NoEXP)
+            if (ZoneManager.Instance.CurrentZone.ExpPercent <= 0)
             {
                 GainedEXP.Clear();
                 return;
@@ -769,7 +776,7 @@ namespace RogueEssence.Dungeon
 
                 if (!player.Dead && player.Level < DataManager.Instance.Start.MaxLevel)
                 {
-                    totalExp += GainedEXP[ii];
+                    totalExp += GainedEXP[ii] * ZoneManager.Instance.CurrentZone.ExpPercent / 100;
 
                     string growth = DataManager.Instance.GetMonster(player.BaseForm.Species).EXPTable;
                     GrowthData growthData = DataManager.Instance.GetGrowth(growth);
@@ -984,7 +991,7 @@ namespace RogueEssence.Dungeon
             else
             {
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_TEAM_FULL")));
-                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(true)));
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new TeamMenu(MenuLabel.TEAM_MENU_SENDHOME, true)));
             }
         }
         
@@ -1055,9 +1062,17 @@ namespace RogueEssence.Dungeon
             yield return CoroutineManager.Instance.StartCoroutine(DropMapItem(mapItem, loc, start, false));
         }
 
-        public IEnumerator<YieldInstruction> DropMapItem(MapItem item, Loc loc, Loc start, bool silent)
+        /// <summary>
+        /// Drops the map item onto the map, bouncing it off invalid tiles till it finds a spot or is destroyed.
+        /// The item itself is altered (TileLoc).
+        /// </summary>
+        /// <param name="mapItem"></param>
+        /// <param name="loc"></param>
+        /// <param name="start"></param>
+        /// <param name="silent"></param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> DropMapItem(MapItem mapItem, Loc loc, Loc start, bool silent)
         {
-            MapItem mapItem = new MapItem(item);
             string itemName = mapItem.GetDungeonName();
 
             if (!ZoneManager.Instance.CurrentMap.CanItemLand(loc, false, false))
@@ -1080,14 +1095,14 @@ namespace RogueEssence.Dungeon
             {
                 if (!silent)
                 {
-                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), loc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), item.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(item.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                    ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), loc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), mapItem.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(mapItem.Value).Sprite, GraphicsManager.TileSize / 2, 1);
                     CreateAnim(itemAnim, DrawLayer.Normal);
                     yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
                 }
             }
             Tile tile = ZoneManager.Instance.CurrentMap.GetTile(loc);
             TerrainData terrain = tile.Data.GetData();
-            if (terrain.BlockType == TerrainData.Mobility.Lava)
+            if (terrain.ItemLand == TerrainData.TileItemLand.Destroy)
             {
                 if (!silent)
                 {
@@ -1095,7 +1110,7 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
                 }
             }
-            else if (terrain.BlockType == TerrainData.Mobility.Abyss)
+            else if (terrain.ItemLand == TerrainData.TileItemLand.Fall)
             {
                 if (!silent)
                     LogMsg(Text.FormatKey("MSG_MAP_ITEM_FALL", itemName));
@@ -1352,16 +1367,7 @@ namespace RogueEssence.Dungeon
             //face direction
             character.CharDir = dir.Reverse();
 
-            Loc endLoc = character.CharLoc;
-
-            //move to the point at range.
-            for (int ii = 0; ii < range; ii++)
-            {
-                //if the next location is blocked, stop.
-                if (ShotBlocked(character, endLoc, dir, Alignment.None, true, true))
-                    break;
-                endLoc = endLoc + dir.GetLoc();
-            }
+            Loc endLoc = DungeonScene.Instance.MoveShotUntilBlocked(character, character.CharLoc, dir, range, Alignment.None, true, true);
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.KnockbackFX));
 
@@ -1394,16 +1400,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> JumpTo(Character character, Dir8 dir, int range)
         {
-            Loc endLoc = character.CharLoc;
-                
-            //move to the point at range.
-            for (int ii = 0; ii < range; ii++)
-            {
-                //if the next location is blocked, stop.
-                if (ShotBlocked(character, endLoc, dir, Alignment.None, true, true))
-                    break;
-                endLoc = endLoc + dir.GetLoc();
-            }
+            Loc endLoc = DungeonScene.Instance.MoveShotUntilBlocked(character, character.CharLoc, dir, range, Alignment.None, true, true);
 
             //if the location is occupied, keep moving
             while (ZoneManager.Instance.CurrentMap.GetCharAtLoc(endLoc) != null)
@@ -1465,7 +1462,8 @@ namespace RogueEssence.Dungeon
             }
 
             //if the landing spot is occupied or nontraversible, find the closest unoccupied tile
-            Loc? dest = ZoneManager.Instance.CurrentMap.GetClosestTileForChar(character, endLoc);
+            TerrainData.Mobility throwMobility = TerrainData.Mobility.Lava | TerrainData.Mobility.Water | TerrainData.Mobility.Abyss;
+            Loc? dest = ZoneManager.Instance.CurrentMap.GetClosestTileForChar(character, endLoc, throwMobility);
 
             yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(character, character, DataManager.Instance.ThrowFX));
 
@@ -1536,6 +1534,16 @@ namespace RogueEssence.Dungeon
             return false;
         }
 
+        public Loc MoveShotUntilBlocked(Character character, Loc loc, Dir8 dir, int range, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
+        {
+            Loc endLoc = loc;
+            for (int ii = 0; ii < range; ii++)
+            {
+                if (!DungeonScene.Instance.ShotBlocked(character, endLoc, dir, blockedAlignments, useMobility, blockedByWall))
+                    endLoc = endLoc + dir.GetLoc();
+            }
+            return endLoc;
+        }
 
         public bool ShotBlocked(Character character, Loc loc, Dir8 dir, Alignment blockedAlignments, bool useMobility, bool blockedByWall)
         {

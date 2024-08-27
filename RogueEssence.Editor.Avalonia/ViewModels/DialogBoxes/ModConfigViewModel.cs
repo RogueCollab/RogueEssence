@@ -21,6 +21,7 @@ namespace RogueEssence.Dev.ViewModels
             Description = header.Description;
             UUID = header.UUID.ToString().ToUpper();
             Version = header.Version.ToString();
+            GameVersion = header.GameVersion.ToString();
 
             ModTypes = new ObservableCollection<string>();
             for (int ii = 0; ii < (int)PathMod.ModType.Count; ii++)
@@ -74,6 +75,14 @@ namespace RogueEssence.Dev.ViewModels
         {
             get => version;
             set => this.SetIfChanged(ref version, value);
+        }
+
+
+        private string gameVersion;
+        public string GameVersion
+        {
+            get => gameVersion;
+            set => this.SetIfChanged(ref gameVersion, value);
         }
 
         public ObservableCollection<string> ModTypes { get; }

@@ -90,7 +90,7 @@ namespace RogueEssence.Menu
             TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
 
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = Replay(replay, false);
+            GameManager.Instance.SceneOutcome = Replay(replay, false, false);
         }
 
         private void VerifyAction() {
@@ -104,7 +104,7 @@ namespace RogueEssence.Menu
                 TitleScene.TitleMenuSaveState = MenuManager.Instance.SaveMenuState();
 
                 MenuManager.Instance.ClearMenus();
-                GameManager.Instance.SceneOutcome = Replay(replay, true);
+                GameManager.Instance.SceneOutcome = Replay(replay, true, false);
             }
         }
 
@@ -154,7 +154,7 @@ namespace RogueEssence.Menu
             MenuManager.Instance.RemoveMenu();
         }
 
-        public IEnumerator<YieldInstruction> Replay(ReplayData replay, bool verifying)
+        public static IEnumerator<YieldInstruction> Replay(ReplayData replay, bool verifying, bool silent)
         {
             GameManager.Instance.BGM("", true);
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.FadeOut(false));
@@ -172,14 +172,19 @@ namespace RogueEssence.Menu
                     LuaEngine.Instance.UpdateZoneInstance();
 
                     if (verifying)
+                    {
                         DataManager.Instance.Loading = DataManager.LoadMode.Verifying;
+                        if (silent)
+                            replay.SilentVerify = true;
+                    }
                     DataManager.Instance.CurrentReplay = replay;
                     yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
                     yield break;
                 }
             }
 
-            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_NO_ADVENTURE")));
+            if (verifying && !silent)
+                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_NO_ADVENTURE")));
             GameManager.Instance.SceneOutcome = GameManager.Instance.ReturnToReplayMenu();
         }
     }

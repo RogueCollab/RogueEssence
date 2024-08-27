@@ -126,11 +126,11 @@ namespace RogueEssence.Content
         }
 
         /// <summary>
-        // This method is actually more accurate than getting samples from timespan
-        // however there is no GetSamplesPlayed for DynamicSoundEffectInstance
-        // I would have to add it, and that would mean maintaining a fork of FNA for it
-        // too much trouble...
-        // For reference, this would be done by calling FAudioSourceVoice_GetState and get the SamplesPlayed from the result.
+        /// This method is actually more accurate than getting samples from timespan
+        /// however there is no GetSamplesPlayed for DynamicSoundEffectInstance
+        /// I would have to add it, and that would mean maintaining a fork of FNA for it
+        /// too much trouble...
+        /// For reference, this would be done by calling FAudioSourceVoice_GetState and get the SamplesPlayed from the result.
         /// </summary>
         /// <returns></returns>
         public long GetSamplesPlayed()
@@ -197,6 +197,7 @@ namespace RogueEssence.Content
 
         private void queueBuffer()
         {
+            long origPosition = pcmPosition;
             int framesRead = FAudio.stb_vorbis_get_samples_float_interleaved(stbVorbisData, Channels, chunk, chunkSize);
             framesRead = (int)Math.Min(framesRead, loopEnd-pcmPosition);
 
@@ -206,11 +207,13 @@ namespace RogueEssence.Content
                 pcmPosition += framesRead;
             }
 
-            if (loopEnd == pcmPosition)
+            if (pcmPosition == loopEnd)
             {
                 FAudio.stb_vorbis_seek_frame(stbVorbisData, (uint)loopStart);
                 pcmPosition = loopStart;
-                queueBuffer();
+
+                if (origPosition > loopStart)
+                    queueBuffer();
             }
         }
 

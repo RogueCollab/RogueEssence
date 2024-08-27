@@ -74,7 +74,7 @@ namespace RogueEssence.Content
                     colorlessGlyphs.Add(glyphIdx);
                 }
 
-                string[] pngs = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
+                string[] pngs = getPngFilesFromFontFolderAndBase(path);
                 List<ImageInfo> sheets = new List<ImageInfo>();
                 foreach (string dir in pngs)
                 {
@@ -109,6 +109,38 @@ namespace RogueEssence.Content
             }
             else
                 throw new Exception("Error finding XML file in " + path + ".");
+        }
+
+        private static string[] getPngFilesFromFontFolderAndBase(string path)
+        {
+            Dictionary<string, string> finalPaths = new Dictionary<string, string>();
+
+            string dir = Path.GetDirectoryName(Path.GetDirectoryName(path));
+            string file = Path.GetFileName(Path.GetDirectoryName(path));
+            if (file.Contains("."))
+            {
+                string baseFile = file.Split(".")[0];
+                string basePath = Path.Join(dir, baseFile);
+                string[] basePaths = Directory.GetFiles(basePath, "*.png", SearchOption.TopDirectoryOnly);
+                foreach (string png in basePaths)
+                {
+                    string filePng = Path.GetFileName(png);
+                    finalPaths[filePng] = png;
+                }
+            }
+
+            string[] paths = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
+            foreach (string png in paths)
+            {
+                string filePng = Path.GetFileName(png);
+                finalPaths[filePng] = png;
+            }
+
+            List<string> finalList = new List<string>();
+            foreach (string val in finalPaths.Values)
+                finalList.Add(val);
+
+            return finalList.ToArray();
         }
 
         public static new FontSheet Load(BinaryReader reader)

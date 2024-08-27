@@ -31,7 +31,7 @@ namespace RogueEssence.Dungeon
 
         public override void Apply(GameEventOwner owner, Character character, int[] skillIndices)
         {
-            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction("SKILL_CHANGE_SCRIPT." + Script);
+            LuaFunction luafun = LuaEngine.Instance.LuaState.GetFunction(LuaEngine.EVENT_SKILLCHANGE_NAME + "." + Script);
 
             if (luafun != null)
             {

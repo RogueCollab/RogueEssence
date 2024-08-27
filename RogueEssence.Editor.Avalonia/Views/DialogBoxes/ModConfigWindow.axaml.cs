@@ -40,6 +40,7 @@ namespace RogueEssence.Dev.Views
                     throw new InvalidOperationException("Invalid UUID");
 
                 Version.Parse(vm.Version);
+                Version.Parse(vm.GameVersion);
 
                 if (vm.ChosenModType < 0 || vm.ChosenModType >= (int)PathMod.ModType.Count)
                     throw new InvalidOperationException("Invalid ModType");

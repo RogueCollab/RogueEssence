@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
     {
         ItemSummary summaryMenu;
 
-        public ItemUnderfootMenu(int mapItemSlot)
+        public ItemUnderfootMenu(int mapItemSlot) : this(MenuLabel.GROUND_MENU_ITEM, mapItemSlot) { }
+        public ItemUnderfootMenu(string label, int mapItemSlot)
         {
+            Label = label;
             MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[mapItemSlot];
             string itemName = mapItem.GetDungeonName();
 
@@ -116,7 +118,7 @@ namespace RogueEssence.Menu
 
         private void ReplaceAction()
         {
-            MenuManager.Instance.AddMenu(new ItemMenu(-1), false);
+            MenuManager.Instance.AddMenu(new ItemMenu(MenuLabel.INVENTORY_MENU_REPLACE, -1), false);
         }
         private void UseSelfAction()
         {

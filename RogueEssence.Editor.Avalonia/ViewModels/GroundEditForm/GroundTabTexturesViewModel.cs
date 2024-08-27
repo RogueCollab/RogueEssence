@@ -57,7 +57,13 @@ namespace RogueEssence.Dev.ViewModels
                         if (brush.MultiSelect == Loc.One)
                         {
                             CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
-                                () => new DrawStroke<AutoTile>(tileCoords, brush.GetSanitizedTile()),
+                                () =>
+                                {
+                                    AutoTile tex = brush.GetSanitizedTile();
+                                    if (tex.IsEmpty())
+                                        return null;
+                                    return new DrawStroke<AutoTile>(tileCoords, tex);
+                                },
                                 () => new DrawStroke<AutoTile>(tileCoords, new AutoTile()),
                                 paintStroke, ref GroundEditScene.Instance.AutoTileInProgress);
                         }
@@ -73,7 +79,13 @@ namespace RogueEssence.Dev.ViewModels
                 case TileEditMode.Rectangle:
                     {
                         CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
-                            () => new RectStroke<AutoTile>(tileCoords, getBrush().GetSanitizedTile()),
+                                () =>
+                                {
+                                    AutoTile tex = getBrush().GetSanitizedTile();
+                                    if (tex.IsEmpty())
+                                        return null;
+                                    return new RectStroke<AutoTile>(tileCoords, tex);
+                                },
                             () => new RectStroke<AutoTile>(tileCoords, new AutoTile()),
                             paintStroke, ref GroundEditScene.Instance.AutoTileInProgress);
                     }
@@ -81,7 +93,13 @@ namespace RogueEssence.Dev.ViewModels
                 case TileEditMode.Fill:
                     {
                         CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
-                            () => new FillStroke<AutoTile>(tileCoords, getBrush().GetSanitizedTile()),
+                                () =>
+                                {
+                                    AutoTile tex = getBrush().GetSanitizedTile();
+                                    if (tex.IsEmpty())
+                                        return null;
+                                    return new FillStroke<AutoTile>(tileCoords, tex);
+                                },
                             () => new FillStroke<AutoTile>(tileCoords, new AutoTile()),
                             fillStroke, ref GroundEditScene.Instance.AutoTileInProgress);
                     }

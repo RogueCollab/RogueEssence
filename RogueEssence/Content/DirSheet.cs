@@ -78,25 +78,28 @@ namespace RogueEssence.Content
                     }
                 }
 
-                int maxSize = (int)Math.Ceiling(Math.Sqrt(frames.Count));
+                int totalPixels = frames.Count * frames[0].width * frames[0].height;
+                int tilesX = (int)Math.Ceiling(Math.Sqrt(totalPixels) / frames[0].width);
+                int tilesY = MathUtils.DivUp(frames.Count, tilesX);
 
                 int tileWidth = frames[0].width;
-                int tileHeight = frames[0].height / getDirDiv(totalDirs);
-                int maxWidth = maxSize * tileWidth;
-                int maxHeight = maxSize * tileHeight;
+                int tileHeight = frames[0].height;
+                int dirHeight = tileHeight / getDirDiv(totalDirs);
+                int maxWidth = tilesX * tileWidth;
+                int maxHeight = tilesY * tileHeight;
 
                 Color[] texColors = new Color[maxWidth * maxHeight];
 
                 for (int ii = 0; ii < frames.Count; ii++)
                 {
-                    int xx = ii % maxSize;
-                    int yy = ii / maxSize;
+                    int xx = ii % tilesX;
+                    int yy = ii / tilesX;
                     BaseSheet.Blit(frames[ii].tex, texColors, new Point(tileWidth, tileHeight), new Point(maxWidth, maxHeight), new Point(tileWidth * xx, tileHeight * yy), SpriteEffects.None);
                 }
 
                 Texture2D full = new Texture2D(device, maxWidth, maxHeight);
                 full.SetData<Color>(0, null, texColors, 0, texColors.Length);
-                return new DirSheet(full, tileWidth, tileHeight, frames.Count, RotateType.None);
+                return new DirSheet(full, tileWidth, dirHeight, frames.Count, totalDirs);
             }
             else //assume png file
             {
@@ -263,10 +266,10 @@ namespace RogueEssence.Content
                     DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX, color, flip);
                     break;
                 case RotateType.Dir1:
-                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, 0, color, (float)((int)dir * Math.PI / 4), flip);
+                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame % TotalX, frame / TotalX, color, (float)((int)dir * Math.PI / 4), flip);
                     break;
                 case RotateType.Dir2:
-                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame, (int)dir % 2, color, (float)(((int)dir / 2) * Math.PI / 2), flip);
+                    DrawTile(spriteBatch, pos + new Vector2(TileWidth / 2, TileHeight / 2), frame % TotalX, frame / TotalX * 2 + (int)dir % 2, color, (float)(((int)dir / 2) * Math.PI / 2), flip);
                     break;
                 case RotateType.Dir5:
                     {
@@ -277,17 +280,17 @@ namespace RogueEssence.Content
                             index = 8 - index;
                             flip ^= SpriteEffects.FlipHorizontally;
                         }
-                        DrawTile(spriteBatch, pos, frame, index, color, flip);
+                        DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX * 5 + index, color, flip);
                         break;
                     }
                 case RotateType.Dir8:
-                    DrawTile(spriteBatch, pos, frame, (int)dir, color, flip);
+                    DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX * 8 + (int)dir, color, flip);
                     break;
                 case RotateType.Flip:
                     {
                         if (dir >= Dir8.Up)
                             flip ^= SpriteEffects.FlipHorizontally;
-                        DrawTile(spriteBatch, pos, frame, 0, color, flip);
+                        DrawTile(spriteBatch, pos, frame % TotalX, frame / TotalX, color, flip);
                         break;
                     }
             }

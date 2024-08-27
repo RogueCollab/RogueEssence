@@ -95,7 +95,7 @@ namespace RogueEssence.Dungeon
         {
             ItemData entry = DataManager.Instance.GetItem(ID);
             if (entry == null)
-                return String.Format("[color=#FFFFFF]{0}[color]", ID);
+                return String.Format("[color=#FF0000]{0}[color]", ID);
 
             string prefix = "";
             if (entry.Icon > -1)
@@ -107,7 +107,10 @@ namespace RogueEssence.Dungeon
             if (entry.MaxStack > 1)
                 nameStr += " (" + Amount + ")";
 
-            return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
+            if (entry.UsageType == ItemData.UseType.Treasure)
+                return String.Format("{0}[color=#6384E6]{1}[color]", prefix, nameStr);
+            else
+                return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);
         }
 
         public override string ToString()
@@ -138,35 +141,6 @@ namespace RogueEssence.Dungeon
                 return entry.Price * Amount;
             else
                 return entry.Price;
-        }
-
-        //TODO: Created v0.5.20, delete on v1.1
-        [OnDeserialized]
-        internal void OnDeserializedMethod(StreamingContext context)
-        {
-            if (!String.IsNullOrEmpty(ID))
-            {
-                ItemData item = DataManager.Instance.GetItem(ID);
-
-                int amt;
-                if (int.TryParse(HiddenValue, out amt))
-                {
-                    if (item.MaxStack > 0)
-                    {
-                        Amount = amt;
-                        HiddenValue = "";
-                    }
-                    else if (amt > 0)
-                    {
-                        string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, amt);
-                        HiddenValue = asset_name;
-                    }
-                    else
-                    {
-                        HiddenValue = "";
-                    }
-                }
-            }
         }
     }
 }

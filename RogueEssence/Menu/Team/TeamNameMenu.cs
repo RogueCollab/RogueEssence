@@ -7,11 +7,11 @@
         public delegate void OnChooseString(string name);
         private OnChooseString action;
 
-        public TeamNameMenu(string title, string desc, int maxLength, OnChooseString action)
+        public TeamNameMenu(string title, string desc, int maxLength, string defaultName, OnChooseString action)
         {
             this.action = action;
             this.maxLength = maxLength;
-            Initialize(title, desc, 256);
+            Initialize(title, desc, 256, defaultName);
         }
         
         protected override void Confirmed()

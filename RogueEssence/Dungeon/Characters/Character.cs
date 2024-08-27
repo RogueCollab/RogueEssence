@@ -15,7 +15,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable, IPreviewable
+    public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable, IPreviewable, ITurnChar
     {
 
         public const int MAX_FULLNESS = 100;
@@ -78,11 +78,16 @@ namespace RogueEssence.Dungeon
             if (Unidentifiable && team != DataManager.Instance.Save.ActiveTeam)
                 name = "???";
 
-            if (team == DataManager.Instance.Save.ActiveTeam)
+            if (team != null)
             {
-                if (this == team.Leader)
-                    return String.Format("[color=#009CFF]{0}[color]", name);
-                return String.Format("[color=#FFFF00]{0}[color]", name);
+                if (team == DataManager.Instance.Save.ActiveTeam)
+                {
+                    if (this == team.Leader)
+                        return String.Format("[color=#009CFF]{0}[color]", name);
+                    return String.Format("[color=#FFFF00]{0}[color]", name);
+                }
+                else if (team.MapFaction == Faction.Friend)
+                    return String.Format("[color=#FFFF00]{0}[color]", name);
             }
 
             string apparentSpecies = BaseForm.Species;
@@ -227,7 +232,13 @@ namespace RogueEssence.Dungeon
         public Dir8 CharDir
         {
             get { return currentCharAction.CharDir; }
-            set { currentCharAction.CharDir = value; }
+            set
+            {
+                if (value > Dir8.None && value <= Dir8.DownRight)
+                    currentCharAction.CharDir = value;
+                else
+                    throw new ArgumentException(String.Format("Cannot set CharDir to {0}!", value));
+            }
         }
 
         public bool HideShadow
@@ -264,17 +275,17 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// The number of turns this character must wait before being able to move again.
         /// </summary>
-        public int TurnWait;
+        public int TurnWait { get; set; }
 
         /// <summary>
         /// The number of turn tiers that this character has moved OR acted on.
         /// </summary>
-        public int TiersUsed;
+        public int TiersUsed { get; set; }
 
         /// <summary>
         /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
         /// </summary>
-        public bool TurnUsed;
+        public bool TurnUsed { get; set; }
         [NonSerialized]
         public List<StatusRef> StatusesTargetingThis;
         public bool EXPMarked;
@@ -492,7 +503,18 @@ namespace RogueEssence.Dungeon
             return new_mob;
         }
 
+        /// <summary>
+        /// When the character is removed from the map, we need to revert form changes and remove statuses
+        /// </summary>
         public void OnRemove()
+        {
+            clearStatus(false);
+
+            //Do not refresh types and intrinsics from the character to avoid triggering effects on death that have been wiped
+            RestoreForm(true);
+        }
+
+        private void clearStatus(bool includeCarryOver)
         {
             //remove all status from this character without saying anything
             List<string> keys = new List<string>();
@@ -501,7 +523,7 @@ namespace RogueEssence.Dungeon
             {
                 StatusEffect status = StatusEffects[keys[ii]];
                 StatusData data = (StatusData)status.GetData();
-                if (data.CarryOver)
+                if (!includeCarryOver && data.CarryOver)
                     continue;
                 StatusEffects.Remove(keys[ii]);
                 //need to remove the backreferences on their targets
@@ -520,8 +542,6 @@ namespace RogueEssence.Dungeon
                 if (otherStatus != null)
                     otherStatus.TargetChar = null;
             }
-
-            RestoreForm();
         }
 
         private List<int> baseRestore()
@@ -658,6 +678,15 @@ namespace RogueEssence.Dungeon
 
         public void RestoreForm()
         {
+            RestoreForm(true);
+        }
+
+        /// <summary>
+        /// Restores the character's forms and all (or just some) of its details.
+        /// </summary>
+        /// <param name="fullRestore">Restores element and intrinsics too if true.</param>
+        public void RestoreForm(bool fullRestore)
+        {
             CurrentForm = BaseForm;
 
             List<int> skillIndices = new List<int>();
@@ -679,13 +708,16 @@ namespace RogueEssence.Dungeon
                 Skills.Add(new BackReference<Skill>(newState, ii));
             }
 
-            Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
-            Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
-
-            Intrinsics.Clear();
-            for (int ii = 0; ii < BaseIntrinsics.Count; ii++)
-                Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
-
+            if (fullRestore)
+            {
+                Element1 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element1;
+                Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
+                
+                Intrinsics.Clear();
+                for (int ii = 0; ii < BaseIntrinsics.Count; ii++)
+                    Intrinsics.Add(new BackReference<Intrinsic>(new Intrinsic(BaseIntrinsics[ii]), ii));
+            }
+            
             ProxyAtk = -1;
             ProxyDef = -1;
             ProxyMAtk = -1;
@@ -791,6 +823,9 @@ namespace RogueEssence.Dungeon
         //find a way to check for death in this method, or check for death at certain specific points
         public IEnumerator<YieldInstruction> InflictDamage(int hp, bool anim = true, bool endure = false)
         {
+            if (Dead)
+                yield break;
+
             int takeHP = (hp < 0) ? HP : hp;
             Loc? earshot = null;
             if (!anim)
@@ -869,7 +904,10 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            OnRemove();
+            //clear all status
+            clearStatus(false);
+            //Do not refresh types and intrinsics from the character to avoid triggering effects on death that have been wiped
+            RestoreForm(false);
 
             DefeatAt = ZoneManager.Instance.CurrentMap.GetColoredName();
             //}
@@ -897,7 +935,10 @@ namespace RogueEssence.Dungeon
                     }
                 }
 
-                OnRemove();
+                //clear all status
+                clearStatus(false);
+                //Do not refresh types and intrinsics from the character to avoid triggering effects on death that have been wiped
+                RestoreForm(false);
 
                 DefeatAt = ZoneManager.Instance.CurrentMap.GetColoredName();
                 //DefeatDungeon = ZoneManager.Instance.CurrentZoneID;
@@ -1187,16 +1228,25 @@ namespace RogueEssence.Dungeon
         }
 
 
-        public void ChangeSkill(int slot, string skillNum)
+        public void ChangeSkill(int slot, string skillNum, int charges)
         {
             if (!String.IsNullOrEmpty(skillNum))
-                Skills[slot] = new BackReference<Skill>(new Skill(skillNum, DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost), -1);
+            {
+                int maxCharges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
+                if (charges < 0)
+                    charges = maxCharges;
+                Skills[slot] = new BackReference<Skill>(new Skill(skillNum, Math.Min(charges, maxCharges)), -1);
+            }
             else
                 Skills[slot] = new BackReference<Skill>(new Skill(), -1);
 
             RefreshTraits();
         }
 
+        public void SetSkillLocking(int slot, bool lck)
+        {
+            BaseSkills[slot].CanForget = !lck;
+        }
 
         public void DeleteSkill(int slot, bool refresh=true)
         {
@@ -1351,16 +1401,20 @@ namespace RogueEssence.Dungeon
         public List<string> GetRelearnableSkills(bool includePreEvo)
         {
             List<BaseMonsterForm> entries = new List<BaseMonsterForm>();
-            string evolutionStage = BaseForm.Species;
+            MonsterID evolutionStage = BaseForm;
             MonsterData entryData;
             BaseMonsterForm entryForm;
 
-            while (!string.IsNullOrEmpty(evolutionStage))
+            while (evolutionStage.IsValid())
             {
-                entryData = DataManager.Instance.GetMonster(evolutionStage);
-                entryForm = entryData.Forms[BaseForm.Form];
+                entryData = DataManager.Instance.GetMonster(evolutionStage.Species);
+                entryForm = entryData.Forms[evolutionStage.Form];
                 entries.Add(entryForm);
-                evolutionStage = includePreEvo ? entryData.PromoteFrom : string.Empty;
+
+                if (includePreEvo)
+                    evolutionStage = new MonsterID(entryData.PromoteFrom, entryForm.PromoteForm, evolutionStage.Skin, evolutionStage.Gender);
+                else
+                    evolutionStage = MonsterID.Invalid;
             }
 
             List<string> forgottenSkills = new List<string>();
@@ -2440,7 +2494,11 @@ namespace RogueEssence.Dungeon
                     idleAction.Override = IdleOverride;
             }
 
-            charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
+            if (MemberTeam.ContainingMap != null)
+                charAnim.SetLocWithoutVisual(MemberTeam.ContainingMap.WrapLoc(charAnim.CharLoc));
+            else
+                charAnim.SetLocWithoutVisual(charAnim.CharLoc);
+
             if (OccupiedwithAction())
             {
                 Loc preInterruptLoc = CharLoc;
@@ -2710,6 +2768,10 @@ namespace RogueEssence.Dungeon
         public Loc GetDrawLoc(Loc offset)
         {
             return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(Appearance.ToCharID()));
+        }
+        public Loc GetSheetOffset()
+        {
+            return currentCharAction.GetSheetOffset(GraphicsManager.GetChara(Appearance.ToCharID()));
         }
 
         public Loc GetDrawSize()

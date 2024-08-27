@@ -10,13 +10,15 @@ namespace RogueEssence.Menu
 {
     public class SkillChosenMenu : SingleStripMenu
     {
+        private string parentLabel;
 
         private int teamIndex;
         private int skillSlot;
 
 
-        public SkillChosenMenu(int teamIndex, int skillSlot)
+        public SkillChosenMenu(string parentLabel, int teamIndex, int skillSlot)
         {
+            this.parentLabel = parentLabel;
             this.teamIndex = teamIndex;
             this.skillSlot = skillSlot;
 
@@ -36,7 +38,7 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), MenuManager.Instance.RemoveMenu));
 
             int choice_width = CalculateChoiceLength(choices, 72);
-            Initialize(new Loc(Math.Min(176, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
+            Initialize(new Loc(Math.Min(184, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
         
         private void useAction()
@@ -49,7 +51,7 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.RemoveMenu();
 
-            MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, teamIndex, skillSlot), teamIndex, skillSlot);
+            MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.SetSkill, Dir8.None, teamIndex, skillSlot), parentLabel, teamIndex, skillSlot);
         }
 
         private void shiftPosition(bool switchDown)
@@ -63,7 +65,7 @@ namespace RogueEssence.Menu
                 swapSlot++;
                 newSlot += 2;
             }
-            MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, teamIndex, swapSlot), teamIndex, newSlot);
+            MenuManager.Instance.NextAction = SkillMenu.MoveCommand(new GameAction(GameAction.ActionType.ShiftSkill, Dir8.None, teamIndex, swapSlot), parentLabel, teamIndex, newSlot);
         }
     }
 }

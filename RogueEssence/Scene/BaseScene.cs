@@ -100,7 +100,7 @@ namespace RogueEssence
             if (drawSize == Loc.Zero)
                 return false;
 
-            Rect spriteRect = new Rect(sprite.GetDrawLoc(Loc.Zero), drawSize);
+            Rect spriteRect = new Rect(sprite.GetDrawLoc(Loc.Zero) + sprite.GetSheetOffset(), drawSize);
 
 
             return Collision.Collides(spriteRect, viewBounds);
@@ -136,7 +136,7 @@ namespace RogueEssence
             if (drawSize == Loc.Zero)
                 yield break;
 
-            Loc baseDrawLoc = sprite.GetDrawLoc(Loc.Zero);
+            Loc baseDrawLoc = sprite.GetDrawLoc(Loc.Zero) + sprite.GetSheetOffset();
             if (!wrapped)
             {
                 Rect spriteRect = new Rect(baseDrawLoc, drawSize);

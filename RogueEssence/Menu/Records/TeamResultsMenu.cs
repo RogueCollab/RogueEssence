@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
             }
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return Div;
@@ -108,7 +108,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new InvResultsMenu(Ending));
+                MenuManager.Instance.ReplaceMenu(new InvResultsMenu(Ending, (Ending.ActiveTeam.MaxInv - 1) / (InvResultsMenu.MAX_LINES * 2)));
             }
             else if (IsInputting(input, Dir8.Right))
             {
@@ -117,7 +117,7 @@ namespace RogueEssence.Menu
                 if (eligibleAssemblyCount > 0)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, 0));
                 else
-                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, 0));
             }
 
         }
@@ -141,7 +141,7 @@ namespace RogueEssence.Menu
             if (Ending.ActiveTeam.Name != "")
                 return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
             else
-                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Ending.ActiveTeam.GetDisplayName(), Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
+                return Text.FormatKey("MENU_RESULTS_ASSEMBLY_TITLE_ANY", Page + 1, MathUtils.DivUp(eligibleAssemblyCount, 4));
         }
 
         protected override EventedList<Character> GetChars()
@@ -152,7 +152,7 @@ namespace RogueEssence.Menu
             {
                 if (!Ending.ActiveTeam.Assembly[ii].Absentee)
                 {
-                    if (Page * 4 <= ii && ii < (Page + 1) * 4)
+                    if (Page * 4 <= trueIdx && trueIdx < (Page + 1) * 4)
                     {
                         characters.Add(Ending.ActiveTeam.Assembly[ii]);
                         if (characters.Count == 4)
@@ -203,7 +203,7 @@ namespace RogueEssence.Menu
                 if (Page < (eligibleAssemblyCount - 1) / 4)
                     MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, Page+1));
                 else
-                    MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, 0));
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, 0));
             }
 
         }

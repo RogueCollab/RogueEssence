@@ -33,7 +33,7 @@ namespace RogueEssence.Menu
             {
                 Character activeChar = DataManager.Instance.Save.ActiveTeam.Players[ii];
                 if (!String.IsNullOrEmpty(activeChar.EquippedItem.ID))
-                    itemPresence[activeChar.EquippedItem.ID]++;
+                    itemPresence[activeChar.EquippedItem.ID] = itemPresence.GetValueOrDefault(activeChar.EquippedItem.ID, 0) + 1;
             }
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();
@@ -49,7 +49,7 @@ namespace RogueEssence.Menu
                         {
                             AllowedGoods.Add(key);
 
-                            MenuText menuText = new MenuText(DataManager.Instance.GetItem(key).GetIconName(), new Loc(2, 1));
+                            MenuText menuText = new MenuText(itemEntry.GetIconName(), new Loc(2, 1));
                             MenuText menuCount = new MenuText("(" + itemPresence[key] + ")", new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, Color.White);
                             flatChoices.Add(new MenuElementChoice(() => { }, true, menuText, menuCount));
                         }

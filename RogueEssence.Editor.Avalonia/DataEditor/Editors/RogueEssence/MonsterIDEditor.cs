@@ -49,7 +49,7 @@ namespace RogueEssence.Dev
                 for (int ii = 0; ii < monsterKeys.Count; ii++)
                     species.Add(monsterKeys[ii] + ": " + nameIndex.Get(monsterKeys[ii]).GetLocalString(false));
 
-                if (dataAtt.InvalidSpecies)
+                if (dataAtt != null && dataAtt.InvalidSpecies)
                 {
                     monsterKeys.Insert(0, "");
                     species.Insert(0, "**EMPTY**");
@@ -66,6 +66,7 @@ namespace RogueEssence.Dev
                 cbSpecies.SelectedIndex = chosenSpecies;
                 cbSpecies.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
+                    forms = new List<string>();
                     loadForms(dataAtt, monsterKeys[cbSpecies.SelectedIndex], forms);
                     cbForms.SelectedIndex = -1;
                     cbForms.SelectedIndex = Math.Min(Math.Max(0, cbForms.SelectedIndex), forms.Count - 1);
@@ -94,7 +95,7 @@ namespace RogueEssence.Dev
 
                 loadForms(dataAtt, (chosenSpecies < 0) ? "" : monsterKeys[chosenSpecies], forms);
 
-                if (dataAtt.InvalidForm)
+                if (dataAtt != null && dataAtt.InvalidForm)
                     chosenForm++;
 
                 cbForms.Bind(ComboBox.ItemsProperty, formSubject);
@@ -121,7 +122,7 @@ namespace RogueEssence.Dev
                 cbSkin.VirtualizationMode = ItemVirtualizationMode.Simple;
 
                 List<string> items = new List<string>();
-                if (dataAtt.InvalidSkin)
+                if (dataAtt != null && dataAtt.InvalidSkin)
                     items.Add("**EMPTY**");
 
                 int chosenIndex = 0;
@@ -157,7 +158,7 @@ namespace RogueEssence.Dev
                 int chosenIndex = (int)member.Gender;
 
                 List<string> items = new List<string>();
-                if (dataAtt.InvalidGender)
+                if (dataAtt != null && dataAtt.InvalidGender)
                 {
                     items.Add(Gender.Unknown.ToLocal());
                     chosenIndex++;
@@ -272,7 +273,7 @@ namespace RogueEssence.Dev
         private void loadForms(MonsterIDAttribute dataAtt, string species, List<string> forms)
         {
             forms.Clear();
-            if (dataAtt.InvalidForm)
+            if (dataAtt != null && dataAtt.InvalidForm)
                 forms.Add("**EMPTY**");
 
             if (!String.IsNullOrEmpty(species))

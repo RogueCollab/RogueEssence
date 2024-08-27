@@ -24,11 +24,22 @@ namespace RogueEssence
         public static string ASSET_PATH;
         public static string DEV_PATH;
         public static string RESOURCE_PATH { get => ASSET_PATH + "Editor/"; }
+        public static string BASE_PATH { get => ASSET_PATH + "Base/"; }
 
         public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
         public static string MODS_FOLDER = "MODS/";
 
+        public const string PATH_PARAMS_FILE = "PathParams.xml";
+
+        /// <summary>
+        /// The namespace for the base game, relative to mods
+        /// </summary>
         public static string BaseNamespace { get; private set; }
+
+        /// <summary>
+        /// Additional namespaces of the base game, purely for use in scripting
+        /// </summary>
+        public static List<string> BaseScriptNamespaces { get; private set; }
 
         /// <summary>
         /// Filename of mod relative to executable
@@ -43,19 +54,73 @@ namespace RogueEssence
 
         private static Dictionary<Guid, ModHeader> uuidLookup;
 
-        public static void InitPathMod(string path, string baseNamespace)
+        public static void InitPathMod(string path)
         {
             ExeName = Path.GetFileName(path);
             ExePath = Path.GetDirectoryName(path) + "/";
             ASSET_PATH = ExePath;
             DEV_PATH = ExePath + "RawAsset/";
-            BaseNamespace = baseNamespace;
+            BaseNamespace = "";
+            BaseScriptNamespaces = new List<string>();
 
             Quest = ModHeader.Invalid;
             Mods = new ModHeader[0];
             LoadOrder = new List<int>();
             namespaceLookup = new Dictionary<string, ModHeader>();
             uuidLookup = new Dictionary<Guid, ModHeader>();
+        }
+
+        public static void InitNamespaces()
+        {
+            string path = Path.Join(PathMod.BASE_PATH, PATH_PARAMS_FILE);
+
+            //try to load from file
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(path);
+
+                XmlNode namespaceNode = xmldoc.DocumentElement.SelectSingleNode("BaseNamespace");
+                BaseNamespace = namespaceNode.InnerText;
+
+                {
+                    BaseScriptNamespaces = new List<string>();
+                    XmlNode scriptNamespaces = xmldoc.DocumentElement.SelectSingleNode("BaseScriptNamespaces");
+                    foreach (XmlNode scriptNode in scriptNamespaces.SelectNodes("ScriptNamespace"))
+                        BaseScriptNamespaces.Add(scriptNode.InnerText);
+                }
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                throw;
+            }
+        }
+
+        public static void SaveNamespaces(string destPath, string baseNameSpace, List<string> baseScriptNamespaces)
+        {
+            string path = Path.Join(destPath, PATH_PARAMS_FILE);
+            try
+            {
+                XmlDocument xmldoc = new XmlDocument();
+
+                XmlNode docNode = xmldoc.CreateElement("root");
+                xmldoc.AppendChild(docNode);
+
+                docNode.AppendInnerTextChild(xmldoc, "BaseNamespace", baseNameSpace);
+
+                XmlNode scriptNamespaceNode = xmldoc.CreateElement("BaseScriptNamespaces");
+                docNode.AppendChild(scriptNamespaceNode);
+
+                foreach (string scriptNamespace in baseScriptNamespaces)
+                    scriptNamespaceNode.AppendInnerTextChild(xmldoc, "ScriptNamespace", scriptNamespace);
+
+                xmldoc.Save(path);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex);
+            }
         }
 
         public static void SetMods(ModHeader quest, ModHeader[] mods, List<int> loadOrder)
@@ -83,6 +148,14 @@ namespace RogueEssence
             header = ModHeader.Invalid;
             header.Namespace = BaseNamespace;
             return header;
+        }
+
+        public static string GetCurrentNamespace()
+        {
+            if (Quest.IsValid())
+                return Quest.Namespace;
+
+            return BaseNamespace;
         }
 
         public static ModHeader GetModFromUuid(Guid uuid)
@@ -176,6 +249,63 @@ namespace RogueEssence
                 return Path.Join(ASSET_PATH, basePath);
             else
                 return Path.Join(ExePath, mod, basePath);
+        }
+
+
+        /// <summary>
+        /// Scripts are the ONLY place that use the additional script namespaces, so a special iterator must be used for them.
+        /// </summary>
+        public static IEnumerable<ModHeader> FallforthScriptMods(string basePath)
+        {
+            Stack<ModHeader> mods = new Stack<ModHeader>();
+            foreach (ModHeader mod in FallbackScriptMods(basePath))
+                mods.Push(mod);
+
+            while (mods.Count > 0)
+                yield return mods.Pop();
+        }
+
+        /// <summary>
+        /// Scripts are the ONLY place that use the additional script namespaces, so a special iterator must be used for them.
+        /// </summary>
+        public static IEnumerable<ModHeader> FallbackScriptMods(string basePath)
+        {
+            for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
+            {
+                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
+                string fullPath = HardMod(mod.Path, basePath);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                    yield return mod;
+            }
+
+
+            for (int ii = BaseScriptNamespaces.Count - 1; ii >= 0; ii--)
+            {
+                ModHeader header = ModHeader.Invalid;
+                header.Namespace = BaseScriptNamespaces[ii];
+                yield return header;
+            }
+
+            {
+                ModHeader header = ModHeader.Invalid;
+                header.Namespace = BaseNamespace;
+                yield return header;
+            }
+        }
+
+        public static IEnumerable<ModHeader> FallbackMods(string basePath)
+        {
+            for (int ii = LoadOrder.Count - 1; ii >= 0; ii--)
+            {
+                ModHeader mod = getModHeader(Quest, Mods, LoadOrder[ii]);
+                string fullPath = HardMod(mod.Path, basePath);
+                if (File.Exists(fullPath) || Directory.Exists(fullPath))
+                    yield return mod;
+            }
+
+            ModHeader header = ModHeader.Invalid;
+            header.Namespace = BaseNamespace;
+            yield return header;
         }
 
         public static IEnumerable<string> FallforthPaths(string basePath)
@@ -324,6 +454,9 @@ namespace RogueEssence
             for (int ii = 0; ii < preOrder.Count; ii++)
             {
                 ModHeader header = getModHeader(quest, mods, preOrder[ii]);
+                if (Versioning.GetVersion() < header.GameVersion)
+                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", "", Guid.Empty, header.GameVersion, new Version(), ModType.None, new RelatedMod[0] { }) }));
+
                 foreach (RelatedMod rel in header.Relationships)
                 {
                     switch (rel.Relationship)
@@ -355,7 +488,7 @@ namespace RogueEssence
                                 if (guidLookup.TryGetValue(rel.UUID, out depIdx))
                                     localOrders[preOrder[ii]].Add(depIdx);
                                 else
-                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", rel.Namespace, rel.UUID, new Version(), ModType.None, new RelatedMod[0] { }) }));
+                                    loadErrors.Add((ModRelationship.DependsOn, new List<ModHeader>() { header, new ModHeader("", "", "", "", rel.Namespace, rel.UUID, new Version(), new Version(), ModType.None, new RelatedMod[0] { }) }));
                             }
                             break;
                     }
@@ -465,6 +598,12 @@ namespace RogueEssence
                                 header.Namespace = Text.Sanitize(header.Name).ToLower();
                             header.UUID = Guid.Parse(xmldoc.SelectSingleNode("Header/UUID").InnerText);
                             header.Version = Version.Parse(xmldoc.SelectSingleNode("Header/Version").InnerText);
+
+                            //TODO: v1.1 remove this
+                            XmlNode gameVersionNode = xmldoc.SelectSingleNode("Header/GameVersion");
+                            if (gameVersionNode != null)
+                                header.GameVersion = Version.Parse(gameVersionNode.InnerText);
+
                             header.ModType = Enum.Parse<PathMod.ModType>(xmldoc.SelectSingleNode("Header/ModType").InnerText);
 
                             //TODO: v1.1 remove this
@@ -507,6 +646,7 @@ namespace RogueEssence
             docNode.AppendInnerTextChild(xmldoc, "Namespace", header.Namespace);
             docNode.AppendInnerTextChild(xmldoc, "UUID", header.UUID.ToString().ToUpper());
             docNode.AppendInnerTextChild(xmldoc, "Version", header.Version.ToString());
+            docNode.AppendInnerTextChild(xmldoc, "GameVersion", header.GameVersion.ToString());
             docNode.AppendInnerTextChild(xmldoc, "ModType", header.ModType.ToString());
 
 
@@ -666,12 +806,13 @@ namespace RogueEssence
         public string Namespace;
         public Guid UUID;
         public Version Version;
+        public Version GameVersion;
         public PathMod.ModType ModType;
         public RelatedMod[] Relationships;
 
-        public static readonly ModHeader Invalid = new ModHeader("", "", "", "", "", Guid.Empty, new Version(), PathMod.ModType.None, new RelatedMod[0] { });
+        public static readonly ModHeader Invalid = new ModHeader("", "", "", "", "", Guid.Empty, new Version(), new Version(), PathMod.ModType.None, new RelatedMod[0] { });
 
-        public ModHeader(string path, string name, string author, string description, string newNamespace, Guid uuid, Version version, PathMod.ModType modType, RelatedMod[] relationships)
+        public ModHeader(string path, string name, string author, string description, string newNamespace, Guid uuid, Version version, Version gameVersion, PathMod.ModType modType, RelatedMod[] relationships)
         {
             Path = path;
             Name = name;
@@ -680,6 +821,7 @@ namespace RogueEssence
             Namespace = newNamespace;
             UUID = uuid;
             Version = version;
+            GameVersion = gameVersion;
             ModType = modType;
             Relationships = relationships;
         }

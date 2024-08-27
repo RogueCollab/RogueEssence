@@ -23,7 +23,14 @@ namespace RogueEssence.Ground
 
         protected List<(IDrawableSprite sprite, Loc viewOffset)> objectDraw;
 
+        protected List<(IDrawableSprite sprite, Loc viewOffset)> frontDraw;
+
         protected List<(IDrawableSprite sprite, Loc viewOffset)> foregroundDraw;
+
+        /// <summary>
+        /// Ground char and ground object draw, utilizing their specific entity order variable.
+        /// </summary>
+        protected List<(GroundEntity sprite, Loc viewOffset)> groundObjectDraw;
 
         protected Rect viewTileRect;
         
@@ -35,7 +42,9 @@ namespace RogueEssence.Ground
 
             groundDraw = new List<(IDrawableSprite, Loc)>();
             objectDraw = new List<(IDrawableSprite, Loc)>();
+            frontDraw = new List<(IDrawableSprite, Loc)>();
             foregroundDraw = new List<(IDrawableSprite, Loc)>();
+            groundObjectDraw = new List<(GroundEntity sprite, Loc viewOffset)>();
 
             ZoomChanged();
         }
@@ -48,6 +57,38 @@ namespace RogueEssence.Ground
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
         }
 
+        protected bool Screenshotting;
+
+        protected RenderTarget2D screenshotScreen;
+        public void Screenshot()
+        {
+            Screenshotting = true;
+            screenshotScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                ZoneManager.Instance.CurrentGround.GroundWidth, ZoneManager.Instance.CurrentGround.GroundHeight,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+        }
+
+        public void BeginScreenshot()
+        {
+            if (Screenshotting)
+            {
+                GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
+                ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.GroundSize);
+                viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentGround.Size);
+            }
+        }
+
+        public void ProcessScreenshot()
+        {
+            if (Screenshotting)
+            {
+                GraphicsManager.SaveScreenshot(screenshotScreen);
+                screenshotScreen.Dispose();
+                screenshotScreen = null;
+                Screenshotting = false;
+            }
+        }
+
         public override void Begin()
         {
             PendingDevEvent = null;
@@ -58,6 +99,13 @@ namespace RogueEssence.Ground
         {
             base.UpdateMeta();
             InputManager input = GameManager.Instance.MetaInputManager;
+
+            if (input.JustPressed(FrameInput.InputType.Screenshot))
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                Screenshot();
+            }
+
             MouseLoc = input.MouseLoc;
         }
 
@@ -109,20 +157,24 @@ namespace RogueEssence.Ground
             if (ZoneManager.Instance.CurrentGround != null)
             {
                 GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
-
                 GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
+
+                BeginScreenshot();
 
                 Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 
                 groundDraw.Clear();
                 objectDraw.Clear();
+                frontDraw.Clear();
                 foregroundDraw.Clear();
+                groundObjectDraw.Clear();
 
                 DrawGame(spriteBatch);
 
                 spriteBatch.End();
 
+                ProcessScreenshot();
 
                 GraphicsManager.GraphicsDevice.SetRenderTarget(GameManager.Instance.GameScreen);
 
@@ -169,7 +221,7 @@ namespace RogueEssence.Ground
                 if (layer.Visible)
                 {
                     foreach (IDrawableSprite effect in layer.Anims)
-                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? foregroundDraw : groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+                        AddRelevantDraw((layer.Layer == DrawLayer.Top) ? frontDraw : groundDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
                 }
             }
             foreach (IDrawableSprite effect in Anims[(int)DrawLayer.Bottom])
@@ -198,7 +250,7 @@ namespace RogueEssence.Ground
                         continue;
                     foreach(Loc viewLoc in IterateRelevantDraw(wrapped, ZoneManager.Instance.CurrentGround.GroundSize, character))
                     {
-                        AddToDraw(objectDraw, character, viewLoc);
+                        AddToGroundDraw(groundObjectDraw, character, viewLoc);
                         shownShadows.Add((character, viewLoc));
                     }
                 }
@@ -217,19 +269,17 @@ namespace RogueEssence.Ground
             //draw items
             if (!DataManager.Instance.HideObjects)
             {
-                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].GroundObjects)
+                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].IterateObjects())
                 {
                     if (!item.EntEnabled)
                         continue;
-                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
-                }
-                foreach (GroundObject item in ZoneManager.Instance.CurrentGround.Entities[0].TemporaryObjects)
-                {
-                    if (!item.EntEnabled)
-                        continue;
-                    AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
+                    AddRelevantGroundDraw(groundObjectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, item);
                 }
             }
+
+            //add the objects to the objectDraw
+            foreach ((GroundEntity sprite, Loc offset) ent in groundObjectDraw)
+                AddToDraw(objectDraw, ent.sprite, ent.offset);
 
             //draw object
             charIndex = 0;
@@ -241,12 +291,12 @@ namespace RogueEssence.Ground
 
             //draw effects in top
             foreach (BaseAnim effect in Anims[(int)DrawLayer.Front])
-                AddRelevantDraw(objectDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
+                AddRelevantDraw(frontDraw, wrapped, ZoneManager.Instance.CurrentGround.GroundSize, effect);
 
             charIndex = 0;
-            while (charIndex < objectDraw.Count)
+            while (charIndex < frontDraw.Count)
             {
-                objectDraw[charIndex].sprite.Draw(spriteBatch, objectDraw[charIndex].viewOffset);
+                frontDraw[charIndex].sprite.Draw(spriteBatch, frontDraw[charIndex].viewOffset);
                 charIndex++;
             }
 
@@ -361,6 +411,29 @@ namespace RogueEssence.Ground
                 return;
 
             DataManager.Instance.MsgLog.Add(msg);
+        }
+
+
+
+        public void AddToGroundDraw(List<(GroundEntity, Loc)> sprites, GroundEntity sprite, Loc viewOffset)
+        {
+            CollectionExt.AddToSortedList(sprites, (sprite, viewOffset), CompareGroundEntCoords);
+        }
+
+
+        public int CompareGroundEntCoords((GroundEntity sprite, Loc viewOffset) sprite1, (GroundEntity sprite, Loc viewOffset) sprite2)
+        {
+            int sign = Math.Sign((sprite1.sprite.MapLoc.Y - sprite1.viewOffset.Y) - (sprite2.sprite.MapLoc.Y - sprite2.viewOffset.Y));
+            if (sign != 0)
+                return sign;
+            return Math.Sign(sprite1.sprite.EntOrder - sprite2.sprite.EntOrder);
+        }
+
+
+        public void AddRelevantGroundDraw(List<(GroundEntity, Loc)> sprites, bool wrapped, Loc wrapSize, GroundEntity sprite)
+        {
+            foreach (Loc viewOffset in IterateRelevantDraw(wrapped, wrapSize, sprite))
+                AddToGroundDraw(sprites, sprite, viewOffset);
         }
 
     }

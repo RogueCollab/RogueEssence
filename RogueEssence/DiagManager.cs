@@ -29,7 +29,7 @@ namespace RogueEssence
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
 
-        object lockObj = new object();
+        private object lockObj = new object();
 
         public delegate void LogAdded(string message);
         public delegate string ErrorTrace();
@@ -44,6 +44,11 @@ namespace RogueEssence
         public int DebugReplayIndex;
 
         public bool DevMode;
+
+        /// <summary>
+        /// Debug with lua listener
+        /// </summary>
+        public bool DebugLua;
         public IRootEditor DevEditor;
         public bool ListenGen;
 
@@ -51,6 +56,7 @@ namespace RogueEssence
 
         private string gamePadID;
         public Dictionary<string, Dictionary<Buttons, string>> ButtonToLabel { get; private set; }
+        public Dictionary<Keys, string> KeyToLabel { get; private set; }
         public Dictionary<string, GamePadMap> GamepadDefaults { get; set; }
         public Buttons[] CurActionButtons { get { return CurSettings.GamepadMaps[gamePadID].ActionButtons; } }
         public string CurGamePadName { get { return CurSettings.GamepadMaps[gamePadID].Name; } }
@@ -88,6 +94,7 @@ namespace RogueEssence
             CurSettings = new Settings();
             gamePadID = "default";
             ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
+            KeyToLabel = new Dictionary<Keys, string>();
             GamepadDefaults = new Dictionary<string, GamePadMap>();
             FNALoggerEXT.LogInfo = LogInfo;
             FNALoggerEXT.LogWarn = LogInfo;
@@ -102,12 +109,20 @@ namespace RogueEssence
 
         public void ListenToMapGen()
         {
-            GenContextDebug.OnError += LogError;
+            GenContextDebug.OnError += logRogueElementsError;
             GenContextDebug.OnStepIn += logRogueElements;
             GenContextDebug.OnStep += logRogueElements;
         }
 
         private List<string> logMsgs = new List<string>();
+        private void logRogueElementsError(Exception ex)
+        {
+            LogError(ex);
+            if (ListenGen)
+            {
+                logMsgs.Add(String.Format("[{0}] Mapgen: {1}: {2}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), ex.GetType().ToString(), ex.Message));
+            }
+        }
         private void logRogueElements(string msg)
         {
             if (ListenGen)
@@ -309,7 +324,7 @@ namespace RogueEssence
             }
         }
 
-        public void SetupGamepad()
+        public void SetupInputs()
         {
             ButtonToLabel = new Dictionary<string, Dictionary<Buttons, string>>();
             //try to load from file
@@ -329,6 +344,19 @@ namespace RogueEssence
 
                 string fileName = Path.GetFileNameWithoutExtension(filePath);
                 ButtonToLabel[fileName] = mapping;
+            }
+
+            KeyToLabel = new Dictionary<Keys, string>();
+            {
+                string filePath = CONTROLS_LABEL_PATH + "keyboard.xml";
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(filePath);
+
+                foreach (XmlNode button in xmldoc.SelectNodes("root/Key"))
+                {
+                    Keys btn = Enum.Parse<Keys>(button.Attributes["name"].Value);
+                    KeyToLabel[btn] = button.InnerText;
+                }
             }
 
             filePaths = Directory.GetFiles(CONTROLS_DEFAULT_PATH, "*.xml");
@@ -375,8 +403,9 @@ namespace RogueEssence
                     settings.BattleFlow = Enum.Parse<Settings.BattleSpeed>(xmldoc.SelectSingleNode("Config/BattleFlow").InnerText);
                     settings.DefaultSkills = Enum.Parse<Settings.SkillDefault>(xmldoc.SelectSingleNode("Config/DefaultSkills").InnerText);
                     settings.Minimap = Int32.Parse(xmldoc.SelectSingleNode("Config/Minimap").InnerText);
+                    settings.MinimapColor = Enum.Parse<Settings.MinimapStyle>(xmldoc.SelectSingleNode("Config/MinimapColor").InnerText);
 
-                    settings.TextSpeed = Int32.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
+                    settings.TextSpeed = Double.Parse(xmldoc.SelectSingleNode("Config/TextSpeed").InnerText);
                     settings.Border = Int32.Parse(xmldoc.SelectSingleNode("Config/Border").InnerText);
                     settings.Window = Int32.Parse(xmldoc.SelectSingleNode("Config/Window").InnerText);
                     settings.Language = xmldoc.SelectSingleNode("Config/Language").InnerText;
@@ -517,6 +546,7 @@ namespace RogueEssence
                 docNode.AppendInnerTextChild(xmldoc, "BattleFlow", settings.BattleFlow.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "DefaultSkills", settings.DefaultSkills.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Minimap", settings.Minimap.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "MinimapColor", settings.MinimapColor.ToString());
 
                 docNode.AppendInnerTextChild(xmldoc, "TextSpeed", settings.TextSpeed.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "Border", settings.Border.ToString());
@@ -638,18 +668,24 @@ namespace RogueEssence
 
                     string quest = xmldoc.SelectSingleNode("Config/Quest").InnerText;
                     ModHeader newQuest = ModHeader.Invalid;
-                    ModHeader questHeader = PathMod.GetModDetails(quest);
-                    if (questHeader.IsValid())
-                        newQuest = questHeader;
+                    if (!String.IsNullOrEmpty(quest))
+                    {
+                        ModHeader questHeader = PathMod.GetModDetails(PathMod.FromExe(quest));
+                        if (questHeader.IsValid())
+                            newQuest = questHeader;
+                    }
 
                     List<ModHeader> modList = new List<ModHeader>();
                     XmlNode modsNode = xmldoc.SelectSingleNode("Config/Mods");
                     foreach (XmlNode modNode in modsNode.SelectNodes("Mod"))
                     {
                         string mod = modNode.InnerText;
-                        ModHeader modHeader = PathMod.GetModDetails(mod);
-                        if (modHeader.IsValid())
-                            modList.Add(modHeader);
+                        if (!String.IsNullOrEmpty(mod))
+                        {
+                            ModHeader modHeader = PathMod.GetModDetails(PathMod.FromExe(mod));
+                            if (modHeader.IsValid())
+                                modList.Add(modHeader);
+                        }
                     }
 
                     return (newQuest, modList.ToArray());
@@ -660,6 +696,16 @@ namespace RogueEssence
                 }
             }
             return (ModHeader.Invalid, new ModHeader[0] { });
+        }
+
+        public void PrintModSettings()
+        {
+            DiagManager.Instance.LogInfo("-----------------------------------------");
+            if (PathMod.Quest.IsValid())
+                DiagManager.Instance.LogInfo(String.Format("Quest: {0} {1} {2}", PathMod.Quest.Name, PathMod.Quest.Version, PathMod.Quest.UUID));
+            foreach (ModHeader mod in PathMod.Mods)
+                DiagManager.Instance.LogInfo(String.Format("Mod: {0} {1} {2}", mod.Name, mod.Version, mod.UUID));
+            DiagManager.Instance.LogInfo("-----------------------------------------");
         }
 
         public void SaveModSettings()
@@ -734,6 +780,10 @@ namespace RogueEssence
 
         public string GetKeyboardString(Keys key)
         {
+            string mappedString;
+            if (KeyToLabel.TryGetValue(key, out mappedString))
+                return Regex.Unescape(mappedString);
+
             return "[" + key.ToLocal() + "]";
         }
 

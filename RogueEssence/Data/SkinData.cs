@@ -18,9 +18,30 @@ namespace RogueEssence.Data
         public string Comment { get; set; }
 
         public int IndexNum;
+        
+        /// <summary>
+        /// The symbol displayed next the characters species name.
+        /// </summary>
         public char Symbol;
+        
+        /// <summary>
+        /// The color displayed on the minimap.
+        /// </summary>
         public Color MinimapColor;
+        
+        /// <summary>
+        /// The VFX effect played when becoming the team leader.
+        /// </summary>
         public BattleFX LeaderFX;
+        
+        /// <summary>
+        /// Whether to show the skin type in the member info menu.
+        /// </summary>
+        public bool Display;
+        
+        /// <summary>
+        /// Whether the character with this skin can be sent home during Roguelocke.
+        /// </summary>
         public bool Challenge;
 
         public EntrySummary GenerateEntrySummary()

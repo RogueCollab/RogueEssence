@@ -33,6 +33,10 @@ namespace RogueEssence.Dungeon
             /// </summary>
             Cone,
             /// <summary>
+            /// Hits the tiles up, down, left and right of the center.
+            /// </summary>
+            Cross,
+            /// <summary>
             /// Hits the tiles left and right of the center.
             /// </summary>
             Sides
@@ -134,6 +138,13 @@ namespace RogueEssence.Dungeon
                 int dot2 = Loc.Dot(diff, ortho2);
 
                 if (dot1 > 0 || dot2 < 0)
+                    return false;
+            }
+            else if (limit == AreaLimit.Cross)
+            {
+                Loc diff = loc - origin;
+                //if both x and y are nonzero, fail
+                if ((diff.X != 0) && (diff.Y != 0))
                     return false;
             }
             else if (limit == AreaLimit.Sides)
@@ -280,6 +291,7 @@ namespace RogueEssence.Dungeon
         public virtual void Draw(SpriteBatch spriteBatch, Loc offset) { }
 
         public abstract Loc GetDrawLoc(Loc offset);
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public abstract Loc GetDrawSize();
     }

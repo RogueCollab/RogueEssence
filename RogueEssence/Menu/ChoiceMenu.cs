@@ -1,27 +1,21 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
     public abstract class ChoiceMenu : InteractableMenu
     {
-        public List<IMenuElement> NonChoices;
+        public List<IMenuElement> NonChoices { get { return Elements; } }
         public List<IChoosable> Choices;
 
-        //TODO: add this into the non-choices list?
         protected MenuCursor cursor;
 
         public ChoiceMenu()
         {
-            cursor = new MenuCursor(this);
-            NonChoices = new List<IMenuElement>();
+            cursor = new MenuCursor(MenuLabel.CURSOR, this, Dir4.Right);
             Choices = new List<IChoosable>();
         }
-
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return cursor;
             foreach (IChoosable choice in Choices)
@@ -30,12 +24,29 @@ namespace RogueEssence.Menu
                 yield return nonChoice;
         }
 
-
-        public override void Draw(SpriteBatch spriteBatch)
+        public virtual List<IChoosable> ExportChoices() => new(Choices);
+        public void ImportChoices(List<IChoosable> choices)
         {
-            if (!Visible)
-                return;
-            base.Draw(spriteBatch);
+            ImportChoices(choices.ToArray());
+        }
+        public abstract void ImportChoices(params IChoosable[] choices);
+
+        public int GetChoiceIndexByLabel(string label)
+        {
+            return GetChoiceIndicesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, Choices);
+        }
+
+        public int GetNonChoiceIndexByLabel(string label)
+        {
+            return GetNonChoiceIndicesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetNonChoiceIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, NonChoices);
         }
     }
 }

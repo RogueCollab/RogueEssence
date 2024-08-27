@@ -5,14 +5,17 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using System.Text.RegularExpressions;
 using RogueEssence.Content;
 using System.Text;
 using RogueEssence.Script;
+using System.Linq;
 
 namespace RogueEssence.Dev
 {
     public static class DevHelper
     {
+        //TODO: this is old conversion code and needs to be deleted, but maybe the code could be salvaged for some mass rename operation?
         public static Version StringAssetVersion = new Version(0, 6, 0);
 
         public static Version GetVersion(params string[] dirs)
@@ -53,7 +56,7 @@ namespace RogueEssence.Dev
                 try
                 {
                     int index = Int32.Parse(file);
-                    IEntryData data = DataManager.LoadData<IEntryData>(dir);
+                    IEntryData data = DataManager.LoadObject<IEntryData>(dir);
                     while (intToName.Count <= index)
                         intToName.Add("");
                     if (data.Name.DefaultText != "")
@@ -358,7 +361,7 @@ namespace RogueEssence.Dev
                 //rename all the zone files
                 string[] intToName = convertAssetTypeFromTxt(DataManager.DataType.Zone);
 
-                string scriptFolder = PathMod.HardMod(LuaEngine.ZONE_SCRIPT_DIR);
+                string scriptFolder = PathMod.HardMod(Path.Join(LuaEngine.SCRIPT_PATH, PathMod.GetCurrentNamespace(), LuaEngine.ZONE_SCRIPT_DIR));
                 //now rename the script paths
                 for (int ii = 0; ii < intToName.Length; ii++)
                 {
@@ -389,128 +392,112 @@ namespace RogueEssence.Dev
             return String.Join(' ', words);
         }
 
+        public static void ResaveBase(bool useDiff)
+        {
+            //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
+            //yes, this is so that they can load properly on the reserialization step
+            {
+                ActiveEffect data = DataManager.LoadModData<ActiveEffect>(PathMod.Quest, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
+
+                //save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
+                //SaveData will do this automatically!
+                if (data != null)
+                    DataManager.SaveData(data, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, useDiff ? DataManager.SavePolicy.Diff : DataManager.SavePolicy.File);
+            }
+        }
+
         public static void ReserializeBase()
         {
+            //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
+            //yes, this is so that they can load properly on the reserialization step
             {
-                //TODO: Created v0.5.20, delete on v1.1
-                string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal.bin");
-                if (File.Exists(dir))
-                {
-                    object data = DataManager.LoadData<UniversalActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
-                    DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), data);
+                ActiveEffect data = DataManager.LoadModData<ActiveEffect>(PathMod.Quest, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
 
-                    File.Delete(dir);
-                }
+                //save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not
+                //SaveData will do this automatically!
+                if (data != null)
+                    DataManager.SaveData(data, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
             }
 
+            // search for data EXT as well as PATCH_EXT.
+            // This means searching for all files first
+            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*"))
             {
-                //TODO: Created v0.5.20, delete on v1.1
-                string dir = PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT);
-                if (File.Exists(dir))
-                {
-
-                    Version oldVersion = GetVersion(dir);
-                    //TODO: Created v0.7.14, delete on v1.1
-                    if (oldVersion < new Version(7, 14))
-                    {
-                        object data = DataManager.LoadData<ActiveEffect>(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
-                        UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
-                        universalActiveEffect.AddOther((ActiveEffect)data);
-                        DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), universalActiveEffect);
-                    }
-                    else
-                    {
-                        object data = DataManager.LoadData<ActiveEffect>(dir);
-                        DataManager.SaveData(dir, data);
-                    }
-
-                }
-            }
-
-            //TODO: Created v0.5.20, delete on v1.1
-            foreach (string dir in PathMod.GetHardModFiles(DataManager.FX_PATH, "*.fx"))
-            {
-                object data;
-                if (Path.GetFileName(dir) == "NoCharge.fx")
-                    data = DataManager.LoadData<EmoteFX>(dir);
-                else
-                    data = DataManager.LoadData<BattleFX>(dir);
-
                 string fileName = Path.GetFileNameWithoutExtension(dir);
-                DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.FX_PATH, fileName + DataManager.DATA_EXT)), data);
-
-                File.Delete(PathMod.HardMod(Path.Join(DataManager.FX_PATH, fileName + ".fx")));
+                string ext = Path.GetExtension(dir);
+                //then filtering just the data/patch ext
+                if (ext == DataManager.DATA_EXT || ext == DataManager.PATCH_EXT)
+                {
+                    object data;
+                    if (fileName == "NoCharge")
+                        data = DataManager.LoadModData<EmoteFX>(PathMod.Quest, DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                    else
+                        data = DataManager.LoadModData<BattleFX>(PathMod.Quest, DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                    DataManager.SaveData(data, DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                }
             }
 
-            foreach (string dir in PathMod.GetModFiles(DataManager.FX_PATH, "*" + DataManager.DATA_EXT))
-            {
-                object data;
-                if (Path.GetFileName(dir) == "NoCharge" + DataManager.DATA_EXT)
-                    data = DataManager.LoadData<EmoteFX>(dir);
-                else
-                    data = DataManager.LoadData<BattleFX>(dir);
-                DataManager.SaveData(dir, data);
-            }
-
-
+            //no need for involving mod paths here
             foreach (string dir in Directory.GetFiles(Path.Combine(PathMod.RESOURCE_PATH, "Extensions"), "*.op"))
             {
                 object data;
-                data = DataManager.LoadData<CharSheetOp>(dir);
-                DataManager.SaveData(dir, data);
+                data = DataManager.LoadObject<CharSheetOp>(dir);
+                DataManager.SaveObject(data, dir);
             }
         }
+
+        public static void Resave(DataManager.DataType conversionFlags, bool useDiff)
+        {
+            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+            {
+                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
+                    ResaveData<IEntryData>(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, useDiff);
+            }
+        }
+
+        public static void ResaveData<T>(string dataPath, string ext, bool useDiff)
+        {
+            // search for data EXT as well as diff EXT...
+            // This means searching for all files first
+            foreach (string dir in PathMod.GetHardModFiles(dataPath, "*"))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string testExt = Path.GetExtension(dir);
+                //then filtering just the data/patch ext
+                if (testExt == ext || testExt == DataManager.PATCH_EXT)
+                {
+                    T data = DataManager.LoadModData<T>(PathMod.Quest, dataPath, fileName, ext);
+                    if (data != null)
+                        DataManager.SaveData(data, dataPath, fileName, ext, useDiff ? DataManager.SavePolicy.Diff : DataManager.SavePolicy.File);
+                }
+            }
+        }
+
 
         public static void Reserialize(DataManager.DataType conversionFlags)
         {
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                {
-                    //TODO: Created v0.5.20, delete on v1.1
-                    foreach (string dir in PathMod.GetHardModFiles(DataManager.DATA_PATH + type.ToString() + "/", "*.bin"))
-                    {
-                        object data = DataManager.LoadData(dir, type.GetClassType());
-                        if (data != null)
-                        {
-                            string fileName = Path.GetFileNameWithoutExtension(dir);
-                            if (data is MonsterData)
-                            {
-                                MonsterData monData = data as MonsterData;
-                                int dexNum = 0;
-                                foreach (string key in DataManager.Instance.Conversions[DataManager.DataType.Monster].Keys)
-                                {
-                                    if (DataManager.Instance.Conversions[DataManager.DataType.Monster][key] == fileName)
-                                    {
-                                        Int32.TryParse(key, out dexNum);
-                                        break;
-                                    }
-                                }
-                                monData.IndexNum = dexNum;
-                            }
-                            DataManager.SaveData(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + DataManager.DATA_EXT)), data);
-
-                            File.Delete(PathMod.HardMod(Path.Join(DataManager.DATA_PATH + type.ToString() + "/", fileName + ".bin")));
-                        }
-                    }
-
-                    ReserializeData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, type.GetClassType());
-                }
+                    ReserializeData<IEntryData>(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT);
             }
         }
 
         public static void ReserializeData<T>(string dataPath, string ext)
         {
-            ReserializeData(dataPath, ext, typeof(T));
-        }
-
-        public static void ReserializeData(string dataPath, string ext, Type t)
-        {
-            foreach (string dir in PathMod.GetHardModFiles(dataPath, "*" + ext))
+            // search for data EXT as well as diff EXT...
+            // This means searching for all files first
+            foreach (string dir in PathMod.GetHardModFiles(dataPath, "*"))
             {
-                object data = DataManager.LoadData(dir, t);
-                if (data != null)
-                    DataManager.SaveData(dir, data);
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string testExt = Path.GetExtension(dir);
+                //then filtering just the data/patch ext
+                if (testExt == ext || testExt == DataManager.PATCH_EXT)
+                {
+                    T data = DataManager.LoadModData<T>(PathMod.Quest, dataPath, fileName, ext);
+                    if (data != null)
+                        DataManager.SaveData(data, dataPath, fileName, ext);
+                }
             }
         }
 
@@ -524,7 +511,7 @@ namespace RogueEssence.Dev
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                    IndexNamedData(DataManager.DATA_PATH + type.ToString() + "/", type.GetClassType());
+                    IndexNamedData(DataManager.DATA_PATH + type.ToString() + "/");
             }
         }
         public static void RunExtraIndexing(DataManager.DataType conversionFlags)
@@ -535,29 +522,29 @@ namespace RogueEssence.Dev
                 if ((baseData.TriggerType & conversionFlags) != DataManager.DataType.None)
                 {
                     baseData.ReIndex();
-                    DataManager.SaveData(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + DataManager.DATA_EXT), baseData);
-
-                    //TODO: Created v0.5.20, delete on v1.1
-                    File.Delete(PathMod.HardMod(DataManager.MISC_PATH + baseData.FileName + ".bin"));
+                    DataManager.SaveData(baseData, DataManager.MISC_PATH, baseData.FileName, DataManager.DATA_EXT);
                 }
             }
-            DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + "Index" + DataManager.DATA_EXT), DataManager.Instance.UniversalData);
-
-            //TODO: Created v0.5.20, delete on v1.1
-            File.Delete(PathMod.HardMod(DataManager.MISC_PATH + "Index.bin"));
+            DataManager.SaveData(DataManager.Instance.UniversalData, DataManager.MISC_PATH, "Index", DataManager.DATA_EXT);
         }
 
 
-        public static void IndexNamedData(string dataPath, Type t)
+
+        public static void IndexNamedData(string dataPath)
         {
             try
             {
                 Dictionary<string, EntrySummary> entries = new Dictionary<string, EntrySummary>();
-                foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*" + DataManager.DATA_EXT))
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(dataPath), "*"))
                 {
-                    string file = Path.GetFileNameWithoutExtension(dir);
-                    IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
-                    entries[file] = data.GenerateEntrySummary();
+                    string fileName = Path.GetFileNameWithoutExtension(dir);
+                    string testExt = Path.GetExtension(dir);
+                    //then filtering just the data/patch ext
+                    if (testExt == DataManager.DATA_EXT || testExt == DataManager.PATCH_EXT)
+                    {
+                        IEntryData data = DataManager.LoadModData<IEntryData>(PathMod.Quest, dataPath, fileName, DataManager.DATA_EXT);
+                        entries[fileName] = data.GenerateEntrySummary();
+                    }
                 }
 
                 if (entries.Count > 0)
@@ -574,33 +561,12 @@ namespace RogueEssence.Dev
             }
         }
 
-        public static void DemoAllData(DataManager.DataType conversionFlags)
-        {
-
-            foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
-            {
-                if (type != DataManager.DataType.All && (conversionFlags & type) != DataManager.DataType.None)
-                    DemoData(DataManager.DATA_PATH + type.ToString() + "/", DataManager.DATA_EXT, type.GetClassType());
-            }
-        }
-
-        public static void DemoData(string dataPath, string ext, Type t)
-        {
-            foreach (string dir in PathMod.GetModFiles(dataPath, "*" + ext))
-            {
-                IEntryData data = (IEntryData)DataManager.LoadData(dir, t);
-                if (!data.Released)
-                    data = (IEntryData)ReflectionExt.CreateMinimalInstance(data.GetType());
-                DataManager.SaveData(dir, data);
-            }
-        }
-
 
         public static void MergeQuest(string quest)
         {
             DiagManager.Instance.LogInfo(String.Format("Creating standalone from quest: {0}", String.Join(", ", quest)));
 
-            string outputPath = Path.Combine(PathMod.ExePath, "Build", quest);
+            string outputPath = Path.Combine(PathMod.ExePath, "BUILD", quest);
 
             if (Directory.Exists(outputPath))
                 Directory.Delete(outputPath, true);
@@ -614,11 +580,20 @@ namespace RogueEssence.Dev
                 File.Copy(Path.Combine(PathMod.ExePath, pngName), Path.Combine(outputPath, pngName));
 
             //Base - direct copy from game
-            copyRecursive(GraphicsManager.BASE_PATH, Path.Combine(outputPath, "Base"));
+            copyRecursive(PathMod.BASE_PATH, Path.Combine(outputPath, "Base"));
+            {
+                //Except for Path Params: the namespace of the mod must be added in script
+                List<string> newList = new List<string>();
+                newList.AddRange(PathMod.BaseScriptNamespaces);
+                if (!newList.Contains(PathMod.Quest.Namespace))
+                    newList.Add(PathMod.Quest.Namespace);
+                PathMod.SaveNamespaces(Path.Combine(outputPath, "Base"), PathMod.BaseNamespace, newList);
+            }
 
             //Strings - deep merge files
             Directory.CreateDirectory(outputPath);
             copyRecursive(PathMod.NoMod("Strings"), Path.Combine(outputPath, "Strings"));
+            //TODO: merge Languages.xml too?
             mergeStringXmlRecursive(PathMod.HardMod("Strings"), Path.Combine(outputPath, "Strings"));
 
             //Editor - direct copy from game
@@ -661,23 +636,90 @@ namespace RogueEssence.Dev
             }
 
             //Data - merge copy everything including script
-            //script will do fine with duplicate files being merged over, EXCEPT for strings files
-            //TODO: only copy what is indexed for characters and portraits
             Directory.CreateDirectory(Path.Combine(outputPath, DataManager.DATA_PATH));
 
-            //universal data, start params, etc.
-            foreach (string subPath in Directory.GetFiles(PathMod.NoMod(DataManager.DATA_PATH)))
             {
-                string path = Path.GetFileName(subPath);
-                File.Copy(subPath, Path.Combine(outputPath, DataManager.DATA_PATH, path));
+                //start params
+                File.Copy(Path.Combine(PathMod.NoMod(DataManager.DATA_PATH), "StartParams.xml"), Path.Combine(outputPath, DataManager.DATA_PATH, "StartParams.xml"));
+                if (File.Exists(Path.Combine(PathMod.HardMod(DataManager.DATA_PATH), "StartParams.xml")))
+                    File.Copy(Path.Combine(PathMod.HardMod(DataManager.DATA_PATH), "StartParams.xml"), Path.Combine(outputPath, DataManager.DATA_PATH, "StartParams.xml"), true);
             }
 
-            //actual data files
-            copyRecursive(PathMod.NoMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
-            copyRecursive(PathMod.HardMod(DataManager.DATA_PATH), Path.Combine(outputPath, DataManager.DATA_PATH));
-            //TODO: merge strings files for ground map strings instead of overwrite
+            {
+                //merge the universal json
+                ActiveEffect data = DataManager.LoadData<ActiveEffect>(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
+                if (data != null)
+                    DataManager.SaveObject(data, Path.Combine(outputPath, DataManager.DATA_PATH, "Universal" + DataManager.DATA_EXT));
+            }
+
+            {
+                //merge the systemfx
+                Directory.CreateDirectory(Path.Combine(outputPath, DataManager.FX_PATH));
+                foreach (string dir in Directory.GetFiles(PathMod.NoMod(DataManager.FX_PATH)))
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(dir);
+                    string ext = Path.GetExtension(dir);
+                    //then filtering just the data/patch ext
+                    if (ext == DataManager.DATA_EXT || ext == DataManager.PATCH_EXT)
+                    {
+                        object data;
+                        if (fileName == "NoCharge")
+                            data = DataManager.LoadData<EmoteFX>(DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                        else
+                            data = DataManager.LoadData<BattleFX>(DataManager.FX_PATH, fileName, DataManager.DATA_EXT);
+                        DataManager.SaveObject(data, Path.Combine(outputPath, DataManager.FX_PATH, fileName + DataManager.DATA_EXT));
+                    }
+                }
+            }
+
+            {
+                //merge the main datatypes
+                foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
+                {
+                    if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+                        continue;
+
+                    //all files that were changed
+                    Directory.CreateDirectory(Path.Combine(outputPath, DataManager.DATA_PATH, type.ToString()));
+                    mergeEntryData(outputPath, type.ToString(), DataManager.DATA_EXT);
+                }
+            }
+
+            {
+                //merge map and ground
+                Directory.CreateDirectory(Path.Combine(outputPath, DataManager.MAP_PATH));
+                mergeEntryData(outputPath, DataManager.MAP_FOLDER, DataManager.MAP_EXT);
+                Directory.CreateDirectory(Path.Combine(outputPath, DataManager.GROUND_PATH));
+                mergeEntryData(outputPath, DataManager.GROUND_FOLDER, DataManager.GROUND_EXT);
+            }
+
+            {
+                //script will do fine with duplicate files being merged over
+                Directory.CreateDirectory(Path.Combine(outputPath, LuaEngine.SCRIPT_PATH));
+                copyRecursive(PathMod.NoMod(LuaEngine.SCRIPT_PATH), Path.Combine(outputPath, LuaEngine.SCRIPT_PATH));
+                copyRecursive(PathMod.HardMod(LuaEngine.SCRIPT_PATH), Path.Combine(outputPath, LuaEngine.SCRIPT_PATH));
+
+                //resx files will need to be smartly merged: merge them to the base namespace corresponding folder
+                //for all folders in the script path...
+                string groundDestSubFolder = Path.Join(outputPath, LuaEngine.SCRIPT_PATH, PathMod.BaseNamespace, "ground");
+                foreach (string dir in Directory.GetDirectories(Path.Combine(outputPath, LuaEngine.SCRIPT_PATH)))
+                {
+                    string dirName = new DirectoryInfo(dir).Name;
+                    if (dirName == "lib" || dirName == "bin")
+                        continue;
+                    if (dirName == PathMod.BaseNamespace)
+                        continue;
+                    //for all folders that are of the other namespaces
+                    //merge strings of all subfolders in the ground folder
+                    string groundSubFolder = Path.Join(dir, "ground");
+                    mergeStringXmlRecursive(groundSubFolder, groundDestSubFolder, true);
+                }
+                
+            }
+
 
             //save merged data indices
+            //TODO: just recompute them in the output folder?
             foreach (DataManager.DataType type in Enum.GetValues(typeof(DataManager.DataType)))
             {
                 if (type == DataManager.DataType.All || type == DataManager.DataType.None)
@@ -685,7 +727,7 @@ namespace RogueEssence.Dev
 
                 EntryDataIndex idx = DataManager.GetIndex(type);
                 using (Stream stream = new FileStream(Path.Combine(outputPath, DataManager.DATA_PATH + type.ToString() + "/" + "index.idx"), FileMode.Create, FileAccess.Write, FileShare.None))
-                    Serializer.SerializeData(stream, idx);
+                    Serializer.SerializeData(stream, idx.GetEntriesWithoutGuid());
             }
 
 
@@ -707,7 +749,7 @@ namespace RogueEssence.Dev
                 File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
         }
 
-        private static void mergeStringXmlRecursive(string srcDir, string destDir)
+        private static void mergeStringXmlRecursive(string srcDir, string destDir, bool deleteOrig = false)
         {
             if (!Directory.Exists(srcDir))
                 return;
@@ -716,14 +758,17 @@ namespace RogueEssence.Dev
                 Directory.CreateDirectory(destDir);
 
             foreach (string directory in Directory.GetDirectories(srcDir))
-                mergeStringXmlRecursive(directory, Path.Combine(destDir, Path.GetFileName(directory)));
+                mergeStringXmlRecursive(directory, Path.Combine(destDir, Path.GetFileName(directory)), deleteOrig);
 
             foreach (string file in Directory.GetFiles(srcDir))
             {
                 if (Path.GetExtension(file) == ".resx")
+                {
                     mergeStringXml(file, Path.Combine(destDir, Path.GetFileName(file)));
-                else
-                    File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)), true);
+
+                    if (deleteOrig)
+                        File.Delete(file);
+                }
             }
         }
 
@@ -734,6 +779,33 @@ namespace RogueEssence.Dev
             foreach (string key in srcDict.Keys)
                 destDict[key] = srcDict[key];
             Text.SaveStringResx(destPath, destDict);
+        }
+
+        private static void mergeEntryData(string outputPath, string subfolder, string ext)
+        {
+            //all files from base, and all files that were changed
+            foreach (string dir in Directory.GetFiles(PathMod.NoMod(Path.Combine(DataManager.DATA_PATH, subfolder))))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(dir);
+                string fileExt = Path.GetExtension(dir);
+
+                if (fileExt == ext || fileExt == DataManager.PATCH_EXT)
+                {
+                    IEntryData data = DataManager.LoadEntryData<IEntryData>(fileName, subfolder, ext);
+                    DataManager.SaveObject(data, Path.Combine(outputPath, DataManager.DATA_PATH, subfolder, fileName + ext));
+                }
+            }
+
+            //all files that were added
+            string destDir = Path.Combine(outputPath, DataManager.DATA_PATH, subfolder);
+            if (Directory.Exists(PathMod.HardMod(Path.Combine(DataManager.DATA_PATH, subfolder))))
+            {
+                foreach (string dir in Directory.GetFiles(PathMod.HardMod(Path.Combine(DataManager.DATA_PATH, subfolder)), "*" + ext))
+                {
+                    if (!File.Exists(Path.Combine(destDir, Path.GetFileName(dir))))
+                        File.Copy(dir, Path.Combine(destDir, Path.GetFileName(dir)));
+                }
+            }
         }
     }
 }

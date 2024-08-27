@@ -15,13 +15,33 @@ namespace RogueEssence.Dungeon
 
         public TurnState()
         {
-            CurrentOrder = new TurnOrder(0, Faction.Player, 0, false);
+            CurrentOrder = new TurnOrder(0, Faction.Player, 0);
             TurnToChar = new List<CharIndex>();
         }
 
-        public void SkipRemainingTurns()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="team"></param>
+        /// <param name="reset">True = Reset everyone's turns.  False = Skip everyone's turns</param>
+        public void SetTeamRound(Team team, bool reset)
         {
-            CurrentOrder.SkipAll = true;
+            foreach(ITurnChar character in team.IterateByRank())
+                setCharacterRound(character, reset);
+        }
+
+        private void setCharacterRound(ITurnChar character, bool reset)
+        {
+            if (character.Dead)
+                return;
+
+            if (reset)
+            {
+                character.TiersUsed = 0;
+                character.TurnUsed = false;
+            }
+            else
+                character.TurnUsed = true;
         }
 
         public CharIndex GetCurrentTurnChar()
@@ -63,6 +83,11 @@ namespace RogueEssence.Dungeon
                 CurrentOrder.TurnIndex--;
         }
 
+        /// <summary>
+        /// Assumes the team being removed is empty.
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="removedTeam"></param>
         public void UpdateTeamRemoval(Faction faction, int removedTeam)
         {
             //The TurnToChar list will always contain only one faction's worth of turns.
@@ -79,12 +104,9 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public bool IsEligibleToMove(Character character)
+        public bool IsEligibleToMove(ITurnChar character)
         {
             if (character.Dead)
-                return false;
-
-            if (CurrentOrder.SkipAll)
                 return false;
 
             if (character.TurnUsed)
@@ -121,27 +143,44 @@ namespace RogueEssence.Dungeon
                 loadTeamMemberTurnMap(faction, teamIndex, true, ii, team.Guests);
         }
 
-        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, EventedList<Character> playerList)
+        /// <summary>
+        /// Loads the team members' charIndex into the turn map
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="teamIndex"></param>
+        /// <param name="guest"></param>
+        /// <param name="charIndex"></param>
+        /// <param name="playerList"></param>
+        private void loadTeamMemberTurnMap(Faction faction, int teamIndex, bool guest, int charIndex, IList<Character> playerList)
         {
-            Character character = playerList[charIndex];
+            ITurnChar character = playerList[charIndex];
             if (!character.Dead)
             {
                 if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
-                {
                     character.TurnWait--;
-                    character.TiersUsed = 0;
-                    character.TurnUsed = false;//refresh turn-used immediately after
-                }
             }
 
-            if (IsEligibleToMove(character))
-                TurnToChar.Add(new CharIndex(faction, teamIndex, guest, charIndex));
+            //We do not need to check for eligibility to move, because it is to be done whenever any action-related things are checked
+            TurnToChar.Add(new CharIndex(faction, teamIndex, guest, charIndex));
         }
 
+        /// <summary>
+        /// When team members swap positions, their indices on the turn list need to be swapped too.
+        /// Then, they need to be re-ordered to fit their new indices.
+        /// This assumes that both characters are in the turn list.  Which they should be since all members of the faction are.
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="teamIndex"></param>
+        /// <param name="guest"></param>
+        /// <param name="oldSlot"></param>
+        /// <param name="newSlot"></param>
         public void AdjustSlotSwap(Faction faction, int teamIndex, bool guest, int oldSlot, int newSlot)
         {
             if (faction != CurrentOrder.Faction)
                 return;
+
+            int oldPos = -1;
+            int newPos = -1;
 
             for (int ii = 0; ii < TurnToChar.Count; ii++)
             {
@@ -149,10 +188,23 @@ namespace RogueEssence.Dungeon
                 if (turnChar.Team == teamIndex && turnChar.Guest == guest)
                 {
                     if (turnChar.Char == oldSlot)
+                    {
                         TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, newSlot);
+                        newPos = ii;
+                    }
                     else if (turnChar.Char == newSlot)
+                    {
                         TurnToChar[ii] = new CharIndex(turnChar.Faction, turnChar.Team, turnChar.Guest, oldSlot);
+                        oldPos = ii;
+                    }
                 }
+            }
+
+            if (oldPos > -1 && newPos > -1)
+            {
+                CharIndex tmp = TurnToChar[newPos];
+                TurnToChar[newPos] = TurnToChar[oldPos];
+                TurnToChar[oldPos] = tmp;
             }
         }
 
@@ -214,6 +266,5 @@ namespace RogueEssence.Dungeon
                 TurnToChar.Insert(firstIdx, leaderIndex);
             }
         }
-
     }
 }

@@ -56,10 +56,16 @@ namespace RogueEssence.Data
         [NonSerialized]
         public DataManager.DataType DataType;
 
+        /// <summary>
+        /// Elemental typing of attack
+        /// </summary>
         [JsonConverter(typeof(ElementConverter))]
         [DataType(0, DataManager.DataType.Element, false)]
         public string Element;
 
+        /// <summary>
+        /// Category of attack
+        /// </summary>
         public SkillCategory Category;
 
         /// <summary>
@@ -71,18 +77,21 @@ namespace RogueEssence.Data
         /// Special variables that this skill contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<SkillState> SkillStates;
 
         /// <summary>
         /// Occurs before the attacker tries to use the skill.
         /// If the skill is cancelled here, the turn and skill are not used.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeTryActions;
 
         /// <summary>
         /// Occurs before the attacker uses the skill.
         /// If the skill is cancelled here, the turn will still be passed.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeActions;
 
         /// <summary>
@@ -90,41 +99,48 @@ namespace RogueEssence.Data
         /// The skill will have been called out, and the turn will be passed.
         /// In a skill with multiple strikes, this event will be called at the beginning of each strike.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> OnActions;
 
         /// <summary>
         /// Occurs after a tile is targeted and before it creates a splash damage hitbox.
         /// Can be used to alter the hitbox or redirect it.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeExplosions;
 
         /// <summary>
         /// Occurs before the target is hit.
         /// At this point, the target variable is available for calculations.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeHits;
 
         /// <summary>
         /// Occurs when the target is hit.
         /// Does not occur if the target evaded the attack.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> OnHits;
 
         /// <summary>
         /// Occurs when the attack hits a tile.
         /// Can be used for terrain deformation.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> OnHitTiles;
 
         /// <summary>
         /// Occurs after all targets are hit by the skill.
         /// In a skill with multiple strikes, this event will be called at the end of each strike.
         /// </summary>
+        [ListCollapse]
         public PriorityList<BattleEvent> AfterActions;
 
         /// <summary>
         /// Modifies the elemental effect system.
         /// </summary>
+        [ListCollapse]
         public PriorityList<ElementEffectEvent> ElementEffects;
 
         /// <summary>

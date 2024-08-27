@@ -8,6 +8,7 @@ using RogueEssence.Data;
 using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Script;
+using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -15,7 +16,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public void btnEditStartParams_Click()
         {
-            OpenList<StartParams>("Start Params", DataManager.Instance.Start, (obj) => {
+            OpenItem<StartParams>("Start Params", DataManager.Instance.Start, (obj) => {
                 DataManager.Instance.Start = obj;
                 DataManager.Instance.SaveStartParams();
             });
@@ -23,100 +24,151 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnEditUniversal_Click()
         {
-            OpenList<UniversalActiveEffect>("Universal Event", (UniversalActiveEffect) DataManager.Instance.UniversalEvent, (obj) => {
+            OpenItem<UniversalBaseEffect>("Universal Event", (UniversalBaseEffect)DataManager.Instance.UniversalEvent, (obj) => {
                 DataManager.Instance.UniversalEvent = obj;
-                DataManager.SaveData(PathMod.HardMod(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT), obj);
+                DataManager.SaveData(obj, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
             });
         }
+        public async void mnuUniversalFile_Click()
+        {
+            DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
+            if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
+            {
+                await MessageBox.Show(parent, "Universal data must have saved edits first!", "Error", MessageBox.MessageBoxButtons.Ok);
+                return;
+            }
+
+            DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.File);
+
+            await MessageBox.Show(parent, "Universal is now saved as a file.", "Complete", MessageBox.MessageBoxButtons.Ok);
+        }
+        public async void mnuUniversalDiff_Click()
+        {
+            DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
+            if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
+            {
+                await MessageBox.Show(parent, "Universal data must have saved edits first!", "Error", MessageBox.MessageBoxButtons.Ok);
+                return;
+            }
+
+            //you can't make a diff for the base game!
+            DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.Diff);
+
+            if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
+                await MessageBox.Show(parent, "Modded Universal was identical to base. Unneeded patch removed.", "Complete", MessageBox.MessageBoxButtons.Ok);
+            else
+                await MessageBox.Show(parent, "Universal is now saved as a patch.", "Complete", MessageBox.MessageBoxButtons.Ok);
+        }
+
+        public void btnEditStrings_Click()
+        {
+            StringsEditViewModel mv = new StringsEditViewModel();
+            Views.StringsEditForm editForm = new Views.StringsEditForm();
+            mv.LoadStringEntries(false, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
+
+        public void btnEditStringsEx_Click()
+        {
+            StringsEditViewModel mv = new StringsEditViewModel();
+            Views.StringsEditForm editForm = new Views.StringsEditForm();
+            mv.LoadStringEntries(true, editForm);
+            editForm.DataContext = mv;
+            editForm.Show();
+        }
+
+
+
         public void btnEditHeal_Click()
         {
-            OpenList<BattleFX>("Heal FX", DataManager.Instance.HealFX, (fx) => {
+            OpenItem<BattleFX>("Heal FX", DataManager.Instance.HealFX, (fx) => {
                 DataManager.Instance.HealFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Heal" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Heal", DataManager.DATA_EXT);
             });
         }
         public void btnEditRestoreCharge_Click()
         {
-            OpenList<BattleFX>("Restore Charge FX", DataManager.Instance.RestoreChargeFX, (fx) => {
+            OpenItem<BattleFX>("Restore Charge FX", DataManager.Instance.RestoreChargeFX, (fx) => {
                 DataManager.Instance.RestoreChargeFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "RestoreCharge" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "RestoreCharge", DataManager.DATA_EXT);
             });
         }
         public void btnEditLoseCharge_Click()
         {
-            OpenList<BattleFX>("Lose Charge FX", DataManager.Instance.LoseChargeFX, (fx) => {
+            OpenItem<BattleFX>("Lose Charge FX", DataManager.Instance.LoseChargeFX, (fx) => {
                 DataManager.Instance.LoseChargeFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "LoseCharge" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "LoseCharge", DataManager.DATA_EXT);
             });
         }
         public void btnEditNoCharge_Click()
         {
-            OpenList<EmoteFX>("No Charge FX", DataManager.Instance.NoChargeFX, (fx) => {
+            OpenItem<EmoteFX>("No Charge FX", DataManager.Instance.NoChargeFX, (fx) => {
                 DataManager.Instance.NoChargeFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "NoCharge" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "NoCharge", DataManager.DATA_EXT);
             });
         }
         public void btnEditElement_Click()
         {
-            OpenList<BattleFX>("Element FX", DataManager.Instance.ElementFX, (fx) => {
+            OpenItem<BattleFX>("Element FX", DataManager.Instance.ElementFX, (fx) => {
                 DataManager.Instance.ElementFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Element" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Element", DataManager.DATA_EXT);
             });
         }
         public void btnEditIntrinsic_Click()
         {
-            OpenList<BattleFX>("Intrinsic FX", DataManager.Instance.IntrinsicFX, (fx) => {
+            OpenItem<BattleFX>("Intrinsic FX", DataManager.Instance.IntrinsicFX, (fx) => {
                 DataManager.Instance.IntrinsicFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Intrinsic" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Intrinsic", DataManager.DATA_EXT);
             });
         }
         public void btnEditSendHome_Click()
         {
-            OpenList<BattleFX>("Send Home FX", DataManager.Instance.SendHomeFX, (fx) => {
+            OpenItem<BattleFX>("Send Home FX", DataManager.Instance.SendHomeFX, (fx) => {
                 DataManager.Instance.SendHomeFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "SendHome" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "SendHome", DataManager.DATA_EXT);
             });
         }
         public void btnEditItemLost_Click()
         {
-            OpenList<BattleFX>("Item Lost FX", DataManager.Instance.ItemLostFX, (fx) => {
+            OpenItem<BattleFX>("Item Lost FX", DataManager.Instance.ItemLostFX, (fx) => {
                 DataManager.Instance.ItemLostFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "ItemLost" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "ItemLost", DataManager.DATA_EXT);
             });
         }
         public void btnEditWarp_Click()
         {
-            OpenList<BattleFX>("Warp FX", DataManager.Instance.WarpFX, (fx) => {
+            OpenItem<BattleFX>("Warp FX", DataManager.Instance.WarpFX, (fx) => {
                 DataManager.Instance.WarpFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Warp" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Warp", DataManager.DATA_EXT);
             });
         }
 
         public void btnEditKnockback_Click()
         {
-            OpenList<BattleFX>("Knockback FX", DataManager.Instance.KnockbackFX, (fx) => {
+            OpenItem<BattleFX>("Knockback FX", DataManager.Instance.KnockbackFX, (fx) => {
                 DataManager.Instance.KnockbackFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Knockback" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Knockback", DataManager.DATA_EXT);
             });
         }
 
         public void btnEditJump_Click()
         {
-            OpenList<BattleFX>("Jump FX", DataManager.Instance.JumpFX, (fx) => {
+            OpenItem<BattleFX>("Jump FX", DataManager.Instance.JumpFX, (fx) => {
                 DataManager.Instance.JumpFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Jump" + DataManager.DATA_EXT), fx);
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Jump", DataManager.DATA_EXT);
             });
         }
 
         public void btnEditThrow_Click()
         {
-            OpenList<BattleFX>("Throw FX", DataManager.Instance.ThrowFX, (fx) => { DataManager.Instance.ThrowFX = fx;
-                DataManager.SaveData(PathMod.HardMod(DataManager.FX_PATH + "Throw" + DataManager.DATA_EXT), fx);
+            OpenItem<BattleFX>("Throw FX", DataManager.Instance.ThrowFX, (fx) => { DataManager.Instance.ThrowFX = fx;
+                DataManager.SaveData(fx, DataManager.FX_PATH, "Throw", DataManager.DATA_EXT);
             });
         }
 
         private delegate void SaveFX<T>(T obj);
-        private void OpenList<T>(string name, T data, SaveFX<T> saveOp)
+        private void OpenItem<T>(string name, T data, SaveFX<T> saveOp)
         {
             lock (GameBase.lockObj)
             {

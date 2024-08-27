@@ -40,12 +40,18 @@ namespace RogueEssence.Menu
 
                 List<MenuText> rules = new List<MenuText>();
 
-                if (zoneEntry.NoEXP)
+                if (zoneEntry.ExpPercent <= 0)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_EXP"), Loc.Zero));
                 if (zoneEntry.Level > -1)
                 {
                     if (zoneEntry.LevelCap || rogue)
+                    {
                         rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_LEVEL", zoneEntry.Level), Loc.Zero));
+                        if (!zoneEntry.KeepSkills && !rogue)
+                        {
+                            rules.Add(new MenuText(Text.FormatKey("ZONE_RESET_MOVESET"), Loc.Zero));
+                        }
+                    }
                     else
                         rules.Add(new MenuText(Text.FormatKey("ZONE_EXPECT_LEVEL", zoneEntry.Level), Loc.Zero));
                 }
@@ -63,8 +69,11 @@ namespace RogueEssence.Menu
                         rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_MONEY"), Loc.Zero,
                             (showRestrict && save.ActiveTeam.Money > 0) ? Color.Red : Color.White));
                     if (zoneEntry.BagRestrict > -1)
+                    {
+                        int totalRemovable = save.GetTotalRemovableItems(zoneEntry);
                         rules.Add(new MenuText((zoneEntry.BagRestrict == 0) ? Text.FormatKey("ZONE_RESTRICT_ITEM_ALL") : Text.FormatKey("ZONE_RESTRICT_ITEM", zoneEntry.BagRestrict), Loc.Zero,
-                            (showRestrict && save.ActiveTeam.GetInvCount() > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                            (showRestrict && totalRemovable > zoneEntry.BagRestrict) ? Color.Red : Color.White));
+                    }
                 }
                 if (zoneEntry.BagSize > -1)
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), Loc.Zero,

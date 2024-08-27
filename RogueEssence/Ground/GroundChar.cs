@@ -118,6 +118,13 @@ namespace RogueEssence.Ground
             get { return currentCharAction.Collider; }
         }
 
+        public override void DoCleanup()
+        {
+            base.DoCleanup();
+            //Clear the current character action so nothing will wait on it
+            currentCharAction = null;
+        }
+
 
         public GroundChar() : this(new MonsterID(DataManager.Instance.DefaultMonster, 0, DataManager.Instance.DefaultSkin, Gender.Genderless), new Loc(), Dir8.Down, "GroundChar")
         {
@@ -317,7 +324,7 @@ namespace RogueEssence.Ground
                             continue;
                     }
 
-                    if (obj.TriggerType != EEntityTriggerTypes.None)
+                    if (obj.TriggerType == EEntityTriggerTypes.Touch || obj.TriggerType == EEntityTriggerTypes.TouchOnce)
                         GroundScene.Instance.PendingLeaderAction = obj.Interact(this, new TriggerResult());
                     break;
                 }
@@ -427,6 +434,10 @@ namespace RogueEssence.Ground
         public override Loc GetDrawLoc(Loc offset)
         {
             return currentCharAction.GetDrawLoc(offset, GraphicsManager.GetChara(CurrentForm.ToCharID()));
+        }
+        public override Loc GetSheetOffset()
+        {
+            return currentCharAction.GetSheetOffset(GraphicsManager.GetChara(CurrentForm.ToCharID()));
         }
 
         public override Loc GetDrawSize()

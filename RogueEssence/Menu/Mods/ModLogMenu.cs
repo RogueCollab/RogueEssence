@@ -26,7 +26,10 @@ namespace RogueEssence.Menu
                         break;
                     case ModRelationship.DependsOn:
                         {
-                            failMsgs.Add(Text.FormatKey("MENU_MOD_LOG_DEPENDENCY", involved[0].Namespace, involved[1].Namespace));
+                            if (String.IsNullOrEmpty(involved[1].Namespace))
+                                failMsgs.Add(Text.FormatKey("MENU_MOD_LOG_GAME_DEPENDENCY", involved[0].Namespace, involved[1].Version));
+                            else
+                                failMsgs.Add(Text.FormatKey("MENU_MOD_LOG_DEPENDENCY", involved[0].Namespace, involved[1].Namespace));
                             failMsgs.Add("\n");
                         }
                         break;

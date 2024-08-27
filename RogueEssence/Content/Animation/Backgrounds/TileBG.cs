@@ -51,6 +51,7 @@ namespace RogueEssence.Dungeon
         {
             return offset;
         }
+        public Loc GetSheetOffset() { return Loc.Zero; }
 
         public Loc GetDrawSize()
         {

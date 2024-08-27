@@ -23,22 +23,27 @@ namespace RogueEssence.Data
         {
             foreach (PromoteDetail detail in Details)
             {
-                if (!inDungeon && !detail.GetGroundReq(character) || inDungeon && !detail.GetReq(character))
+                if (!detail.GetReq(character, inDungeon))
                     return false;
             }
             return true;
+        }
+
+        public void BeforePromote(Character character, bool inDungeon, ref MonsterID result)
+        {
+            foreach (PromoteDetail detail in Details)
+            {
+                detail.BeforePromote(character, inDungeon, ref result);
+            }
         }
 
         public void OnPromote(Character character, bool inDungeon, bool noGive)
         {
             foreach (PromoteDetail detail in Details)
             {
-                if (noGive && !String.IsNullOrEmpty(detail.GiveItem))
+                if (noGive && !String.IsNullOrEmpty(detail.GetReqItem(character)))
                     continue;
-                if (inDungeon)
-                    detail.OnPromote(character);
-                else
-                    detail.OnGroundPromote(character);
+                detail.OnPromote(character, inDungeon);
             }
         }
 
@@ -63,13 +68,12 @@ namespace RogueEssence.Data
     [Serializable]
     public abstract class PromoteDetail
     {
-        public virtual string GiveItem { get { return ""; } }
+        public virtual string GetReqItem(Character character) { return ""; }
         public virtual string GetReqString() { return ""; }
         public virtual bool IsHardReq() { return false; }
-        public virtual bool GetGroundReq(Character character) { return GetReq(character); }
-        public virtual bool GetReq(Character character) { return true; }
-        public virtual void OnGroundPromote(Character character) { OnPromote(character); }
-        public virtual void OnPromote(Character character) { }
+        public virtual bool GetReq(Character character, bool inDungeon) { return true; }
+        public virtual void BeforePromote(Character character, bool inDungeon, ref MonsterID result) { }
+        public virtual void OnPromote(Character character, bool inDungeon) { }
     }
 
 }

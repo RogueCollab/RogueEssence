@@ -28,5 +28,10 @@ namespace RogueEssence.Dev.Views
             AvaloniaXamlLoader.Load(this);
         }
 
+        public void SetListContextMenu(ContextMenu menu)
+        {
+            SearchListBox lbx = this.FindControl<SearchListBox>("lbxItems");
+            lbx.ContextMenu = menu;
+        }
     }
 }

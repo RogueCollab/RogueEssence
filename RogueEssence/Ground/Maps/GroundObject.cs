@@ -53,7 +53,7 @@ namespace RogueEssence.Ground
             SetTriggerType(EEntityTriggerTypes.Action);
         }
 
-        public GroundObject(IPlaceableAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, EEntityTriggerTypes triggerty, string entname)
+        public GroundObject(IPlaceableAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, EEntityTriggerTypes triggerty, bool passable, string entname)
         {
             ObjectAnim = anim;
             CurrentAnim = new ObjAnimData();
@@ -61,26 +61,27 @@ namespace RogueEssence.Ground
             DrawOffset = drawOffset;
             Direction = dir;
             SetTriggerType(triggerty);
+            Passable = passable;
             EntName = entname;
         }
 
-        public GroundObject(ObjAnimData anim, Rect collider, EEntityTriggerTypes triggerty, string entname)
-            :this(anim, Dir8.Down, collider, new Loc(), triggerty, entname)
+        public GroundObject(IPlaceableAnimData anim, Rect collider, EEntityTriggerTypes triggerty, string entname)
+            :this(anim, Dir8.Down, collider, new Loc(), triggerty, false, entname)
         {}
 
-        public GroundObject(ObjAnimData anim, Rect collider, Loc drawOffset, bool contact, string entname)
-            : this(anim, Dir8.Down, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
+        public GroundObject(IPlaceableAnimData anim, Rect collider, Loc drawOffset, bool contact, string entname)
+            : this(anim, Dir8.Down, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, false, entname)
         { }
-        public GroundObject(ObjAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, bool contact, string entname)
-            : this(anim, dir, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, entname)
+        public GroundObject(IPlaceableAnimData anim, Dir8 dir, Rect collider, Loc drawOffset, bool contact, string entname)
+            : this(anim, dir, collider, drawOffset, contact ? EEntityTriggerTypes.Touch : EEntityTriggerTypes.Action, false, entname)
         { }
-        public GroundObject(ObjAnimData anim, Rect collider, bool contact, string entname)
+        public GroundObject(IPlaceableAnimData anim, Rect collider, bool contact, string entname)
             : this(anim, collider, new Loc(), contact, entname)
         { }
 
         protected GroundObject(GroundObject other) : base(other)
         {
-            ObjectAnim = (IPlaceableAnimData)other.ObjectAnim.Clone();
+            ObjectAnim = other.ObjectAnim.Clone();
             CurrentAnim = new ObjAnimData();
             DrawOffset = other.DrawOffset;
             Passable = other.Passable;

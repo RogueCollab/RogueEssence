@@ -38,7 +38,7 @@ namespace RogueEssence.Dev.ViewModels
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
             string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
-            string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(true, file, "");
+            string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(file, "");
 
             if (!Directory.Exists(mapscriptdir))
             {
@@ -52,7 +52,7 @@ namespace RogueEssence.Dev.ViewModels
                     if (OperatingSystem.IsWindows())
                         Process.Start("explorer.exe", mapscriptdir);
                     else if (OperatingSystem.IsLinux())
-                        Process.Start("mimeopen", mapscriptdir);
+                        Process.Start("xdg-open", mapscriptdir);
                     else if (OperatingSystem.IsMacOS())
                         Process.Start("open", mapscriptdir);
                     else
@@ -77,6 +77,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 //Reload everything
                 LuaEngine.Instance.Reset();
+                LuaEngine.Instance.LoadScripts();
                 LuaEngine.Instance.ReInit();
             }
         }

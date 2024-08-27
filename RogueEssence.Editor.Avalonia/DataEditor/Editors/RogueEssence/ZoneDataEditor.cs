@@ -28,7 +28,7 @@ namespace RogueEssence.Dev
             btnTest.Content = "Open Script Folder";
             btnTest.Click += async (object sender, RoutedEventArgs e) =>
             {
-                string zonescriptdir = LuaEngine.MakeZoneScriptPath(true, parent, "");
+                string zonescriptdir = LuaEngine.MakeZoneScriptPath(parent, "");
 
                 if (!Directory.Exists(zonescriptdir))
                 {
@@ -41,7 +41,7 @@ namespace RogueEssence.Dev
                         if (OperatingSystem.IsWindows())
                             Process.Start("explorer.exe", zonescriptdir);
                         else if (OperatingSystem.IsLinux())
-                            Process.Start("mimeopen", zonescriptdir);
+                            Process.Start("xdg-open", zonescriptdir);
                         else if (OperatingSystem.IsMacOS())
                             Process.Start("open", zonescriptdir);
                         else

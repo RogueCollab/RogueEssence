@@ -100,7 +100,7 @@ namespace RogueEssence.Menu
             base.Initialize();
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return Team;
@@ -132,7 +132,7 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new InvResultsMenu(Ending));
+                MenuManager.Instance.ReplaceMenu(new InvResultsMenu(Ending, 0));
             }
 
         }

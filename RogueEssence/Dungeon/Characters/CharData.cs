@@ -14,8 +14,8 @@ namespace RogueEssence.Dungeon
     public class CharData
     {
 
-        public const int MAX_SKILL_SLOTS = 4;
-        public const int MAX_INTRINSIC_SLOTS = 1;
+        public static int MAX_SKILL_SLOTS = 4;
+        public static int MAX_INTRINSIC_SLOTS = 1;
 
         public string Nickname;
         public string BaseName
@@ -147,6 +147,7 @@ namespace RogueEssence.Dungeon
             MAtkBonus = other.MAtkBonus;
             MDefBonus = other.MDefBonus;
             SpeedBonus = other.SpeedBonus;
+            Unrecruitable = other.Unrecruitable;
 
             BaseSkills = new List<SlotSkill>();
             foreach (SlotSkill skill in other.BaseSkills)
@@ -174,6 +175,26 @@ namespace RogueEssence.Dungeon
             LuaDataTable = other.LuaDataTable;
         }
 
+
+        public bool HasBaseIntrinsic(string intrinsic)
+        {
+            foreach (string checkIntrinsic in BaseIntrinsics)
+            {
+                if (checkIntrinsic == intrinsic)
+                    return true;
+            }
+            return false;
+        }
+
+        public bool HasBaseSkill(string skill)
+        {
+            foreach (SlotSkill checkSkill in BaseSkills)
+            {
+                if (checkSkill.SkillNum == skill)
+                    return true;
+            }
+            return false;
+        }
 
 
         public virtual void Promote(MonsterID data)

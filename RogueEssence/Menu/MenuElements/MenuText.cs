@@ -8,7 +8,7 @@ using System;
 
 namespace RogueEssence.Menu
 {
-    public class MenuText : IMenuElement
+    public class MenuText : BaseMenuElement
     {
         public string Text { get; private set; }
         public Color Color;
@@ -18,19 +18,33 @@ namespace RogueEssence.Menu
         private List<(int idx, Color color)> textColor;
 
         public MenuText(string text, Loc loc)
-            : this(text, loc, DirH.Left)
+            : this("", text, loc, DirH.Left)
+        { }
+        public MenuText(string label, string text, Loc loc)
+            : this(label, text, loc, DirH.Left)
         { }
 
         public MenuText(string text, Loc loc, Color color)
-            : this(text, loc, DirV.Up, DirH.Left, color)
+            : this("", text, loc, DirV.Up, DirH.Left, color)
+        { }
+        public MenuText(string label, string text, Loc loc, Color color)
+            : this(label, text, loc, DirV.Up, DirH.Left, color)
         { }
 
         public MenuText(string text, Loc loc, DirH align)
-            : this(text, loc, DirV.Up, align, Color.White)
+            : this("", text, loc, DirV.Up, align, Color.White)
+        { }
+
+        public MenuText(string label, string text, Loc loc, DirH align)
+            : this(label, text, loc, DirV.Up, align, Color.White)
         { }
 
         public MenuText(string text, Loc loc, DirV alignV, DirH alignH, Color color)
+            : this("", text, loc, alignV, alignH, color)
+        { }
+        public MenuText(string label, string text, Loc loc, DirV alignV, DirH alignH, Color color)
         {
+            Label = label;
             Loc = loc;
             AlignV = alignV;
             AlignH = alignH;
@@ -170,7 +184,7 @@ namespace RogueEssence.Menu
             Text = text;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             Stack<Color> colorStack = new Stack<Color>();
             colorStack.Push(textColor[0].color);

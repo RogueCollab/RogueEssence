@@ -108,7 +108,7 @@ namespace RogueEssence.Menu
         {
             legalForms = GetPossibleForms(dex);
             baseMenu.FormSetting = origFormSetting;
-            if (baseMenu.FormSetting > legalForms.Count)
+            if (baseMenu.FormSetting >= legalForms.Count)
                 baseMenu.FormSetting = legalForms.Count - 1;
 
             List<string> choices = new List<string>();
@@ -170,8 +170,7 @@ namespace RogueEssence.Menu
         }
         private MenuSetting CreateIntrinsicChoices(MonsterData dex)
         {
-            int intrinsicFormSlot = GetIntrinsicFormIndex(dex, baseMenu.FormSetting, legalForms);
-            int intrinsicFormIndex = intrinsicFormSlot > -1 ? legalForms[intrinsicFormSlot] : -1;
+            int intrinsicFormIndex = GetIntrinsicFormIndex(dex, baseMenu.FormSetting, legalForms);
             legalIntrinsics = intrinsicFormIndex > -1 ? dex.Forms[intrinsicFormIndex].GetPossibleIntrinsicSlots() : new List<int> { 0, 1, 2 };
             baseMenu.IntrinsicSetting = LimitIntrinsic(dex, intrinsicFormIndex, baseMenu.IntrinsicSetting);
             List<string> choices = new List<string>();
@@ -261,6 +260,13 @@ namespace RogueEssence.Menu
                 return possibleForms[formSlot];
         }
 
+        /// <summary>
+        /// Gets the form that is used when choosing intrinsic
+        /// </summary>
+        /// <param name="dex"></param>
+        /// <param name="formSlot"></param>
+        /// <param name="possibleForms"></param>
+        /// <returns>The actual form index in the monster form list, not the one out of the possible</returns>
         public static int GetIntrinsicFormIndex(MonsterData dex, int formSlot, List<int> possibleForms)
         {
             if (dex == null)

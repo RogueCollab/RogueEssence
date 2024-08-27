@@ -166,14 +166,17 @@ namespace RogueEssence.Script
         /// <param name="entryid">The entry point on the resulting map</param>
         /// <param name="display">Display an epitaph marking the end of the adventure.</param>
         /// <param name="fanfare">Play a fanfare.</param>
+        /// <param name="completedZone">Zone to mark as completed. Defaults to current zone.</param>
         /// <example>
         /// GAME:EndDungeonRun(GameProgress.ResultType.Cleared, 0, -1, 1, 0, true, true)
         /// </example>
         public LuaFunction EndDungeonRun;
 
-        public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare)
+        public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare, string completedZone = null)
         {
-            return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare));
+            if (String.IsNullOrEmpty(completedZone))
+                completedZone = ZoneManager.Instance.CurrentZoneID;
+            return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare, completedZone));
         }
 
         /// <summary>
@@ -390,6 +393,15 @@ namespace RogueEssence.Script
         public void SetCanSwitch(bool canSwitch)
         {
             DataManager.Instance.Save.NoSwitching = !canSwitch;
+        }
+
+        /// <summary>
+        /// Prevents or allows the joining of recruits for the save file.
+        /// </summary>
+        /// <param name="canRecruit">Set to true to allow recruit joins, set to false to prevent it.</param>
+        public void SetCanRecruit(bool canRecruit)
+        {
+            DataManager.Instance.Save.NoRecruiting = !canRecruit;
         }
 
         /// <summary>
@@ -775,14 +787,35 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Makes a skill impossible to forget or replace for the specified character.
+        /// Note that this only affects normal gameplay. Scripts can still freely get rid of the skill.
+        /// </summary>
+        /// <param name="chara">The character to lock the skill</param>
+        /// <param name="slot">The slot of the skill to lock</param>
+        public void LockSkill(Character chara, int slot)
+        {
+            chara.SetSkillLocking(slot, true);
+        }
+
+        /// <summary>
+        /// Unlocks a previously locked skill for the specified character, making it possible to be forgotten or replaced during normal gameplay.
+        /// </summary>
+        /// <param name="chara">The character to unlock the skill</param>
+        /// <param name="slot">The slot of the skill to unlock</param>
+        public void UnlockSkill(Character chara, int slot)
+        {
+            chara.SetSkillLocking(slot, false);
+        }
+
+        /// <summary>
         /// Gives a new skill to a specified character, replacing a specifically chosen slot.
         /// </summary>
         /// <param name="character">The character to learn the skill</param>
         /// <param name="skillId">The skill to learn</param>
         /// <param name="slot">The slot to replace</param>
-        public void SetCharacterSkill(Character character, string skillId, int slot)
+        public void SetCharacterSkill(Character character, string skillId, int slot, bool enabled = true)
         {
-            character.ReplaceSkill(skillId, slot, true);
+            character.ReplaceSkill(skillId, slot, enabled);
         }
 
         /// <summary>
@@ -812,7 +845,7 @@ namespace RogueEssence.Script
                 bool hardReq = false;
                 foreach (PromoteDetail detail in entry.Promotions[ii].Details)
                 {
-                    if (detail.IsHardReq() && !detail.GetReq(character))
+                    if (detail.IsHardReq() && !detail.GetReq(character, false))
                     {
                         hardReq = true;
                         break;
@@ -849,7 +882,7 @@ namespace RogueEssence.Script
                     bool hardReq = false;
                     foreach (PromoteDetail detail in entry.Promotions[ii].Details)
                     {
-                        if (detail.IsHardReq() && !detail.GetReq(character))
+                        if (detail.IsHardReq() && !detail.GetReq(character, false))
                         {
                             hardReq = true;
                             break;
@@ -876,8 +909,7 @@ namespace RogueEssence.Script
             bool bypass = character.EquippedItem.ID == bypassItem;
             MonsterID newData = character.BaseForm;
             newData.Species = branch.Result;
-            if (newData.Form >= entry.Forms.Count)
-                newData.Form = 0;
+            branch.BeforePromote(character, false, ref newData);
             character.Promote(newData);
             character.FullRestore();
             branch.OnPromote(character, false, bypass);
@@ -1041,8 +1073,19 @@ namespace RogueEssence.Script
         /// Remove an item from player inventory
         /// </summary>
         /// <param name="slot">The slot from which to remove the item</param>
-        public void TakePlayerBagItem(int slot)
+        /// <param name="takeAll"></param>
+        public void TakePlayerBagItem(int slot, bool takeAll = false)
         {
+            if (!takeAll)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.GetInv(slot);
+                ItemData entry = (ItemData)item.GetData();
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    item.Amount--;
+                    return;
+                }
+            }
             DataManager.Instance.Save.ActiveTeam.RemoveFromInv(slot);
         }
 
@@ -1050,8 +1093,20 @@ namespace RogueEssence.Script
         /// Remove the equipped item from a chosen member of the team
         /// </summary>
         /// <param name="slot">The slot of the character on the team from which to remove the item</param>
-        public void TakePlayerEquippedItem(int slot)
+        /// <param name="takeAll"></param>
+        public void TakePlayerEquippedItem(int slot, bool takeAll = false)
         {
+            if (!takeAll)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.Players[slot].EquippedItem;
+                ItemData entry = (ItemData)item.GetData();
+
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    item.Amount--;
+                    return;
+                }
+            }
             DataManager.Instance.Save.ActiveTeam.Players[slot].SilentDequipItem();
         }
 
@@ -1059,8 +1114,20 @@ namespace RogueEssence.Script
         /// Remove the equipped item from a chosen guest of the team
         /// </summary>
         /// <param name="slot">The slot of the character on the team's guest list from which to remove the item</param>
-        public void TakeGuestEquippedItem(int slot)
+        /// <param name="takeAll"></param>
+        public void TakeGuestEquippedItem(int slot, bool takeAll = false)
         {
+            if (!takeAll)
+            {
+                InvItem item = DataManager.Instance.Save.ActiveTeam.Guests[slot].EquippedItem;
+                ItemData entry = (ItemData)item.GetData();
+
+                if (entry.MaxStack > 1 && item.Amount > 1)
+                {
+                    item.Amount--;
+                    return;
+                }
+            }
             DataManager.Instance.Save.ActiveTeam.Guests[slot].SilentDequipItem();
         }
 
@@ -1226,7 +1293,7 @@ namespace RogueEssence.Script
         //===================================
 
         /// <summary>
-        /// Checks if a player is making a certain input.
+        /// Checks if a player is making a certain physical keyboard input.
         /// </summary>
         /// <param name="keyid">The ID of the input</param>
         /// <returns>True if the button is currently pressed.  False otherwise.</returns>
@@ -1234,6 +1301,16 @@ namespace RogueEssence.Script
         {
             Microsoft.Xna.Framework.Input.Keys curkey = (Microsoft.Xna.Framework.Input.Keys)keyid;
             return GameManager.Instance.MetaInputManager.BaseKeyDown(curkey);
+        }
+
+        /// <summary>
+        /// Checks if a player is making a certain game input.
+        /// </summary>
+        /// <param name="inputid"></param>
+        /// <returns>True if the input is currently pressed.  False otherwise.</returns>
+        public bool IsInputDown(int inputid)
+        {
+            return GameManager.Instance.MetaInputManager[(FrameInput.InputType)inputid];
         }
 
         /// <summary>
@@ -1473,7 +1550,7 @@ namespace RogueEssence.Script
             EnterRescue = state.RunString("return function(_, sosPath) return coroutine.yield(GAME:_EnterRescue(sosPath)) end").First() as LuaFunction;
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;
-            EndDungeonRun = state.RunString("return function(_, result, destzoneid, structureid, mapid, entryid, display, fanfare) return coroutine.yield(GAME:_EndDungeonRun(result, destzoneid, structureid, mapid, entryid, display, fanfare)) end").First() as LuaFunction;
+            EndDungeonRun = state.RunString("return function(_, result, destzoneid, structureid, mapid, entryid, display, fanfare, completedZone) return coroutine.yield(GAME:_EndDungeonRun(result, destzoneid, structureid, mapid, entryid, display, fanfare, completedZone)) end").First() as LuaFunction;
             FadeOut = state.RunString("return function(_, bwhite, duration) return coroutine.yield(GAME:_FadeOut(bwhite, duration)) end").First() as LuaFunction;
             FadeIn = state.RunString("return function(_, duration) return coroutine.yield(GAME:_FadeIn(duration)) end").First() as LuaFunction;
             MoveCamera = state.RunString("return function(_, x, y, duration, toPlayer) return coroutine.yield(GAME:_MoveCamera(x, y, duration, toPlayer)) end").First() as LuaFunction;

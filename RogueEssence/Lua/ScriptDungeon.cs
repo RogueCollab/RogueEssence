@@ -117,6 +117,13 @@ namespace RogueEssence.Script
                 return new Coroutine(chara.StartAnim(new CharAnimAction(chara.CharLoc, chara.CharDir, animIndex)));
         }
 
+        public LuaFunction CharSetAction;
+
+        public Coroutine _CharSetAction(Character chara, CharAnimation anim)
+        {
+            return new Coroutine(chara.StartAnim(anim));
+        }
+
         /// <summary>
         /// Stops a character's current animation, reverting them to default idle.
         /// </summary>
@@ -213,6 +220,7 @@ namespace RogueEssence.Script
             CharStartAnim = state.RunString("return function(_, chara, anim, loop) return coroutine.yield(DUNGEON:_CharStartAnim(chara, anim, loop)) end", "CharStartAnim").First() as LuaFunction;
             CharEndAnim = state.RunString("return function(_, chara) return coroutine.yield(DUNGEON:_CharEndAnim(chara)) end", "CharEndAnim").First() as LuaFunction;
             CharWaitAnim = state.RunString("return function(_, chara, anim) return coroutine.yield(DUNGEON:_CharWaitAnim(chara, anim)) end", "CharWaitAnim").First() as LuaFunction;
+            CharSetAction = state.RunString("return function(_, chara, anim) return coroutine.yield(DUNGEON:_CharSetAction(chara, anim)) end", "CharSetAction").First() as LuaFunction;
         }
     }
 }

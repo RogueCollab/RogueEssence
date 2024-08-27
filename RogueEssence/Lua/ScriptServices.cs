@@ -53,9 +53,9 @@ namespace RogueEssence.Script
         {
             //We can get the path 3 ways.
             if (ZoneManager.Instance.CurrentGround != null)
-                return Path.GetDirectoryName(LuaEngine.MakeGroundMapScriptPath(false, ZoneManager.Instance.CurrentGround.AssetName, "/init.lua"));
+                return string.Format(LuaEngine.MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentGround.AssetName).Replace('.', '/');
             else if (ZoneManager.Instance.CurrentMap != null)
-                return Path.GetDirectoryName(LuaEngine.MakeDungeonMapScriptPath(false, ZoneManager.Instance.CurrentMap.AssetName, "/init.lua"));
+                return string.Format(LuaEngine.DUNGEON_MAP_SCRIPT_PATTERN, ZoneManager.Instance.CurrentMap.AssetName).Replace('.', '/');
             else
                 throw new Exception("ScriptServices.CurrentScriptDir(): No map lua package currently loaded! And no map currently loaded either! Cannot assemble the current package path!");
         }
@@ -97,16 +97,17 @@ namespace RogueEssence.Script
         public override void SetupLuaFunctions(LuaEngine state)
         {
             m_fncallsub = State.RunString("return function(med, svc) xpcall(svc.Subscribe, PrintStack, svc, med) end").First() as LuaFunction;
-            m_fncallunsub = State.RunString("return function(med, svc) xpcall(svc.UnSubscribe, svc, med) end").First() as LuaFunction;
+            m_fncallunsub = State.RunString("return function(med, svc) xpcall(svc.UnSubscribe, PrintStack, svc, med) end").First() as LuaFunction;
         }
 
         /// <summary>
         /// Add a service to the list of managed services
         /// </summary>
         /// <param name="name">Handle for the given service instance.</param>
-        /// <param name="classpath">Class to instanciate the service from.</param>
+        /// <param name="instance"></param>
         public void AddService(string name, LuaTable instance)
         {
+            RemoveService(name);
             ServiceEntry svc = new ServiceEntry();
             svc.name = name;
             svc.lobj = instance;
@@ -133,6 +134,7 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
         /// Get a service's lua instance by name
         /// </summary>
         /// <param name="name"></param>

@@ -236,7 +236,7 @@ namespace RogueEssence.Menu
 
         private void SwapAction()
         {
-            MenuManager.Instance.AddMenu(new ItemMenu(slot), false);
+            MenuManager.Instance.AddMenu(new ItemMenu(MenuLabel.INVENTORY_MENU_REPLACE, slot), false);
         }
         private void GiveAction()
         {

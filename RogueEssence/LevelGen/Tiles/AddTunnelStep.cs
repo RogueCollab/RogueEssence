@@ -34,6 +34,11 @@ namespace RogueEssence
         public bool AllowDeadEnd { get; set; }
 
         /// <summary>
+        /// Allows tunnels to penetrate passable tiles.  Tunnels will never replace any non-wall terrain that they encounter.
+        /// </summary>
+        public bool TraverseFloor { get; set; }
+
+        /// <summary>
         /// The number of tunnels to draw.
         /// </summary>
         public RandRange Halls { get; set; }
@@ -42,6 +47,16 @@ namespace RogueEssence
         /// The brush to draw the halls with.
         /// </summary>
         public BaseHallBrush Brush { get; set; }
+
+        private bool getCrossedSelf(List<(LocRay4, int)> drawnRays, Loc checkLoc)
+        {
+            foreach ((LocRay4 ray, int range) drawn in drawnRays)
+            {
+                if (Collision.InFront(drawn.ray.Loc, checkLoc, drawn.ray.Dir.ToDir8(), drawn.range))
+                    return true;
+            }
+            return false;
+        }
 
         public override void Apply(T map)
         {
@@ -92,14 +107,7 @@ namespace RogueEssence
                             tunnelDir.Loc = tunnelDir.Traverse(1);
                             legLength++;
 
-                            foreach ((LocRay4 ray, int range) drawn in drawnRays)
-                            {
-                                if (Collision.InFront(drawn.ray.Loc, tunnelDir.Loc, drawn.ray.Dir.ToDir8(), drawn.range))
-                                {
-                                    crossedSelf = true;
-                                    break;
-                                }
-                            }
+                            crossedSelf = getCrossedSelf(drawnRays, tunnelDir.Loc);
 
                             if (!checkBlock(tunnelDir.Loc) || crossedSelf)
                             {
@@ -113,11 +121,57 @@ namespace RogueEssence
                         //actually draw the rays
                         drawnRays.Add((legRay, legLength));
 
-                        if (bonk)
-                            break;
-
                         curLength += addLength;
 
+                        if (bonk)
+                        {
+                            if (bonkFloor && TraverseFloor)
+                            {
+                                //Try to find the next closest wall terrain, by going forward
+                                int curLengthRemaining = finalLength - curLength;
+
+                                LocRay4 newDir = new LocRay4(tunnelDir);
+                                bool newStartFound = false;
+
+                                //keep going forward until a block is reached, or we run out
+                                for (int kk = 0; kk < curLengthRemaining; kk++)
+                                {
+                                    curLength++;
+                                    newDir.Loc = newDir.Traverse(1);
+
+                                    bool newCross = getCrossedSelf(drawnRays, newDir.Loc);
+
+                                    if (!checkBlock(newDir.Loc) || newCross)
+                                    {
+                                        if (checkGround(newDir.Loc) || newCross)
+                                        {
+                                            //we've bonked with a bonkfloor.  Keep going.
+                                        }
+                                        else
+                                        {
+                                            //we've bonked without a bonkFloor.  Game over.
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //no bonk at all.  This is where we start again.
+                                        bonk = false;
+                                        bonkFloor = false;
+                                        tunnelDir.Loc = newDir.Loc;
+                                        newStartFound = true;
+                                        break;
+                                    }
+                                }
+
+                                if (newStartFound)
+                                {
+                                    continue;
+                                }
+                            }
+                            break;
+                        }
+                        
                         //make a turn
                         if (map.Rand.Next(2) == 0)
                             tunnelDir.Dir = DirExt.AddAngles(tunnelDir.Dir, Dir4.Left);

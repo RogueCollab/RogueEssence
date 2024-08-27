@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace RogueEssence.Menu
 {
-    public class DialogueText : IMenuElement
+    public class DialogueText : BaseMenuElement
     {
         public int LineHeight;
         public Rect Rect;
@@ -16,6 +16,7 @@ namespace RogueEssence.Menu
         public bool CenterH;
         public bool CenterV;
         public float TextOpacity;
+        public Color Color;
         public bool Finished { get { return CurrentCharIndex < 0 || CurrentCharIndex >= formattedTextLength; } }
 
         /// <summary>
@@ -38,19 +39,38 @@ namespace RogueEssence.Menu
         /// </summary>
         private int formattedTextLength;
 
-        public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
+        public DialogueText(string label, string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex, Color color)
         {
+            Label = label;
             Rect = rect;
             LineHeight = lineHeight;
             CenterH = centerH;
             CenterV = centerV;
             TextOpacity = 1f;
             CurrentCharIndex = startIndex;
+            Color = color;
             textColor = new List<(int idx, Color color)>();
             SetAndFormatText(text);
         }
-        public DialogueText(string text, Rect rect, int lineHeight) : this(text, rect, lineHeight, false, false, -1)
+        public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex, Color color)
+            : this("", text, rect, lineHeight, centerH, centerV, startIndex, color)
         { }
+
+        public DialogueText(string label, string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
+            : this(label, text, rect, lineHeight, centerH, centerV, startIndex, Color.White)
+        {}
+
+        public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
+            : this("", text, rect, lineHeight, centerH, centerV, startIndex, Color.White)
+        { }
+
+        public DialogueText(string label, string text, Rect rect, int lineHeight)
+            : this(label, text, rect, lineHeight, false, false, -1, Color.White)
+        { }
+        public DialogueText(string text, Rect rect, int lineHeight)
+            : this("", text, rect, lineHeight, false, false, -1, Color.White)
+        { }
+
 
         private static void formatText(List<(int idx, Color color)> colors, ref string text)
         {
@@ -253,7 +273,7 @@ namespace RogueEssence.Menu
             return fullLines.Length;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             int endIndex = CurrentCharIndex > -1 ? CurrentCharIndex : formattedTextLength;
             Stack<Color> colorStack = new Stack<Color>();
@@ -287,7 +307,7 @@ namespace RogueEssence.Menu
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
                             fullLines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
-                            colorStack.Peek() * TextOpacity, curChar, nextColorIdx - curChar);
+                            Color == Color.White ? colorStack.Peek() * TextOpacity : Color * TextOpacity, curChar, nextColorIdx - curChar);
                         curChar = nextColorIdx;
 
                         if (curChar + lineChars >= endIndex)

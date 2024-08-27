@@ -13,6 +13,9 @@ namespace RogueEssence.Dungeon
 
     public abstract class UserTargetGameContext : GameContext
     {
+        /// <summary>
+        /// The character that the action is targeted at
+        /// </summary>
         public Character Target { get; set; }
 
         public UserTargetGameContext() : base()
@@ -27,10 +30,19 @@ namespace RogueEssence.Dungeon
 
     public abstract class GameContext
     {
-        //passes contextual info
+        /// <summary>
+        /// Contains contextual info to be passed along the GameContext, used by GameEvents
+        /// </summary>
         public StateCollection<ContextState> ContextStates;
+
+        /// <summary>
+        /// The character that is performing the action
+        /// </summary>
         public Character User { get; set; }
-        
+
+        /// <summary>
+        /// Whether the action should be canceled or not.
+        /// </summary>
         public AbortStatus CancelState;
 
 

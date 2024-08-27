@@ -42,15 +42,38 @@ namespace RogueEssence.Ground
         /// </summary>
         public int TexSize { get; private set; }
         public int TileSize { get { return TexSize * GraphicsManager.TEX_SIZE; } }
+
+        /// <summary>
+        /// Width of the map in tiles
+        /// </summary>
         public int Width { get { return Layers[0].Tiles.Length; } }
+
+        /// <summary>
+        /// Height of the map in tiles
+        /// </summary>
         public int Height { get { return Layers[0].Tiles[0].Length; } }
+
+        /// <summary>
+        /// Size of the map in tiles
+        /// </summary>
         public Loc Size { get { return new Loc(Width, Height); } }
 
         public int TexWidth { get { return Width * TexSize; } }
         public int TexHeight { get { return Height * TexSize; } }
 
+        /// <summary>
+        /// Width of the map in pixels
+        /// </summary>
         public int GroundWidth { get { return Width * TileSize; } }
+
+        /// <summary>
+        /// Height of the map in pixels
+        /// </summary>
         public int GroundHeight { get { return Height * TileSize; } }
+
+        /// <summary>
+        /// Size of the map in pixels
+        /// </summary>
         public Loc GroundSize { get { return new Loc(GroundWidth, GroundHeight); } }
 
         /// <summary>
@@ -63,7 +86,7 @@ namespace RogueEssence.Ground
         public LocalText Name { get; set; }
         public string GetColoredName()
         {
-            return String.Format("[color=#FFC663]{0}[color]", Name.ToLocal().Replace('\n', ' '));
+            return String.Format("[color=#FFFFA5]{0}[color]", Name.ToLocal().Replace('\n', ' '));
         }
 
         public bool Released { get; set; }
@@ -157,7 +180,10 @@ namespace RogueEssence.Ground
         public void OnEditorInit()
         {
             if (AssetName != "")
+            {
                 LuaEngine.Instance.RunGroundMapScript(AssetName);
+                LuaEngine.Instance.LoadGroundMapStrings(AssetName);
+            }
 
             //Reload the map events
             LoadScriptEvents();
@@ -174,7 +200,10 @@ namespace RogueEssence.Ground
         {
             DiagManager.Instance.LogInfo("GroundMap.OnInit(): Initializing the map..");
             if (AssetName != "")
+            {
                 LuaEngine.Instance.RunGroundMapScript(AssetName);
+                LuaEngine.Instance.LoadGroundMapStrings(AssetName);
+            }
 
             //Reload the map events
             LoadScriptEvents();
@@ -263,7 +292,7 @@ namespace RogueEssence.Ground
                     obstacles[ii][jj] = new GroundWall(ii * divSize, jj * divSize, divSize, divSize);
             }
 
-            this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
+            this.grid = new AABB.Grid(MathUtils.DivUp(GroundWidth, GraphicsManager.TileSize), MathUtils.DivUp(GroundHeight, GraphicsManager.TileSize), GraphicsManager.TileSize);
         }
 
 
@@ -566,14 +595,20 @@ namespace RogueEssence.Ground
             Loc texDiff = RogueElements.Grid.ResizeJustified(ref obstacles,
                 width * TexSize, height * TexSize, anchorDir.Reverse(), blockChangeOp, blocknewOp);
 
-            foreach (GroundChar character in IterateCharacters())
+            foreach (EntityLayer layer in Entities)
             {
-                character.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TileSize - character.Width, height * TileSize - character.Height, character.MapLoc + texDiff * divSize));
-                character.UpdateFrame();
+                foreach (GroundEntity obj in layer.IterateEntities())
+                {
+                    obj.SetMapLoc(RogueElements.Collision.ClampToBounds(width * TileSize - obj.Width, height * TileSize - obj.Height, obj.MapLoc + texDiff * divSize));
+                    if (obj is GroundChar)
+                    {
+                        GroundChar character = (GroundChar)obj;
+                        character.UpdateFrame();
+                    }
+                }
             }
 
-            this.grid = new AABB.Grid(width, height, GraphicsManager.TileSize);
-            //wait... don't we need to recompute all entities?
+            this.grid = new AABB.Grid(MathUtils.DivUp(GroundWidth, GraphicsManager.TileSize), MathUtils.DivUp(GroundHeight, GraphicsManager.TileSize), GraphicsManager.TileSize);
         }
 
         public void Retile(int texSize)
@@ -593,7 +628,7 @@ namespace RogueEssence.Ground
             RogueElements.Grid.ResizeJustified(ref obstacles,
                 newWidth * TexSize, newHeight * TexSize, Dir8.DownRight, blockChangeOp, blocknewOp);
 
-            this.grid = new AABB.Grid(newWidth, newHeight, GraphicsManager.TileSize);
+            this.grid = new AABB.Grid(MathUtils.DivUp(GroundWidth, GraphicsManager.TileSize), MathUtils.DivUp(GroundHeight, GraphicsManager.TileSize), GraphicsManager.TileSize);
         }
 
         public void AddLayer(string name)
@@ -864,6 +899,21 @@ namespace RogueEssence.Ground
         }
 
         /// <summary>
+        /// Returns the index of an entry point for the current map by name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public int GetEntryPointIdx(string name)
+        {
+            int idx = Entities[0].Markers.FindIndex(marker => marker.EntName == name);
+            if (idx > -1)
+                return idx;
+
+            throw new KeyNotFoundException(String.Format("GroundMap.GetEntryPointIdx({0}): Couldn't find the specified Marker!", name));
+        }
+
+        /// <summary>
         /// Change the position of the specified named marker
         /// </summary>
         /// <param name="name"></param>
@@ -1073,7 +1123,7 @@ namespace RogueEssence.Ground
         internal void OnDeserializedMethod(StreamingContext context)
         {
             //recompute the grid
-            grid = new AABB.Grid(Width, Height, GraphicsManager.TileSize);
+            grid = new AABB.Grid(MathUtils.DivUp(GroundWidth, GraphicsManager.TileSize), MathUtils.DivUp(GroundHeight, GraphicsManager.TileSize), GraphicsManager.TileSize);
 
             if (ActiveChar != null)
             {

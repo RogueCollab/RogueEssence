@@ -34,7 +34,7 @@ namespace RogueEssence.Dungeon
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ArgTable).First() as LuaTable;
             object[] parameters = new object[] { owner, ownerChar, context, args };
-            string name = "ITEM_SCRIPT." + Script;
+            string name = LuaEngine.EVENT_ITEM_NAME + "." + Script;
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
             yield return CoroutineManager.Instance.StartCoroutine(ScriptEvent.ApplyFunc(name, func_iter));

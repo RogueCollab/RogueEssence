@@ -390,6 +390,10 @@ namespace RogueEssence.Dev.Views
                     }
                 }
             }
+            catch (IOException ioEx)
+            {
+                DiagManager.Instance.LogError(ioEx, false);
+            }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex);

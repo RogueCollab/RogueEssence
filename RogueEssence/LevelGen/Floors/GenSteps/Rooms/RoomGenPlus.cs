@@ -8,7 +8,8 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class RoomGenPlus<T> : PermissiveRoomGen<T> where T : ITiledGenContext
+    public class RoomGenPlus<T> : PermissiveRoomGen<T>, ISizedRoomGen
+        where T : ITiledGenContext
     {
 
         [NonSerialized]
@@ -17,12 +18,12 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Width of the room.
         /// </summary>
-        public RandRange Width;
+        public RandRange Width { get; set; }
 
         /// <summary>
         /// Height of the room.
         /// </summary>
-        public RandRange Height;
+        public RandRange Height { get; set; }
 
         /// <summary>
         /// Amount of tiles to remove from corner.
@@ -149,5 +150,12 @@ namespace RogueEssence.LevelGen
 
             return false;
         }
+    }
+
+    public interface IRoomGenPlus : IRoomGen
+    {
+        RandRange Width { get; set; }
+
+        RandRange Height { get; set; }
     }
 }

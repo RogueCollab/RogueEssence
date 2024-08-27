@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <Platforms>AnyCPU;x64;x86</Platforms>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RogueEssence\RogueEssence.csproj" />
@@ -60,6 +59,9 @@
     </Compile>
     <Compile Update="DataEditor\DataEditForm.axaml.cs">
       <DependentUpon>DataEditForm.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Content\StringsEditForm.axaml.cs">
+      <DependentUpon>StringsEditForm.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Content\TilesetEditForm.axaml.cs">
       <DependentUpon>TilesetEditForm.axaml</DependentUpon>

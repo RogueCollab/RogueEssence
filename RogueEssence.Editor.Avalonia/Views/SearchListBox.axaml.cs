@@ -47,5 +47,11 @@ namespace RogueEssence.Dev.Views
                 return;
             viewModel.lbxItems_DoubleClick(sender, e);
         }
+
+        public void SetListContextMenu(ContextMenu menu)
+        {
+            ListBox lbx = this.FindControl<ListBox>("lbxItems");
+            lbx.ContextMenu = menu;
+        }
     }
 }

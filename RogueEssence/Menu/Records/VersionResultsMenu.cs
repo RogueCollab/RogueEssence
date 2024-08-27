@@ -34,14 +34,14 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < displayTotal; ii++)
             {
                 Versions[ii] = new MenuText[2];
-                Versions[ii][0] = new MenuText(versionData[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
-                Versions[ii][1] = new MenuText(versionData[ii].VersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Versions[ii][0] = new MenuText(versionData[ii + Page * MAX_LINES].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
+                Versions[ii][1] = new MenuText(versionData[ii + Page * MAX_LINES].VersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
             }
 
             base.Initialize();
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
             yield return Div;
@@ -65,13 +65,7 @@ namespace RogueEssence.Menu
                 if (Page > 0)
                     MenuManager.Instance.ReplaceMenu(new VersionResultsMenu(Ending, Page - 1));
                 else
-                {
-                    int eligibleAssemblyCount = AssemblyResultsMenu.GetEligibleCount(Ending);
-                    if (eligibleAssemblyCount > 0)
-                        MenuManager.Instance.ReplaceMenu(new AssemblyResultsMenu(Ending, (eligibleAssemblyCount - 1) / 4));
-                    else
-                        MenuManager.Instance.ReplaceMenu(new PartyResultsMenu(Ending));
-                }
+                    MenuManager.Instance.ReplaceMenu(new TrailResultsMenu(Ending, (Ending.LocTrail.Count - 1) / VersionResultsMenu.MAX_LINES));
             }
             else if (IsInputting(input, Dir8.Right))
             {

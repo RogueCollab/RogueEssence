@@ -13,10 +13,24 @@ namespace RogueEssence.Data
             return Name.ToLocal();
         }
 
+        /// <summary>
+        /// The name of the data
+        /// </summary>
         public LocalText Name { get; set; }
+
+        /// <summary>
+        /// The description of the data
+        /// </summary>
         public LocalText Desc { get; set; }
 
+        /// <summary>
+        /// Is it released and allowed to show up in the game?
+        /// </summary>
         public bool Released { get; set; }
+
+        /// <summary>
+        /// Comments visible to only developers
+        /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
@@ -65,11 +79,13 @@ namespace RogueEssence.Data
         /// Special variables that this status contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<StatusState> StatusStates;
 
         /// <summary>
         /// Event for when the character's skills are changed or swapped around.
         /// </summary>
+        [ListCollapse]
         public PriorityList<SkillChangeEvent> OnSkillChanges;
 
         /// <summary>
@@ -94,7 +110,10 @@ namespace RogueEssence.Data
             TargetPassive = new PassiveData();
         }
 
-
+        /// <summary>
+        /// Gets the colored text string of the status effect
+        /// </summary>
+        /// <returns></returns>
         public string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());

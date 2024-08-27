@@ -67,6 +67,38 @@ namespace RogueEssence.Dungeon
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
         }
 
+        protected bool Screenshotting;
+
+        protected RenderTarget2D screenshotScreen;
+        public void Screenshot()
+        {
+            Screenshotting = true;
+            screenshotScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
+                ZoneManager.Instance.CurrentMap.GroundWidth, ZoneManager.Instance.CurrentMap.GroundHeight,
+                false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+        }
+
+        public void BeginScreenshot()
+        {
+            if (Screenshotting)
+            {
+                GraphicsManager.GraphicsDevice.SetRenderTarget(screenshotScreen);
+                ViewRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.GroundSize);
+                viewTileRect = new Rect(Loc.Zero, ZoneManager.Instance.CurrentMap.Size);
+            }
+        }
+
+        public void ProcessScreenshot()
+        {
+            if (Screenshotting)
+            {
+                GraphicsManager.SaveScreenshot(screenshotScreen);
+                screenshotScreen.Dispose();
+                screenshotScreen = null;
+                Screenshotting = false;
+            }
+        }
+
         public override void Begin()
         {
             PendingDevEvent = null;
@@ -77,6 +109,13 @@ namespace RogueEssence.Dungeon
             base.UpdateMeta();
 
             InputManager input = GameManager.Instance.MetaInputManager;
+
+            if (input.JustPressed(FrameInput.InputType.Screenshot))
+            {
+                GameManager.Instance.SE("Menu/Skip");
+                Screenshot();
+            }
+
             MouseLoc = input.MouseLoc;
         }
 
@@ -240,17 +279,17 @@ namespace RogueEssence.Dungeon
                 {
                     TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data;
                     TerrainData terrain = tile.GetData();
-                    if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
+                    if (terrain.ItemDraw == TerrainData.TileItemDraw.Hide)
                     {
                         if (showHiddenItem)
                             item.Draw(spriteBatch, viewLoc, Color.White * 0.7f);
                     }
                     else if (showHiddenItem || ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
                     {
-                        if (tile.ID == DataManager.Instance.GenFloor)
-                            item.Draw(spriteBatch, viewLoc, Color.White);
-                        else
+                        if (terrain.ItemDraw == TerrainData.TileItemDraw.Transparent)
                             item.Draw(spriteBatch, viewLoc, Color.White * 0.7f);
+                        else
+                            item.Draw(spriteBatch, viewLoc, Color.White);
                     }
                 }
             }
@@ -259,8 +298,9 @@ namespace RogueEssence.Dungeon
         public virtual void DrawGame(SpriteBatch spriteBatch)
         {
             GraphicsManager.GraphicsDevice.SetRenderTarget(gameScreen);
-
             GraphicsManager.GraphicsDevice.Clear(Color.Transparent);
+
+            BeginScreenshot();
 
             Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
@@ -385,6 +425,8 @@ namespace RogueEssence.Dungeon
             DrawOverlay(spriteBatch);
 
             spriteBatch.End();
+
+            ProcessScreenshot();
 
             PostDraw(spriteBatch);
 

@@ -12,28 +12,23 @@ namespace RogueEssence.Script
     /// </summary>
     public class ScriptStrings : ILuaEngineComponent
     {
-        public const string STRINGS_FILE_NAME = "strings";
-        public const string STRINGS_FILE_EXT = "resx";
+        public LuaTable MapStrings { get; private set; }
 
         public LuaTable MakePackageStringTable(string packagefilepath)
         {
-            LuaTable tbl = loadXmlDoc(packagefilepath + "/" + STRINGS_FILE_NAME + "." + LocaleCode() + "." + STRINGS_FILE_EXT);
-            LuaTable defaulttbl = loadXmlDoc(packagefilepath + "/" + STRINGS_FILE_NAME + "." + STRINGS_FILE_EXT);
-            LuaFunction addmeta = LuaEngine.Instance.RunString("return function(tbl1, tbl2) setmetatable(tbl1, { __index = tbl2 }) end").First() as LuaFunction;
-            addmeta.Call(tbl, defaulttbl);
-            
-            return tbl;
+            return MapStrings;
         }
 
-        private LuaTable loadXmlDoc(string path)
+        private LuaTable makePackageStringTable(string packagefilepath)
         {
             try
             {
+                Dictionary<string, string> xmlDict = Text.LoadScriptStringDict(LocaleCode(), LuaEngine.SCRIPT_PATH, packagefilepath);
+
                 //Build a lua table as we go and return it
                 LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
                 LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, key, str) tbl[key] = str end").First() as LuaFunction;
 
-                Dictionary<string, string> xmlDict = Text.LoadStringResx(path);
                 foreach (string name in xmlDict.Keys)
                     addfn.Call(tbl, name, xmlDict[name]);
 
@@ -46,7 +41,12 @@ namespace RogueEssence.Script
             }
         }
 
-        
+        public void LoadPackageStringTable(string packagefilepath)
+        {
+            LuaTable strings = makePackageStringTable(packagefilepath);
+            MapStrings = strings;
+        }
+
 
         /// <summary>
         /// Gets the current language setting of the game.
@@ -58,7 +58,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Formats a string.  Will unescape escaped characters.
+        /// Formats a string.  Will unescape escaped characters and process grammar tags.
         /// </summary>
         /// <param name="fmt">String to format.</param>
         /// <param name="para">Arguments</param>

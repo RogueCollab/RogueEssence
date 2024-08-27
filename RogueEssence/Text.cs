@@ -6,8 +6,8 @@ using System.Globalization;
 using System.Xml;
 using System.IO;
 using System.Resources.NetStandard;
-using static System.Net.Mime.MediaTypeNames;
 using RogueElements;
+using RogueEssence.Data;
 
 namespace RogueEssence
 {
@@ -26,37 +26,55 @@ namespace RogueEssence
     public static class Text
     {
         public const string DIVIDER_STR = "\n";
-        public static List<Dictionary<string, string>> Strings;
-        public static List<Dictionary<string, string>> StringsEx;
+        public const string STRINGS_FILE_NAME = "strings";
+        public const string STRINGS_FILE_EXT = ".resx";
+
+        public static Dictionary<string, string> Strings;
+        public static Dictionary<string, string> StringsEx;
         public static CultureInfo Culture;
         public static string[] SupportedLangs;
         public static Dictionary<string, LanguageSetting> LangNames;
 
-        public static Regex MsgTags = new Regex(@"(?<pause>\[pause=(?<pauseval>\d+)\])" +
+        private static string subMsgRegex = @"(?<pause>\[pause=(?<pauseval>\d+)\])" +
                                                 @"|(?<sound>\[sound=(?<soundval>[A-Za-z\/0-9\-_]*),?(?<speaktime>\d*)?\])" +
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<scrollbreak>\[scroll\])" +
                                                 @"|(?<script>\[script=(?<scriptval>\d+)\])" +
-                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" + 
-                                                @"|(?<emote>\[emote=(?<emoteval>\d*|[a-zA-Z]*)\])",
+                                                @"|(?<speed>\[speed=(?<speedval>[+-]?\d+\.?\d*)\])" +
+                                                @"|(?<emote>\[emote=(?<emoteval>[a-zA-Z0-9\-]*)\])";
+
+        private static string subGenderRegex = @"(?<sex>\[male\]|\[female\]|\[neutral\])";
+
+        public static Regex SubMsgTags = new Regex(subMsgRegex,
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" +
-                                                @"|(?<eun_neun>(?<eun_neunval>\w)\[은/는\])" +
-                                                @"|(?<eul_leul>(?<eul_leulval>\w)\[을/를\])" +
-                                                @"|(?<i_ga>(?<i_gaval>\w)\[이/가\])" +
-                                                @"|(?<wa_gwa>(?<wa_gwaval>\w)\[와/과\])" +
-                                                @"|(?<eu_lo>(?<eu_loval>\w)\[으/로\])" +
-                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)\[이/라면\])",
+        public static Regex MsgTags = new Regex(subMsgRegex + @"|" + subGenderRegex,
+                                                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static Regex GrammarTags = new Regex(@"(?<a_an>\[a/an\]\W+(?<a_anval>\w))" + //en
+                                                @"|(?<el_la>\[el/la\]\W+?(?<el_lasex>\[male\]|\[female\])?\w)" + //es
+                                                @"|(?<los_las>\[los/las\]\W+?(?<los_lassex>\[male\]|\[female\])?\w)" + //es
+                                                @"|(?<der_die_das>\[der/die/das\]\W+?(?<der_die_dassex>\[male\]|\[female\]|\[neutral\])?\w)" + //de
+                                                @"|(?<ein_eine_einen>\[ein/eine/einen\]\W+?(?<ein_eine_einensex>\[male\]|\[female\]|\[neutral\])?\w)" + //de
+                                                @"|(?<ein_eine_ein>\[ein/eine/ein\]\W+?(?<ein_eine_einsex>\[male\]|\[female\]|\[neutral\])?\w)" + //de
+                                                @"|(?<il_la>\[il/la\]\W+?(?<il_lasex>\[male\]|\[female\])?(?<il_laval>\w\w?))" + //it
+                                                @"|(?<i_le>\[i/le\]\W+?(?<i_lesex>\[male\]|\[female\])?(?<i_leval>\w\w?))" + //it
+                                                @"|(?<uno_una>\[uno/una\]\W+?(?<uno_unasex>\[male\]|\[female\])?(?<uno_unaval>\w))" + //it
+                                                @"|(?<eun_neun>(?<eun_neunval>\w)[^가-힣]+?\[은/는\])" + //ko
+                                                @"|(?<eul_leul>(?<eul_leulval>\w)[^가-힣]+?\[을/를\])" + //ko
+                                                @"|(?<i_ga>(?<i_gaval>\w)[^가-힣]+?\[이/가\])" + //ko
+                                                @"|(?<wa_gwa>(?<wa_gwaval>\w)[^가-힣]+?\[와/과\])" + //ko
+                                                @"|(?<eu_lo>(?<eu_loval>\w)[^가-힣]+?\[으/로\])" + //ko
+                                                @"|(?<i_lamyeon>(?<i_lamyeonval>\w)[^가-힣]+?\[이/라면\])", //ko
                                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static void Init()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            Strings = new List<Dictionary<string, string>>();
-            StringsEx = new List<Dictionary<string, string>>();
+            Strings = new Dictionary<string, string>();
+            StringsEx = new Dictionary<string, string>();
 
             List<string> codes = new List<string>();
             Dictionary<string, LanguageSetting> translations = new Dictionary<string, LanguageSetting>();
@@ -192,6 +210,93 @@ namespace RogueEssence
             }
         }
 
+
+        public static Dictionary<string, string> LoadScriptStringDict(string code, string basePath, string packagefilepath)
+        {
+            Dictionary<string, string> xmlDict = new Dictionary<string, string>();
+
+            //order of string fallbacks:
+            //first go through all mods of the original language
+            foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
+            {
+                string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + "." + code + ".resx"));
+                if (File.Exists(modulePath))
+                {
+                    Dictionary<string, string> dict = LoadStringResx(modulePath);
+                    foreach (string key in dict.Keys)
+                    {
+                        if (!xmlDict.ContainsKey(key))
+                            xmlDict.Add(key, dict[key]);
+                    }
+                }
+            }
+
+            //then go through all mods of the official fallbacks
+            if (Text.LangNames.ContainsKey(code))
+            {
+                foreach (string fallback in Text.LangNames[code].Fallbacks)
+                {
+                    foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
+                    {
+                        string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + "." + fallback + ".resx"));
+                        if (File.Exists(modulePath))
+                        {
+                            Dictionary<string, string> dict = LoadStringResx(modulePath);
+                            foreach (string key in dict.Keys)
+                            {
+                                if (!xmlDict.ContainsKey(key))
+                                    xmlDict.Add(key, dict[key]);
+                            }
+                        }
+                    }
+                }
+            }
+            //then go through all mods of the default language
+            foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
+            {
+                string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + ".resx"));
+                if (File.Exists(modulePath))
+                {
+                    Dictionary<string, string> dict = LoadStringResx(modulePath);
+                    foreach (string key in dict.Keys)
+                    {
+                        if (!xmlDict.ContainsKey(key))
+                            xmlDict.Add(key, dict[key]);
+                    }
+                }
+            }
+            return xmlDict;
+        }
+
+        public static Dictionary<string, Dictionary<string, (string val, string comment)>> LoadDevScriptStringDict(string basePath, string packagefilepath, bool excludeEdit)
+        {
+            Dictionary<string, Dictionary<string, (string val, string comment)>> rawStrings = new Dictionary<string, Dictionary<string, (string, string)>>();
+            foreach (string code in Text.SupportedLangs)
+            {
+                //go through all mods of the original language
+                foreach (ModHeader mod in PathMod.FallbackScriptMods(basePath))
+                {
+                    if (excludeEdit && mod.Namespace == PathMod.GetCurrentNamespace())
+                        continue;
+
+                    string modulePath = PathMod.HardMod(mod.Path, Path.Join(basePath, mod.Namespace, packagefilepath, STRINGS_FILE_NAME + (code == "en" ? "" : ("." + code)) + ".resx"));
+                    if (File.Exists(modulePath))
+                    {
+                        Dictionary<string, (string, string)> xmlDict = LoadDevStringResx(modulePath);
+                        foreach (string name in xmlDict.Keys)
+                        {
+                            if (!rawStrings.ContainsKey(name))
+                                rawStrings.Add(name, new Dictionary<string, (string val, string comment)>());
+
+                            if (!rawStrings[name].ContainsKey(code))
+                                rawStrings[name].Add(code, xmlDict[name]);
+                        }
+                    }
+                }
+            }
+            return rawStrings;
+        }
+
         public static void SaveStringResx(string path, Dictionary<string, (string val, string comment)> stringDict)
         {
             using (ResXResourceWriter resx = new ResXResourceWriter(path))
@@ -206,125 +311,324 @@ namespace RogueEssence
 
         public static string FormatGrammar(string input, params object[] args)
         {
-            string output = String.Format(input, args);
-
-            List<(int, string)> reInserts = new List<(int, string)>();
-            int lag = 0;
-            MatchCollection tagMatches = MsgTags.Matches(output);
-            foreach (Match match in tagMatches)
+            try
             {
-                reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
-                output = output.Remove(match.Index - lag, match.Length);
-                lag += match.Length;
-            }
+                string output = String.Format(input, args);
 
-            List<(int, int, string)> replacements = new List<(int, int, string)>();
-            MatchCollection matches = GrammarTags.Matches(output);
-            foreach (Match match in matches)
-            {
-                foreach (string key in match.Groups.Keys)
+                List<(int idx, string replace)> reInserts = new List<(int, string)>();
+                int lag = 0;
+                MatchCollection tagMatches = SubMsgTags.Matches(output);
+                foreach (Match match in tagMatches)
                 {
-                    if (!match.Groups[key].Success)
-                        continue;
-                    switch (key)
-                    {
-                        case "a_an":
-                            {
-                                string vowelcheck = match.Groups["a_anval"].Value;
+                    reInserts.Add((match.Index - lag, output.Substring(match.Index - lag, match.Length)));
+                    output = output.Remove(match.Index - lag, match.Length);
+                    lag += match.Length;
+                }
 
-                                if (Regex.IsMatch(vowelcheck, "[aeiou]", RegexOptions.IgnoreCase))
-                                    replacements.Add((match.Index, 6, "an"));
-                                else
-                                    replacements.Add((match.Index, 6, "a"));
-                            }
-                            break;
-                        case "eun_neun":
-                            {
-                                string vowelcheck = match.Groups["eun_neunval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "는"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "은"));
-                            }
-                            break;
-                        case "eul_leul":
-                            {
-                                string vowelcheck = match.Groups["eul_leulval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "를"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "을"));
-                            }
-                            break;
-                        case "i_ga":
-                            {
-                                string vowelcheck = match.Groups["i_gaval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "가"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
-                            }
-                            break;
-                        case "wa_gwa":
-                            {
-                                string vowelcheck = match.Groups["wa_gwaval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "과"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "와"));
-                            }
-                            break;
-                        case "eu_lo":
-                            {
-                                string vowelcheck = match.Groups["eu_loval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "로"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "으"));
-                            }
-                            break;
-                        case "i_lamyeon":
-                            {
-                                string vowelcheck = match.Groups["i_lamyeonval"].Value;
-                                char vowelchar = vowelcheck[0];
-                                if ((int)(vowelchar - '가') % 28 == 0)
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "라면"));
-                                else
-                                    replacements.Add((match.Index + vowelcheck.Length, match.Length - vowelcheck.Length, "이"));
-                            }
-                            break;
+                List<(int idx, int length, string replace)> replacements = new List<(int, int, string)>();
+                MatchCollection matches = GrammarTags.Matches(output);
+                foreach (Match match in matches)
+                {
+                    foreach (string key in match.Groups.Keys)
+                    {
+                        if (!match.Groups[key].Success)
+                            continue;
+                        switch (key)
+                        {
+                            case "a_an":
+                                {
+                                    string vowelcheck = match.Groups["a_anval"].Value;
+
+                                    if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                        replacements.Add(chooseIndefinite(match, "[a/an]", "an"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[a/an]", "a"));
+                                }
+                                break;
+                            case "el_la":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["el_lasex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[el/la]", "el"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[el/la]", "la"));
+
+                                    if (match.Groups["el_lasex"].Success)
+                                        replacements.Add((match.Groups["el_lasex"].Index, match.Groups["el_lasex"].Value.Length, ""));
+                                }
+                                break;
+                            case "los_las":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["los_lassex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[los/las]", "los"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[los/las]", "las"));
+
+                                    if (match.Groups["los_lassex"].Success)
+                                        replacements.Add((match.Groups["los_lassex"].Index, match.Groups["los_lassex"].Value.Length, ""));
+                                }
+                                break;
+                            case "der_die_das":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["der_die_dassex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[der/die/das]", "der"));
+                                    else if (gendercheck == Gender.Female)
+                                        replacements.Add(chooseIndefinite(match, "[der/die/das]", "die"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[der/die/das]", "das"));
+
+                                    if (match.Groups["der_die_dassex"].Success)
+                                        replacements.Add((match.Groups["der_die_dassex"].Index, match.Groups["der_die_dassex"].Value.Length, ""));
+                                }
+                                break;
+                            case "ein_eine_einen":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einensex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Male)
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "einen"));
+                                    else if (gendercheck == Gender.Female)
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "eine"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/einen]", "ein"));
+
+                                    if (match.Groups["ein_eine_einensex"].Success)
+                                        replacements.Add((match.Groups["ein_eine_einensex"].Index, match.Groups["ein_eine_einensex"].Value.Length, ""));
+                                }
+                                break;
+                            case "ein_eine_ein":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["ein_eine_einsex"].Value, Gender.Male);
+
+                                    if (gendercheck == Gender.Female)
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "eine"));
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[ein/eine/ein]", "ein"));
+
+                                    if (match.Groups["ein_eine_einsex"].Success)
+                                        replacements.Add((match.Groups["ein_eine_einsex"].Index, match.Groups["ein_eine_einsex"].Value.Length, ""));
+                                }
+                                break;
+                            case "il_la":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["il_lasex"].Value, Gender.Male);
+                                    string vowelcheck = match.Groups["il_laval"].Value;
+                                    string postMatch = "";
+
+                                    if (Regex.IsMatch(vowelcheck, "^([aeou]|i[bcdfghjklmnpqrstvwxyz])", RegexOptions.IgnoreCase))
+                                    {
+                                        int total_length = "[il/la]".Length;
+                                        while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
+                                            total_length++;
+                                        replacements.Add((match.Index, total_length, ""));
+                                        postMatch = "l'";
+                                    }
+                                    else
+                                    {
+                                        if (gendercheck == Gender.Male)
+                                        {
+                                            if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|i[aeiou])", RegexOptions.IgnoreCase))
+                                                replacements.Add(chooseIndefinite(match, "[il/la]", "lo"));
+                                            else
+                                                replacements.Add(chooseIndefinite(match, "[il/la]", "il"));
+                                        }
+                                        else
+                                        {
+                                            replacements.Add(chooseIndefinite(match, "[il/la]", "la"));
+                                        }
+                                    }
+
+                                    if (match.Groups["il_lasex"].Success)
+                                        replacements.Add((match.Groups["il_lasex"].Index, match.Groups["il_lasex"].Value.Length, ""));
+
+                                    if (!String.IsNullOrEmpty(postMatch))
+                                        replacements.Add((match.Groups["il_laval"].Index, 0, capitalizeIndefinite(match, postMatch)));
+                                }
+                                break;
+                            case "i_le":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["i_lesex"].Value, Gender.Male);
+                                    string vowelcheck = match.Groups["i_leval"].Value;
+
+                                    if (gendercheck == Gender.Male)
+                                    {
+                                        if (Regex.IsMatch(vowelcheck, "^(x|y|z|s[bcdfghjklmnpqrstvwxyz]|gn|ps|pn|[aeiou])", RegexOptions.IgnoreCase))
+                                            replacements.Add(chooseIndefinite(match, "[i/le]", "gli"));
+                                        else
+                                            replacements.Add(chooseIndefinite(match, "[i/le]", "i"));
+                                    }
+                                    else
+                                        replacements.Add(chooseIndefinite(match, "[i/le]", "le"));
+
+                                    if (match.Groups["i_lesex"].Success)
+                                        replacements.Add((match.Groups["i_lesex"].Index, match.Groups["i_lesex"].Value.Length, ""));
+                                }
+                                break;
+                            case "uno_una":
+                                {
+                                    Gender gendercheck = extractGenderTag(match.Groups["uno_unasex"].Value, Gender.Male);
+                                    string vowelcheck = match.Groups["uno_unaval"].Value;
+                                    string postMatch = "";
+
+                                    if (gendercheck == Gender.Male)
+                                    {
+                                        if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                            replacements.Add(chooseIndefinite(match, "[uno/una]", "un"));
+                                        else
+                                            replacements.Add(chooseIndefinite(match, "[uno/una]", "uno"));
+                                    }
+                                    else
+                                    {
+                                        if (Regex.IsMatch(vowelcheck, "^[aeiou]", RegexOptions.IgnoreCase))
+                                        {
+                                            int total_length = "[uno/una]".Length;
+                                            while (Regex.IsMatch(match.Value.Substring(total_length, 1), @"\s"))
+                                                total_length++;
+                                            replacements.Add((match.Index, total_length, ""));
+                                            postMatch = "un'";
+                                        }
+                                        else
+                                            replacements.Add(chooseIndefinite(match, "[uno/una]", "una"));
+                                    }
+
+                                    if (match.Groups["uno_unasex"].Success)
+                                        replacements.Add((match.Groups["uno_unasex"].Index, match.Groups["uno_unasex"].Value.Length, ""));
+
+                                    if (!String.IsNullOrEmpty(postMatch))
+                                        replacements.Add((match.Groups["uno_unaval"].Index, 0, capitalizeIndefinite(match, postMatch)));
+                                }
+                                break;
+                            case "eun_neun":
+                                {
+                                    string vowelcheck = match.Groups["eun_neunval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add(chooseIndefiniteEnd(match, "[는/은]", "는"));
+                                    else
+                                        replacements.Add(chooseIndefiniteEnd(match, "[는/은]", "은"));
+                                }
+                                break;
+                            case "eul_leul":
+                                {
+                                    string vowelcheck = match.Groups["eul_leulval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add(chooseIndefiniteEnd(match, "[를/을]", "를"));
+                                    else
+                                        replacements.Add(chooseIndefiniteEnd(match, "[를/을]", "을"));
+                                }
+                                break;
+                            case "i_ga":
+                                {
+                                    string vowelcheck = match.Groups["i_gaval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add(chooseIndefiniteEnd(match, "[가/이]", "가"));
+                                    else
+                                        replacements.Add(chooseIndefiniteEnd(match, "[가/이]", "이"));
+                                }
+                                break;
+                            case "wa_gwa":
+                                {
+                                    string vowelcheck = match.Groups["wa_gwaval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add(chooseIndefiniteEnd(match, "[과/와]", "과"));
+                                    else
+                                        replacements.Add(chooseIndefiniteEnd(match, "[과/와]", "와"));
+                                }
+                                break;
+                            case "eu_lo":
+                                {
+                                    string vowelcheck = match.Groups["eu_loval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add(chooseIndefiniteEnd(match, "[로/으]", "로"));
+                                    else
+                                        replacements.Add(chooseIndefiniteEnd(match, "[로/으]", "으"));
+                                }
+                                break;
+                            case "i_lamyeon":
+                                {
+                                    string vowelcheck = match.Groups["i_lamyeonval"].Value;
+                                    char vowelchar = vowelcheck[0];
+                                    if ((int)(vowelchar - '가') % 28 == 0)
+                                        replacements.Add(chooseIndefiniteEnd(match, "[이/라면]", "라면"));
+                                    else
+                                        replacements.Add(chooseIndefiniteEnd(match, "[이/라면]", "이"));
+                                }
+                                break;
+                        }
                     }
                 }
-            }
 
-            int reIdx = reInserts.Count - 1;
-            for (int ii = replacements.Count - 1; ii >= 0; ii--)
-            {
+                int reIdx = reInserts.Count - 1;
+                for (int ii = replacements.Count - 1; ii >= 0; ii--)
+                {
+                    while (reIdx > -1)
+                    {
+                        if (reInserts[reIdx].Item1 < replacements[ii].idx + replacements[ii].length)
+                            break;
+
+                        output = output.Insert(reInserts[reIdx].idx, reInserts[reIdx].replace);
+                        reIdx--;
+                    }
+
+                    output = output.Remove(replacements[ii].idx, replacements[ii].length);
+                    output = output.Insert(replacements[ii].idx, replacements[ii].replace);
+                }
+
                 while (reIdx > -1)
                 {
-                    if (reInserts[reIdx].Item1 < replacements[ii].Item1 + replacements[ii].Item2)
-                        break;
-
-                    output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].Item2);
+                    output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].replace);
                     reIdx--;
                 }
 
-                output = output.Remove(replacements[ii].Item1, replacements[ii].Item2);
-                output = output.Insert(replacements[ii].Item1, replacements[ii].Item3);
-            }
+                return output;
 
-            while (reIdx > -1)
+            }
+            catch (Exception ex)
             {
-                output = output.Insert(reInserts[reIdx].Item1, reInserts[reIdx].Item2);
-                reIdx--;
+                DiagManager.Instance.LogError(ex);
+            }
+            return input;
+        }
+
+        private static (int, int, string) chooseIndefiniteEnd(Match match, string tag, string val)
+        {
+            return (match.Index + match.Length - tag.Length, tag.Length, val);
+        }
+
+        private static (int, int, string) chooseIndefinite(Match match, string tag, string val)
+        {
+            return (match.Index, tag.Length, capitalizeIndefinite(match, val));
+        }
+
+        private static string capitalizeIndefinite(Match match, string val)
+        {
+            if (char.IsUpper(match.Value[1]))
+                return val.Substring(0, 1).ToUpper() + val.Substring(1);
+            return val;
+        }
+
+        private static Gender extractGenderTag(string genderStr, Gender defaultGender)
+        {
+            switch (genderStr.ToLower())
+            {
+                case "[male]":
+                    return Gender.Male;
+                case "[female]":
+                    return Gender.Female;
+                case "[neutral]":
+                    return Gender.Genderless;
             }
 
-            return output;
+            return defaultGender;
         }
 
         public static string FormatKey(string key, params object[] args)
@@ -332,12 +636,9 @@ namespace RogueEssence
             try
             {
                 //take a resource instead of a string, and return the localized string for it
-                string text = "";
-                for (int ii = 0; ii < Strings.Count; ii++)
-                {
-                    if (Text.Strings[ii].TryGetValue(key, out text))
-                        return FormatGrammar(Regex.Unescape(text), args);
-                }
+                string text;
+                if (Text.Strings.TryGetValue(key, out text))
+                    return FormatGrammar(Regex.Unescape(text), args);
                 throw new KeyNotFoundException(String.Format("Could not find value for {0}", key));
             }
             catch (Exception ex)
@@ -352,15 +653,13 @@ namespace RogueEssence
             if (extra != null)
                 key += "_" + extra;
 
-            string text = "";
-            for (int ii = 0; ii < Strings.Count; ii++)
+            string text;
+            if (Text.Strings.TryGetValue(key, out text))
             {
-                if (Text.Strings[ii].TryGetValue(key, out text))
-                    break;
+                if (!String.IsNullOrEmpty(text))
+                    return Regex.Unescape(text);
             }
-
-            if (!String.IsNullOrEmpty(text))
-                return Regex.Unescape(text);
+    
             return value.ToString();
         }
         public static string ToLocal(this Enum value)
@@ -408,26 +707,47 @@ namespace RogueEssence
             loadCulture(StringsEx, code, "stringsEx");
         }
 
-        private static void loadCulture(List<Dictionary<string, string>> strings, string code, string fileName)
+        private static void loadCulture(Dictionary<string, string> strings, string code, string fileName)
         {
             strings.Clear();
             //order of string fallbacks:
             //first go through all mods of the original language
-            foreach(string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + ".resx"))
-                strings.Add(LoadStringResx(path));
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + code + STRINGS_FILE_EXT))
+            {
+                Dictionary<string, string> dict = LoadStringResx(path);
+                foreach (string key in dict.Keys)
+                {
+                    if (!strings.ContainsKey(key))
+                        strings.Add(key, dict[key]);
+                }
+            }
 
             //then go through all mods of the official fallbacks
             if (LangNames.ContainsKey(code))
             {
                 foreach (string fallback in LangNames[code].Fallbacks)
                 {
-                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + ".resx"))
-                        strings.Add(LoadStringResx(path));
+                    foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + "." + fallback + STRINGS_FILE_EXT))
+                    {
+                        Dictionary<string, string> dict = LoadStringResx(path);
+                        foreach (string key in dict.Keys)
+                        {
+                            if (!strings.ContainsKey(key))
+                                strings.Add(key, dict[key]);
+                        }
+                    }
                 }
             }
             //then go through all mods of the default language
-            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + ".resx"))
-                strings.Add(LoadStringResx(path));
+            foreach (string path in PathMod.FallbackPaths("Strings/" + fileName + STRINGS_FILE_EXT))
+            {
+                Dictionary<string, string> dict = LoadStringResx(path);
+                foreach (string key in dict.Keys)
+                {
+                    if (!strings.ContainsKey(key))
+                        strings.Add(key, dict[key]);
+                }
+            }
         }
 
         public static string GetLanguagedPath(string basePath, string cultureCode)
@@ -498,6 +818,16 @@ namespace RogueEssence
             return null;
         }
 
+        public static string GetNonConflictingSavePath(string folderPath, string fileName, string fileExtension)
+        {
+            bool savePathExists(string name)
+            {
+                return File.Exists(folderPath + name + fileExtension);
+            };
+
+            return Text.GetNonConflictingName(fileName, savePathExists);
+        }
+
         public static string GetMemberTitle(string name)
         {
             StringBuilder separatedName = new StringBuilder();
@@ -557,12 +887,9 @@ namespace RogueEssence
         {
             try
             {
-                string val = "";
-                for (int ii = 0; ii < Text.StringsEx.Count; ii++)
-                {
-                    if (Text.StringsEx[ii].TryGetValue(Key, out val))
-                        return Regex.Unescape(val);
-                }
+                string val;
+                if (Text.StringsEx.TryGetValue(Key, out val))
+                    return Regex.Unescape(val);
                 throw new KeyNotFoundException(String.Format("Could not find value for {0}", Key));
             }
             catch (Exception ex)

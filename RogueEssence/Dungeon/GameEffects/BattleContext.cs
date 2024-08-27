@@ -57,7 +57,9 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public List<Loc> StrikeLandTiles { get; set; }
 
-
+        /// <summary>
+        /// The ActionType: Skill, Item, Throw or Trap
+        /// </summary>
         public BattleActionType ActionType { get; set; }
         /// <summary>
         /// For skills, the skill slot
@@ -91,7 +93,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// The skill whose last charge was used up
         /// </summary>
-        public string SkillUsedUp;
+        public SkillStatus SkillUsedUp;
         /// <summary>
         /// Determines if this action should trigger end-of-turn.
         /// </summary>
@@ -109,6 +111,10 @@ namespace RogueEssence.Dungeon
         /// </summary>
         public int RangeMod;
 
+        /// <summary>
+        /// Context states that remain on the main battlecontext even after iterating over different targets.
+        /// Ordinarily, context states are left behind when switching to a new target (in multi-target contexts)
+        /// </summary>
         public StateCollection<ContextState> GlobalContextStates;
 
 
@@ -117,7 +123,7 @@ namespace RogueEssence.Dungeon
             TurnCancel = new AbortStatus();
             this.ActionType = actionType;
             UsageSlot = BattleContext.DEFAULT_ATTACK_SLOT;
-            SkillUsedUp = "";
+            SkillUsedUp = new SkillStatus();
             StrikeLandTiles = new List<Loc>();
             actionMsg = "";
             GlobalContextStates = new StateCollection<ContextState>();
@@ -281,5 +287,13 @@ namespace RogueEssence.Dungeon
             //do thing to tile
             yield return CoroutineManager.Instance.StartCoroutine(actionContext.User.HitTile(actionContext));
         }
+    }
+
+    public class SkillStatus
+    {
+        public string Skill;
+
+        public SkillStatus() { Skill = "";  }
+        public SkillStatus(string skill) { Skill = skill; }
     }
 }

@@ -12,12 +12,14 @@ namespace RogueEssence.Menu
     public class TutorTeamMenu : TitledStripMenu
     {
         private static int defaultChoice;
+
+        public delegate bool OnEligibleCheck(Character chara);
         OnChooseSlot chooseSlotAction;
         Action refuseAction;
 
         TeamMiniSummary summaryMenu;
 
-        public TutorTeamMenu(int teamSlot, OnChooseSlot action, Action refuseAction)
+        public TutorTeamMenu(int teamSlot, OnEligibleCheck eligibleCheck, OnChooseSlot action, Action refuseAction)
         {
             this.chooseSlotAction = action;
             this.refuseAction = refuseAction;
@@ -26,11 +28,11 @@ namespace RogueEssence.Menu
             foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
                 int teamIndex = team.Count;
-
-                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), Color.White);
-                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1), DirV.Up, DirH.Right, Color.White);
-                MenuText memberLv = new MenuText(character.Level.ToString(), memberLvLabel.Loc + new Loc(GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirV.Up, DirH.Right, Color.White);
-                team.Add(new MenuElementChoice(() => { choose(teamIndex); }, true, memberName, memberLvLabel, memberLv));
+                bool eligible = eligibleCheck(character);
+                MenuText memberName = new MenuText(character.GetDisplayName(true), new Loc(2, 1), eligible ? Color.White : Color.Red);
+                MenuText memberLvLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"), new Loc(menuWidth - 8 * 7 + 6, 1), DirV.Up, DirH.Right, eligible ? Color.White : Color.Red);
+                MenuText memberLv = new MenuText(character.Level.ToString(), memberLvLabel.Loc + new Loc(GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirV.Up, DirH.Right, eligible ? Color.White : Color.Red);
+                team.Add(new MenuElementChoice(() => { choose(teamIndex, eligible); }, true, memberName, memberLvLabel, memberLv));
             }
 
             summaryMenu = new TeamMiniSummary(Rect.FromPoints(new Loc(16,
@@ -64,9 +66,9 @@ namespace RogueEssence.Menu
             refuseAction();
         }
 
-        private void choose(int choice)
+        private void choose(int choice, bool eligible)
         {
-            MenuManager.Instance.AddMenu(new FacilityTeamChosenMenu(choice, chooseSlotAction), true);
+            MenuManager.Instance.AddMenu(new FacilityTeamChosenMenu(choice, eligible ? chooseSlotAction : null), true);
         }
 
 

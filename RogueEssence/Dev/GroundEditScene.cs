@@ -237,6 +237,8 @@ namespace RogueEssence.Dev
                     GroundDebug dbg = new GroundDebug(spriteBatch, Color.BlueViolet);
                     foreach (GroundEntity entity in ZoneManager.Instance.CurrentGround.IterateEntities())
                     {
+                        if (!entity.EntEnabled)
+                            entity.DrawPreview(spriteBatch, ViewRect.Start, 0.5f);
                         if (SelectedEntity == entity)
                         {
                             //Invert the color of selected entities

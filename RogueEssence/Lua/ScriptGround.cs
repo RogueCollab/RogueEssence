@@ -426,14 +426,16 @@ namespace RogueEssence.Script
                     gent.SetMapLoc(new Loc(x, y));
                     gent.SetLocHeight(height);
                     gent.UpdateFrame();
-                    gent.Direction = direction;
+                    if (direction > Dir8.None)
+                        gent.Direction = direction;
                     return;
                 }
                 else if (ent is GroundObject)
                 {
                     GroundObject gent = ent as GroundObject;
                     ent.SetMapLoc(new Loc(x, y));
-                    ent.Direction = direction;
+                    if (direction > Dir8.None)
+                        ent.Direction = direction;
                     return;
                 }
                 throw new ArgumentException("Entity is not a valid type.");
@@ -476,11 +478,11 @@ namespace RogueEssence.Script
         /// GROUND:MoveInDirection(player, 200, 240, false, 2)
         /// </example>
         public LuaFunction MoveToPosition;
-        public YieldInstruction _MoveToPosition(GroundEntity chara, int x, int y, bool run = false, int speed = 2)
+        public YieldInstruction _MoveToPosition(GroundEntity chara, int x, int y, bool run = false, float speed = 2)
         {
             try
             {
-                if (speed < 1)
+                if (speed <= 0f)
                     throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
                 if (chara is GroundChar)
@@ -642,11 +644,11 @@ namespace RogueEssence.Script
 
 
         public LuaFunction ActionToPosition;
-        public YieldInstruction _ActionToPosition(GroundEntity ent, GroundAction baseAction, int x, int y, float animSpeed, int speed, int height)
+        public YieldInstruction _ActionToPosition(GroundEntity ent, GroundAction baseAction, int x, int y, float animSpeed, float speed, int height)
         {
             try
             {
-                if (speed < 1)
+                if (speed <= 0f)
                     throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
                 if (ent is GroundChar)
@@ -827,7 +829,7 @@ namespace RogueEssence.Script
         /// <summary>
         /// Set a character's action.
         /// </summary>
-        /// <param name="chara">Character to perfomr the action</param>
+        /// <param name="chara">Character to perfom the action</param>
         /// <param name="action">The action to perform</param>
         public void CharSetAction(GroundChar chara, GroundAction action)
         {
@@ -976,6 +978,20 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Gives a character a set amount of EXP.
+        /// Also handles leveling up and learning new moves.
+        /// </summary>
+        /// <param name="character">The characters to level up.</param>
+        /// <param name="experience">The amount of EXP to gain.</param>
+       
+        public LuaFunction HandoutEXP;
+        
+        public Coroutine _HandoutEXP(Character character, int experience)
+        {
+            return new Coroutine(GroundScene.Instance.HandoutEXP(character, experience));
+        }
+
+        /// <summary>
         /// Levels up a character a certain amount of times all at once.
         /// Also handles learning new moves.
         /// </summary>
@@ -1035,6 +1051,7 @@ namespace RogueEssence.Script
             CharWaitAction = state.RunString("return function(_, ent, action) return coroutine.yield(GROUND:_CharWaitAction(ent, action)) end", "CharWaitAction").First() as LuaFunction;
 
             MoveObjectToPosition = state.RunString("return function(_, ent, x, y, speed) return coroutine.yield(GROUND:_MoveObjectToPosition(ent, x, y, speed)) end", "MoveObjectToPosition").First() as LuaFunction;
+            HandoutEXP = state.RunString("return function(_, character, numlevelups) return coroutine.yield(GROUND:_HandoutEXP(character, experience)) end", "HandoutEXP").First() as LuaFunction;
             LevelUpChar = state.RunString("return function(_, character, numlevelups) return coroutine.yield(GROUND:_LevelUpChar(character, numlevelups)) end", "LevelUpChar").First() as LuaFunction;
         }
     }

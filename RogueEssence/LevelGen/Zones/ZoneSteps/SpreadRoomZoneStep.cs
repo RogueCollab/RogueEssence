@@ -60,12 +60,14 @@ namespace RogueEssence.LevelGen
             if (specialStep.CanApply(context))
             {
                 specialStep.Rooms = new PresetPicker<RoomGen<MapGenContext>>(genDuo.GridOption);
+                specialStep.Filters = genDuo.Filters;
                 specialStep.RoomComponents.Set(new ImmutableRoom());
                 queue.Enqueue(PriorityGrid, specialStep);
             }
             else if (listSpecialStep.CanApply(context))
             {
                 listSpecialStep.Rooms = new PresetPicker<RoomGen<ListMapGenContext>>(genDuo.ListOption);
+                listSpecialStep.Filters = genDuo.Filters;
                 listSpecialStep.RoomComponents.Set(new ImmutableRoom());
                 PresetPicker<PermissiveRoomGen<ListMapGenContext>> picker = new PresetPicker<PermissiveRoomGen<ListMapGenContext>>();
                 picker.ToSpawn = new RoomGenAngledHall<ListMapGenContext>(0);

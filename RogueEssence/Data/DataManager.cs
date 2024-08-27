@@ -95,6 +95,21 @@ namespace RogueEssence.Data
             Verifying
         }
 
+        public enum SavePolicy
+        {
+            FileDiff,
+            File,
+            Diff
+        }
+
+        public enum ModStatus
+        {
+            Base,
+            Added,
+            Modded,
+            DiffModded
+        }
+
         private static DataManager instance;
         public static void InitInstance()
         {
@@ -109,6 +124,7 @@ namespace RogueEssence.Data
         public const string MAP_PATH = DATA_PATH + MAP_FOLDER;
         public const string GROUND_PATH = DATA_PATH + GROUND_FOLDER;
         public const string DATA_EXT = ".json";
+        public const string PATCH_EXT = ".jsonpatch";
         public const string MAP_EXT = ".rsmap";
         public const string GROUND_EXT = ".rsground";
 
@@ -162,24 +178,80 @@ namespace RogueEssence.Data
 
         public Dictionary<DataType, EntryDataIndex> DataIndices;
 
+        /// <summary>
+        /// The parameters governing the start of the game.
+        /// Such as starting character, map, level, etc.
+        /// </summary>
         public StartParams Start;
 
         public MonsterID DefaultMonsterID { get { return new MonsterID(DefaultMonster, 0, DefaultSkin, Gender.Genderless); } }
+
+        /// <summary>
+        /// The monster ID consiered default for purposes of initialization
+        /// </summary>
         public string DefaultMonster;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultSkill;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultIntrinsic;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultMapStatus;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultElement;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization and comparing to "nothing"
+        /// </summary>
         public string DefaultTile;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultZone;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultRank;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultAI;
+
+        /// <summary>
+        /// The skill ID considered default for purposes of initialization.
+        /// </summary>
         public string DefaultSkin;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "floor" in random dungeon generation
+        /// </summary>
         public string GenFloor;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "wall" in random dungeon generation
+        /// </summary>
         public string GenWall;
+
+        /// <summary>
+        /// The terrain ID considered to be universally "unbreakable" in random dungeon generation
+        /// </summary>
         public string GenUnbreakable;
         
-        public UniversalActiveEffect UniversalEvent;
+        public UniversalBaseEffect UniversalEvent;
         
         public TypeDict<BaseData> UniversalData;
 
@@ -196,6 +268,9 @@ namespace RogueEssence.Data
         public BattleFX JumpFX;
         public BattleFX ThrowFX;
 
+        /// <summary>
+        /// The current save file, loaded into memory
+        /// </summary>
         public GameProgress Save { get; private set; }
 
         public List<string> MsgLog;
@@ -259,33 +334,22 @@ namespace RogueEssence.Data
 
         public void InitBase()
         {
-            HealFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Heal" + DATA_EXT));
-            RestoreChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "RestoreCharge" + DATA_EXT));
-            LoseChargeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "LoseCharge" + DATA_EXT));
-            NoChargeFX = LoadData<EmoteFX>(PathMod.ModPath(FX_PATH + "NoCharge" + DATA_EXT));
-            ElementFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Element" + DATA_EXT));
-            IntrinsicFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Intrinsic" + DATA_EXT));
-            SendHomeFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "SendHome" + DATA_EXT));
-            ItemLostFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "ItemLost" + DATA_EXT));
-            WarpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Warp" + DATA_EXT));
-            KnockbackFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Knockback" + DATA_EXT));
-            JumpFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Jump" + DATA_EXT));
-            ThrowFX = LoadData<BattleFX>(PathMod.ModPath(FX_PATH + "Throw" + DATA_EXT));
+            HealFX = LoadData<BattleFX>(FX_PATH, "Heal", DATA_EXT);
+            RestoreChargeFX = LoadData<BattleFX>(FX_PATH, "RestoreCharge", DATA_EXT);
+            LoseChargeFX = LoadData<BattleFX>(FX_PATH, "LoseCharge", DATA_EXT);
+            NoChargeFX = LoadData<EmoteFX>(FX_PATH, "NoCharge", DATA_EXT);
+            ElementFX = LoadData<BattleFX>(FX_PATH, "Element", DATA_EXT);
+            IntrinsicFX = LoadData<BattleFX>(FX_PATH, "Intrinsic", DATA_EXT);
+            SendHomeFX = LoadData<BattleFX>(FX_PATH, "SendHome", DATA_EXT);
+            ItemLostFX = LoadData<BattleFX>(FX_PATH, "ItemLost", DATA_EXT);
+            WarpFX = LoadData<BattleFX>(FX_PATH, "Warp", DATA_EXT);
+            KnockbackFX = LoadData<BattleFX>(FX_PATH, "Knockback", DATA_EXT);
+            JumpFX = LoadData<BattleFX>(FX_PATH, "Jump", DATA_EXT);
+            ThrowFX = LoadData<BattleFX>(FX_PATH, "Throw", DATA_EXT);
 
+            UniversalEvent = LoadData<UniversalBaseEffect>(DATA_PATH, "Universal", DATA_EXT);
 
-            Version oldVersion = DevHelper.GetVersion(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
-            //TODO: Created v0.7.14, delete on v1.1
-            if (oldVersion < new Version(0, 7, 14))
-            {
-                object data = DataManager.LoadData<ActiveEffect>(PathMod.ModPath(DataManager.DATA_PATH + "Universal" + DataManager.DATA_EXT));
-                UniversalActiveEffect universalActiveEffect = new UniversalActiveEffect();
-                universalActiveEffect.AddOther((ActiveEffect)data);
-                UniversalEvent = universalActiveEffect;
-            }
-            else
-                UniversalEvent = LoadData<UniversalActiveEffect>(PathMod.ModPath(DATA_PATH + "Universal" + DATA_EXT));
-
-            UniversalData = LoadData<TypeDict<BaseData>>(PathMod.ModPath(MISC_PATH + "Index" + DATA_EXT));
+            UniversalData = LoadData<TypeDict<BaseData>>(MISC_PATH, "Index", DATA_EXT);
             LoadStartParams();
         }
 
@@ -293,13 +357,21 @@ namespace RogueEssence.Data
         {
             LoadConversions();
             LoadIndex(DataType.Item);
+            itemCache.Clear();
             LoadIndex(DataType.Skill);
+            skillCache.Clear();
             LoadIndex(DataType.Monster);
+            monsterCache.Clear();
             LoadIndex(DataType.Zone);
+            zoneCache.Clear();
             LoadIndex(DataType.Status);
+            statusCache.Clear();
             LoadIndex(DataType.Intrinsic);
+            intrinsicCache.Clear();
             LoadIndex(DataType.AutoTile);
+            autoTileCache.Clear();
             LoadIndex(DataType.MapStatus);
+            mapStatusCache.Clear();
             LoadIndexFull(DataType.Tile, tileCache);
             LoadIndexFull(DataType.Terrain, terrainCache);
             LoadIndexFull(DataType.Emote, emoteCache);
@@ -409,7 +481,7 @@ namespace RogueEssence.Data
             {
                 try
                 {
-                    BaseData data = LoadData<BaseData>(PathMod.ModPath(MISC_PATH + baseData.FileName + DATA_EXT));
+                    BaseData data = LoadData<BaseData>(MISC_PATH, baseData.FileName, DATA_EXT);
                     UniversalData.Set(data);
                 }
                 catch
@@ -579,7 +651,7 @@ namespace RogueEssence.Data
         /// <summary>
         /// Index paths are modified like mods.  However, if multiple mods have conflicting indices, a combined index must be generated.
         /// </summary>
-        /// <param name="basePath"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
         public static EntryDataIndex GetIndex(DataType type)
         {
@@ -618,7 +690,7 @@ namespace RogueEssence.Data
                     foreach ((Guid, EntrySummary) tuple in DataIndices[type].IterateKey(key))
                     {
                         ModHeader mod = PathMod.GetModFromUuid(tuple.Item1);
-                        T data = LoadModData<T>(mod, key, type.ToString());
+                        T data = LoadModEntryData<T>(mod, key, type.ToString());
                         if (data != null)
                         {
                             cache.Add(mod.Namespace + ":" + key, data);
@@ -645,17 +717,38 @@ namespace RogueEssence.Data
             }
         }
 
+        public void ContentResaved(DataType dataType, string entryNum, IEntryData data, bool asDiff)
+        {
+            SaveEntryData(entryNum, dataType.ToString(), data, asDiff ? SavePolicy.Diff : SavePolicy.File);
+
+            ModStatus modStatus = GetEntryDataModStatus(entryNum, dataType.ToString());
+            if (modStatus != ModStatus.Base)
+            {
+                EntrySummary entrySummary = data.GenerateEntrySummary();
+                DataIndices[dataType].Set(PathMod.Quest.UUID, entryNum, entrySummary);
+            }
+            else
+                DataIndices[dataType].Remove(PathMod.Quest.UUID, entryNum);
+            SaveIndex(dataType);
+
+            //Don't need to clear cache
+
+            //don't need to save universal indices
+
+            //don't need to reload editor data
+        }
+
         public void ContentChanged(DataType dataType, string entryNum, IEntryData data)
         {
             if (data != null)
             {
-                SaveData(entryNum, dataType.ToString(), data);
+                SaveEntryData(entryNum, dataType.ToString(), data);
                 EntrySummary entrySummary = data.GenerateEntrySummary();
                 DataIndices[dataType].Set(PathMod.Quest.UUID, entryNum, entrySummary);
             }
             else
             {
-                DeleteData(entryNum, dataType.ToString());
+                DeleteEntryData(entryNum, dataType.ToString());
                 DataIndices[dataType].Remove(PathMod.Quest.UUID, entryNum);
             }
             SaveIndex(dataType);
@@ -666,7 +759,7 @@ namespace RogueEssence.Data
                 if ((baseData.TriggerType & dataType) != DataManager.DataType.None)
                 {
                     baseData.ContentChanged(entryNum);
-                    DataManager.SaveData(PathMod.ModPath(DataManager.MISC_PATH + baseData.FileName + DATA_EXT), baseData);
+                    DataManager.SaveData(baseData, DataManager.MISC_PATH, baseData.FileName, DATA_EXT);
                 }
             }
 
@@ -680,45 +773,113 @@ namespace RogueEssence.Data
             if (components.Length > 1)
             {
                 ModHeader mod = PathMod.GetModFromNamespace(components[0]);
-                result = LoadModData<T>(mod, components[1], subPath, ext);
+                result = LoadModEntryData<T>(mod, components[1], subPath, ext);
             }
             else
-                result = LoadData<T>(components[0], subPath, ext);
+                result = LoadEntryData<T>(components[0], subPath, ext);
             
             if (result == null)
                 throw new FileNotFoundException(String.Format("Could not find {0} ID: '{1}'", subPath, namespacedNum));
             return result;
         }
 
-        public static T LoadModData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        public static T LoadModEntryData<T>(ModHeader mod, string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
         {
-            string filePath = PathMod.HardMod(mod.Path, Path.Join(DATA_PATH + subPath, indexNum + ext));
-            if (File.Exists(filePath))
-                return LoadData<T>(filePath);
+            return LoadModData<T>(mod, DATA_PATH + subPath, indexNum, ext);
+        }
+
+        public static T LoadEntryData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        {
+            return LoadData<T>(DATA_PATH + subPath, indexNum, ext);
+        }
+
+        /// <summary>
+        /// Loads the data of the specified mod, and does not fall back to base if there is no mod.
+        /// Used for reserializing/resaving where either the base or the mod's files ONLY need to be resaved.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mod"></param>
+        /// <param name="subpath"></param>
+        /// <param name="file"></param>
+        /// <param name="ext"></param>
+        /// <returns></returns>
+        public static T LoadModData<T>(ModHeader mod, string subpath, string file, string ext)
+        {
+            string fullPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + ext));
+            string diffPath = PathMod.HardMod(mod.Path, Path.Join(subpath, file + PATCH_EXT));
+
+            string filePath = null;
+            List<string> diffPaths = new List<string>();
+            foreach (string modPath in PathMod.FallbackPaths(subpath))
+            {
+                //do not add to diff list until we reach the desired hardmod
+                //and STOP when we get to a full file
+                //but do we want hardmod to be THIS mod's diff on top of base?
+                //or THIS mod's diff on top of everything else on top of base?
+                //...the latter!
+                string newPath = Path.Join(modPath, file + ext);
+                string newDiffPath = Path.Join(modPath, file + PATCH_EXT);
+                if (diffPaths.Count > 0 || newPath == fullPath || newDiffPath == diffPath)
+                {
+                    if (File.Exists(newPath))
+                    {
+                        filePath = newPath;
+                        break;
+                    }
+                    if (File.Exists(newDiffPath))
+                        diffPaths.Insert(0, newDiffPath);
+                }
+            }
+            if (filePath != null)
+                return LoadObject<T>(filePath, diffPaths.ToArray());
             return default(T);
         }
 
-        public static T LoadData<T>(string indexNum, string subPath, string ext = DATA_EXT) where T : IEntryData
+        public static T LoadData<T>(string subpath, string file, string ext)
         {
-            string filePath = PathMod.ModPath(Path.Join(DATA_PATH + subPath, indexNum + ext));
-            if (File.Exists(filePath))
-                return LoadData<T>(filePath);
+            //fall back on paths
+            //fall back until a file with ext is found
+            //all diff files found along the way need to be included in the argument pass
+            string filePath = null;
+            List<string> diffPaths = new List<string>();
+            foreach (string modPath in PathMod.FallbackPaths(subpath))
+            {
+                string newPath = Path.Join(modPath, file + ext);
+                if (File.Exists(newPath))
+                {
+                    filePath = newPath;
+                    break;
+                }
+                string newDiffPath = Path.Join(modPath, file + PATCH_EXT);
+                if (File.Exists(newDiffPath))
+                    diffPaths.Insert(0, newDiffPath);
+            }
+            if (filePath != null)
+                return LoadObject<T>(filePath, diffPaths.ToArray());
             return default(T);
         }
 
-        public static T LoadData<T>(string path)
+        //All instances of LoadObject in DevHelper need to be reworked to load on both diff and base file?
+        //yes, this is so that they can load properly on the reserialization step
+        //presumably, it should be saved based on whether it was loaded as a diff or not...
+        public static T LoadObject<T>(string path, params string[] diffpaths)
         {
-            return (T)LoadData(path, typeof(T));
+            return (T)loadObject(typeof(T), path, diffpaths);
         }
 
-        public static object LoadData(string path, Type t)
+        private static object loadObject(Type t, string path, params string[] diffpaths)
         {
             try
             {
-                using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                if (diffpaths.Length == 0)
                 {
-                    return Serializer.DeserializeData(stream);
+                    using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        return Serializer.DeserializeData(stream);
+                    }
                 }
+                else
+                    return Serializer.DeserializeDataWithDiffs(path, diffpaths);
             }
             catch (Exception ex)
             {
@@ -728,35 +889,130 @@ namespace RogueEssence.Data
         }
 
 
-        public static void SaveData(string indexNum, string subPath, IEntryData entry)
+        public static ModStatus GetEntryDataModStatus(string indexNum, string subPath)
         {
-            string folder = PathMod.HardMod(DATA_PATH + subPath);
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-            SaveData(folder + "/" + indexNum + DATA_EXT, entry);
+            return GetDataModStatus(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
         }
 
-        public static void SaveData(string path, object entry)
+        /// <summary>
+        /// Returns information of how a file has been modded, if at all.
+        /// </summary>
+        /// <param name="subpath"></param>
+        /// <param name="file"></param>
+        /// <param name="ext"></param>
+        /// <returns></returns>
+        public static ModStatus GetDataModStatus(string subpath, string file, string ext)
         {
-            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            string folder = PathMod.HardMod(subpath);
+            if (File.Exists(Path.Join(folder, file + ext)))
             {
-                //using (BinaryWriter writer = new BinaryWriter(stream))
-                //{
-                Serializer.SerializeData(stream, entry);
-                //}
+                string baseFolder = PathMod.NoMod(subpath);
+                if (!File.Exists(Path.Join(baseFolder, file + ext)))
+                    return ModStatus.Added;
+                else
+                    return ModStatus.Modded;
+            }
+            if (File.Exists(Path.Join(folder, file + PATCH_EXT)))
+                return ModStatus.DiffModded;
+            return ModStatus.Base;
+        }
+
+        public static void SaveEntryData(string indexNum, string subPath, IEntryData entry, SavePolicy savePolicy = SavePolicy.FileDiff)
+        {
+            SaveData(entry, Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT, savePolicy);
+        }
+
+        /// <summary>
+        /// Provides the ability to save it as a file or a mod based on whether it was loaded as a diff or not... aka whether it was a diff as a file or not.
+        /// Can also save explicitly as a file or diff.
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="subpath"></param>
+        /// <param name="file"></param>
+        /// <param name="ext"></param>
+        /// <param name="savePolicy"></param>
+        public static void SaveData(object entry, string subpath, string file, string ext, SavePolicy savePolicy = SavePolicy.FileDiff)
+        {
+            string folder = PathMod.HardMod(subpath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            //Check if a diff file is located here
+            bool saveAsDiff;
+            switch (savePolicy)
+            {
+                case SavePolicy.File:
+                    saveAsDiff = false;
+                    break;
+                case SavePolicy.Diff:
+                    saveAsDiff = true;
+                    break;
+                default:
+                    saveAsDiff = File.Exists(Path.Join(folder, file + PATCH_EXT));
+                    break;
+            }
+
+            string saveDest = Path.Join(folder, file + ext);
+            string baseFile = PathMod.NoMod(Path.Join(subpath, file + ext));
+            if (saveAsDiff && saveDest != baseFile && File.Exists(baseFile)) //if so, call SaveObject with the diff ext, and the additional argument consisting of the base item
+                SaveObject(entry, saveDest, baseFile);
+            else //if not, just save as normal
+                SaveObject(entry, saveDest);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="path">The location to save the file if not as a patch.</param>
+        /// <param name="basePath">The base file to diff the json against.  Do not save as a patch if left blank.</param>
+        public static void SaveObject(object entry, string path, string basePath = "")
+        {
+            //The location of a hypothetical patch file.
+            //if basePath is not empty, save as the patch file.  if basePath is empty, save as a full file
+            string directory = Path.GetDirectoryName(path);
+            string file = Path.GetFileNameWithoutExtension(path);
+            string diffPath = Path.Join(directory, file + PATCH_EXT);
+            if (basePath == "")
+            {
+                using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    Serializer.SerializeData(stream, entry);
+                }
+
+                //Delete the diff file, if it exists
+                if (File.Exists(diffPath))
+                    File.Delete(diffPath);
+            }
+            else
+            {
+                Serializer.SerializeDataAsDiff(diffPath, basePath, entry);
+
+                //Delete the non-diff file, if it exists
+                if (File.Exists(path))
+                    File.Delete(path);
             }
         }
 
-
-        public static void DeleteData(string indexNum, string subPath)
+        public static void DeleteEntryData(string indexNum, string subPath)
         {
-            string folder = PathMod.HardMod(DATA_PATH + subPath);
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-            DeleteData(folder + "/" + indexNum + DATA_EXT);
+            DeleteData(Path.Join(DATA_PATH, subPath), indexNum, DATA_EXT);
         }
 
-        public static void DeleteData(string path)
+        public static void DeleteData(string subpath, string file, string ext)
+        {
+            string folder = PathMod.HardMod(subpath);
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            //Check if a diff file is located here
+            if (File.Exists(Path.Join(folder, file + PATCH_EXT))) //if so, call DeleteObject with the diff ext, and the additional argument consisting of the base item
+                DeleteObject(Path.Join(folder, file + PATCH_EXT));
+            else //if not, just delete the normal mod file
+                DeleteObject(Path.Join(folder, file + ext));
+        }
+
+        public static void DeleteObject(string path)
         {
             if (File.Exists(path))
                 File.Delete(path);
@@ -779,6 +1035,11 @@ namespace RogueEssence.Data
             zoneCache.Add(index, data);
         }
 
+        /// <summary>
+        /// Gets a zone based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ZoneData GetZone(string index)
         {
             ZoneData data = null;
@@ -810,6 +1071,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets a map based on its ID
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public Map GetMap(string name)
         {
             Map mapData = null;
@@ -827,12 +1093,17 @@ namespace RogueEssence.Data
             return mapData;
         }
 
+        /// <summary>
+        /// Gets a ground map based on its ID
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public GroundMap GetGround(string name)
         {
             GroundMap mapData = null;
             try
             {
-                mapData = LoadData<GroundMap>(name, GROUND_FOLDER, ".rsground");
+                mapData = LoadEntryData<GroundMap>(name, GROUND_FOLDER, ".rsground");
                 mapData.AssetName = name;
                 return mapData;
             }
@@ -844,7 +1115,11 @@ namespace RogueEssence.Data
             return mapData;
         }
 
-
+        /// <summary>
+        /// Gets the data for a skill based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public SkillData GetSkill(string index)
         {
             SkillData data;
@@ -864,7 +1139,11 @@ namespace RogueEssence.Data
         }
 
 
-
+        /// <summary>
+        /// Gets the data for an item based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ItemData GetItem(string index)
         {
             ItemData data;
@@ -883,6 +1162,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for an autotile based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public AutoTileData GetAutoTile(string index)
         {
             AutoTileData data;
@@ -901,6 +1185,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a monster based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public MonsterData GetMonster(string index)
         {
             MonsterData data;
@@ -919,6 +1208,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a status effect based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public StatusData GetStatus(string index)
         {
             StatusData data;
@@ -937,6 +1231,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for an intrinsic (passive ability) based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public IntrinsicData GetIntrinsic(string index)
         {
             IntrinsicData data;
@@ -955,6 +1254,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a map-wide status effect based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public MapStatusData GetMapStatus(string index)
         {
             MapStatusData data;
@@ -973,6 +1277,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a tile, such as stairs or traps, based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public TileData GetTile(string index)
         {
             TileData data = null;
@@ -982,6 +1291,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for a terrain type based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public TerrainData GetTerrain(string index)
         {
             TerrainData data = null;
@@ -991,6 +1305,11 @@ namespace RogueEssence.Data
             return data;
         }
 
+        /// <summary>
+        /// Gets the data for an emote based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public EmoteData GetEmote(string index)
         {
             EmoteData data = null;
@@ -1000,6 +1319,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for an elemental type based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ElementData GetElement(string index)
         {
             ElementData data = null;
@@ -1009,6 +1333,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a growth group based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public GrowthData GetGrowth(string index)
         {
             GrowthData data = null;
@@ -1018,6 +1347,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a skill-sharing group based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public SkillGroupData GetSkillGroup(string index)
         {
             SkillGroupData data = null;
@@ -1027,6 +1361,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for an ai tactic based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public AITactic GetAITactic(string index)
         {
             AITactic data = null;
@@ -1036,6 +1375,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a team rank based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public RankData GetRank(string index)
         {
             RankData data = null;
@@ -1045,6 +1389,11 @@ namespace RogueEssence.Data
             return null;
         }
 
+        /// <summary>
+        /// Gets the data for a skin based on its ID
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public SkinData GetSkin(string index)
         {
             SkinData data = null;
@@ -1390,7 +1739,7 @@ namespace RogueEssence.Data
                 }
                 else if (File.Exists(PathMod.ModSavePath(REPLAY_PATH, outFile + REPLAY_EXTENSION)))
                 {
-                    string renamedFile = GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
+                    string renamedFile = Text.GetNonConflictingSavePath(PathMod.ModSavePath(REPLAY_PATH), outFile, REPLAY_EXTENSION);
 
                     if (renamedFile != null)
                     {
@@ -1407,16 +1756,6 @@ namespace RogueEssence.Data
                 DiagManager.Instance.LogError(ex);
             }
             return null;
-        }
-
-        public static string GetNonConflictingSavePath(string folderPath, string fileName, string fileExtension)
-        {
-            bool savePathExists(string name)
-            {
-                return File.Exists(folderPath + name + fileExtension);
-            };
-
-            return Text.GetNonConflictingName(fileName, savePathExists);
         }
 
         //TODO: remove this when LogQuicksave is working
@@ -1522,7 +1861,7 @@ namespace RogueEssence.Data
                     using (BinaryReader reader = new BinaryReader(stream))
                     {
                         //version string
-                        Version version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+                        record.Version = new Version(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
                         //epitaph location
                         long endPos = reader.ReadInt64();
                         //read time
@@ -1811,6 +2150,7 @@ namespace RogueEssence.Data
                         writer.Write(reader.ReadUInt64());
                         //read favorite, no need to write it though
                         reader.ReadBoolean();
+                        writer.Write(false);
                         //read language that the game was played in
                         writer.Write(reader.ReadString());
                         //read commands
@@ -1898,8 +2238,10 @@ namespace RogueEssence.Data
                                 int build = reader.ReadInt32();
                                 int rev = reader.ReadInt32();
                                 Version version;
-                                if (build > -1)
+                                if (rev > -1)
                                     version = new Version(major, minor, build, rev);
+                                else if (build > -1)
+                                    version = new Version(major, minor, build);
                                 else
                                     version = new Version(major, minor);
                                 ModVersion diff = new ModVersion(name, uuid, version);
@@ -1945,8 +2287,10 @@ namespace RogueEssence.Data
                             int build = reader.ReadInt32();
                             int rev = reader.ReadInt32();
                             Version version;
-                            if (build > -1)
+                            if (rev > -1)
                                 version = new Version(major, minor, build, rev);
+                            else if (build > -1)
+                                version = new Version(major, minor, build);
                             else
                                 version = new Version(major, minor);
                         }
@@ -1965,7 +2309,7 @@ namespace RogueEssence.Data
         {
             string renamedFile = mail.TeamID.ToString();
             if (!force)
-                renamedFile = GetNonConflictingSavePath(folderPath, mail.TeamID.ToString(), mail.Extension);
+                renamedFile = Text.GetNonConflictingSavePath(folderPath, mail.TeamID.ToString(), mail.Extension);
 
             try
             {
@@ -2173,7 +2517,7 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// Returns game progress and current zone.
+        /// Returns game progress loaded from the save folder and current zone.
         /// </summary>
         /// <returns></returns>
         public GameState LoadMainGameState(bool allowUpgrade)

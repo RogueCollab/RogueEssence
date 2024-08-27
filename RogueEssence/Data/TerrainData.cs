@@ -2,6 +2,7 @@
 using RogueEssence.Dungeon;
 using RogueElements;
 using Microsoft.Xna.Framework;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -25,6 +26,27 @@ namespace RogueEssence.Data
             All = 15
         }
 
+        public enum TileItemLand
+        {
+            Normal,
+            Fall,
+            Destroy
+        }
+
+        public enum TileItemDraw
+        {
+            Normal,
+            Transparent,
+            Hide
+        }
+
+        public enum TileItemAllowance
+        {
+            Allow,
+            Force,
+            Forbid
+        }
+
         public LocalText Name { get; set; }
         public bool Released { get { return true; } }
         [Dev.Multiline(0)]
@@ -41,13 +63,29 @@ namespace RogueEssence.Data
         public bool BlockLight;
         public int ShadowType;
 
+        /// <summary>
+        /// What happens when an item lands on this tile.
+        /// </summary>
+        public TileItemLand ItemLand;
+
+        /// <summary>
+        /// How the item's visibility is affected when it's on this tile.
+        /// </summary>
+        public TileItemDraw ItemDraw;
+
+        /// <summary>
+        /// Determines whether items are allowed on this tile, if they have to be forced on, or if they flat out forbid them.
+        /// </summary>
+        public TileItemAllowance ItemAllow;
 
         /// <summary>
         /// Special variables that this terrain contains.
         /// They are potentially checked against in a select number of battle events.
         /// </summary>
+        [ListCollapse]
         public StateCollection<TerrainState> TerrainStates;
 
+        [ListCollapse]
         public PriorityList<SingleCharEvent> LandedOnTiles;
 
         public TerrainData()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
 
@@ -14,25 +13,23 @@ namespace RogueEssence.Menu
 
         private Action action;
 
-        public InfoMenu(string title, string message, Action action)
+        public InfoMenu(string title, string message, Action action) : this(MenuLabel.INFO_MENU, title, message, action) { }
+        public InfoMenu(string label, string title, string message, Action action)
         {
+            Label = label;
             this.action = action;
 
             Bounds = new Rect(new Loc(40, 32), new Loc(240, 176));
 
-            Title = new MenuText(title, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
-            Div = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
-            
-            Info = new DialogueText(message, new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET),
+            Title = new MenuText(MenuLabel.TITLE, title, new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));
+            Elements.Add(Title);
+
+            Div = new MenuDivider(MenuLabel.DIV, new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
+            Elements.Add(Div);
+
+            Info = new DialogueText(MenuLabel.MESSAGE, message, new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET),
                 new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 3, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 3)), LINE_HEIGHT);
-        }
-
-        public override IEnumerable<IMenuElement> GetElements()
-        {
-            yield return Title;
-            yield return Div;
-
-            yield return Info;
+            Elements.Add(Info);
         }
 
         public override void Update(InputManager input)

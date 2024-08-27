@@ -88,6 +88,16 @@ namespace RogueEssence.Ground
                 yield return temp;
         }
 
+        public IEnumerable<GroundObject> IterateObjects()
+        {
+            foreach (GroundObject v in GroundObjects)
+                yield return v;
+
+            foreach (GroundObject v in TemporaryObjects)
+                yield return v;
+
+        }
+
 
         /// <summary>
         /// Allow iterating through all entities on the map,

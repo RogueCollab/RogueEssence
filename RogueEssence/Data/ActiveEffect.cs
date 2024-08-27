@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueEssence.Dungeon;
 using RogueElements;
 using RogueEssence.LevelGen;
+using RogueEssence.Dev;
 
 namespace RogueEssence.Data
 {
@@ -22,41 +23,69 @@ namespace RogueEssence.Data
             return null;
         }
 
+        [ListCollapse]
         public StateCollection<UniversalState> UniversalStates;
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeTryActions;
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeActions;
+        [ListCollapse]
         public PriorityList<BattleEvent> OnActions;
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeExplosions;
+        [ListCollapse]
         public PriorityList<BattleEvent> BeforeHits;
+        [ListCollapse]
         public PriorityList<BattleEvent> OnHits;
+        [ListCollapse]
         public PriorityList<BattleEvent> OnHitTiles;
+        [ListCollapse]
         public PriorityList<BattleEvent> AfterActions;
+        [ListCollapse]
         public PriorityList<ElementEffectEvent> ElementEffects;
 
+        [ListCollapse]
         public PriorityList<ItemGivenEvent> OnEquips;
+        [ListCollapse]
         public PriorityList<ItemGivenEvent> OnPickups;
 
+        [ListCollapse]
         public PriorityList<StatusGivenEvent> BeforeStatusAdds;
+        [ListCollapse]
         public PriorityList<StatusGivenEvent> OnStatusAdds;
+        [ListCollapse]
         public PriorityList<StatusGivenEvent> OnStatusRemoves;
 
+        [ListCollapse]
         public PriorityList<MapStatusGivenEvent> OnMapStatusAdds;
+        [ListCollapse]
         public PriorityList<MapStatusGivenEvent> OnMapStatusRemoves;
 
+        [ListCollapse]
         public PriorityList<SingleCharEvent> OnMapStarts;
 
+        [ListCollapse]
         public PriorityList<SingleCharEvent> OnTurnStarts;
+        [ListCollapse]
         public PriorityList<SingleCharEvent> OnTurnEnds;
+        [ListCollapse]
         public PriorityList<SingleCharEvent> OnMapTurnEnds;
+        [ListCollapse]
         public PriorityList<SingleCharEvent> OnWalks;
+        [ListCollapse]
         public PriorityList<SingleCharEvent> OnDeaths;
 
+        [ListCollapse]
         public PriorityList<RefreshEvent> OnRefresh;
+        [ListCollapse]
         public PriorityList<RefreshEvent> OnMapRefresh;
 
+        [ListCollapse]
         public PriorityList<HPChangeEvent> ModifyHPs;
+        [ListCollapse]
         public PriorityList<HPChangeEvent> RestoreHPs;
 
+        [ListCollapse]
         public PriorityList<BattleEvent> InitActionData;
 
         public ActiveEffect()
@@ -189,12 +218,14 @@ namespace RogueEssence.Data
     }
 
     [Serializable]
-    public class UniversalActiveEffect : ActiveEffect
+    public abstract  class UniversalBaseEffect : ActiveEffect
     {
         public List<ZoneStep> ZoneSteps;
-        public UniversalActiveEffect() : base()
+        public UniversalBaseEffect() : base()
         {
             this.ZoneSteps = new List<ZoneStep>();
         }
+
+        public abstract int GetRange(Character character, ref SkillData entry);
     }
 }

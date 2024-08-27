@@ -100,6 +100,8 @@ namespace RogueEssence
             
                 DungeonEditScene.InitInstance();
                 GroundEditScene.InitInstance();
+
+                LuaEngine.Instance.LoadScripts();
                 //Notify script engine
                 LuaEngine.Instance.OnDataLoad();
                 GameManager.Instance.Begin();
@@ -111,7 +113,7 @@ namespace RogueEssence
                 DiagManager.Instance.LogError(ex);
             }
             backgroundLoaded = true;
-            DiagManager.Instance.LoadMsg = "Press any key to continue";
+            DiagManager.Instance.LoadMsg = Text.FormatKey("GAME_LOAD_READY");
         }
 
         /// <summary>

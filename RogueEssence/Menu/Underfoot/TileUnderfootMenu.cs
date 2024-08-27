@@ -11,8 +11,10 @@ namespace RogueEssence.Menu
     {
         TileSummary summaryMenu;
 
-        public TileUnderfootMenu(string tileIndex)
+        public TileUnderfootMenu(string tileIndex) : this(MenuLabel.GROUND_MENU_TILE, tileIndex) { }
+        public TileUnderfootMenu(string label, string tileIndex)
         {
+            Label = label;
             Data.TileData entry = Data.DataManager.Instance.GetTile(tileIndex);
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             
@@ -47,7 +49,7 @@ namespace RogueEssence.Menu
                 case 0:
                     {//trigger
                         MenuManager.Instance.ClearMenus();
-                        MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None));
+                        MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Tile, Dir8.None, 0));
                     }
                     break;
                 case 1:

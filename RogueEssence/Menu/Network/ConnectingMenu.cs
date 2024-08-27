@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
             NetworkManager.Instance.Connect();
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return ConnectingMsg;
             yield return BackMsg;

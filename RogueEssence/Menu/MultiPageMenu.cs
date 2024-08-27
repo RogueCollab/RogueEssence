@@ -5,37 +5,6 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public class CustomMultiPageMenu : MultiPageMenu
-    {
-        private readonly Action onCancel;
-        private readonly Action onMenu;
-
-        public override bool CanMenu => onMenu is not null;
-        public override bool CanCancel => onCancel is not null;
-
-
-        public CustomMultiPageMenu(Loc start, int width, string title, IChoosable[] totalChoices, int defaultTotalChoice, int spacesPerPage, Action onCancel, Action onMenu)
-        {
-            this.onCancel = onCancel;
-            this.onMenu = onMenu;
-            IChoosable[][] pagedChoices = SortIntoPages(totalChoices, spacesPerPage);
-            int defaultPage = defaultTotalChoice / spacesPerPage;
-            int defaultChoice = defaultTotalChoice % spacesPerPage;
-            Initialize(start, width, title, pagedChoices, defaultChoice, defaultPage, spacesPerPage);
-        }
-
-        protected override void MenuPressed()
-        {
-            onMenu();
-        }
-
-        protected override void Canceled()
-        {
-            onCancel();
-        }
-
-    }
-
     public abstract class MultiPageMenu : TitledStripMenu
     {
         public MenuText PageText;
@@ -158,6 +127,32 @@ namespace RogueEssence.Menu
             }
             else
                 base.UpdateKeys(input);
+        }
+
+        public IChoosable GetTotalChoiceAtIndex(int totalIndex)
+        {
+            int page = totalIndex / SpacesPerPage;
+            int index = totalIndex % SpacesPerPage;
+            return TotalChoices[page][index];
+        }
+
+        public override List<IChoosable> ExportChoices()
+        {
+            List<IChoosable> allChoices = new List<IChoosable>();
+            foreach (IChoosable[] page in TotalChoices)
+                foreach (IChoosable choice in page)
+                    allChoices.Add(choice);
+            return allChoices;
+        }
+        public override void ImportChoices(params IChoosable[] choices)
+        {
+            TotalChoices = SortIntoPages(choices, SpacesPerPage);
+            SetPage(CurrentPage);
+        }
+
+        public override Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, ExportChoices());
         }
     }
 }

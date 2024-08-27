@@ -5,7 +5,7 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public class MenuDigits : IMenuElement
+    public class MenuDigits : BaseMenuElement
     {
         public const int DIGIT_SPACE = 9;
 
@@ -14,19 +14,27 @@ namespace RogueEssence.Menu
         public Color Color;
         public Loc Loc;
 
+
         public MenuDigits(int digits, int minDigits, Loc loc)
-            : this(digits, minDigits, loc, Color.White)
+            : this("", digits, minDigits, loc, Color.White)
+        { }
+        public MenuDigits(string label, int digits, int minDigits, Loc loc)
+            : this(label, digits, minDigits, loc, Color.White)
         { }
 
         public MenuDigits(int digits, int minDigits, Loc loc, Color color)
+            : this("", digits, minDigits, loc, color)
+        { }
+        public MenuDigits(string label, int digits, int minDigits, Loc loc, Color color)
         {
+            Label = label;
             Amount = digits;
             MinDigits = minDigits;
             Loc = loc;
             Color = color;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Loc offset)
+        public override void Draw(SpriteBatch spriteBatch, Loc offset)
         {
             string text = Amount.ToString("D"+MinDigits);
 

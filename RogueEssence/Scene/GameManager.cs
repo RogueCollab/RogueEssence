@@ -566,6 +566,7 @@ namespace RogueEssence
 
             SetQuest(quest, mods, loadOrder);
 
+            DiagManager.Instance.PrintModSettings();
             DiagManager.Instance.SaveModSettings();
 
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
@@ -602,6 +603,7 @@ namespace RogueEssence
             DungeonScene.InitInstance();
             GroundScene.InitInstance();
             LuaEngine.Instance.Reset();
+            LuaEngine.Instance.LoadScripts();
             LuaEngine.Instance.ReInit();
         }
 
@@ -686,6 +688,7 @@ namespace RogueEssence
             BaseScene destScene = newGround ? (BaseScene)GroundScene.Instance : DungeonScene.Instance;
             bool sameZone = destId.ID == ZoneManager.Instance.CurrentZoneID;
             bool sameSegment = sameZone && (destId.StructID.Segment == ZoneManager.Instance.CurrentMapID.Segment);
+            bool newSegment = (!sameSegment || forceNewZone);
 
             // The only time a replay tries to move to a ground is when it ends its current segment.
             // Do the same logic as EndSegment.
@@ -699,68 +702,26 @@ namespace RogueEssence
 
                 //switch location
                 if (sameZone && !forceNewZone)
-                    ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+                {
+                    //don't need to do anything
+                }
                 else
                 {
-                    ZoneManager.Instance.MoveToZone(destId.ID, destId.StructID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
+                    ZoneManager.Instance.MoveToZone(destId.ID, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)Text.DeterministicHash(destId.ID)));//NOTE: there are better ways to seed a multi-dungeon adventure
                     yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
                 }
 
-                //switch in new scene
-                MoveToScene(destScene);
-
-                yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, (!sameSegment || forceNewZone), preserveMusic));
-            }
-        }
-
-        private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
-        {
-            //Transparency mode
-            MenuBase.Transparent = !newGround;
-
-            if (newGround && CurrentScene != GroundScene.Instance)
-                LuaEngine.Instance.OnGroundModeBegin();
-            else if (!newGround && CurrentScene != DungeonScene.Instance)
-                LuaEngine.Instance.OnDungeonModeBegin();
-
-
-            if (newGround)
-            {
-                if (!preserveMusic)
-                    BGM(ZoneManager.Instance.CurrentGround.Music, true);
-
-                GroundScene.Instance.EnterGround(entryPoint);
-
                 if (newSegment)
                 {
                     bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
-                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
+                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing, destId.StructID));
                 }
 
-                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
-                //no fade; the script handles that itself
-                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
+                ZoneManager.Instance.CurrentZone.SetCurrentMap(destId.StructID);
+
+                yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(destId.EntryPoint, newGround, newSegment, preserveMusic));
             }
-            else
-            {
-                if (!preserveMusic)
-                    BGM(ZoneManager.Instance.CurrentMap.Music, true);
-
-                DungeonScene.Instance.EnterFloor(entryPoint);
-
-                if (newSegment)
-                {
-                    bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
-                    yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing));
-                }
-
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
-
-                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());
-            }
-            DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
         }
-
 
 
         /// <summary>
@@ -788,41 +749,76 @@ namespace RogueEssence
                 throw new ArgumentException(String.Format("Invalid Ground Map Name: {0}", mapname), nameof(mapname));
 
             bool sameZone = zone == ZoneManager.Instance.CurrentZoneID;
+            bool newSegment = !sameZone;
+
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(GroundScene.Instance));
 
             //switch location
-            if (sameZone)
-                ZoneManager.Instance.CurrentZone.SetCurrentGround(mapname);
-            else
+            if (!sameZone)
             {
-                ZoneManager.Instance.MoveToZone(zone, mapname, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
+                ZoneManager.Instance.MoveToZone(zone, unchecked(DataManager.Instance.Save.Rand.FirstSeed + (ulong)zone.GetHashCode()));//NOTE: there are better ways to seed a multi-dungeon adventure
                 yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnInit());
             }
 
-            if (ZoneManager.Instance.CurrentGround == null)
-                throw new Exception(String.Format("GroundScene.MoveToGround(): Failed to load map {0}!", mapname));
+            int mapId = ZoneManager.Instance.CurrentZone.GroundMaps.FindIndex((str) => (str == mapname));
+            SegLoc destSegLoc = new SegLoc(-1, mapId);
+
+            if (newSegment)
+            {
+                bool rescuing = DataManager.Instance.Save.Rescue != null && DataManager.Instance.Save.Rescue.Rescuing;
+                yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnEnterSegment(rescuing, destSegLoc));
+            }
+
+            ZoneManager.Instance.CurrentZone.SetCurrentMap(destSegLoc);
+
+            int entryIdx = ZoneManager.Instance.CurrentGround.GetEntryPointIdx(entrypoint);
+            yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(entryIdx, true, newSegment, preserveMusic));
+        }
 
 
+        private IEnumerator<YieldInstruction> moveToZoneInit(int entryPoint, bool newGround, bool newSegment, bool preserveMusic)
+        {
             //Transparency mode
-            MenuBase.Transparent = false;
+            MenuBase.Transparent = !newGround;
 
-            //switch in new scene
-            if (CurrentScene != GroundScene.Instance)
+            if (newGround && CurrentScene != GroundScene.Instance)
             {
                 MoveToScene(GroundScene.Instance);
                 LuaEngine.Instance.OnGroundModeBegin();
             }
+            else if (!newGround && CurrentScene != DungeonScene.Instance)
+            {
+                MoveToScene(DungeonScene.Instance);
+                LuaEngine.Instance.OnDungeonModeBegin();
+            }
 
-            if (!preserveMusic)
-                BGM(ZoneManager.Instance.CurrentGround.Music, true);
 
-            GroundScene.Instance.EnterGround(entrypoint);
+            if (newGround)
+            {
+                if (!preserveMusic)
+                    BGM(ZoneManager.Instance.CurrentGround.Music, true);
 
-            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
-            //no fade; the script handles that itself
-            yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
+                GroundScene.Instance.EnterGround(entryPoint);
+
+
+                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.InitGround(false));
+                //no fade; the script handles that itself
+                yield return CoroutineManager.Instance.StartCoroutine(GroundScene.Instance.BeginGround());
+            }
+            else
+            {
+                if (!preserveMusic)
+                    BGM(ZoneManager.Instance.CurrentMap.Music, true);
+
+                DungeonScene.Instance.EnterFloor(entryPoint);
+
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.InitFloor());
+
+                yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.BeginFloor());
+            }
             DataManager.Instance.Save.NextDest = ZoneLoc.Invalid;
         }
+
 
 
 
@@ -899,7 +895,10 @@ namespace RogueEssence
                         // Change dialogue message depending on the LoadMode.
                         DataManager.Instance.CurrentReplay.Desyncs++;
                         if (DataManager.Instance.Loading != DataManager.LoadMode.Verifying)
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                        {
+                            if (!DataManager.Instance.CurrentReplay.SilentVerify)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_DESYNC")));
+                        }
                     }
                 }
 
@@ -966,10 +965,13 @@ namespace RogueEssence
                     }
                     else if (DataManager.Instance.Loading == DataManager.LoadMode.Verifying)
                     {
-                        if (DataManager.Instance.CurrentReplay.Desyncs > 0)
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
-                        else
-                            yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                        if (!DataManager.Instance.CurrentReplay.SilentVerify)
+                        {
+                            if (DataManager.Instance.CurrentReplay.Desyncs > 0)
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_DESYNC")));
+                            else
+                                yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_REPLAY_VERIFY_OK")));
+                        }
                         yield return CoroutineManager.Instance.StartCoroutine(EndReplay());
                     }
                     else //we've reached the end of the replay
@@ -978,7 +980,7 @@ namespace RogueEssence
             }
         }
 
-        public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result)
+        public IEnumerator<YieldInstruction> EndSegment(GameProgress.ResultType result, bool preserveMusic = false)
         {
             if (ZoneManager.Instance.InDevZone)
             {
@@ -993,11 +995,16 @@ namespace RogueEssence
                 yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(new MsgLogMenu()));
             }
 
-            BGM("", true);
-
-            yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
-
-            yield return new WaitForFrames(40);
+            if (!preserveMusic)
+            {
+                BGM("", true);
+                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+                yield return new WaitForFrames(40);
+            }
+            else
+            {
+                yield return CoroutineManager.Instance.StartCoroutine(FadeOut(false));
+            }
 
             if (DataManager.Instance.CurrentReplay != null)
                 yield return CoroutineManager.Instance.StartCoroutine(handleReplayDungeonEnd(result));
@@ -1113,9 +1120,6 @@ namespace RogueEssence
             yield return CoroutineManager.Instance.StartCoroutine(exitMap(destScene));
 
             ZoneManager.Instance.MoveToDevZone(newGround, mapName);
-
-            //switch in new scene
-            MoveToScene(destScene);
 
             //move in like a normal map would
             yield return CoroutineManager.Instance.StartCoroutine(moveToZoneInit(0, newGround, true, false));

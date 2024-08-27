@@ -88,14 +88,19 @@ namespace RogueEssence.LevelGen
             Floors = new List<IFloorGen>();
         }
 
-        public override IGenContext GetMap(ZoneGenContext zoneContext)
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floor">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
         {
-            if (zoneContext.CurrentID < Floors.Count)
-                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+            if (floor >= 0 && floor < Floors.Count)
+                return Floors[floor];
             else
                 throw new Exception("Requested a map id out of range.");
         }
-
     }
 
     /// <summary>
@@ -121,14 +126,20 @@ namespace RogueEssence.LevelGen
             FloorSpan = floors;
         }
 
-        public override IGenContext GetMap(ZoneGenContext zoneContext)
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floor">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
         {
-            if (FloorSpan < 0 || zoneContext.CurrentID < FloorSpan)
-                return BaseFloor.GenMap(zoneContext);
+            //There is only one floor
+            if (FloorSpan < 0 || floor < FloorSpan)
+                return BaseFloor;
             else
                 throw new Exception("Requested a map id out of range.");
         }
-
     }
 
 
@@ -153,6 +164,7 @@ namespace RogueEssence.LevelGen
                 return total;
             }
         }
+
         public override IEnumerable<int> GetFloorIDs()
         {
             foreach (IntRange range in Floors.EnumerateRanges())
@@ -162,16 +174,22 @@ namespace RogueEssence.LevelGen
             }
         }
 
-
         public RangeDictSegment() : base()
         {
             Floors = new RangeDict<IFloorGen>();
         }
 
-        public override IGenContext GetMap(ZoneGenContext zoneContext)
+
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floor">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
         {
-            if (Floors.ContainsItem(zoneContext.CurrentID))
-                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+            if (Floors.ContainsItem(floor))
+                return Floors[floor];
             else
                 throw new Exception("Requested a map id out of range.");
         }
@@ -200,10 +218,16 @@ namespace RogueEssence.LevelGen
             Floors = new Dictionary<int, IFloorGen>();
         }
 
-        public override IGenContext GetMap(ZoneGenContext zoneContext)
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floor">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public override IFloorGen GetMapGen(int floor)
         {
-            if (Floors.ContainsKey(zoneContext.CurrentID))
-                return Floors[zoneContext.CurrentID].GenMap(zoneContext);
+            if (Floors.ContainsKey(floor))
+                return Floors[floor];
             else
                 throw new Exception("Requested a map id out of range.");
         }
@@ -221,18 +245,32 @@ namespace RogueEssence.LevelGen
         /// </summary>
         [Collection(0, true)]
         public List<ZoneStep> ZoneSteps;
-
         /// <summary>
         /// Determines if the segment counts to the dungeon's total floor count.
         /// </summary>
         public bool IsRelevant;
 
+        [Dev.Multiline(0)]
+        public string Comment;
+
         public ZoneSegmentBase()
         {
             ZoneSteps = new List<ZoneStep>();
+            Comment = "";
         }
 
-        public abstract IGenContext GetMap(ZoneGenContext zoneContext);
+        /// <summary>
+        /// Get the map gen of the target floor ID.
+        /// Throws an exception if it is a floor ID equal to or higher than FloorCount
+        /// </summary>
+        /// <param name="floorId">Floor ID of the target floor</param>
+        /// <returns></returns>
+        public abstract IFloorGen GetMapGen(int floorId);
+
+        public IGenContext GetMap(ZoneGenContext zoneContext)
+        {
+            return GetMapGen(zoneContext.CurrentID).GenMap(zoneContext);
+        }
 
         public override string ToString()
         {

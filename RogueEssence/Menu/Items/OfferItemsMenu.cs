@@ -42,7 +42,7 @@ namespace RogueEssence.Menu
                 Items = validItems.ToArray();
         }
 
-        public override IEnumerable<IMenuElement> GetElements()
+        protected override IEnumerable<IMenuElement> GetDrawElements()
         {
             yield return Title;
 

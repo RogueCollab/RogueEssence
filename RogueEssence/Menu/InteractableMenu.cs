@@ -1,5 +1,6 @@
-﻿using RogueElements;
-using RogueEssence.Content;
+﻿using Microsoft.Xna.Framework.Graphics;
+using RogueElements;
+using System.Collections.Generic;
 
 namespace RogueEssence.Menu
 {
@@ -11,6 +12,13 @@ namespace RogueEssence.Menu
         public virtual bool IsCheckpoint { get { return false; } }
         public bool Inactive { get; set; }
         public bool BlockPrevious { get; set; }
+
+        public List<SummaryMenu> SummaryMenus { get; set; }
+
+        public InteractableMenu()
+        {
+            SummaryMenus = new List<SummaryMenu>();
+        }
 
         public abstract void Update(InputManager input);
 
@@ -37,5 +45,23 @@ namespace RogueEssence.Menu
             return (choseDir && (!prevDir || atAdd));
         }
 
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (!Visible)
+                return;
+            base.Draw(spriteBatch);
+
+            foreach (SummaryMenu menu in SummaryMenus)
+                menu.Draw(spriteBatch);
+        }
+
+        public int GetSummaryIndexByLabel(string label)
+        {
+            return GetSummaryIndicesByLabel(label)[label];
+        }
+        public virtual Dictionary<string, int> GetSummaryIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, SummaryMenus);
+        }
     }
 }
