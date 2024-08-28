@@ -227,7 +227,7 @@ namespace RogueEssence.Menu
                     Elements.Add(Right);
                 }
                 else
-                    MenuManager.Instance.AddMenu(new SettingsPageMenu(this, Pages[CurrentPageId]), true);
+                    OpenPage();
             }
             else if (Pages.Count == 1)
             {
@@ -236,7 +236,7 @@ namespace RogueEssence.Menu
 
             if (input.JustPressed(FrameInput.InputType.Confirm))
             {
-                MenuManager.Instance.AddMenu(new SettingsPageMenu(this, Pages[CurrentPageId]), true);
+                    OpenPage();
             }
             else if(input.JustPressed(FrameInput.InputType.Cancel))
             {
@@ -254,6 +254,12 @@ namespace RogueEssence.Menu
                 ChoiceChanged();
                 GameManager.Instance.SE("Menu/Skip");
             }
+        }
+
+        private void OpenPage()
+        {
+            SummaryMenus.Remove(Preview);
+            MenuManager.Instance.AddMenu(new SettingsPageMenu(this, Pages[CurrentPageId]), true);
         }
 
         public void ChoiceChanged()

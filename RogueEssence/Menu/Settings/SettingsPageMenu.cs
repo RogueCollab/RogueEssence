@@ -112,10 +112,12 @@ namespace RogueEssence.Menu
     }
     public class SettingsPageSummaryMenu : SummaryMenu
     {
+        public SettingsTitleMenu Parent;
         public SettingsPage Page;
         public Dictionary<MenuSetting, SettingData> SettingsData = new Dictionary<MenuSetting, SettingData>();
         public SettingsPageSummaryMenu(SettingsTitleMenu parent, SettingsPage page) : base(new Rect(new Loc(parent.Bounds.Left, parent.Bounds.Bottom), new Loc(parent.Bounds.Width, 16)))
         {
+            Parent = parent;
             Page = page;
             LoadOptions(Page);
         }
@@ -140,6 +142,10 @@ namespace RogueEssence.Menu
         internal void Reload()
         {
             LoadOptions(Page);
+            if (!Parent.SummaryMenus.Contains(this))
+            {
+                Parent.SummaryMenus.Add(this);
+            }
         }
     }
 }
