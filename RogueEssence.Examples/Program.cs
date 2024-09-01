@@ -93,8 +93,13 @@ namespace RogueEssence.Examples
                     }
                     else if (args[ii].ToLower() == "-appdata")
                     {
-                        PathMod.APP_PATH = Path.GetFullPath(args[ii + 1]);
-                        ii++;
+                        string appName = Path.GetFileNameWithoutExtension(args[0]);
+                        PathMod.APP_PATH = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName) + "/";
+                        if (args.Length > ii + 1 && args[ii + 1].StartsWith("-"))
+                        {
+                            PathMod.APP_PATH = Path.GetFullPath(args[ii + 1]);
+                            ii++;
+                        }
                     }
                     else if (args[ii] == "-quest")
                     {
