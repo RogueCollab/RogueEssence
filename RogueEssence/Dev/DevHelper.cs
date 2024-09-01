@@ -239,7 +239,7 @@ namespace RogueEssence.Dev
             //load mod xml and resave it
             if (PathMod.Quest.IsValid())
             {
-                string modPath = PathMod.FromExe(PathMod.Quest.Path);
+                string modPath = PathMod.FromApp(PathMod.Quest.Path);
                 PathMod.SaveModDetails(modPath, PathMod.Quest);
             }
 

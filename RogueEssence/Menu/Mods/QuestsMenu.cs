@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
         {
             List<int> loadOrder = new List<int>();
             List<(ModRelationship, List<ModHeader>)> loadErrors = new List<(ModRelationship, List<ModHeader>)>();
-            PathMod.ValidateModLoad(PathMod.GetModDetails(PathMod.FromExe(dir)), PathMod.Mods, loadOrder, loadErrors);
+            PathMod.ValidateModLoad(PathMod.GetModDetails(PathMod.FromApp(dir)), PathMod.Mods, loadOrder, loadErrors);
             if (loadErrors.Count > 0)
             {
                 MenuManager.Instance.AddMenu(new ModLogMenu(loadErrors), false);
@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
             }
 
             MenuManager.Instance.ClearMenus();
-            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.GetModDetails(PathMod.FromExe(dir)), PathMod.Mods, loadOrder);
+            GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToQuest(PathMod.GetModDetails(PathMod.FromApp(dir)), PathMod.Mods, loadOrder);
         }
 
         public override void Draw(SpriteBatch spriteBatch)

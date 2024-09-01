@@ -290,22 +290,22 @@ namespace RogueEssence.Data
         {
             if (!Directory.Exists(PathMod.ModSavePath(SAVE_PATH)))
                 Directory.CreateDirectory(PathMod.ModSavePath(SAVE_PATH));
-            if (!Directory.Exists(PathMod.NoMod(ROGUE_PATH)))
-                Directory.CreateDirectory(PathMod.NoMod(ROGUE_PATH));
+            if (!Directory.Exists(PathMod.ModSavePath(ROGUE_PATH)))
+                Directory.CreateDirectory(PathMod.ModSavePath(ROGUE_PATH));
             if (!Directory.Exists(PathMod.ModSavePath(REPLAY_PATH)))
                 Directory.CreateDirectory(PathMod.ModSavePath(REPLAY_PATH));
 
-            if (!Directory.Exists(PathMod.NoMod(RESCUE_IN_PATH + SOS_FOLDER)))
-                Directory.CreateDirectory(PathMod.NoMod(RESCUE_IN_PATH + SOS_FOLDER));
+            if (!Directory.Exists(PathMod.FromApp(RESCUE_IN_PATH + SOS_FOLDER)))
+                Directory.CreateDirectory(PathMod.FromApp(RESCUE_IN_PATH + SOS_FOLDER));
 
-            if (!Directory.Exists(PathMod.NoMod(RESCUE_IN_PATH + AOK_FOLDER)))
-                Directory.CreateDirectory(PathMod.NoMod(RESCUE_IN_PATH + AOK_FOLDER));
+            if (!Directory.Exists(PathMod.FromApp(RESCUE_IN_PATH + AOK_FOLDER)))
+                Directory.CreateDirectory(PathMod.FromApp(RESCUE_IN_PATH + AOK_FOLDER));
 
-            if (!Directory.Exists(PathMod.NoMod(RESCUE_OUT_PATH + SOS_FOLDER)))
-                Directory.CreateDirectory(PathMod.NoMod(RESCUE_OUT_PATH + SOS_FOLDER));
+            if (!Directory.Exists(PathMod.FromApp(RESCUE_OUT_PATH + SOS_FOLDER)))
+                Directory.CreateDirectory(PathMod.FromApp(RESCUE_OUT_PATH + SOS_FOLDER));
 
-            if (!Directory.Exists(PathMod.NoMod(RESCUE_OUT_PATH + AOK_FOLDER)))
-                Directory.CreateDirectory(PathMod.NoMod(RESCUE_OUT_PATH + AOK_FOLDER));
+            if (!Directory.Exists(PathMod.FromApp(RESCUE_OUT_PATH + AOK_FOLDER)))
+                Directory.CreateDirectory(PathMod.FromApp(RESCUE_OUT_PATH + AOK_FOLDER));
 
 
             MsgLog = new List<string>();

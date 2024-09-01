@@ -1031,7 +1031,7 @@ namespace RogueEssence
                     DataManager.Instance.SaveGameState(state);
 
 
-                    DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.SOS_FOLDER), state.Save.Rescue.SOS, true);
+                    DataManager.SaveRescueMail(PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.SOS_FOLDER), state.Save.Rescue.SOS, true);
 
                     yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.SetDialogue(Text.FormatKey("DLG_RESCUE_INFO_1")));
 
