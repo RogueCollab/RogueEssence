@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
 
         public MenuStatBar(Loc loc, int length, Color color) : this("", loc, length, color, true) { }
         public MenuStatBar(string label, Loc loc, int length, Color color) : this(label, loc, length, color, true) { }
-        public MenuStatBar(Loc loc, int length, Color color, bool shadow) : this("", loc, length, color, true) { }
+        public MenuStatBar(Loc loc, int length, Color color, bool shadow) : this("", loc, length, color, shadow) { }
         public MenuStatBar(string label, Loc loc, int length, Color color, bool shadow)
         {
             Label = label;

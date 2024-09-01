@@ -3,7 +3,7 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Menu
 {
-    public interface IInteractable
+    public interface IInteractable : ILabeled
     {
         bool IsCheckpoint { get; }
         bool Visible { get; set; }
