@@ -23,9 +23,9 @@ namespace RogueEssence
 
         public static string CONTROLS_LABEL_PATH { get => PathMod.ASSET_PATH + "Controls/Label/"; }
         public static string CONTROLS_DEFAULT_PATH { get => PathMod.ASSET_PATH + "Controls/Default/"; }
-        public static string CONFIG_PATH { get => PathMod.ExePath + "CONFIG/"; }
+        public static string CONFIG_PATH { get => PathMod.APP_PATH + "CONFIG/"; }
         public static string CONFIG_GAMEPAD_PATH { get => CONFIG_PATH + "GAMEPAD/"; }
-        public static string LOG_PATH { get => PathMod.ExePath + "LOG/"; }
+        public static string LOG_PATH { get => PathMod.APP_PATH + "LOG/"; }
         public const string REG_PATH = "HKEY_CURRENT_USER\\Software\\RogueEssence";
 
 
