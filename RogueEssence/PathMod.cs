@@ -23,10 +23,11 @@ namespace RogueEssence
         public static string ExePath { get; private set; }
         public static string ASSET_PATH;
         public static string DEV_PATH;
+        public static string APP_PATH;
         public static string RESOURCE_PATH { get => ASSET_PATH + "Editor/"; }
         public static string BASE_PATH { get => ASSET_PATH + "Base/"; }
 
-        public static string MODS_PATH { get => ExePath + MODS_FOLDER; }
+        public static string MODS_PATH { get => APP_PATH + MODS_FOLDER; }
         public static string MODS_FOLDER = "MODS/";
 
         public const string PATH_PARAMS_FILE = "PathParams.xml";
@@ -58,8 +59,14 @@ namespace RogueEssence
         {
             ExeName = Path.GetFileName(path);
             ExePath = Path.GetDirectoryName(path) + "/";
+
+            //Asset path can be changed after initialization
             ASSET_PATH = ExePath;
+            //Dev path can be changed after initialization
             DEV_PATH = ExePath + "RawAsset/";
+            //App path can be changed after initialization
+            APP_PATH = ExePath;
+
             BaseNamespace = "";
             BaseScriptNamespaces = new List<string>();
 
@@ -170,13 +177,13 @@ namespace RogueEssence
         }
 
         /// <summary>
-        /// Takes a full path and returns a new path that is relative to the executable folder.
+        /// Takes a full path and returns a new path that is relative to the relativeFrom folder.
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static string GetRelativePath(string path)
+        public static string GetRelativePath(string relativeFrom, string path)
         {
-            List<string> exeSplit = Split(ExePath);
+            List<string> exeSplit = Split(relativeFrom);
             List<string> split = Split(path);
 
             List<string> result = new List<string>();
@@ -223,12 +230,12 @@ namespace RogueEssence
 
         public static string ModSavePath(string baseFolder)
         {
-            return Path.Join(ExePath, baseFolder, Quest.Path);
+            return Path.Join(APP_PATH, baseFolder, Quest.Path);
         }
 
         public static string ModSavePath(string baseFolder, string basePath)
         {
-            return Path.Join(ExePath, baseFolder, Quest.Path, basePath);
+            return Path.Join(APP_PATH, baseFolder, Quest.Path, basePath);
         }
 
         public static string HardMod(string basePath)
@@ -239,16 +246,16 @@ namespace RogueEssence
         {
             return Path.Join(ASSET_PATH, basePath);
         }
-        public static string FromExe(string basePath)
+        public static string FromApp(string basePath)
         {
-            return Path.Join(ExePath, basePath);
+            return Path.Join(APP_PATH, basePath);
         }
         public static string HardMod(string mod, string basePath)
         {
             if (mod == "")
                 return Path.Join(ASSET_PATH, basePath);
             else
-                return Path.Join(ExePath, mod, basePath);
+                return Path.Join(APP_PATH, mod, basePath);
         }
 
 

@@ -67,7 +67,7 @@ namespace RogueEssence.Menu
                     {
                         SOSMail sos = sendHelp.OfferedMail;
 
-                        aokPath = DataManager.FindRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), sos, DataManager.AOK_EXTENSION);
+                        aokPath = DataManager.FindRescueMail(PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), sos, DataManager.AOK_EXTENSION);
 
                         if (aokPath == null)
                         {
@@ -113,7 +113,7 @@ namespace RogueEssence.Menu
                     if (sendHelp.CurrentState == ExchangeRescueState.SOSTrading || sendHelp.CurrentState == ExchangeRescueState.Completed)
                     {
                         //save the SOS mail
-                        DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sendHelp.OfferedMail, false);
+                        DataManager.SaveRescueMail(PathMod.FromApp(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sendHelp.OfferedMail, false);
 
                         MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_RESCUE_RECEIVE_SOS", sendHelp.TargetInfo.Data.TeamName)), false);
                         CurrentState = ExchangeRescueState.Completed;

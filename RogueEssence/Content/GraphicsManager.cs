@@ -1156,10 +1156,10 @@ namespace RogueEssence.Content
 
         public static void SaveScreenshot(Texture2D gameScreen)
         {
-            if (!Directory.Exists(PathMod.FromExe(SCREENSHOT_PATH)))
-                Directory.CreateDirectory(PathMod.FromExe(SCREENSHOT_PATH));
-            string outPath = Text.GetNonConflictingSavePath(PathMod.FromExe(SCREENSHOT_PATH), String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now), ".png");
-            using (Stream stream = new FileStream(PathMod.FromExe(SCREENSHOT_PATH) + outPath + ".png", FileMode.Create, FileAccess.Write, FileShare.None))
+            if (!Directory.Exists(PathMod.FromApp(SCREENSHOT_PATH)))
+                Directory.CreateDirectory(PathMod.FromApp(SCREENSHOT_PATH));
+            string outPath = Text.GetNonConflictingSavePath(PathMod.FromApp(SCREENSHOT_PATH), String.Format("{0:yyyy-MM-dd_HH-mm-ss}", DateTime.Now), ".png");
+            using (Stream stream = new FileStream(PathMod.FromApp(SCREENSHOT_PATH) + outPath + ".png", FileMode.Create, FileAccess.Write, FileShare.None))
                 BaseSheet.ExportTex(stream, gameScreen);
         }
     }

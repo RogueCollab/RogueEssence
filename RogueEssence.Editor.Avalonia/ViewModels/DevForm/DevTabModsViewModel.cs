@@ -96,7 +96,7 @@ namespace RogueEssence.Dev.ViewModels
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
                 if (!String.IsNullOrEmpty(chosenMod.Path))
-                    GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromExe(chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
+                    GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
                 else
                     GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
 
@@ -144,7 +144,7 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             ModsNodeViewModel newNode = new ModsNodeViewModel(newName, newNamespace, Path.Combine(PathMod.MODS_FOLDER, newName));
-            string fullPath = PathMod.FromExe(newNode.Path);
+            string fullPath = PathMod.FromApp(newNode.Path);
             //add all asset folders
             Directory.CreateDirectory(fullPath);
             //create the mod xml
@@ -178,7 +178,7 @@ namespace RogueEssence.Dev.ViewModels
             if (result == MessageBox.MessageBoxResult.No)
                 return;
 
-            string fullPath = PathMod.FromExe(chosenMod.Path);
+            string fullPath = PathMod.FromApp(chosenMod.Path);
             //delete folder
             Directory.Delete(fullPath, true);
 
@@ -199,7 +199,7 @@ namespace RogueEssence.Dev.ViewModels
             if (result)
             {
                 //save the mod data
-                string fullPath = PathMod.FromExe(PathMod.Quest.Path);
+                string fullPath = PathMod.FromApp(PathMod.Quest.Path);
                 ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
                 PathMod.SaveModDetails(fullPath, resultHeader);
 

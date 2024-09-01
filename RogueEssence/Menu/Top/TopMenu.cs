@@ -104,7 +104,7 @@ namespace RogueEssence.Menu
         private static void cannotRead(string path)
         {
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateDialogue(Text.FormatKey("DLG_ERR_READ_FILE"),
-                Text.FormatKey("DLG_ERR_READ_FILE_FALLBACK", PathMod.GetRelativePath(path))), false);
+                Text.FormatKey("DLG_ERR_READ_FILE_FALLBACK", PathMod.GetRelativePath(PathMod.APP_PATH, path))), false);
         }
 
         public static void Continue(SOSMail rescueMail)

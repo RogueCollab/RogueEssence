@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < modStatus.Length; ii++)
             {
                 if (modStatus[ii])
-                    chosenMods.Add(PathMod.GetModDetails(PathMod.FromExe(mods[ii].Path)));
+                    chosenMods.Add(PathMod.GetModDetails(PathMod.FromApp(mods[ii].Path)));
             }
 
             List<int> loadOrder = new List<int>();

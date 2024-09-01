@@ -1065,8 +1065,8 @@ namespace RogueEssence.Data
                     string dateRescued = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
                     ReplayData replay = DataManager.Instance.LoadReplay(PathMod.ModSavePath(DataManager.REPLAY_PATH, recordFile), false);
                     AOKMail aok = new AOKMail(sos, DataManager.Instance.Save, dateRescued, replay);
-                    GeneratedAOK = DataManager.SaveRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), aok, false);
-                    string deletePath = DataManager.FindRescueMail(PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sos, sos.Extension);
+                    GeneratedAOK = DataManager.SaveRescueMail(PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER), aok, false);
+                    string deletePath = DataManager.FindRescueMail(PathMod.FromApp(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER), sos, sos.Extension);
                     if (deletePath != null)
                         File.Delete(deletePath);
 

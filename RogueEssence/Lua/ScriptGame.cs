@@ -200,7 +200,7 @@ namespace RogueEssence.Script
         {
             AOKMail aok = null;
             if (DataManager.Instance.Save.GeneratedAOK != null)
-                aok = DataManager.LoadRescueMail(PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER + DataManager.Instance.Save.GeneratedAOK)) as AOKMail;
+                aok = DataManager.LoadRescueMail(PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER + DataManager.Instance.Save.GeneratedAOK)) as AOKMail;
             if (aok != null)
             {
                 aok.FinalStatement = remarkIndex;
@@ -331,7 +331,7 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public bool HasSOSMail()
         {
-            string parentPath = PathMod.NoMod(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER);
+            string parentPath = PathMod.FromApp(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER);
             string[] files = System.IO.Directory.GetFiles(parentPath, "*" + DataManager.SOS_EXTENSION);
             return files.Length > 0;
         }
@@ -342,7 +342,7 @@ namespace RogueEssence.Script
         /// <returns></returns>
         public bool HasAOKMail()
         {
-            string parentPath = PathMod.NoMod(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER);
+            string parentPath = PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER);
             string[] files = System.IO.Directory.GetFiles(parentPath, "*" + DataManager.AOK_EXTENSION);
             return files.Length > 0;
         }

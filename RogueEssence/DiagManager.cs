@@ -670,7 +670,7 @@ namespace RogueEssence
                     ModHeader newQuest = ModHeader.Invalid;
                     if (!String.IsNullOrEmpty(quest))
                     {
-                        ModHeader questHeader = PathMod.GetModDetails(PathMod.FromExe(quest));
+                        ModHeader questHeader = PathMod.GetModDetails(PathMod.FromApp(quest));
                         if (questHeader.IsValid())
                             newQuest = questHeader;
                     }
@@ -682,7 +682,7 @@ namespace RogueEssence
                         string mod = modNode.InnerText;
                         if (!String.IsNullOrEmpty(mod))
                         {
-                            ModHeader modHeader = PathMod.GetModDetails(PathMod.FromExe(mod));
+                            ModHeader modHeader = PathMod.GetModDetails(PathMod.FromApp(mod));
                             if (modHeader.IsValid())
                                 modList.Add(modHeader);
                         }
