@@ -40,36 +40,28 @@ namespace RogueEssence.Examples
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.SerializationGuard.AllowFileWrites", true);
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            Serializer.InitSettings(new SerializerContractResolver(), new DefaultSerializationBinder());
 
             string[] args = Environment.GetCommandLineArgs();
             PathMod.InitPathMod(args[0]);
-            DiagManager.InitInstance();
-            Serializer.InitSettings(new SerializerContractResolver(), new DefaultSerializationBinder());
-            DiagManager.Instance.CurSettings = DiagManager.Instance.LoadSettings();
+
+            bool logInput = true;
+            GraphicsManager.AssetType convertAssets = GraphicsManager.AssetType.None;
+            DataManager.DataType convertIndices = DataManager.DataType.None;
+            DataManager.DataType reserializeIndices = DataManager.DataType.None;
+            string langArgs = "";
+            bool dev = false;
+            bool devLua = false;
+            string quest = "";
+            List<string> mod = new List<string>();
+            bool buildQuest = false;
+            bool loadModXml = true;
+            string playInputs = null;
+            bool dump = false;
+            bool preConvert = false;
 
             try
             {
-                DiagManager.Instance.LogInfo("=========================================");
-                DiagManager.Instance.LogInfo(String.Format("SESSION STARTED: {0}", String.Format("{0:yyyy/MM/dd HH:mm:ss}", DateTime.Now)));
-                DiagManager.Instance.LogInfo("Version: " + Versioning.GetVersion().ToString());
-                DiagManager.Instance.LogInfo(Versioning.GetDotNetInfo());
-                DiagManager.Instance.LogInfo("=========================================");
-
-
-                bool logInput = true;
-                GraphicsManager.AssetType convertAssets = GraphicsManager.AssetType.None;
-                DataManager.DataType convertIndices = DataManager.DataType.None;
-                DataManager.DataType reserializeIndices = DataManager.DataType.None;
-                string langArgs = "";
-                bool dev = false;
-                bool devLua = false;
-                string quest = "";
-                List<string> mod = new List<string>();
-                bool buildQuest = false;
-                bool loadModXml = true;
-                string playInputs = null;
-                bool dump = false;
-                bool preConvert = false;
                 for (int ii = 1; ii < args.Length; ii++)
                 {
                     if (args[ii] == "-dev")
@@ -97,6 +89,11 @@ namespace RogueEssence.Examples
                     else if (args[ii] == "-raw")
                     {
                         PathMod.DEV_PATH = Path.GetFullPath(args[ii + 1]);
+                        ii++;
+                    }
+                    else if (args[ii].ToLower() == "-appdata")
+                    {
+                        PathMod.APP_PATH = Path.GetFullPath(args[ii + 1]);
                         ii++;
                     }
                     else if (args[ii] == "-quest")
@@ -205,6 +202,27 @@ namespace RogueEssence.Examples
                         ii++;
                     }
                 }
+
+                DiagManager.InitInstance();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+#endif
+                return;
+            }
+
+            try
+            {
+                DiagManager.Instance.CurSettings = DiagManager.Instance.LoadSettings();
+
+                DiagManager.Instance.LogInfo("=========================================");
+                DiagManager.Instance.LogInfo(String.Format("SESSION STARTED: {0}", String.Format("{0:yyyy/MM/dd HH:mm:ss}", DateTime.Now)));
+                DiagManager.Instance.LogInfo("Version: " + Versioning.GetVersion().ToString());
+                DiagManager.Instance.LogInfo(Versioning.GetDotNetInfo());
+                DiagManager.Instance.LogInfo("=========================================");
 
                 PathMod.InitNamespaces();
                 GraphicsManager.InitParams();
