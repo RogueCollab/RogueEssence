@@ -66,6 +66,20 @@ namespace RogueEssence.Dungeon
 
         [JsonConverter(typeof(IntrinsicListConverter))]
         public List<string> BaseIntrinsics;
+        private int _intrinsicSlot = -1;
+        public int FormIntrinsicSlot {
+            get
+            {
+                if (_intrinsicSlot<0)
+                {
+                    if (BaseForm.Species == null)
+                        return 0;
+                    _intrinsicSlot = GetFormIntrinsicSlot(BaseIntrinsics[0]);
+                }
+                return _intrinsicSlot;
+            }
+            set => _intrinsicSlot = Math.Max(0, Math.Min(value, 3));
+        }
 
         [JsonConverter(typeof(RelearnableConverter))]
         public Dictionary<string, bool> Relearnables;
@@ -196,34 +210,45 @@ namespace RogueEssence.Dungeon
             return false;
         }
 
-
-        public virtual void Promote(MonsterID data)
+        public int GetFormIntrinsicSlot(string intrinsic)
         {
+            if (BaseForm.Species == null)
+                return 0;
+
             MonsterData dex = DataManager.Instance.GetMonster(BaseForm.Species);
             BaseMonsterForm form = dex.Forms[BaseForm.Form];
 
+            int index = _intrinsicSlot;
+            if (form.Intrinsic1 == intrinsic)
+                index = 0;
+            else if (form.Intrinsic2 == intrinsic)
+                index = 1;
+            else if (form.Intrinsic3 == intrinsic)
+                index = 2;
+            else if (index<0)
+                index = DataManager.Instance.Save.Rand.Next(0, 3);
+            return index;
+        }
+
+        public virtual void Promote(MonsterID data)
+        {
+            int newIndex = FormIntrinsicSlot;
+
             BaseForm = data;
-
-            int prevIndex = 0;
-            if (form.Intrinsic2 == BaseIntrinsics[0])
-                prevIndex = 1;
-            else if (form.Intrinsic3 == BaseIntrinsics[0])
-                prevIndex = 2;
-
             BaseIntrinsics.Clear();
             
             MonsterData newDex = DataManager.Instance.GetMonster(BaseForm.Species);
             BaseMonsterForm newForm = newDex.Forms[BaseForm.Form];
 
             List<int> possibles = newForm.GetPossibleIntrinsicSlots();
-            if (!possibles.Contains(prevIndex))
-                prevIndex = 0;
+            if (!possibles.Contains(newIndex))
+                newIndex = 0;
 
-            if (prevIndex == 0)
+            if (newIndex == 0)
                 BaseIntrinsics.Add(newForm.Intrinsic1);
-            else if (prevIndex == 1)
+            else if (newIndex == 1)
                 BaseIntrinsics.Add(newForm.Intrinsic2);
-            else if (prevIndex == 2)
+            else if (newIndex == 2)
                 BaseIntrinsics.Add(newForm.Intrinsic3);
         }
 
