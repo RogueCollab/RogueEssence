@@ -65,20 +65,7 @@ namespace RogueEssence.Dungeon
 
         [JsonConverter(typeof(IntrinsicListConverter))]
         public List<string> BaseIntrinsics;
-        private int _intrinsicSlot = -1;
-        public int FormIntrinsicSlot {
-            get
-            {
-                if (_intrinsicSlot<0)
-                {
-                    if (BaseForm.Species == null)
-                        return 0;
-                    _intrinsicSlot = GetFormIntrinsicSlot(BaseIntrinsics[0]);
-                }
-                return _intrinsicSlot;
-            }
-            set => _intrinsicSlot = Math.Max(0, Math.Min(value, 3));
-        }
+        public int FormIntrinsicSlot = -1;
 
         [JsonConverter(typeof(RelearnableConverter))]
         public Dictionary<string, bool> Relearnables;
@@ -167,6 +154,7 @@ namespace RogueEssence.Dungeon
                 BaseSkills.Add(new SlotSkill(skill));
             BaseIntrinsics = new List<string>();
             BaseIntrinsics.AddRange(other.BaseIntrinsics);
+            FormIntrinsicSlot = other.FormIntrinsicSlot;
             Relearnables = new Dictionary<string, bool>();
             foreach (string key in other.Relearnables.Keys)
                 Relearnables[key] = other.Relearnables[key];
@@ -217,7 +205,7 @@ namespace RogueEssence.Dungeon
             MonsterData dex = DataManager.Instance.GetMonster(BaseForm.Species);
             BaseMonsterForm form = dex.Forms[BaseForm.Form];
 
-            int index = _intrinsicSlot;
+            int index = FormIntrinsicSlot;
             if (form.Intrinsic1 == intrinsic)
                 index = 0;
             else if (form.Intrinsic2 == intrinsic)

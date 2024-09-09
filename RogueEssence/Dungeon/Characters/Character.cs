@@ -482,6 +482,7 @@ namespace RogueEssence.Dungeon
 
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
                 character.BaseIntrinsics[ii] = this.BaseIntrinsics[ii];
+            character.FormIntrinsicSlot = this.FormIntrinsicSlot;
 
             Character new_mob = new Character(character);
             team.Players.Add(new_mob);
