@@ -228,6 +228,10 @@ namespace RogueEssence.Dungeon
 
         public virtual void Promote(MonsterID data)
         {
+            if (FormIntrinsicSlot < 0)
+            {
+                FormIntrinsicSlot = GetFormIntrinsicSlot(BaseIntrinsics[0]);
+            }
             int newIndex = FormIntrinsicSlot;
 
             BaseForm = data;
