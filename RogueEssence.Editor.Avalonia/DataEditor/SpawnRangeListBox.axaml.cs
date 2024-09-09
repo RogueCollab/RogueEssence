@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Avalonia.Input;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
@@ -17,6 +18,8 @@ namespace RogueEssence.Dev.Views
         public SpawnRangeListBox()
         {
             this.InitializeComponent();
+            Button button = this.FindControl<Button>("SpawnRangeListBoxAddButton");
+            button.AddHandler(PointerReleasedEvent, SpawnRangeListBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
 
         private void InitializeComponent()
@@ -58,6 +61,14 @@ namespace RogueEssence.Dev.Views
         {
             DataGrid lbx = this.FindControl<DataGrid>("gridItems");
             lbx.ContextMenu = menu;
+        }
+
+        private void SpawnRangeListBoxAddButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
+            SpawnRangeListBoxViewModel vm = (SpawnRangeListBoxViewModel) DataContext;
+            vm.btnAdd_Click(advancedEdit);
         }
     }
 }

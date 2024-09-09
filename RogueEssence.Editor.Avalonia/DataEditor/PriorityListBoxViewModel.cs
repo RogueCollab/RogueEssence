@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
+using Avalonia.Input;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -152,11 +153,12 @@ namespace RogueEssence.Dev.ViewModels
             return Collection.Count;
         }
 
-        public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
+        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
         {
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
             int boxIndex = SelectedIndex;
-            bool advancedEdit = false;
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             if (boxIndex > -1)
             {
                 Priority priority = Collection[boxIndex].Priority;
@@ -165,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void btnAdd_Click()
+        public void btnAdd_Click(bool advancedEdit)
         {
             Priority priority = new Priority(0);
             int index = 0;
@@ -175,7 +177,6 @@ namespace RogueEssence.Dev.ViewModels
                 index = SelectedIndex + 1;
             }
             object element = null;
-            bool advancedEdit = false;
             OnEditItem(priority, index, element, advancedEdit, insertItem);
         }
 
@@ -266,12 +267,11 @@ namespace RogueEssence.Dev.ViewModels
             SelectedIndex = newBoxIndex;
         }
 
-        public void btnEditKey_Click()
+        public void btnEditKey_Click(bool advancedEdit)
         {
             if (SelectedIndex > -1)
             {
                 Priority priority = Collection[SelectedIndex].Priority;
-                bool advancedEdit = false;
                 OnEditPriority(priority, SelectedIndex, advancedEdit, changePriority);
             }
         }

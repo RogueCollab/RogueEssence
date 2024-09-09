@@ -8,6 +8,9 @@
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
   <UserControl.Resources>
   </UserControl.Resources>
+  <Design.DataContext>
+    <vm:PriorityListBoxViewModel/>
+  </Design.DataContext>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition/>
@@ -28,10 +31,10 @@
                             Binding="{Binding Path=DisplayValue}" />
       </DataGrid.Columns>
     </DataGrid>
-    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>
+    <Button x:Name="PriorityListBoxAddButton" PointerReleased="PriorityListBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>
     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="3" Grid.Column="1">Delete</Button>
     <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
-    <Button Command="{Binding btnEditKey_Click}" Margin="4" Grid.Row="1" Grid.Column="2">~</Button>
+    <Button x:Name="PriorityListBoxEditButton" PointerReleased="PriorityListBoxEditButton_OnPointerReleased" Margin="4" Grid.Row="1" Grid.Column="2">~</Button>
     <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="2" Grid.Column="2">v</Button>
   </Grid>
 </UserControl>

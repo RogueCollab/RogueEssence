@@ -5,6 +5,7 @@ using ReactiveUI;
 using System.Collections.ObjectModel;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
+using Avalonia.Input;
 using RogueElements;
 using RogueEssence.Dev.Views;
 
@@ -249,11 +250,12 @@ namespace RogueEssence.Dev.ViewModels
             updatePercentages();
         }
 
-        public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)
+        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
-            bool advancedEdit = false;
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             if (index > -1)
             {
                 CategorySpawnElement element = Collection[index];
@@ -264,13 +266,12 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void btnAddCategory_Click()
+        public void btnAddCategory_Click(bool advancedEdit)
         {
             int index = CurrentElement;
             if (index < 0)
                 index = Collection.Count;
             object element = null;
-            bool advancedEdit = false;
             if (index == Collection.Count)
             {
                 //we're fine, the insert will handle the edge case
@@ -287,7 +288,7 @@ namespace RogueEssence.Dev.ViewModels
             OnEditKey?.Invoke(index, element, advancedEdit, insertCategory);
         }
 
-        private async void btnAddItem_Click()
+        public async void btnAddItem_Click(bool advancedEdit)
         {
             int index = CurrentElement;
             if (index < 0)
@@ -300,7 +301,6 @@ namespace RogueEssence.Dev.ViewModels
             }
 
             object element = null;
-            bool advancedEdit = false;
             if (isCategory(index))
             {
                 //find the last index of the category
