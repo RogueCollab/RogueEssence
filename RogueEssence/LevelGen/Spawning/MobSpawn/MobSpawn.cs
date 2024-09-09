@@ -124,9 +124,9 @@ namespace RogueEssence.LevelGen
                 character.BaseSkills[ii] = new SlotSkill(final_skills[ii]);
 
             if (String.IsNullOrEmpty(Intrinsic))
-                character.BaseIntrinsics[0] = formEntry.RollIntrinsic(map.Rand, 2);
+                character.SetBaseIntrinsic(formEntry.RollIntrinsic(map.Rand, 2));
             else
-                character.BaseIntrinsics[0] = Intrinsic;
+                character.SetBaseIntrinsic(Intrinsic);
 
             character.Discriminator = map.Rand.Next();
 

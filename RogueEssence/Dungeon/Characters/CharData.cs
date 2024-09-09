@@ -176,6 +176,15 @@ namespace RogueEssence.Dungeon
             LuaDataTable = other.LuaDataTable;
         }
 
+        public void SetBaseIntrinsic(string intrinsic, int slot = 0)
+        {
+            if(slot >= MAX_INTRINSIC_SLOTS)
+                throw new Exception("Slot number out of bounds!");
+
+            BaseIntrinsics[slot] = intrinsic;
+            if (slot == 0)
+                FormIntrinsicSlot = GetFormIntrinsicSlot(intrinsic);
+        }
 
         public bool HasBaseIntrinsic(string intrinsic)
         {

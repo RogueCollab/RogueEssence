@@ -1211,9 +1211,7 @@ namespace RogueEssence.Dungeon
             if (slot == -1)
                 throw new Exception("No more room for intrinsics!");
 
-            BaseIntrinsics[slot] = intrinsicNum;
-            if (slot == 0)
-                FormIntrinsicSlot = GetFormIntrinsicSlot(intrinsicNum);
+            SetBaseIntrinsic(intrinsicNum, slot);
             for (int ii = Intrinsics.Count - 1; ii >= 0; ii--)
             {
                 if (Intrinsics[ii].BackRef == slot)
