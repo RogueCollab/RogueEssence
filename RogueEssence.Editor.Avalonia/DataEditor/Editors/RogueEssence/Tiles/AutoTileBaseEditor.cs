@@ -20,6 +20,8 @@ namespace RogueEssence.Dev
             Button btnAssign = new Button();
             btnAssign.Margin = new Avalonia.Thickness(0, 4, 0, 0);
             btnAssign.Content = "Mass Assign Sheet";
+            // TODO: Add btnAssign.PointerReleased event instead of click for advancedEdit
+            // btnAssign.PointerReleased
             btnAssign.Click += (object sender, RoutedEventArgs e) =>
             {
                 bool advancedEdit = false;

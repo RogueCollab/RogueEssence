@@ -73,7 +73,7 @@ namespace RogueEssence.Dev
                 string elementName = name + "[" + index + "]";
                 DataEditForm frmData = new DataEditForm();
                 frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
-
+                
                 DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
                 DataEditor.TrackTypeSize(frmData, elementType);
 

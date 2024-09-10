@@ -51,10 +51,9 @@ namespace RogueEssence.Dev.ViewModels
             OnMemberChanged?.Invoke();
         }
 
-        private void btnEdit_Click()
+        public void btnEdit_Click(bool advancedEdit)
         {
             object element = Object;
-            bool advancedEdit = false;
             OnEditItem?.Invoke(element, advancedEdit, updateSource);
         }
     }
