@@ -19,7 +19,7 @@ namespace RogueEssence.Dev
         private static LRUCache<TileAddr, Bitmap> tileCache;
         private static LRUCache<string, Bitmap> tilesetCache;
         
-        private static Dictionary<string, Bitmap> typeIcons;
+        private static Dictionary<string, Bitmap> elementIcons;
         private static Dictionary<BattleData.SkillCategory, Bitmap> skillCategoryIcons;
 
         private static LRUCache<string, Dictionary<int, string>> aliasCache;
@@ -63,22 +63,22 @@ namespace RogueEssence.Dev
             IconO = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "O.png"));
             IconX = new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "X.png"));
             
-            typeIcons = new Dictionary<string, Bitmap>();
+            elementIcons = new Dictionary<string, Bitmap>();
             foreach (string element in DataManager.Instance.DataIndices[DataManager.DataType.Element].GetOrderedKeys(true))
             {
-                string path = Path.Combine(PathMod.RESOURCE_PATH, "UI", "Types", element + ".png");
+                string path = Path.Combine(PathMod.RESOURCE_PATH, "UI", "Element", element + ".png");
                 if (File.Exists(path))
                 {
                     Bitmap img = new Bitmap(path);
-                    typeIcons.Add(element, img);
+                    elementIcons.Add(element, img);
                 }
             }
             
             skillCategoryIcons = new Dictionary<BattleData.SkillCategory, Bitmap>();
-            skillCategoryIcons.Add(BattleData.SkillCategory.None, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "Categories", "None.png")));
-            skillCategoryIcons.Add(BattleData.SkillCategory.Physical, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "Categories", "Physical.png")));
-            skillCategoryIcons.Add(BattleData.SkillCategory.Magical, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "Categories", "Special.png")));
-            skillCategoryIcons.Add(BattleData.SkillCategory.Status, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "Categories", "Status.png")));
+            skillCategoryIcons.Add(BattleData.SkillCategory.None, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "SkillCategory", "None.png")));
+            skillCategoryIcons.Add(BattleData.SkillCategory.Physical, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "SkillCategory", "Physical.png")));
+            skillCategoryIcons.Add(BattleData.SkillCategory.Magical, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "SkillCategory", "Magical.png")));
+            skillCategoryIcons.Add(BattleData.SkillCategory.Status, new Bitmap(Path.Combine(PathMod.RESOURCE_PATH, "UI", "SkillCategory", "Status.png")));
             
             tileCache = new LRUCache<TileAddr, Bitmap>(2000);
             tilesetCache = new LRUCache<string, Bitmap>(10);
@@ -267,12 +267,12 @@ namespace RogueEssence.Dev
         public static Bitmap GetTypeIcon(string type)
         {
             Bitmap icon;
-            if (typeIcons.TryGetValue(type, out icon))
+            if (elementIcons.TryGetValue(type, out icon))
             {
                 return icon;
 
             }
-            typeIcons.TryGetValue("none", out icon);
+            elementIcons.TryGetValue("none", out icon);
             return icon;
         }
         
