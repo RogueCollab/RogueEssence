@@ -18,7 +18,7 @@ namespace RogueEssence.Dev
 
         void LoadMemberControl(string parent, object obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack);
 
-        object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack);
+        object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack, bool advancedEdit);
 
         object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack);
 

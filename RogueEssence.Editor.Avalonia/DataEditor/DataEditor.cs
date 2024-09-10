@@ -143,13 +143,13 @@ namespace RogueEssence.Dev
         public static object SaveClassControls(StackPanel control, string name, Type type, object[] attributes, bool isWindow, Type[] subGroupStack, bool advancedEdit)
         {
             IEditor converter = findEditor(type, attributes, advancedEdit);
-            return converter.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack);
+            return converter.SaveClassControls(control, name, type, attributes, isWindow, subGroupStack, advancedEdit);
         }
 
 
-        public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack)
+        public static object SaveWindowControls(StackPanel control, string name, Type type, object[] attributes, Type[] subGroupStack, bool advancedEdit)
         {
-            IEditor converter = findEditor(type, attributes, false);
+            IEditor converter = findEditor(type, attributes, advancedEdit);
             return converter.SaveWindowControls(control, name, type, attributes, subGroupStack);
         }
 
