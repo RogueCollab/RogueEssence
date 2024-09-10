@@ -236,6 +236,43 @@ namespace RogueEssence.Data
         /// </summary>
         public string DefaultSkin;
 
+        public string GetDefaultData(DataManager.DataType dataType)
+        {
+            switch (dataType)
+            {
+                case DataType.Monster:
+                    return DefaultMonster;
+                case DataType.Skill:
+                    return DefaultSkill;
+                case DataType.Intrinsic:
+                    return DefaultIntrinsic;
+                case DataType.MapStatus:
+                    return DefaultMapStatus;
+                case DataType.Element:
+                    return DefaultElement;
+                case DataType.Tile:
+                    return DefaultTile;
+                case DataType.Zone:
+                    return DefaultZone;
+                case DataType.Rank:
+                    return DefaultRank;
+                case DataType.AI:
+                    return DefaultAI;
+                case DataType.Skin:
+                    return DefaultSkin;
+            }
+
+            //Item
+            //Status
+            //Terrain
+            //Emote
+            //AutoTile
+            //GrowthGroup
+            //SkillGroup
+
+            return "";
+        }
+
         /// <summary>
         /// The terrain ID considered to be universally "floor" in random dungeon generation
         /// </summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
+using RogueEssence.Data;
 
 namespace RogueEssence.Dev.Converters
 {
@@ -8,10 +9,11 @@ namespace RogueEssence.Dev.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
             string s = (string) value;
             s = s.ToLower();
             
-            bool res = s == "none" || s == "";
+            bool res = (String.IsNullOrEmpty(s) || s == DataManager.Instance.GetDefaultData(dataType));
             return res;
         }
 
@@ -25,9 +27,10 @@ namespace RogueEssence.Dev.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            DataManager.DataType dataType = (DataManager.DataType)Int32.Parse((string)parameter);
             string s = (string)value;
             s = s.ToLower();
-            bool res = !(s == "none" || s == "");
+            bool res = !(String.IsNullOrEmpty(s) || s == DataManager.Instance.GetDefaultData(dataType));
             return res;
         }
 

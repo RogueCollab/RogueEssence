@@ -264,7 +264,7 @@ namespace RogueEssence.Dev
             savedTypeSizes[name] = size;
         }
 
-        public static Bitmap GetTypeIcon(string type)
+        public static Bitmap GetElementIcon(string type)
         {
             Bitmap icon;
             if (elementIcons.TryGetValue(type, out icon))
@@ -276,7 +276,7 @@ namespace RogueEssence.Dev
             return icon;
         }
         
-        public static Bitmap GetCategoryIcon(BattleData.SkillCategory category)
+        public static Bitmap GetSkillCategoryIcon(BattleData.SkillCategory category)
         {
             Bitmap icon;
             if (skillCategoryIcons.TryGetValue(category, out icon))
