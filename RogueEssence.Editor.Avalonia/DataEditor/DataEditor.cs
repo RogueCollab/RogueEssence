@@ -120,12 +120,12 @@ namespace RogueEssence.Dev
         public static void LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack, bool advancedEdit)
         {
             IEditor converter = findEditor(type, attributes, advancedEdit);
-            converter.LoadClassControls(control, parent, parentType, name, type, attributes, member, isWindow, subGroupStack);
+            converter.LoadClassControls(control, parent, parentType, name, type, attributes, member, isWindow, subGroupStack, advancedEdit);
         }
 
-        public static void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack)
+        public static void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack, bool advancedEdit)
         {
-            IEditor converter = findEditor(type, attributes, false);
+            IEditor converter = findEditor(type, attributes, advancedEdit);
             converter.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
         }
 

@@ -200,7 +200,7 @@ namespace RogueEssence.Dev
             return null;
         }
 
-        void IEditor.LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)
+        void IEditor.LoadClassControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack, bool advancedEdit)
         {
             //if you want a class that is by default isolated to a classbox but has a custom UI when opened on its own/overridden to render,
             //override LoadWindowControls, which is called by those methods.
@@ -410,7 +410,7 @@ namespace RogueEssence.Dev
                                 Type[] newStack = new Type[subGroupStack.Length + 1];
                                 subGroupStack.CopyTo(newStack, 0);
                                 newStack[newStack.Length - 1] = type;
-                                DataEditor.LoadWindowControls(controlParent, parent, parentType, name, type1, attributes, DataEditor.clipboardObj, newStack);
+                                DataEditor.LoadWindowControls(controlParent, parent, parentType, name, type1, attributes, DataEditor.clipboardObj, newStack, false);
                             }
                             else
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
@@ -422,7 +422,7 @@ namespace RogueEssence.Dev
                     Type[] newStack = new Type[subGroupStack.Length + 1];
                     subGroupStack.CopyTo(newStack, 0);
                     newStack[newStack.Length - 1] = type;
-                    DataEditor.LoadWindowControls(controlParent, parent, parentType, name, children[0], attributes, member, newStack);
+                    DataEditor.LoadWindowControls(controlParent, parent, parentType, name, children[0], attributes, member, newStack, advancedEdit);
 
                 }
                 else
@@ -477,7 +477,7 @@ namespace RogueEssence.Dev
                         Type[] newStack = new Type[subGroupStack.Length + 1];
                         subGroupStack.CopyTo(newStack, 0);
                         newStack[newStack.Length - 1] = type;
-                        DataEditor.LoadWindowControls(controlParent, parent, parentType, name, fullType, attributes, emptyMember, newStack);
+                        DataEditor.LoadWindowControls(controlParent, parent, parentType, name, fullType, attributes, emptyMember, newStack, advancedEdit);
                     };
 
                     populateTypeChoice(typeArgsPanel, initNewConstructedType, member.GetType(), new Type[0], type);
@@ -518,7 +518,7 @@ namespace RogueEssence.Dev
                                 Type[] newStack = new Type[subGroupStack.Length + 1];
                                 subGroupStack.CopyTo(newStack, 0);
                                 newStack[newStack.Length - 1] = type;
-                                DataEditor.LoadWindowControls(controlParent, parent, parentType, name, type1, attributes, DataEditor.clipboardObj, newStack);
+                                DataEditor.LoadWindowControls(controlParent, parent, parentType, name, type1, attributes, DataEditor.clipboardObj, newStack, advancedEdit);
                             }
                             else
                                 await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
@@ -530,7 +530,7 @@ namespace RogueEssence.Dev
                     Type[] newStack = new Type[subGroupStack.Length + 1];
                     subGroupStack.CopyTo(newStack, 0);
                     newStack[newStack.Length - 1] = type;
-                    DataEditor.LoadWindowControls(controlParent, parent, parentType, name, getChosenType(typeArgsPanel), attributes, member, newStack);
+                    DataEditor.LoadWindowControls(controlParent, parent, parentType, name, getChosenType(typeArgsPanel), attributes, member, newStack, advancedEdit);
                 }
             }
         }
