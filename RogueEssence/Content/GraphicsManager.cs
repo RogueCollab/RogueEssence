@@ -183,7 +183,7 @@ namespace RogueEssence.Content
         public static int WindowZoom { get { return windowZoom; } }
         public static bool FullScreen { get { return graphics.IsFullScreen; } }
 
-        public static void SetWindowMode(int mode)
+        public static void SetWindowMode(int mode, bool preStartup = false)
         {
             if (mode == 0)
             {
@@ -206,7 +206,9 @@ namespace RogueEssence.Content
                 graphics.PreferredBackBufferWidth = WindowWidth;
                 graphics.PreferredBackBufferHeight = WindowHeight;
             }
-            graphics.ApplyChanges();
+
+            if (!preStartup)
+                graphics.ApplyChanges();
 
             ZoomChanged?.Invoke();
         }
@@ -406,7 +408,7 @@ namespace RogueEssence.Content
         {
             graphics = newGraphics;
             Zoom = GameZoom.x1;
-            SetWindowMode(mode);
+            SetWindowMode(mode, true);
         }
 
         public static void InitSystem(GraphicsDevice graphics)
