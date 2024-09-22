@@ -38,7 +38,19 @@ namespace RogueEssence.Data
         /// </summary>
         public int IndexNum;
 
-        public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment, IndexNum); }
+        public EntrySummary GenerateEntrySummary()
+        {
+            BasePowerState powerState = Data.SkillStates.GetWithDefault<BasePowerState>();
+            SkillDataSummary summary = new SkillDataSummary(Name, Released, Comment);
+            summary.RangeDescription = HitboxAction.GetDescription();
+            summary.BaseCharges = BaseCharges;
+            summary.BasePower = powerState != null ? powerState.Power : -1;
+            summary.Accuracy = Data.HitRate;
+            summary.Category = Data.Category;
+            summary.Element = Data.Element;
+            summary.Description = Desc;
+            return summary;
+        }
 
         /// <summary>
         /// The number of times the skill can be used.
@@ -80,7 +92,7 @@ namespace RogueEssence.Data
             Strikes = 1;
             HitboxAction = new AttackAction();
         }
-
+        
 
         /// <summary>
         /// Gets the colored text string of the skill
@@ -99,6 +111,29 @@ namespace RogueEssence.Data
         {
             ElementData element = DataManager.Instance.GetElement(Data.Element);
             return String.Format("{0}\u2060{1}", element.Symbol, GetColoredName());
+        }
+    }
+    
+    [Serializable]
+    public class SkillDataSummary : EntrySummary
+    {
+        public string Element;
+        public BattleData.SkillCategory Category;
+        public int BasePower;
+        public int BaseCharges;
+        public int Accuracy;
+        public string RangeDescription;
+        public LocalText Description;
+        
+        public SkillDataSummary() : base() { }
+
+        public SkillDataSummary(LocalText name, bool released, string comment)
+            : base(name, released, comment)
+        { }
+        
+        public override string GetColoredName()
+        {
+            return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
         }
     }
 }
