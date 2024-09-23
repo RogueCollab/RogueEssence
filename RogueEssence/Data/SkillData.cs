@@ -45,7 +45,7 @@ namespace RogueEssence.Data
             summary.RangeDescription = HitboxAction.GetDescription();
             summary.BaseCharges = BaseCharges;
             summary.BasePower = powerState != null ? powerState.Power : -1;
-            summary.Accuracy = Data.HitRate;
+            summary.HitRate = Data.HitRate;
             summary.Category = Data.Category;
             summary.Element = Data.Element;
             summary.Description = Desc;
@@ -121,7 +121,7 @@ namespace RogueEssence.Data
         public BattleData.SkillCategory Category;
         public int BasePower;
         public int BaseCharges;
-        public int Accuracy;
+        public int HitRate;
         public string RangeDescription;
         public LocalText Description;
         
