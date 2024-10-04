@@ -29,7 +29,7 @@
                             Binding="{Binding Path=DisplayValue}" />
       </DataGrid.Columns>
     </DataGrid>
-    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
+    <Button x:Name="DictionaryBoxAddButton" PointerReleased="DictionaryBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
   </Grid>
 </UserControl>

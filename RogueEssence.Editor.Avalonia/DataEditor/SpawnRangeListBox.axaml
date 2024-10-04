@@ -73,7 +73,7 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1">Add</Button>
+      <Button x:Name="SpawnRangeListBoxAddButton" PointerReleased="SpawnRangeListBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1">Add</Button>
       <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="1">Delete</Button>
     </Grid>
   </Grid>

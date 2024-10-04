@@ -482,6 +482,7 @@ namespace RogueEssence.Dungeon
 
             for (int ii = 0; ii < CharData.MAX_INTRINSIC_SLOTS; ii++)
                 character.BaseIntrinsics[ii] = this.BaseIntrinsics[ii];
+            character.FormIntrinsicSlot = this.FormIntrinsicSlot;
 
             Character new_mob = new Character(character);
             team.Players.Add(new_mob);
@@ -642,14 +643,7 @@ namespace RogueEssence.Dungeon
             Element2 = DataManager.Instance.GetMonster(CurrentForm.Species).Forms[CurrentForm.Form].Element2;
 
             //remap intrinsic to be the corresponding intrinsic of the new form
-            MonsterData dex = DataManager.Instance.GetMonster(BaseForm.Species);
-            BaseMonsterForm form = dex.Forms[BaseForm.Form];
-
-            int prevIndex = 0;
-            if (form.Intrinsic2 == BaseIntrinsics[0])
-                prevIndex = 1;
-            else if (form.Intrinsic3 == BaseIntrinsics[0])
-                prevIndex = 2;
+            int prevIndex = FormIntrinsicSlot;
 
             MonsterData newDex = DataManager.Instance.GetMonster(CurrentForm.Species);
             BaseMonsterForm newForm = newDex.Forms[CurrentForm.Form];
@@ -1217,7 +1211,7 @@ namespace RogueEssence.Dungeon
             if (slot == -1)
                 throw new Exception("No more room for intrinsics!");
 
-            BaseIntrinsics[slot] = intrinsicNum;
+            SetBaseIntrinsic(intrinsicNum, slot);
             for (int ii = Intrinsics.Count - 1; ii >= 0; ii--)
             {
                 if (Intrinsics[ii].BackRef == slot)

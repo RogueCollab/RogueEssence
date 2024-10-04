@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Avalonia.Markup.Xaml.Templates;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
@@ -18,6 +19,8 @@ namespace RogueEssence.Dev.Views
         public RankedCollectionBox()
         {
             this.InitializeComponent();
+            Button button = this.FindControl<Button>("RankedCollectionBoxAddButton");
+            button.AddHandler(PointerReleasedEvent, RankedCollectionBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
 
         private void InitializeComponent()
@@ -61,6 +64,14 @@ namespace RogueEssence.Dev.Views
         {
             DataGrid lbx = this.FindControl<DataGrid>("gridItems");
             lbx.ContextMenu = menu;
+        }
+
+        private void RankedCollectionBoxAddButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
+            CollectionBoxViewModel vm = (CollectionBoxViewModel) DataContext;
+            vm.btnAdd_Click(advancedEdit);
         }
     }
 }

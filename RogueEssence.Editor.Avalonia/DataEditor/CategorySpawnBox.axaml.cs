@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Avalonia.Input;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
@@ -17,6 +18,10 @@ namespace RogueEssence.Dev.Views
         public CategorySpawnBox()
         {
             this.InitializeComponent();
+            Button addCategoryButton = this.FindControl<Button>("CategorySpawnBoxAddCategoryButton");
+            addCategoryButton.AddHandler(PointerReleasedEvent, CategorySpawnBoxAddCategoryButton_OnPointerReleased, RoutingStrategies.Tunnel);
+            Button addItemButtom = this.FindControl<Button>("CategorySpawnBoxAddItemButton");
+            addItemButtom.AddHandler(PointerReleasedEvent, CategorySpawnBoxAddItemButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
 
         private void InitializeComponent()
@@ -40,6 +45,22 @@ namespace RogueEssence.Dev.Views
             if (viewModel == null)
                 return;
             viewModel.gridCollection_DoubleClick(sender, e);
+        }
+
+        private void CategorySpawnBoxAddCategoryButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
+            CategorySpawnBoxViewModel vm = (CategorySpawnBoxViewModel) DataContext;
+            vm.btnAddCategory_Click(advancedEdit);
+        }
+
+        private void CategorySpawnBoxAddItemButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
+            CategorySpawnBoxViewModel vm = (CategorySpawnBoxViewModel) DataContext;
+            vm.btnAddItem_Click(advancedEdit);
         }
     }
 }

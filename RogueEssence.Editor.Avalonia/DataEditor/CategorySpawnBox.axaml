@@ -68,8 +68,8 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <Button Command="{Binding btnAddCategory_Click}" Margin="4" Grid.Row="0" Grid.Column="0">Add Category</Button>
-      <Button Command="{Binding btnAddItem_Click}" Margin="4" Grid.Row="0" Grid.Column="1">Add Item</Button>
+      <Button x:Name="CategorySpawnBoxAddCategoryButton" PointerReleased="CategorySpawnBoxAddCategoryButton_OnPointerReleased" Margin="4" Grid.Row="0" Grid.Column="0">Add Category</Button>
+      <Button x:Name="CategorySpawnBoxAddItemButton" PointerReleased="CategorySpawnBoxAddItemButton_OnPointerReleased" Margin="4" Grid.Row="0" Grid.Column="1">Add Item</Button>
       <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="0" Grid.Column="2">Delete</Button>
     </Grid>
     

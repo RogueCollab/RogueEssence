@@ -5,6 +5,7 @@ using ReactiveUI;
 using System.Collections.ObjectModel;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
+using Avalonia.Input;
 using RogueElements;
 using RogueEssence.Dev.Views;
 
@@ -178,26 +179,26 @@ namespace RogueEssence.Dev.ViewModels
             CurrentElement = index;
         }
 
-        public void gridCollection_DoubleClick(object sender, RoutedEventArgs e)
+        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             if (index > -1)
             {
                 SpawnListElement element = Collection[index];
-                bool advancedEdit = false;
                 OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
             }
         }
 
 
-        private void btnAdd_Click()
+        public void btnAdd_Click(bool advancedEdit)
         {
             int index = CurrentElement;
             if (index < 0)
                 index = Collection.Count;
             object element = null;
-            bool advancedEdit = false;
             OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }
 

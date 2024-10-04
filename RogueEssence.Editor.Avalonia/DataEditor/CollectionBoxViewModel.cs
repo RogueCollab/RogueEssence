@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -130,12 +131,20 @@ namespace RogueEssence.Dev.ViewModels
             OnMemberChanged?.Invoke();
         }
 
+        public void DeleteItem(int index)
+        {
+            Collection.RemoveAt(index);
+            for (int ii = index; ii < Collection.Count; ii++)
+                Collection[ii].Key = ii;
+            OnMemberChanged?.Invoke();
+        }
 
-        public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
+        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             int index = SelectedIndex;
-            bool advancedEdit = false;
             if (index > -1)
             {
                 object element = Collection[index].Value;
@@ -144,13 +153,12 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        private void btnAdd_Click()
+        public void btnAdd_Click(bool advancedEdit)
         {
             int index = SelectedIndex;
             if (index < 0)
                 index = Collection.Count;
             object element = null;
-            bool advancedEdit = false;
             OnEditItem?.Invoke(index, element, advancedEdit, InsertItem);
         }
 

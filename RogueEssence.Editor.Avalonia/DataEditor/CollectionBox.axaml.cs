@@ -6,10 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using System;
-using System.Collections;
-using System.Collections.ObjectModel;
-using System.Reactive.Subjects;
-using Avalonia.Markup.Xaml.Templates;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
@@ -18,6 +15,8 @@ namespace RogueEssence.Dev.Views
         public CollectionBox()
         {
             this.InitializeComponent();
+            Button button = this.FindControl<Button>("CollectionBoxAddButton");
+            button.AddHandler(PointerReleasedEvent, CollectionBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
 
         private void InitializeComponent()
@@ -61,6 +60,14 @@ namespace RogueEssence.Dev.Views
         {
             ListBox lbx = this.FindControl<ListBox>("lbxItems");
             lbx.ContextMenu = menu;
+        }
+
+        private void CollectionBoxAddButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            KeyModifiers modifiers = e.KeyModifiers;
+            bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
+            CollectionBoxViewModel vm = (CollectionBoxViewModel) DataContext;
+            vm.btnAdd_Click(advancedEdit);
         }
     }
 }

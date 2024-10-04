@@ -620,9 +620,9 @@ namespace RogueEssence.Dungeon
                 character.BaseForm.Gender = dex.Forms[formData.Form].RollGender(rand);
             
             if (String.IsNullOrEmpty(intrinsic))
-                character.BaseIntrinsics[0] = formEntry.RollIntrinsic(rand, 2);
+                character.SetBaseIntrinsic(formEntry.RollIntrinsic(rand, 2));
             else
-                character.BaseIntrinsics[0] = intrinsic;
+                character.SetBaseIntrinsic(intrinsic);
 
             if (personality == -1)
                 character.Discriminator = rand.Next();

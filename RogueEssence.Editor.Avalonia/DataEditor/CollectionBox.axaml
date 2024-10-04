@@ -29,7 +29,7 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
-    <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
+    <Button x:Name="CollectionBoxAddButton" PointerReleased="CollectionBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
     <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
     <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="1" Grid.Column="2">v</Button>

@@ -13,7 +13,7 @@
       <ColumnDefinition Width="80"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <Button Command="{Binding btnEdit_Click}">Edit</Button>
+    <Button x:Name="ClassBoxEditButton" PointerReleased="ClassBoxEditButton_OnPointerReleased">Edit</Button>
     <TextBlock Text="{Binding Name}" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="Wrap" Width="180" Grid.Column="1"/>
   </Grid>
 </UserControl>
