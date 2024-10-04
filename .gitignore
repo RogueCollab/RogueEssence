@@ -1,6 +1,5 @@
 packages/
 bin/
-!Asset/Data/Script/bin/
 obj/
 .vs/
 *.csproj.user
@@ -8,5 +7,18 @@ obj/
 *.tmp
 *.zip
 *.manifest
-.vscode
 publish/
+
+# Debug logs (npm, yarn)
+*.log
+
+# Editor artifacts
+.*.sw[a-z]
+*~
+.#*
+.vscode
+.idea
+
+# OS files
+Thumbs.db
+.DS_Store
