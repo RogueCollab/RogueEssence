@@ -221,8 +221,8 @@ namespace RogueEssence.Dungeon
                 index = 1;
             else if (form.Intrinsic3 == intrinsic)
                 index = 2;
-            else if (index<0)
-                index = DataManager.Instance.Save.Rand.Next(0, 3);
+            else if (index < 0)
+                index = 0;
             return index;
         }
 

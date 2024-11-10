@@ -343,10 +343,14 @@ namespace RogueEssence.Dev.ViewModels
             Textures.AutotileBrowser.TileSize = GraphicsManager.TileSize;
             Terrain.TileBrowser.TileSize = GraphicsManager.TileSize;
             Terrain.AutotileBrowser.TileSize = GraphicsManager.TileSize;
+
+            Decorations.SelectEntity(null);
             Decorations.Layers.LoadLayers();
 
             Terrain.SetupLayerVisibility();
             Entrances.SetupLayerVisibility();
+
+            Entities.SelectEntity(null);
             //Entities.Teams.LoadTeams();
             Spawns.LoadMapSpawns();
             Effects.LoadMapEffects();
