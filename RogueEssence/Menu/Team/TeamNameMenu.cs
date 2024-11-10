@@ -16,13 +16,13 @@
         
         protected override void Confirmed()
         {
-            if (Text.Text == "")
+            if (Text.Text.Trim() == "")
                 GameManager.Instance.SE("Menu/Cancel");
             else
             {
                 GameManager.Instance.SE("Menu/Confirm");
                 MenuManager.Instance.RemoveMenu();
-                action(Text.Text);
+                action(Text.Text.Trim());
             }
         }
 

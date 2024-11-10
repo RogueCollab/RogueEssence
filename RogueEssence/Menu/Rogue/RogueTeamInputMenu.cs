@@ -41,6 +41,12 @@ namespace RogueEssence.Menu
 
         protected override void Confirmed()
         {
+            if (Text.Text != "" && Text.Text.Trim() == "")
+            {
+                GameManager.Instance.SE("Menu/Cancel");
+                return;
+            }
+
             GameManager.Instance.SE("Menu/Confirm");
             if (Text.Text == "")
             {
