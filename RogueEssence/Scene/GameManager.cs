@@ -1197,7 +1197,10 @@ namespace RogueEssence
                 {
                     MenuManager.Instance.ClearMenus();
                     if (MetaInputManager[FrameInput.InputType.Ctrl])
+                    {
+                        LuaEngine.Instance.BreakScripts();
                         SceneOutcome = RestartToTitle();
+                    }
                     else if (MetaInputManager[FrameInput.InputType.ShowDebug])
                         SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc()), 0);
                     else
