@@ -128,11 +128,11 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Runs a task and waits for it to complete.
-        /// Most methods that do not expose themselves to script need ot be wrapped with this.
+        /// Most methods that do not expose themselves to script need to be wrapped with this.
         /// </summary>
         /// <param name="obj">The task to wait on.</param>
         /// <example>
-        /// TASK:WaitTask(_DUNGEON:AddMapStatus("rain"))
+        /// TASK:WaitTask(_DUNGEON:DropMoney(100, RogueElements.Loc(10, 10), RogueElements.Loc(10, 10)))
         /// </example>
         public LuaFunction WaitTask;
         public Coroutine _WaitTask(object obj)
