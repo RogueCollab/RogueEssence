@@ -651,8 +651,8 @@ namespace RogueEssence.Dungeon
         }
         public static bool IsTargetedInArea(Character user, Loc loc, Dir8 dir, Alignment targetAlignments, int range, Hitbox.AreaLimit hitArea, Character target)
         {
-            Loc diff = loc - target.CharLoc;
-            if (DungeonScene.Instance.IsTargeted(user, target, targetAlignments) && Hitbox.IsInCircleSquareHitbox(target.CharLoc, loc, range * 2, range, hitArea, dir))
+            Loc targetLoc = ZoneManager.Instance.CurrentMap.GetClosestUnwrappedLoc(loc, target.CharLoc);
+            if (DungeonScene.Instance.IsTargeted(user, target, targetAlignments) && Hitbox.IsInCircleSquareHitbox(targetLoc, loc, range * 2, range, hitArea, dir))
                 return true;
 
             return false;
