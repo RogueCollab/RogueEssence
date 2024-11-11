@@ -125,18 +125,18 @@ namespace RogueEssence.LevelGen
             }
         }
 
-        public bool TileBlocked(Loc loc)
+        public virtual bool TileBlocked(Loc loc)
         {
             return Map.TileBlocked(loc);
         }
 
-        public bool TileBlocked(Loc loc, bool diagonal)
+        public virtual bool TileBlocked(Loc loc, bool diagonal)
         {
             return Map.TileBlocked(loc, false, diagonal);
         }
 
 
-        public bool HasTileEffect(Loc loc)
+        public virtual bool HasTileEffect(Loc loc)
         {
             Tile tile = Map.GetTile(loc);
             if (tile == null)
@@ -172,22 +172,43 @@ namespace RogueEssence.LevelGen
             return Grid.FindTilesInBox(rect.Start, rect.Size, checkOp);
         }
 
-        protected bool isObstructed(Loc loc)
-        {
-            Tile tile = Map.GetTile(loc);
-            TerrainData data = tile.Data.GetData();
-            return (data.BlockType != TerrainData.Mobility.Passable || HasTileEffect(loc));
-        }
-
         bool IPlaceableGenContext<MoneySpawn>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<InvItem>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<MapItem>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<EffectTile>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
 
+        protected bool isObstructed(Loc loc)
+        {
+            Tile tile = Map.GetTile(loc);
+            TerrainData data = tile.Data.GetData();
+            if (data.BlockType != TerrainData.Mobility.Passable)
+                return true;
+
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                //Need to check if that specific tile is an obstruction
+                //Traps are counted as obstructions
+                TileData effect = tile.Effect.GetData();
+                if (effect.StepType == TileData.TriggerType.None || effect.StepType == TileData.TriggerType.Passage)
+                {
+                    //non-trigger and passage tiles are considered non-obstructing
+                }
+                else
+                    return true;
+            }
+            return false;
+        }
+
         protected virtual bool canPlaceItemTile(Loc loc)
         {
-            if (isObstructed(loc))
+            Tile tile = Map.GetTile(loc);
+            TerrainData data = tile.Data.GetData();
+
+            if (data.BlockType != TerrainData.Mobility.Passable)
                 return false;
+            if (HasTileEffect(loc))
+                return false;
+
             if ((GetPostProc(loc).Status & (PostProcType.Panel | PostProcType.Item)) != PostProcType.None)
                 return false;
 
@@ -465,23 +486,23 @@ namespace RogueEssence.LevelGen
         Loc IViewPlaceableGenContext<MapGenExit>.GetLoc(int index) { return GenExits[index].Loc; }
 
 
-        protected override bool canPlaceItemTile(Loc loc)
+        public override bool HasTileEffect(Loc loc)
         {
-            if (!base.canPlaceItemTile(loc))
-                return false;
+            if (base.HasTileEffect(loc))
+                return true;
 
             for (int ii = 0; ii < GenEntrances.Count; ii++)
             {
                 if (GenEntrances[ii].Loc == loc)
-                    return false;
+                    return true;
             }
             for (int ii = 0; ii < GenExits.Count; ii++)
             {
                 if (GenExits[ii].Loc == loc)
-                    return false;
+                    return true;
             }
 
-            return true;
+            return false;
         }
 
         protected override bool canPlaceTeam(Loc loc)
