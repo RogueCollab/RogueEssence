@@ -17,7 +17,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class Character : CharData, ICharSprite, IEntityWithLuaData, IPointQuadStorable, IPreviewable, ITurnChar
     {
-
+        public const int MAX_MISS_CHAIN = 1;
         public const int MAX_FULLNESS = 100;
 
         public const int MAX_SPEED = 3;
@@ -268,9 +268,14 @@ namespace RogueEssence.Dungeon
         public Dictionary<string, StatusEffect> StatusEffects;
 
         /// <summary>
-        /// Guaranteed to hit next attack
+        /// Times missed
         /// </summary>
-        public bool MustHitNext;
+        public int MissChain;
+
+        public bool MustHitNext
+        {
+            get { return MissChain >= MAX_MISS_CHAIN; }
+        }
 
         /// <summary>
         /// The number of turns this character must wait before being able to move again.
