@@ -180,9 +180,6 @@ namespace RogueEssence.LevelGen
         protected bool isObstructed(Loc loc)
         {
             Tile tile = Map.GetTile(loc);
-            TerrainData data = tile.Data.GetData();
-            if (data.BlockType != TerrainData.Mobility.Passable)
-                return true;
 
             if (!String.IsNullOrEmpty(tile.Effect.ID))
             {
@@ -193,9 +190,19 @@ namespace RogueEssence.LevelGen
                 {
                     //non-trigger and passage tiles are considered non-obstructing
                 }
+                if (effect.StepType == TileData.TriggerType.Unlockable)
+                {
+                    //unlockables are always counted as non-obstructing: they can be unlocked and turn into a path!
+                    return false;
+                }
                 else
                     return true;
             }
+
+            TerrainData data = tile.Data.GetData();
+            if (data.BlockType != TerrainData.Mobility.Passable)
+                return true;
+
             return false;
         }
 
