@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_EXIT"), ExitAction));
 
             int choice_width = CalculateChoiceLength(choices, 72);
-            Initialize(new Loc(Math.Min(168, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
+            Initialize(new Loc(Math.Min(176, GraphicsManager.ScreenWidth - choice_width), 16), choice_width, choices.ToArray(), 0);
         }
 
         private void SummaryAction()

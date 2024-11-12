@@ -23,7 +23,7 @@ namespace RogueEssence.Menu
 
         public AddToTeamMenu(OnChooseTeam teamChoice, Action refuseAction)
         {
-            int menuWidth = 152;
+            int menuWidth = 160;
             this.teamChoice = teamChoice;
             this.refuseAction = refuseAction;
 
@@ -52,7 +52,7 @@ namespace RogueEssence.Menu
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 5),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
+            portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 24 - 40, 16), true);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, 0, 0, SLOTS_PER_PAGE);
 
