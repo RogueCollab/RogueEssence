@@ -41,7 +41,7 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary()
         {
             BasePowerState powerState = Data.SkillStates.GetWithDefault<BasePowerState>();
-            SkillDataSummary summary = new SkillDataSummary(Name, Released, Comment);
+            SkillDataSummary summary = new SkillDataSummary(Name, Released, Comment, IndexNum);
             summary.RangeDescription = HitboxAction.GetDescription();
             summary.BaseCharges = BaseCharges;
             summary.BasePower = powerState != null ? powerState.Power : -1;
@@ -127,8 +127,8 @@ namespace RogueEssence.Data
         
         public SkillDataSummary() : base() { }
 
-        public SkillDataSummary(LocalText name, bool released, string comment)
-            : base(name, released, comment)
+        public SkillDataSummary(LocalText name, bool released, string comment, int sort)
+            : base(name, released, comment, sort)
         { }
         
         public override string GetColoredName()
