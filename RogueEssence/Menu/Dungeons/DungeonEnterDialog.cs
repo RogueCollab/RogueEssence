@@ -13,7 +13,7 @@ namespace RogueEssence.Menu
         public DungeonEnterDialog(string message, string zoneName, ZoneLoc dest, bool sound, DialogueChoice[] choices, int defaultChoice, int cancelChoice)
             : base(message, sound, false, false, choices, defaultChoice, cancelChoice)
         {
-            summaryMenu = new DungeonSummary(new Rect(new Loc(8, 8), new Loc(128, GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
+            summaryMenu = new DungeonSummary(new Rect(new Loc(8, 8), new Loc(144, GraphicsManager.MenuBG.TileHeight * 2 + VERT_SPACE * 7)));
             summaryMenu.SetDungeon(zoneName, dest.ID, DataManager.Instance.Save.GetDungeonUnlock(dest.ID) == GameProgress.UnlockState.Completed, true, false);
         }
         
