@@ -67,7 +67,7 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="0" Grid.Column="0">Add</Button>
+      <Button x:Name="SpawnListBoxAddButton" PointerReleased="SpawnListBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="0" Grid.Column="0">Add</Button>
       <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="0" Grid.Column="1">Delete</Button>
     </Grid>
     
