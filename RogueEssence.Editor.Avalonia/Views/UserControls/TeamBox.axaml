@@ -20,7 +20,7 @@
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4">Teams:</TextBlock>
-    <TreeView Margin="2" Items="{Binding Teams}" SelectedItem="{Binding ChosenTeam}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
+    <TreeView Margin="2" ItemsSource="{Binding Teams}" SelectedItem="{Binding ChosenTeam}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
       
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TeamNodeViewModel" ItemsSource="{Binding Players}">

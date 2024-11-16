@@ -55,7 +55,7 @@
         </Grid.ColumnDefinitions>
         <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Frame Length:" Grid.Row="0" Grid.Column="0"/>
         <NumericUpDown Value="{Binding FrameLength}" Minimum="1" Margin="4" Grid.Row="0" Grid.Column="1" />
-        <ListBox SelectionMode="AlwaysSelected" Items="{Binding Frames}" SelectedIndex="{Binding ChosenFrame}" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+        <ListBox SelectionMode="AlwaysSelected" ItemsSource="{Binding Frames}" SelectedIndex="{Binding ChosenFrame}" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
           <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding Converter={StaticResource FrameConverter}}"/>

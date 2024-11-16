@@ -28,7 +28,7 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
+      <DataGrid Name="gridItems" IsReadOnly="true" ItemsSource="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Start"
                         Binding="{Binding DisplayStart}" />

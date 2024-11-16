@@ -76,11 +76,12 @@ namespace RogueEssence.Dev
             MenuItem copyToolStripMenuItem = new MenuItem();
             MenuItem pasteToolStripMenuItem = new MenuItem();
 
-            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+            Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
             list.AddRange(new MenuItem[] {
                             copyToolStripMenuItem,
                             pasteToolStripMenuItem});
 
+            copyPasteStrip.ItemsSource = list;
             copyToolStripMenuItem.Header = "Copy List Element: " + elementType.Name;
             pasteToolStripMenuItem.Header = "Insert List Element: " + elementType.Name;
 

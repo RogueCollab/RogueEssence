@@ -13,22 +13,12 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Views
 {
-    public class StringsEditForm : Window
+    public partial class StringsEditForm : Window
     {
 
         public StringsEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
     }
 }

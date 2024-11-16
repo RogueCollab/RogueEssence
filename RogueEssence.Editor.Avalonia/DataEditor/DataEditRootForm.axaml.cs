@@ -15,13 +15,8 @@ using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.Views
 {
-    public class DataEditRootForm : DataEditForm
+    public partial class DataEditRootForm : DataEditForm
     {
-        protected override void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
         public async void btnApply_Click(object sender, RoutedEventArgs e)
         {
             await SaveChildren();
@@ -29,7 +24,7 @@ namespace RogueEssence.Dev.Views
                 await SelectedOKEvent.Invoke();
         }
 
-        public override async void Window_Closing(object sender, CancelEventArgs e)
+        public override async void Window_Closing(object sender, WindowClosingEventArgs e)
         {
             base.Window_Closing(sender, e);
 

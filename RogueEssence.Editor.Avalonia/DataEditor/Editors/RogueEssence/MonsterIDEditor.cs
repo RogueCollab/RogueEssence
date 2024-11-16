@@ -37,8 +37,6 @@ namespace RogueEssence.Dev
                 ComboBox cbSpecies = new SearchComboBox();
                 ComboBox cbForms = new SearchComboBox();
 
-                cbSpecies.VirtualizationMode = ItemVirtualizationMode.Simple;
-
                 EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
                 List<string> monsterKeys = nameIndex.GetOrderedKeys(false);
                 int chosenSpecies = monsterKeys.IndexOf(member.Species);
@@ -61,7 +59,7 @@ namespace RogueEssence.Dev
                 var speciesSubject = new Subject<List<string>>();
                 var formSubject = new Subject<List<string>>();
 
-                cbSpecies.Bind(ComboBox.ItemsProperty, speciesSubject);
+                cbSpecies.Bind(ComboBox.ItemsSourceProperty, speciesSubject);
                 speciesSubject.OnNext(species);
                 cbSpecies.SelectedIndex = chosenSpecies;
                 cbSpecies.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
@@ -88,9 +86,7 @@ namespace RogueEssence.Dev
                 innerPanel2.Children.Add(lblForm);
                 innerPanel2.ColumnDefinitions[0].Width = new GridLength(46);
                 lblForm.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
-
-
-                cbForms.VirtualizationMode = ItemVirtualizationMode.Simple;
+                
                 int chosenForm = member.Form;
 
                 loadForms(dataAtt, (chosenSpecies < 0) ? "" : monsterKeys[chosenSpecies], forms);
@@ -98,7 +94,7 @@ namespace RogueEssence.Dev
                 if (dataAtt != null && dataAtt.InvalidForm)
                     chosenForm++;
 
-                cbForms.Bind(ComboBox.ItemsProperty, formSubject);
+                cbForms.Bind(ComboBox.ItemsSourceProperty, formSubject);
                 formSubject.OnNext(forms);
                 cbForms.SelectedIndex = Math.Min(Math.Max(0, chosenForm), forms.Count - 1);
                 innerPanel2.Children.Add(cbForms);
@@ -119,7 +115,6 @@ namespace RogueEssence.Dev
                 lblSkin.SetValue(Avalonia.Controls.Grid.ColumnProperty, 0);
 
                 ComboBox cbSkin = new SearchComboBox();
-                cbSkin.VirtualizationMode = ItemVirtualizationMode.Simple;
 
                 List<string> items = new List<string>();
                 if (dataAtt != null && dataAtt.InvalidSkin)
@@ -136,7 +131,7 @@ namespace RogueEssence.Dev
                 }
 
                 var subject = new Subject<List<string>>();
-                cbSkin.Bind(ComboBox.ItemsProperty, subject);
+                cbSkin.Bind(ComboBox.ItemsSourceProperty, subject);
                 subject.OnNext(items);
                 cbSkin.SelectedIndex = Math.Min(Math.Max(0, chosenIndex), items.Count - 1);
                 innerPanel3.Children.Add(cbSkin);
@@ -154,7 +149,6 @@ namespace RogueEssence.Dev
                 lblGender.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
 
                 ComboBox cbGender = new SearchComboBox();
-                cbGender.VirtualizationMode = ItemVirtualizationMode.Simple;
                 int chosenIndex = (int)member.Gender;
 
                 List<string> items = new List<string>();
@@ -168,7 +162,7 @@ namespace RogueEssence.Dev
                     items.Add(((Gender)ii).ToLocal());
 
                 var subject = new Subject<List<string>>();
-                cbGender.Bind(ComboBox.ItemsProperty, subject);
+                cbGender.Bind(ComboBox.ItemsSourceProperty, subject);
                 subject.OnNext(items);
                 cbGender.SelectedIndex = Math.Min(Math.Max(0, chosenIndex), items.Count - 1);
                 innerPanel3.Children.Add(cbGender);

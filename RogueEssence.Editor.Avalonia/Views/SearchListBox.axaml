@@ -17,6 +17,6 @@
     </Grid.RowDefinitions>
     <TextBlock VerticalAlignment="Bottom" Text="{Binding DataName}" Grid.Row="0" Grid.Column="0"></TextBlock>
     <TextBox Name="txtSearch" TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding SearchText}" Margin="0,2" Grid.Row="1" Grid.Column="0"/>
-    <ListBox Name="lbxItems" SelectionMode="AlwaysSelected" Items="{Binding SearchItems}" SelectedIndex="{Binding SelectedSearchIndex}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="2" Grid.Column="0"/>
+    <ListBox Name="lbxItems" SelectionMode="AlwaysSelected" ItemsSource="{Binding SearchItems}" SelectedIndex="{Binding SelectedSearchIndex}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="2" Grid.Column="0"/>
   </Grid>
 </UserControl>

@@ -13,20 +13,12 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Views
 {
-    public class TilesetEditForm : Window
+    public partial class TilesetEditForm : Window
     {
 
         public TilesetEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

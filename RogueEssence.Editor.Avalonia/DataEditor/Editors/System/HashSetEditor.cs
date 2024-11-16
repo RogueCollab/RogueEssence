@@ -99,7 +99,7 @@ namespace RogueEssence.Dev
         {
             int controlIndex = 0;
 
-            IControl lbxValue = control.Children[controlIndex];
+            Control lbxValue = control.Children[controlIndex];
             HashSet<T> member = (HashSet<T>)Activator.CreateInstance(type);
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             List<object> states = (List<object>)mv.GetList(typeof(List<object>));

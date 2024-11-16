@@ -4,16 +4,11 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapTabTiles : UserControl
+    public partial class MapTabTiles : UserControl
     {
         public MapTabTiles()
         {
             this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

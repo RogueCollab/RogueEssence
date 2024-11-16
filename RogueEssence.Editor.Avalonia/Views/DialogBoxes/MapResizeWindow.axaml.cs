@@ -5,22 +5,14 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapResizeWindow : Window
+    public partial class MapResizeWindow : Window
     {
         public MapResizeWindow()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
+        
         public void btnOK_Click(object sender, RoutedEventArgs e)
         {
             this.Close(true);

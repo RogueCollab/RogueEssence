@@ -11,17 +11,13 @@ using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
-    public class RangeDictBox : UserControl
+    public partial class RangeDictBox : UserControl
     {
         public RangeDictBox()
         {
             this.InitializeComponent();
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        
 
         bool doubleclick;
         public void doubleClickStart(object sender, RoutedEventArgs e)

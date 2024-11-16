@@ -12,7 +12,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class SpawnListBox : UserControl
+    public partial class SpawnListBox : UserControl
     {
         
         public SpawnListBox()
@@ -21,12 +21,7 @@ namespace RogueEssence.Dev.Views
             Button button = this.FindControl<Button>("SpawnListBoxAddButton");
             button.AddHandler(PointerReleasedEvent, SpawnListBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         bool doubleclick;
         public void doubleClickStart(object sender, RoutedEventArgs e)
         {

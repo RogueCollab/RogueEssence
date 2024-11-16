@@ -97,10 +97,11 @@ namespace RogueEssence.Dev
 
             MenuItem renameToolStripMenuItem = new MenuItem();
 
-            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+            Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
             list.AddRange(new MenuItem[] {
                             renameToolStripMenuItem});
 
+            copyPasteStrip.ItemsSource = list;
             renameToolStripMenuItem.Header = "Rename " + elementType.Name;
 
             renameToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>

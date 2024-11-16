@@ -5,23 +5,12 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class RenameWindow : Window
+    public partial class RenameWindow : Window
     {
         public RenameWindow()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
-
 
         public void btnOK_Click(object sender, RoutedEventArgs e)
         {

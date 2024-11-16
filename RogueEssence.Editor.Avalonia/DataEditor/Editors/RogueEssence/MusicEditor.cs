@@ -26,7 +26,6 @@ namespace RogueEssence.Dev
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, String member, Type[] subGroupStack)
         {
             ComboBox cbValue = new SearchComboBox();
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             string choice = member;
 
             List<string> items = new List<string>();
@@ -44,7 +43,7 @@ namespace RogueEssence.Dev
             }
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbValue.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             cbValue.SelectedIndex = chosenIndex;
             control.Children.Add(cbValue);

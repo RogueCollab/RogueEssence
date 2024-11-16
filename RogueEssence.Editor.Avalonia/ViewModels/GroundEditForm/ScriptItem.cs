@@ -41,7 +41,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuCopyFun_Click()
         {
-            await Application.Current.Clipboard.SetTextAsync(Definition);
+            // await Application.Current.Clipboard.SetTextAsync(Definition);
+            App.CopyText(Definition);
         }
     }
 }
