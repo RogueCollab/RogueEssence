@@ -117,6 +117,10 @@ namespace RogueEssence.Data
 
         public bool NoSwitching;
         public bool NoRecruiting;
+
+        /// <summary>
+        /// Data about the current rescue mission
+        /// </summary>
         public RescueState Rescue;
 
         public ZoneLoc NextDest;
