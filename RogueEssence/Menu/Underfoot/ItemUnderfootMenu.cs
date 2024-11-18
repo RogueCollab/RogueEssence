@@ -12,13 +12,11 @@ namespace RogueEssence.Menu
     public class ItemUnderfootMenu : UnderfootMenu
     {
         ItemSummary summaryMenu;
-        bool InventoryMenu;
 
-        public ItemUnderfootMenu(int mapItemSlot, bool fromInvMenu = false) : this(MenuLabel.GROUND_MENU_ITEM, mapItemSlot, fromInvMenu) { }
-        public ItemUnderfootMenu(string label, int mapItemSlot, bool fromInvMenu = false)
+        public ItemUnderfootMenu(int mapItemSlot) : this(MenuLabel.GROUND_MENU_ITEM, mapItemSlot) { }
+        public ItemUnderfootMenu(string label, int mapItemSlot)
         {
             Label = label;
-            InventoryMenu = fromInvMenu;
             MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[mapItemSlot];
             string itemName = mapItem.GetDungeonName();
 
@@ -169,24 +167,42 @@ namespace RogueEssence.Menu
 
         protected override void UpdateKeys(InputManager input)
         {
-            if (InventoryMenu)
+            bool equippedItems = false;
+            foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
             {
-                if (IsInputting(input, Dir8.Left))
+                if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
                 {
-                    ItemMenu menu = new ItemMenu();
-                    menu.SetPage(menu.TotalChoices.Length - 1);
-                    MenuManager.Instance.ReplaceMenu(menu);
-                    GameManager.Instance.SE("Menu/Skip");
-                }
-                else if (IsInputting(input, Dir8.Right))
-                {
-                    ItemMenu menu = new ItemMenu();
-                    menu.SetPage(0);
-                    MenuManager.Instance.ReplaceMenu(menu);
-                    GameManager.Instance.SE("Menu/Skip");
+                    equippedItems = true;
+                    break;
                 }
             }
+            bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !equippedItems);
+
+            if (IsInputting(input, Dir8.Left))
+            {
+                CheckSwitchMenu(true, invEnabled);
+            }
+            else if (IsInputting(input, Dir8.Right))
+            {
+                CheckSwitchMenu(false, invEnabled);
+            }
             base.UpdateKeys(input);
+        }
+
+        private void CheckSwitchMenu(bool setEndPage, bool inventoryEnabled)
+        {
+            if (inventoryEnabled)
+            {
+                ItemMenu menu = new ItemMenu();
+                if (setEndPage)
+                {
+                    menu.SetPage(menu.TotalChoices.Length - 1);
+                }
+                MenuManager.Instance.ReplaceMenu(menu);
+                GameManager.Instance.SE("Menu/Skip");
+            }
+            else
+                GameManager.Instance.SE("Menu/Cancel");
         }
     }
 }
