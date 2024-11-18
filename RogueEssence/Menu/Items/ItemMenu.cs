@@ -142,6 +142,7 @@ namespace RogueEssence.Menu
                             (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
                     {
                         MenuManager.Instance.ReplaceMenu(new ItemUnderfootMenu(itemSlot, true));
+                        GameManager.Instance.SE("Menu/Skip");
                     }
                 }
             }

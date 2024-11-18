@@ -176,13 +176,14 @@ namespace RogueEssence.Menu
                     ItemMenu menu = new ItemMenu();
                     menu.SetPage(menu.TotalChoices.Length - 1);
                     MenuManager.Instance.ReplaceMenu(menu);
-
+                    GameManager.Instance.SE("Menu/Skip");
                 }
                 else if (IsInputting(input, Dir8.Right))
                 {
                     ItemMenu menu = new ItemMenu();
                     menu.SetPage(0);
                     MenuManager.Instance.ReplaceMenu(menu);
+                    GameManager.Instance.SE("Menu/Skip");
                 }
             }
             base.UpdateKeys(input);
