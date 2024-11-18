@@ -130,6 +130,21 @@ namespace RogueEssence.Menu
 
         protected override void UpdateKeys(InputManager input)
         {
+            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            {
+                Character character = DungeonScene.Instance.FocusedCharacter;
+
+                //check for item
+                int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
+                if (itemSlot > -1)
+                {
+                    if ((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
+                            (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
+                    {
+                        MenuManager.Instance.ReplaceMenu(new ItemUnderfootMenu(itemSlot, true));
+                    }
+                }
+            }
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
                 if (replaceSlot < 0 && DataManager.Instance.CurrentReplay == null)

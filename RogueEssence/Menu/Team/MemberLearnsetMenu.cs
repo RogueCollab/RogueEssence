@@ -146,7 +146,7 @@ namespace RogueEssence.Menu
                 base.UpdateKeys(input);
         }
     
-        protected override void SetPage(int page)
+        protected internal override void SetPage(int page)
         {
             int totalOtherMemberPages = 3;
             CurrentPage = page;

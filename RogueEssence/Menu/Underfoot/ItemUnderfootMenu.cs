@@ -12,11 +12,13 @@ namespace RogueEssence.Menu
     public class ItemUnderfootMenu : UnderfootMenu
     {
         ItemSummary summaryMenu;
+        bool InventoryMenu;
 
-        public ItemUnderfootMenu(int mapItemSlot) : this(MenuLabel.GROUND_MENU_ITEM, mapItemSlot) { }
-        public ItemUnderfootMenu(string label, int mapItemSlot)
+        public ItemUnderfootMenu(int mapItemSlot, bool fromInvMenu = false) : this(MenuLabel.GROUND_MENU_ITEM, mapItemSlot, fromInvMenu) { }
+        public ItemUnderfootMenu(string label, int mapItemSlot, bool fromInvMenu = false)
         {
             Label = label;
+            InventoryMenu = fromInvMenu;
             MapItem mapItem = ZoneManager.Instance.CurrentMap.Items[mapItemSlot];
             string itemName = mapItem.GetDungeonName();
 
@@ -163,6 +165,27 @@ namespace RogueEssence.Menu
             //draw other windows
             if (summaryMenu != null)
                 summaryMenu.Draw(spriteBatch);
+        }
+
+        protected override void UpdateKeys(InputManager input)
+        {
+            if (InventoryMenu)
+            {
+                if (IsInputting(input, Dir8.Left))
+                {
+                    ItemMenu menu = new ItemMenu();
+                    menu.SetPage(menu.TotalChoices.Length - 1);
+                    MenuManager.Instance.ReplaceMenu(menu);
+
+                }
+                else if (IsInputting(input, Dir8.Right))
+                {
+                    ItemMenu menu = new ItemMenu();
+                    menu.SetPage(0);
+                    MenuManager.Instance.ReplaceMenu(menu);
+                }
+            }
+            base.UpdateKeys(input);
         }
     }
 }
