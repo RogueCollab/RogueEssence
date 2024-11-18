@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
     {
         public MenuText Title;
         public MenuText Team;
-        public MenuText Description;
+        public DialogueText Description;
         public MenuDivider Div;
         public MenuText MoneyTally;
         public MenuText InvValueTally;
@@ -66,7 +66,10 @@ namespace RogueEssence.Menu
                     }
             }
 
-            Description = new MenuText(message, new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            Description = new DialogueText(message,
+                new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET + LINE_HEIGHT * 2)),
+                LINE_HEIGHT, true, false, -1);
 
             MoneyTally = new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.Money)),
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET), DirH.None);
