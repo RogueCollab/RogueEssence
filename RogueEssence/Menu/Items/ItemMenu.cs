@@ -130,16 +130,16 @@ namespace RogueEssence.Menu
 
         protected override void UpdateKeys(InputManager input)
         {
-            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            if ((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
+                    (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
             {
-                Character character = DungeonScene.Instance.FocusedCharacter;
-
-                //check for item
-                int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
-                if (itemSlot > -1)
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
-                    if ((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
-                            (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
+                    Character character = DungeonScene.Instance.FocusedCharacter;
+
+                    //check for item
+                    int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
+                    if (itemSlot > -1)
                     {
                         MenuManager.Instance.ReplaceMenu(new ItemUnderfootMenu(itemSlot));
                         GameManager.Instance.SE("Menu/Skip");
