@@ -193,11 +193,9 @@ namespace RogueEssence.Menu
         {
             if (inventoryEnabled)
             {
-                ItemMenu menu = new ItemMenu();
-                if (setEndPage)
-                {
-                    menu.SetPage(menu.TotalChoices.Length - 1);
-                }
+                int select = 0;
+                if (setEndPage) select = (ItemMenu.getMaxInvPages() - 1) * ItemMenu.SLOTS_PER_PAGE;
+                ItemMenu menu = new ItemMenu(defaultTotalChoice: select);
                 MenuManager.Instance.ReplaceMenu(menu);
                 GameManager.Instance.SE("Menu/Skip");
             }

@@ -60,7 +60,7 @@ namespace RogueEssence.Menu
             return box.ToArray();
         }
 
-        protected internal virtual void SetPage(int page)
+        protected virtual void SetPage(int page)
         {
             CurrentPage = page;
             if (TotalChoices.Length == 1 && !ShowPagesOnSingle)
