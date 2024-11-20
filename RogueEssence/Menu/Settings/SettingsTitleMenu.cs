@@ -83,7 +83,7 @@ namespace RogueEssence.Menu
             Label = label;
             SetupDefaultSettingsPage();
 
-            Bounds = new Rect(new Loc(16, 8), new Loc(224, VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2));
+            Bounds = new Rect(new Loc(16, 8), new Loc(240, VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2));
 
             Title = new MenuText(MenuLabel.TITLE, Pages[CurrentPageId].Title, new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight+1), DirH.None);
             Left = new MenuCursor($"{MenuLabel.CURSOR}_LEFT", this, Dir4.Left);
