@@ -346,6 +346,8 @@ namespace RogueEssence.Script
             return new Coroutine(_DoAnimatedTurn(ch, _CountDirectionDifference(ch.CharDir, direction), framedur, ccw));
         }
 
+        public LuaFunction CharAnimateTurnTo;
+
         /// <summary>
         /// Makes a character do an animated turn to face a chosen direction over the specified time.
         /// Waits until the operation is completed.
@@ -354,9 +356,8 @@ namespace RogueEssence.Script
         /// <param name="direction">The direction to turn to</param>
         /// <param name="framedur">The time spent in each intermediate direction, in frames</param>
         /// <example>
-        /// CharTurnToCharAnimated(charFrom, Dir8.Left, 3)
+        /// CharAnimateTurnTo(charFrom, Dir8.Left, 3)
         /// </example>
-        public LuaFunction CharAnimateTurnTo;
         public Coroutine _CharAnimateTurnTo(GroundChar ch, Dir8 direction, int framedur)
         {
             if (ch == null || direction == Dir8.None)
