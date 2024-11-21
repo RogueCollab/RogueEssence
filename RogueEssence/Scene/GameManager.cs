@@ -369,7 +369,10 @@ namespace RogueEssence
             HashSet<string> result = new HashSet<string>();
             result.Add(baseFile);
             if (song.Tags.ContainsKey("RELATIVE"))
-                result.Add(song.Tags["RELATIVE"]);
+            {
+                foreach(string relative in song.Tags["RELATIVE"])
+                    result.Add(relative);
+            }
             return result;
         }
 

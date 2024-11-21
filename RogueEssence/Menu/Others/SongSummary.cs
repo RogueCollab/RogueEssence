@@ -37,29 +37,28 @@ namespace RogueEssence.Menu
 
         }
 
-        public void SetSong(string fileName)
+        public void SetSong(LoopedSong song)
         {
             string name = "---";
             string originName = "---";
             string origin = "---";
             string artist = "---";
 
-            if (File.Exists(fileName))
+            if (song != null)
             {
                 try
                 {
-                    LoopedSong song = new LoopedSong(fileName);
                     name = song.Name;
                     if (song.Tags.ContainsKey("TITLE"))
-                        originName = song.Tags["TITLE"];
+                        originName = song.Tags["TITLE"][0];
                     if (song.Tags.ContainsKey("ALBUM"))
-                        origin = song.Tags["ALBUM"];
+                        origin = song.Tags["ALBUM"][0];
                     if (song.Tags.ContainsKey("ARTIST"))
-                        artist = song.Tags["ARTIST"];
+                        artist = song.Tags["ARTIST"][0];
                 }
                 catch (Exception ex)
                 {
-                    DiagManager.Instance.LogError(new Exception("Error loading song " + fileName + "\n", ex));
+                    DiagManager.Instance.LogError(new Exception("Error loading song data.", ex));
                 }
             }
 

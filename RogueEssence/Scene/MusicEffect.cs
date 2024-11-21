@@ -53,13 +53,13 @@ namespace RogueEssence
                     LoopedSong song = new LoopedSong(fileName);
                     name = song.Name;
                     if (song.Tags.ContainsKey("TITLE"))
-                        originName = song.Tags["TITLE"];
+                        originName = song.Tags["TITLE"][0];
                     if (song.Tags.ContainsKey("ALBUM"))
-                        origin = song.Tags["ALBUM"];
+                        origin = song.Tags["ALBUM"][0];
                     if (song.Tags.ContainsKey("ARTIST"))
-                        artist = song.Tags["ARTIST"];
+                        artist = song.Tags["ARTIST"][0];
                     if (song.Tags.ContainsKey("SPOILER"))
-                        spoiler = song.Tags["SPOILER"];
+                        spoiler = song.Tags["SPOILER"][0];
                     LuaEngine.Instance.OnMusicChange(name, originName, origin, artist, spoiler);
                 }
             }
