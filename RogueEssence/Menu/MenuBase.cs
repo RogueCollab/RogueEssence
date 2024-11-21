@@ -127,6 +127,26 @@ namespace RogueEssence.Menu
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, zoomMatrix);
         }
 
+        public virtual bool GetRelativeMouseLoc(Loc screenLoc, out MenuBase menu, out Loc? relativeLoc)
+        {
+            menu = null;
+            relativeLoc = null;
+
+            if (!Visible)
+                return false;
+
+            screenLoc /= GraphicsManager.WindowZoom;
+
+            if (Bounds.Contains(screenLoc))
+            {
+                menu = this;
+                relativeLoc = screenLoc - Bounds.Start;
+                return true;
+            }
+
+            return false;
+        }
+
         private void DrawMenuPiece(SpriteBatch spriteBatch, TileSheet menu, Color color, int addX, int addY)
         {
             //draw background

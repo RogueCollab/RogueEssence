@@ -1427,6 +1427,23 @@ namespace RogueEssence
 
         private void DrawDebug(SpriteBatch spriteBatch, double updateTime)
         {
+            if (DiagManager.Instance.DevMode)
+            {
+                CurrentScene.DrawDebug(spriteBatch);
+
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("SPEED: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("ZOOM: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
+
+                MenuBase menu;
+                Loc? menuLoc;
+                MenuManager.Instance.GetMenuCoord(MetaInputManager.MouseLoc, out menu, out menuLoc);
+                if (menu != null)
+                {
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, GraphicsManager.WindowHeight - 12, String.Format("MENU: {0}", menu.Label), null, DirV.Down, DirH.Right, Color.White);
+                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, GraphicsManager.WindowHeight - 2, String.Format("MOUSE MENU X:{0:D3} Y:{1:D3}", menuLoc.Value.X, menuLoc.Value.Y), null, DirV.Down, DirH.Right, Color.White);
+                }
+            }
+
             int fps = 0;
             if (updateTime > 0)
                 fps = (int)(1 / updateTime);
@@ -1439,13 +1456,6 @@ namespace RogueEssence
             //if (DataManager.Instance.CurrentReplay != null)
             //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Replay: {0} {1}", DataManager.Instance.CurrentReplay.RecordVersion.ToString(), DataManager.Instance.CurrentReplay.RecordLang.ToString()), null, DirV.Up, DirH.Left, Color.White);
 
-            if (DiagManager.Instance.DevMode)
-            {
-                CurrentScene.DrawDebug(spriteBatch);
-
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 52, String.Format("Speed: {0}", DebugSpeed.ToString()), null, DirV.Up, DirH.Left, Color.LightYellow);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 62, String.Format("Zoom: {0}", GraphicsManager.Zoom.ToString()), null, DirV.Up, DirH.Left, Color.White);
-            }
 
 
         }

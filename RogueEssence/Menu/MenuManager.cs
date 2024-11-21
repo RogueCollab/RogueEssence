@@ -126,6 +126,24 @@ namespace RogueEssence.Menu
             }
         }
 
+        public void GetMenuCoord(Loc screenLoc, out MenuBase menu, out Loc? relativeLoc)
+        {
+            menu = null;
+            relativeLoc = null;
+
+            for (int ii = menus.Count - 1; ii >= 0; ii--)
+            {
+                if (menus[ii].Visible)
+                {
+                    InteractableMenu interactable = menus[ii] as InteractableMenu;
+                    if (interactable != null && interactable.GetRelativeMouseLoc(screenLoc, out menu, out relativeLoc))
+                        return;
+
+                }
+                if (menus[ii].BlockPrevious)
+                    break;
+            }
+        }
 
         public IEnumerator<YieldInstruction> SetSign(params string[] msgs)
         {
