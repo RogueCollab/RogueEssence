@@ -92,17 +92,24 @@ namespace RogueEssence.Ground
             TriggerResult result = new TriggerResult();
             if (character == FocusedCharacter)
             {
+                List<GroundEntity> collided = new List<GroundEntity>();
                 //Loc front = character.GetFront() + character.CharDir.GetLoc();
                 Loc start = character.MapLoc + character.CharDir.GetLoc();
                 foreach (AABB.IObstacle obstacle in ZoneManager.Instance.CurrentGround.Find(new Rect(start, character.Bounds.Size)))
                 {
-                    if (obstacle == FocusedCharacter)
+                    GroundEntity ent = obstacle as GroundEntity;
+                    if (ent != null)
+                        CollectionExt.AddToSortedList(collided, ent, (ent1, ent2) => ent1.InteractOrder - ent2.InteractOrder);
+                }
+                foreach (GroundEntity ent in collided)
+                {
+                    if (ent == FocusedCharacter)
                     {
                         //do nothing
                     }
-                    else if (obstacle is GroundChar)
+                    else if (ent is GroundChar)
                     {
-                        GroundChar talkTo = (GroundChar)obstacle;
+                        GroundChar talkTo = (GroundChar)ent;
                         if (talkTo.EntEnabled)
                         {
                             character.CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
@@ -111,9 +118,9 @@ namespace RogueEssence.Ground
                                 yield break;
                         }
                     }
-                    else if (obstacle is GroundObject)
+                    else if (ent is GroundObject)
                     {
-                        GroundObject groundObj = (GroundObject)obstacle;
+                        GroundObject groundObj = (GroundObject)ent;
                         if (groundObj.EntEnabled && groundObj.GetTriggerType() == GroundObject.EEntityTriggerTypes.Action)
                         {
                             character.CurrentCommand = new GameAction(GameAction.ActionType.None, Dir8.None);
