@@ -62,14 +62,12 @@ namespace RogueEssence
         private int framesErrored;
         private int longestFrame;
 
-        private float fadeAmount;
-        private bool fadeWhite;
+        private ScreenFadeFX fadeScreen;
+        private ScreenFadeFX fadeFront;
         
-        private float titleFadeAmount;
-        private string fadedTitle;
+        private TitleFadeFX fadeTitle;
 
-        private float bgFadeAmount;
-        private BGAnimData fadedBG;
+        private BGFadeFX fadeBG;
 
         public Dictionary<string, (float volume, float diff)> LoopingSE;
 
@@ -91,8 +89,10 @@ namespace RogueEssence
 
         public GameManager()
         {
-            fadedTitle = "";
-            fadedBG = new BGAnimData();
+            fadeScreen = new ScreenFadeFX();
+            fadeFront = new ScreenFadeFX();
+            fadeTitle = new TitleFadeFX();
+            fadeBG = new BGFadeFX();
 
             MetaInputManager = new InputManager();
             InputManager = new InputManager();
@@ -378,17 +378,16 @@ namespace RogueEssence
 
         public void SetFade(bool faded, bool useWhite)
         {
-            fadeAmount = faded ? 1f : 0f;
-            fadeWhite = useWhite;
+            fadeScreen.SetFade(faded, useWhite);
         }
 
         public bool IsFading()
         {
-            return fadeAmount > 0f;
+            return fadeScreen.fadeAmount > 0f;
         }
         public bool IsFaded()
         {
-            return fadeAmount == 1f;
+            return fadeScreen.fadeAmount == 1f;
         }
 
         public IEnumerator<YieldInstruction> FadeIn()
@@ -398,7 +397,8 @@ namespace RogueEssence
         }
         public IEnumerator<YieldInstruction> FadeIn(int fadeTime)
         {
-            return fade(true, fadeWhite, fadeTime);
+            //fadeIn is false when passed into the fade, because a true fade means the screen COVER is visible
+            return fadeScreen.Fade(false, fadeScreen.fadeWhite, fadeTime);
         }
 
         public IEnumerator<YieldInstruction> FadeOut(bool useWhite)
@@ -408,33 +408,20 @@ namespace RogueEssence
         }
         public IEnumerator<YieldInstruction> FadeOut(bool useWhite, int fadeTime)
         {
-            return fade(false, useWhite, fadeTime);
+            //fadeIn is true when passed into the fade, because a true fade means the screen COVER is visible
+            return fadeScreen.Fade(true, useWhite, fadeTime);
         }
 
-        private IEnumerator<YieldInstruction> fade(bool fadeIn, bool useWhite, int fadeTime)
+        public IEnumerator<YieldInstruction> FadeOutFront(bool useWhite, int fadeTime)
         {
-            if (fadeIn && fadeAmount == 0f)
-                yield break;
-            if (!fadeIn && fadeAmount == 1f)
-            {
-                SetFade(true, useWhite);
-                yield break;
-            }
-
-            int currentFadeTime = fadeTime;
-            while (currentFadeTime > 0)
-            {
-                currentFadeTime--;
-                float amount = 0f;
-                if (fadeIn)
-                    amount = ((float)currentFadeTime / (float)fadeTime);
-                else
-                    amount = ((float)(fadeTime - currentFadeTime) / (float)fadeTime);
-                fadeAmount = amount;
-                fadeWhite = useWhite;
-                yield return new WaitForFrames(1);
-            }
+            return fadeFront.Fade(true, useWhite, fadeTime);
         }
+
+        public IEnumerator<YieldInstruction> FadeInFront(int fadeTime)
+        {
+            return fadeFront.Fade(false, fadeFront.fadeWhite, fadeTime);
+        }
+
 
         public IEnumerator<YieldInstruction> FadeTitle(bool fadeIn, string title)
         {
@@ -443,22 +430,7 @@ namespace RogueEssence
         }
         public IEnumerator<YieldInstruction> FadeTitle(bool fadeIn, string title, int fadeTime)
         {
-            if (fadeIn)
-                fadedTitle = title;
-            long currentFadeTime = fadeTime;
-            while (currentFadeTime > 0)
-            {
-                currentFadeTime--;
-                float amount = 0f;
-                if (fadeIn)
-                    amount = ((float)currentFadeTime / (float)fadeTime);
-                else
-                    amount = ((float)(fadeTime - currentFadeTime) / (float)fadeTime);
-                titleFadeAmount = 1f - amount;
-                yield return new WaitForFrames(1);
-            }
-            if (!fadeIn)
-                fadedTitle = "";
+            return fadeTitle.Fade(fadeIn, title, fadeTime);
         }
 
 
@@ -469,22 +441,7 @@ namespace RogueEssence
         }
         public IEnumerator<YieldInstruction> FadeBG(bool fadeIn, BGAnimData bg, int fadeTime)
         {
-            if (fadeIn)
-                fadedBG = bg;
-            long currentFadeTime = fadeTime;
-            while (currentFadeTime > 0)
-            {
-                currentFadeTime--;
-                float amount = 0f;
-                if (fadeIn)
-                    amount = ((float)currentFadeTime / (float)fadeTime);
-                else
-                    amount = ((float)(fadeTime - currentFadeTime) / (float)fadeTime);
-                bgFadeAmount = 1f - amount;
-                yield return new WaitForFrames(1);
-            }
-            if (!fadeIn)
-                fadedBG = new BGAnimData();
+            return fadeBG.Fade(fadeIn, bg, fadeTime);
         }
 
         public int ModifyBattleSpeed(int waitTime, Loc origin)
@@ -1383,24 +1340,21 @@ namespace RogueEssence
             else
             {
                 float window_scale = GraphicsManager.WindowZoom;
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(window_scale, window_scale, 1)));
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(window_scale, window_scale, 1)));
 
                 //draw transitions
-                if (fadeAmount > 0)
-                    GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(0, 0, GraphicsManager.ScreenWidth, GraphicsManager.ScreenHeight), null, (fadeWhite ? Color.White : Color.Black) * fadeAmount);
-                if (bgFadeAmount > 0 && fadedBG.AnimIndex != "")
-                {
-                    DirSheet bg = GraphicsManager.GetBackground(fadedBG.AnimIndex);
-                    bg.DrawDir(spriteBatch, new Vector2(GraphicsManager.ScreenWidth / 2 - bg.TileWidth / 2, GraphicsManager.ScreenHeight / 2 - bg.TileHeight / 2),
-                        fadedBG.GetCurrentFrame(GraphicsManager.TotalFrameTick, bg.TotalFrames), Dir8.Down, Color.White * ((float)fadedBG.Alpha / 255) * bgFadeAmount);
-                }
-                if (titleFadeAmount > 0)
-                    GraphicsManager.DungeonFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth / 2, GraphicsManager.ScreenHeight / 2,
-                        fadedTitle, null, DirV.None, DirH.None, Color.White * titleFadeAmount);
+                fadeScreen.Draw(spriteBatch);
+                fadeBG.Draw(spriteBatch);
+                fadeTitle.Draw(spriteBatch);
             }
 
             MenuManager.Instance.DrawMenus(spriteBatch);
             TextPopUp.Draw(spriteBatch);
+
+            if (DataManager.Instance.Loading == DataManager.LoadMode.None)
+            {
+                fadeFront.Draw(spriteBatch);
+            }
 
             if (totalErrorCount > 0)
                 GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.ScreenWidth - 2, GraphicsManager.ScreenHeight - 2, String.Format("{0} ERRORS", totalErrorCount), null, DirV.Down, DirH.Right, Color.Red);
