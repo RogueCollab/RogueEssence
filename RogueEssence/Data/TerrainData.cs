@@ -7,7 +7,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class TerrainData : IEntryData
+    public class TerrainData : PassiveData, IEntryData
     {
         public override string ToString()
         {

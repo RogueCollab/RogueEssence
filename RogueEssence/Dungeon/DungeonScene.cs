@@ -1057,7 +1057,7 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
-                    TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                    TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                     if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
                     {
                         if (showHiddenItem)
@@ -1120,7 +1120,7 @@ namespace RogueEssence.Dungeon
                             {
                                 Vector2 destVector = mapStart + (new Vector2(ii, jj) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight);
                                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj];
-                                TerrainData terrain = tile.Data.GetData();
+                                TerrainData terrain = (TerrainData)tile.Data.GetData();
                                 if (ShowMap == MinimapState.Detail)
                                 {
                                     if (terrain.MinimapColor != Color.White && terrain.MinimapColor != Color.Transparent)
@@ -1169,7 +1169,7 @@ namespace RogueEssence.Dungeon
                             seeItem = true;
                         else
                         {
-                            TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                            TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                             if (terrain.ItemDraw != TerrainData.TileItemDraw.Hide)
                             {
                                 if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)

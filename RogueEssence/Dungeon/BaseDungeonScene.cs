@@ -278,7 +278,7 @@ namespace RogueEssence.Dungeon
                 foreach(Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
                     TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data;
-                    TerrainData terrain = tile.GetData();
+                    TerrainData terrain = (TerrainData)tile.GetData();
                     if (terrain.ItemDraw == TerrainData.TileItemDraw.Hide)
                     {
                         if (showHiddenItem)
@@ -359,7 +359,7 @@ namespace RogueEssence.Dungeon
             //draw shadows
             foreach ((Character sprite, Loc viewOffset) shadowChar in shownChars)
             {
-                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
+                TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
                 int terrainShadow = terrain.ShadowType;
                 shadowChar.sprite.DrawShadow(spriteBatch, shadowChar.viewOffset, terrainShadow);
             }
