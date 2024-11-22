@@ -17,7 +17,7 @@ using System.IO;
 
 namespace RogueEssence.Dev.Views
 {
-    public class DevForm : Window, IRootEditor
+    public partial class DevForm : Window, IRootEditor
     {
         public bool LoadComplete { get; private set; }
 
@@ -40,16 +40,8 @@ namespace RogueEssence.Dev.Views
         public DevForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         void IRootEditor.Load(GameBase game)
         {
             ExecuteOrInvoke(load);

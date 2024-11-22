@@ -33,7 +33,7 @@
         <ColumnDefinition/>
         <ColumnDefinition Width="40"/>
       </Grid.ColumnDefinitions>
-      <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
+      <DataGrid Name="gridItems" IsReadOnly="true" ItemsSource="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Weight"
                         Binding="{Binding Weight}" />

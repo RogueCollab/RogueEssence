@@ -46,7 +46,7 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
       <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Column="0">Item:</TextBlock>
-      <views:SearchComboBox Items="{Binding ItemTypes}" SelectedIndex="{Binding ChosenItem}" VirtualizationMode="Simple" VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+      <views:SearchComboBox ItemsSource="{Binding ItemTypes}" SelectedIndex="{Binding ChosenItem}"  VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
       <TabControl TabStripPlacement="Top" SelectedIndex="{Binding TabIndex}" Margin="4" Grid.Row="1" Grid.ColumnSpan="2">
         <TabItem Header="Money" IsVisible="{Binding Path=ChosenItem, Converter={StaticResource ValidIdxConverter}, ConverterParameter=true}">
           <Grid>

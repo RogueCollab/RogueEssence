@@ -279,11 +279,12 @@ namespace RogueEssence.Dev
                     MenuItem copyToolStripMenuItem = new MenuItem();
                     MenuItem pasteToolStripMenuItem = new MenuItem();
 
-                    Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+                    Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
                     list.AddRange(new MenuItem[] {
                             copyToolStripMenuItem,
                             pasteToolStripMenuItem});
 
+                    copyPasteStrip.ItemsSource = list;
                     copyToolStripMenuItem.Header = "Copy " + type.Name;
                     pasteToolStripMenuItem.Header = "Paste " + type.Name;
 
@@ -384,11 +385,12 @@ namespace RogueEssence.Dev
                         MenuItem copyToolStripMenuItem = new MenuItem();
                         MenuItem pasteToolStripMenuItem = new MenuItem();
 
-                        Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+                        Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
                         list.AddRange(new MenuItem[] {
                             copyToolStripMenuItem,
                             pasteToolStripMenuItem});
 
+                        copyPasteStrip.ItemsSource = list;
                         copyToolStripMenuItem.Header = "Copy " + type.Name;
                         pasteToolStripMenuItem.Header = "Paste " + type.Name;
 
@@ -489,11 +491,12 @@ namespace RogueEssence.Dev
                         MenuItem copyToolStripMenuItem = new MenuItem();
                         MenuItem pasteToolStripMenuItem = new MenuItem();
 
-                        Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+                        Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
                         list.AddRange(new MenuItem[] {
                             copyToolStripMenuItem,
                             pasteToolStripMenuItem});
 
+                        copyPasteStrip.ItemsSource = list;
                         copyToolStripMenuItem.Header = "Copy " + type.Name;
                         pasteToolStripMenuItem.Header = "Paste " + type.Name;
 
@@ -722,7 +725,6 @@ namespace RogueEssence.Dev
 
             ComboBox cbType = new SearchComboBox();
             cbType.Margin = new Thickness(4, 0, 0, 0);
-            cbType.VirtualizationMode = ItemVirtualizationMode.Simple;
             sharedRowPanel.Children.Add(cbType);
             cbType.SetValue(Grid.ColumnProperty, 1);
 
@@ -793,7 +795,7 @@ namespace RogueEssence.Dev
                 throw new TargetException("Types do not match.");
 
             var subject = new Subject<List<string>>();
-            cbType.Bind(ComboBox.ItemsProperty, subject);
+            cbType.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             cbType.SelectedIndex = selection;
 
@@ -861,7 +863,6 @@ namespace RogueEssence.Dev
 
             ComboBox cbArgType = new SearchComboBox();
             cbArgType.Margin = new Thickness(4, 0, 0, 0);
-            cbArgType.VirtualizationMode = ItemVirtualizationMode.Simple;
             sharedRowPanel.Children.Add(cbArgType);
             cbArgType.SetValue(Grid.ColumnProperty, 1);
 
@@ -886,7 +887,7 @@ namespace RogueEssence.Dev
 
 
             var subject = new Subject<List<string>>();
-            cbArgType.Bind(ComboBox.ItemsProperty, subject);
+            cbArgType.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             cbArgType.SelectedIndex = selection;
 

@@ -100,7 +100,7 @@ namespace RogueEssence.Dev
         {
             int controlIndex = 0;
 
-            IControl lbxValue = control.Children[controlIndex];
+            Control lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             return mv.GetList(type);
         }

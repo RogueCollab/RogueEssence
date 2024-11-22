@@ -105,7 +105,7 @@ namespace RogueEssence.Dev
             //TODO: 2D array grid support
             //if (type.GetElementType().IsArray)
 
-            IControl lbxValue = control.Children[controlIndex];
+            Control lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             List<object> objList = (List<object>)mv.GetList(typeof(List<object>));
 

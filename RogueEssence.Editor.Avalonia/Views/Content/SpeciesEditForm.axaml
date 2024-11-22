@@ -36,7 +36,7 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <TreeView Items="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
+      <TreeView ItemsSource="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
         <TreeView.DataTemplates>
           <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}">
             <Grid>
@@ -50,7 +50,7 @@
           </TreeDataTemplate>
         </TreeView.DataTemplates>
         <TreeView.ContextMenu>
-          <ContextMenu Items="{Binding OpList}">
+          <ContextMenu ItemsSource="{Binding OpList}">
             <ContextMenu.Styles>
               <Style Selector="MenuItem">
                 <Setter Property="Header" Value="{Binding Name}"/>

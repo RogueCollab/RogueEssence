@@ -17,7 +17,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapEditForm : ParentForm, IMapEditor
+    public partial class MapEditForm : ParentForm, IMapEditor
     {
 
         public bool Active { get; private set; }
@@ -25,27 +25,15 @@ namespace RogueEssence.Dev.Views
         public MapEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
             Edits = new UndoStack();
 
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
+        
         public void ProcessInput(InputManager input)
         {
             DevForm.ExecuteOrInvoke(() => ((MapEditViewModel)DataContext).ProcessInput(input));
         }
-
-
-
-
+        
         public void Window_Loaded(object sender, EventArgs e)
         {
             Active = true;
