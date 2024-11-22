@@ -37,7 +37,6 @@ namespace RogueEssence.Dungeon
 
         const int MAX_MINIMAP_WIDTH = 80;
         const int MAX_MINIMAP_HEIGHT = 56;
-        //public bool GodMode;
 
         public bool SeeAll;
         public int DebugEmote;
@@ -1475,9 +1474,7 @@ namespace RogueEssence.Dungeon
             GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
 
             if (SeeAll)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "See All", null, DirV.Up, DirH.Left, Color.LightYellow);
-            //if (GodMode)
-            //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, "God Mode", null, DirV.Up, DirH.Left, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, "See All", null, DirV.Up, DirH.Left, Color.LightYellow);
 
             if (FocusedCharacter != null)
             {

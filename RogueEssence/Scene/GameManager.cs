@@ -1439,8 +1439,8 @@ namespace RogueEssence
                 MenuManager.Instance.GetMenuCoord(MetaInputManager.MouseLoc, out menu, out menuLoc);
                 if (menu != null)
                 {
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, GraphicsManager.WindowHeight - 12, String.Format("MENU: {0}", menu.Label), null, DirV.Down, DirH.Right, Color.White);
-                    GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, GraphicsManager.WindowHeight - 2, String.Format("MOUSE MENU X:{0:D3} Y:{1:D3}", menuLoc.Value.X, menuLoc.Value.Y), null, DirV.Down, DirH.Right, Color.White);
+                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("MENU: {0}", menu.Label), null, DirV.Up, DirH.Left, Color.White);
+                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, String.Format("MOUSE MENU X:{0:D3} Y:{1:D3}", menuLoc.Value.X, menuLoc.Value.Y), null, DirV.Up, DirH.Left, Color.White);
                 }
             }
 
