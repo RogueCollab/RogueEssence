@@ -165,16 +165,6 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
 
-        public IEnumerator<YieldInstruction> SetWaitMenu(bool anyInput)
-        {
-            WaitMenu box = new WaitMenu(anyInput);
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
-        }
-        public IEnumerator<YieldInstruction> SetWaitMenu(List<FrameInput.InputType> inputs)
-        {
-            WaitMenu box = new WaitMenu(inputs.ToArray());
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
-        }
         public IEnumerator<YieldInstruction> SetWaitMenu(params FrameInput.InputType[] inputs)
         {
             WaitMenu box = new WaitMenu(inputs);

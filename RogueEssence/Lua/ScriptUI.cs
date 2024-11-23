@@ -109,7 +109,10 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetWaitMenu(anyInput);
+                {
+                    FrameInput.InputType[] input = anyInput ? [] : [FrameInput.InputType.Confirm]; 
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(input);
+                }
             }
             catch (Exception e)
             {
@@ -143,7 +146,7 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetWaitMenu(inputTypes);
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(inputTypes.ToArray());
             }
             catch (Exception e)
             {
