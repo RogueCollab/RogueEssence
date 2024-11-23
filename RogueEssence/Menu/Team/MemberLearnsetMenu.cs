@@ -41,13 +41,23 @@ namespace RogueEssence.Menu
                 if (!skillEntry.Released)
                     continue;
 
-                MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
-                MenuText levelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
-                    new Loc(GraphicsManager.ScreenWidth - 88, 1), DirH.Right);
-                MenuText level = new MenuText(levelUpSkill.Level.ToString(), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirH.Right);
-
                 Skills.Add(skill);
-                flatChoices.Add(new MenuElementChoice(() => { }, true, levelLabel, level, skillText));
+                if (levelUpSkill.Level > 0)
+                {
+                    MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
+                    MenuText levelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
+                        new Loc(GraphicsManager.ScreenWidth - 88, 1), DirH.Right);
+                    MenuText level = new MenuText(levelUpSkill.Level.ToString(), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirH.Right);
+
+                    flatChoices.Add(new MenuElementChoice(() => { }, true, levelLabel, level, skillText));
+                }
+                else
+                {
+                    MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
+                    MenuText level = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTE_SHORT"), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirH.Right);
+
+                    flatChoices.Add(new MenuElementChoice(() => { }, true, level, skillText));
+                }
             }
 
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);

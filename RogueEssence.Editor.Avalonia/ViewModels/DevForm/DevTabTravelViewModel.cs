@@ -252,7 +252,7 @@ namespace RogueEssence.Dev.ViewModels
                     else if (ZoneManager.Instance.CurrentMapID.Segment > -1)
                     {
                         //reload the dungeon map
-                        ZoneManager.Instance.CurrentZone.MapsLoaded--;
+                        ZoneManager.Instance.CurrentZone.Unvisit();
                         GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToZone(new ZoneLoc(ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID));
                     }
                     else

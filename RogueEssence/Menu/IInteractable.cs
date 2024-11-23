@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using RogueEssence.Content;
+using RogueElements;
 
 namespace RogueEssence.Menu
 {

@@ -126,6 +126,24 @@ namespace RogueEssence.Menu
             }
         }
 
+        public void GetMenuCoord(Loc screenLoc, out MenuBase menu, out Loc? relativeLoc)
+        {
+            menu = null;
+            relativeLoc = null;
+
+            for (int ii = menus.Count - 1; ii >= 0; ii--)
+            {
+                if (menus[ii].Visible)
+                {
+                    InteractableMenu interactable = menus[ii] as InteractableMenu;
+                    if (interactable != null && interactable.GetRelativeMouseLoc(screenLoc, out menu, out relativeLoc))
+                        return;
+
+                }
+                if (menus[ii].BlockPrevious)
+                    break;
+            }
+        }
 
         public IEnumerator<YieldInstruction> SetSign(params string[] msgs)
         {
@@ -165,9 +183,9 @@ namespace RogueEssence.Menu
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
 
-        public IEnumerator<YieldInstruction> SetWaitMenu(bool anyInput)
+        public IEnumerator<YieldInstruction> SetWaitMenu(params FrameInput.InputType[] inputs)
         {
-            WaitMenu box = new WaitMenu(anyInput);
+            WaitMenu box = new WaitMenu(inputs);
             yield return CoroutineManager.Instance.StartCoroutine(ProcessMenuCoroutine(box));
         }
 

@@ -185,7 +185,7 @@ namespace RogueEssence.LevelGen
             {
                 //Need to check if that specific tile is an obstruction
                 //Traps are counted as obstructions
-                TileData effect = tile.Effect.GetData();
+                TileData effect = (TileData)tile.Effect.GetData();
                 if (effect.StepType == TileData.TriggerType.None || effect.StepType == TileData.TriggerType.Passage)
                 {
                     //non-trigger and passage tiles are considered non-obstructing
@@ -199,7 +199,7 @@ namespace RogueEssence.LevelGen
                     return true;
             }
 
-            TerrainData data = tile.Data.GetData();
+            TerrainData data = (TerrainData)tile.Data.GetData();
             if (data.BlockType != TerrainData.Mobility.Passable)
                 return true;
 
@@ -209,7 +209,7 @@ namespace RogueEssence.LevelGen
         protected virtual bool canPlaceItemTile(Loc loc)
         {
             Tile tile = Map.GetTile(loc);
-            TerrainData data = tile.Data.GetData();
+            TerrainData data = (TerrainData)tile.Data.GetData();
 
             if (data.BlockType != TerrainData.Mobility.Passable)
                 return false;
@@ -263,7 +263,7 @@ namespace RogueEssence.LevelGen
             //TODO: refactor to tell apart trap placement (remove terrain) and other effect tile placement (keep terrain)
             //This is a general problem, in which placeables of the same data type want to be placed, but placed differently
             //other example: money placement  instead of item placement, mob placement being multiple entities
-            TerrainData data = tile.Data.GetData();
+            TerrainData data = (TerrainData)tile.Data.GetData();
             if (data.BlockType == TerrainData.Mobility.Passable)
             {
                 Tile tmpTile = (Tile)RoomTerrain.Copy();

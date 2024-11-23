@@ -1683,6 +1683,14 @@ namespace RogueEssence.Dungeon
                 //check map conditions
                 foreach (MapStatus status in ZoneManager.Instance.CurrentMap.Status.Values)
                     yield return new PassiveContext(status, status.GetData(), defaultPortPriority, this);
+
+                //check the current tile
+                Tile tile = ZoneManager.Instance.CurrentMap.GetTile(CharLoc);
+                if (!String.IsNullOrEmpty(tile.Effect.ID))
+                    yield return new PassiveContext(tile.Effect, tile.Effect.GetData(), defaultPortPriority, this);
+                if (!String.IsNullOrEmpty(tile.Data.ID))
+                    yield return new PassiveContext(tile.Data, tile.Data.GetData(), defaultPortPriority, this);
+
             }
 
             //check statuses

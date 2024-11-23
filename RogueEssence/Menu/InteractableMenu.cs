@@ -54,6 +54,26 @@ namespace RogueEssence.Menu
             foreach (SummaryMenu menu in SummaryMenus)
                 menu.Draw(spriteBatch);
         }
+        public override bool GetRelativeMouseLoc(Loc screenLoc, out MenuBase menu, out Loc? relativeLoc)
+        {
+            menu = null;
+            relativeLoc = null;
+
+            if (!Visible)
+                return false;
+
+
+            if (base.GetRelativeMouseLoc(screenLoc, out menu, out relativeLoc))
+                return true;
+
+            foreach (SummaryMenu summary in SummaryMenus)
+            {
+                if (summary.GetRelativeMouseLoc(screenLoc, out menu, out relativeLoc))
+                    return true;
+            }
+
+            return false;
+        }
 
         public int GetSummaryIndexByLabel(string label)
         {

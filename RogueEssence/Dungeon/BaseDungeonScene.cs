@@ -278,7 +278,7 @@ namespace RogueEssence.Dungeon
                 foreach(Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
                     TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data;
-                    TerrainData terrain = tile.GetData();
+                    TerrainData terrain = (TerrainData)tile.GetData();
                     if (terrain.ItemDraw == TerrainData.TileItemDraw.Hide)
                     {
                         if (showHiddenItem)
@@ -359,7 +359,7 @@ namespace RogueEssence.Dungeon
             //draw shadows
             foreach ((Character sprite, Loc viewOffset) shadowChar in shownChars)
             {
-                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
+                TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
                 int terrainShadow = terrain.ShadowType;
                 shadowChar.sprite.DrawShadow(spriteBatch, shadowChar.viewOffset, terrainShadow);
             }
@@ -467,8 +467,8 @@ namespace RogueEssence.Dungeon
             {
                 Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
                 Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 102, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 112, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
             }
         }
 

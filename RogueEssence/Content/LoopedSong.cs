@@ -28,7 +28,7 @@ namespace RogueEssence.Content
         public int SampleRate { get; private set; }
         private int chunkSize { get { return Channels * SampleRate * 2; } }
 
-        public Dictionary<string, string> Tags { get; private set; }
+        public Dictionary<string, List<string>> Tags { get; private set; }
 
         #endregion
 
@@ -65,7 +65,7 @@ namespace RogueEssence.Content
             loopEnd = (int)total_samples;
             int loopLength = 0;
 
-            Tags = new Dictionary<string, string>();
+            Tags = new Dictionary<string, List<string>>();
             for (int ii = 0; ii < comments.comment_list_length; ii++)
             {
                 IntPtr ptr = new IntPtr(comments.comment_list.ToInt64() + IntPtr.Size * ii);
@@ -77,7 +77,11 @@ namespace RogueEssence.Content
                 string val = split.Length > 1 ? split[1] : "";
 
                 if (label != "")
-                    Tags.Add(label, val);
+                {
+                    if (!Tags.ContainsKey(label))
+                        Tags[label] = new List<string>();
+                    Tags[label].Add(val);
+                }
 
                 if (label == "LOOPSTART")
                     loopStart = Convert.ToInt32(val);

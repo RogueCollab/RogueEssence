@@ -1107,7 +1107,7 @@ namespace RogueEssence.Dungeon
                 }
             }
             Tile tile = ZoneManager.Instance.CurrentMap.GetTile(loc);
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             if (terrain.ItemLand == TerrainData.TileItemLand.Destroy)
             {
                 if (!silent)
@@ -1581,7 +1581,7 @@ namespace RogueEssence.Dungeon
                 return true;
 
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             if (terrain.BlockLight)
                 return true;
             //TileData effect = DataManager.Instance.GetTile(tile.Effect.ID);
@@ -1661,7 +1661,7 @@ namespace RogueEssence.Dungeon
 
             if (tile != null)//TODO: make this not so hardcoded??
             {
-                TerrainData terrain = tile.Data.GetData();
+                TerrainData terrain = (TerrainData)tile.Data.GetData();
                 return (terrain.BlockType == TerrainData.Mobility.Lava || terrain.BlockType == TerrainData.Mobility.Block);
             }
 

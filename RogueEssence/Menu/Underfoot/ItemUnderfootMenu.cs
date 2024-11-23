@@ -164,5 +164,43 @@ namespace RogueEssence.Menu
             if (summaryMenu != null)
                 summaryMenu.Draw(spriteBatch);
         }
+
+        protected override void UpdateKeys(InputManager input)
+        {
+            bool equippedItems = false;
+            foreach (Character character in DataManager.Instance.Save.ActiveTeam.Players)
+            {
+                if (!character.Dead && !String.IsNullOrEmpty(character.EquippedItem.ID))
+                {
+                    equippedItems = true;
+                    break;
+                }
+            }
+            bool invEnabled = !(DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0 && !equippedItems);
+
+            if (IsInputting(input, Dir8.Left))
+            {
+                CheckSwitchMenu(true, invEnabled);
+            }
+            else if (IsInputting(input, Dir8.Right))
+            {
+                CheckSwitchMenu(false, invEnabled);
+            }
+            base.UpdateKeys(input);
+        }
+
+        private void CheckSwitchMenu(bool setEndPage, bool inventoryEnabled)
+        {
+            if (inventoryEnabled)
+            {
+                int select = 0;
+                if (setEndPage) select = (ItemMenu.getMaxInvPages() - 1) * ItemMenu.SLOTS_PER_PAGE;
+                ItemMenu menu = new ItemMenu(defaultTotalChoice: select);
+                MenuManager.Instance.ReplaceMenu(menu);
+                GameManager.Instance.SE("Menu/Skip");
+            }
+            else
+                GameManager.Instance.SE("Menu/Cancel");
+        }
     }
 }

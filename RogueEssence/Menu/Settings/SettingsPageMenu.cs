@@ -26,7 +26,8 @@ namespace RogueEssence.Menu
             List<MenuSetting> choices = new List<MenuSetting>();
             foreach(SettingData setting in page.Choices)
             {
-                MenuSetting element = new MenuSetting(setting.Name, 88, 72, setting.Options, setting.Default, ConfirmAction);
+                int settings_width = 72;
+                MenuSetting element = new MenuSetting(setting.Name, Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4 - 32 + 5 - 4 - settings_width, settings_width, setting.Options, setting.Default, ConfirmAction);
                 choices.Add(element);
                 SettingsData.Add(element, setting);
             }

@@ -37,7 +37,6 @@ namespace RogueEssence.Dungeon
 
         const int MAX_MINIMAP_WIDTH = 80;
         const int MAX_MINIMAP_HEIGHT = 56;
-        //public bool GodMode;
 
         public bool SeeAll;
         public int DebugEmote;
@@ -1058,7 +1057,7 @@ namespace RogueEssence.Dungeon
             {
                 foreach (Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
-                    TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                    TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                     if (terrain.BlockType == TerrainData.Mobility.Impassable || terrain.BlockType == TerrainData.Mobility.Block)
                     {
                         if (showHiddenItem)
@@ -1121,7 +1120,7 @@ namespace RogueEssence.Dungeon
                             {
                                 Vector2 destVector = mapStart + (new Vector2(ii, jj) - startLoc.ToVector2()) * new Vector2(mapSheet.TileWidth, mapSheet.TileHeight);
                                 Tile tile = ZoneManager.Instance.CurrentMap.Tiles[ii][jj];
-                                TerrainData terrain = tile.Data.GetData();
+                                TerrainData terrain = (TerrainData)tile.Data.GetData();
                                 if (ShowMap == MinimapState.Detail)
                                 {
                                     if (terrain.MinimapColor != Color.White && terrain.MinimapColor != Color.Transparent)
@@ -1170,7 +1169,7 @@ namespace RogueEssence.Dungeon
                             seeItem = true;
                         else
                         {
-                            TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
+                            TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data.GetData();
                             if (terrain.ItemDraw != TerrainData.TileItemDraw.Hide)
                             {
                                 if (ZoneManager.Instance.CurrentMap.DiscoveryArray[item.TileLoc.X][item.TileLoc.Y] == Map.DiscoveryState.Traversed)
@@ -1475,9 +1474,7 @@ namespace RogueEssence.Dungeon
             GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 52, String.Format("Total {0:D6}", DataManager.Instance.Save.TotalTurns), null, DirV.Up, DirH.Right, Color.White);
 
             if (SeeAll)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, "See All", null, DirV.Up, DirH.Left, Color.LightYellow);
-            //if (GodMode)
-            //    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, "God Mode", null, DirV.Up, DirH.Left, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, "See All", null, DirV.Up, DirH.Left, Color.LightYellow);
 
             if (FocusedCharacter != null)
             {

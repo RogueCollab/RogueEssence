@@ -15,20 +15,19 @@ namespace RogueEssence.Menu
         private static int defaultChoice;
 
         public const int ITEM_MENU_WIDTH = 176;
-        private const int SLOTS_PER_PAGE = 8;
+        public const int SLOTS_PER_PAGE = 8;
 
         private int replaceSlot;
 
         ItemSummary summaryMenu;
 
         //-2 for no replace slot, -1 for replace with ground, positive numbers for replace held team index's item
-        public ItemMenu() : this(-2) { }
-        public ItemMenu(int replaceSlot) : this(MenuLabel.INVENTORY_MENU, replaceSlot) { }
-        public ItemMenu(string label) : this(label, -2) { }
-        public ItemMenu(string label, int replaceSlot)
+        public ItemMenu(int replaceSlot = -2, int defaultTotalChoice = -1) : this(MenuLabel.INVENTORY_MENU, replaceSlot, defaultTotalChoice) { }
+        public ItemMenu(string label, int replaceSlot = -2, int defaultTotalChoice = -1)
         {
             this.Label = label;
             this.replaceSlot = replaceSlot;
+            defaultChoice = defaultTotalChoice < 0 ? defaultChoice : defaultTotalChoice;
             
             bool enableHeld = (replaceSlot == -2);
             bool enableBound = (replaceSlot != -1);
@@ -95,7 +94,7 @@ namespace RogueEssence.Menu
             }
         }
 
-        private int getMaxInvPages()
+        public static int getMaxInvPages()
         {
             if (DataManager.Instance.Save.ActiveTeam.GetInvCount() == 0)
                 return 0;
@@ -130,6 +129,22 @@ namespace RogueEssence.Menu
 
         protected override void UpdateKeys(InputManager input)
         {
+            if ((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
+                    (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
+            {
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    Character character = DungeonScene.Instance.FocusedCharacter;
+
+                    //check for item
+                    int itemSlot = ZoneManager.Instance.CurrentMap.GetItem(character.CharLoc);
+                    if (itemSlot > -1)
+                    {
+                        MenuManager.Instance.ReplaceMenu(new ItemUnderfootMenu(itemSlot));
+                        GameManager.Instance.SE("Menu/Skip");
+                    }
+                }
+            }
             if (input.JustPressed(FrameInput.InputType.SortItems))
             {
                 if (replaceSlot < 0 && DataManager.Instance.CurrentReplay == null)

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class EffectTile : GameEventOwner, IDrawableSprite, ISpawnable
+    public class EffectTile : PassiveActive, IDrawableSprite, ISpawnable
     {
         public override GameEventPriority.EventCause GetEventCause()
         {
@@ -26,8 +26,8 @@ namespace RogueEssence.Dungeon
         }
 
         public override string GetID() { return ID; }
-        public TileData GetData() { return DataManager.Instance.GetTile(ID); }
-        public override string GetDisplayName() { return GetData().GetColoredName(); }
+        public override PassiveData GetData() { return DataManager.Instance.GetTile(ID); }
+        public override string GetDisplayName() { return ((TileData)GetData()).GetColoredName(); }
 
         [JsonConverter(typeof(Dev.TileConverter))]
         [DataType(0, DataManager.DataType.Tile, true)]

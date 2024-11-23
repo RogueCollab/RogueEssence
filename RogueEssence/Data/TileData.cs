@@ -8,7 +8,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.Data
 {
     [Serializable]
-    public class TileData : IDescribedData
+    public class TileData : PassiveData, IDescribedData
     {
         public override string ToString()
         {
