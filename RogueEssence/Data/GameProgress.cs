@@ -861,8 +861,12 @@ namespace RogueEssence.Data
         {
             foreach (Character character in ActiveTeam.EnumerateChars())
                 character.FullRestore();
+
+            // Calling full restore here causes problems because we are still in dungeon mode, so the assembly character gets refreshed as though they were in the dungeon!
+            // A boolean for "in team" was set, because the more precise solution (checking if the character was actually part of the team) is more expensive
+            // But this might be seen in other places in the future...
             foreach (Character character in ActiveTeam.Assembly)
-                character.FullRestore();
+                character.FullRestore(false);
             MidAdventure = false;
             ClearDungeonItems();
             //clear rescue status
