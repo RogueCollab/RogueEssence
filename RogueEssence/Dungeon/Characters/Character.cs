@@ -600,7 +600,11 @@ namespace RogueEssence.Dungeon
             return skillIndices;
         }
 
-        public void FullRestore()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inTeam">True if the character is in the team, false if they're in the asembly.</param>
+        public void FullRestore(bool inTeam = true)
         {
             if (Dead)
             {
@@ -610,9 +614,10 @@ namespace RogueEssence.Dungeon
 
             List<int> skillIndices = baseRestore();
 
-            OnSkillsChanged(skillIndices.ToArray());
+            if (inTeam)
+                OnSkillsChanged(skillIndices.ToArray());
 
-            RefreshTraits();
+            RefreshTraits(inTeam);
         }
 
         public bool HasElement(string element)
@@ -1614,12 +1619,17 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        private bool isInDungeonMap()
+        {
+            return GameManager.Instance.CurrentScene == DungeonScene.Instance;
+        }
+
         private void refreshProximity()
         {
             int oldProximity = Proximity;
             Proximity = -1;
 
-            if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+            if (isInDungeonMap())
             {
                 foreach ((PassiveActive owner, ProximityPassive passive) proximityTuple in findProximityPassives())
                     Proximity = Math.Max(Proximity, proximityTuple.passive.ProximityEvent.Radius);
@@ -1630,20 +1640,23 @@ namespace RogueEssence.Dungeon
         }
 
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
-        public void RefreshTraits()
+        public void RefreshTraits(bool inTeam = true)
         {
             TerrainData.Mobility oldMobility = Mobility;
 
             baseRefresh();
 
-            refreshProximity();
+            if (inTeam)
+            {
+                refreshProximity();
 
-            OnRefresh();
+                OnRefresh();
+
+                if (Mobility != oldMobility)
+                    MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
+            }
 
             maintainMaximums();
-
-            if (Mobility != oldMobility)
-                MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
         }
 
         private void maintainMaximums()
@@ -1677,7 +1690,7 @@ namespace RogueEssence.Dungeon
 
         public IEnumerable<PassiveContext> IteratePassives(Priority defaultPortPriority)
         {
-            bool dungeonMode = GameManager.Instance.CurrentScene == DungeonScene.Instance;
+            bool dungeonMode = isInDungeonMap();
             if (dungeonMode)
             {
                 //check map conditions
@@ -1935,7 +1948,7 @@ namespace RogueEssence.Dungeon
                 DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
                 {
                     DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.ModifyHPs, this);
-                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    if (isInDungeonMap())
                         ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.ModifyHPs, this);
 
                     foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
@@ -1958,7 +1971,7 @@ namespace RogueEssence.Dungeon
                 DungeonScene.EventEnqueueFunction<HPChangeEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<HPChangeEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
                 {
                     DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.RestoreHPs, this);
-                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    if (isInDungeonMap())
                         ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.RestoreHPs, this);
 
                     foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
@@ -1999,7 +2012,7 @@ namespace RogueEssence.Dungeon
                 DungeonScene.EventEnqueueFunction<RefreshEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<RefreshEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
                 {
                     DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnRefresh, this);
-                    if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                    if (isInDungeonMap())
                         ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnRefresh, this);
 
                     foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
@@ -2019,7 +2032,7 @@ namespace RogueEssence.Dungeon
             DungeonScene.EventEnqueueFunction<ItemGivenEvent> function = (StablePriorityQueue<GameEventPriority, EventQueueElement<ItemGivenEvent>> queue, Priority maxPriority, ref Priority nextPriority) =>
             {
                 DataManager.Instance.UniversalEvent.AddEventsToQueue(queue, maxPriority, ref nextPriority, DataManager.Instance.UniversalEvent.OnEquips, this);
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                if (isInDungeonMap())
                     ZoneManager.Instance.CurrentMap.MapEffect.AddEventsToQueue(queue, maxPriority, ref nextPriority, ZoneManager.Instance.CurrentMap.MapEffect.OnEquips, this);
                 
                 foreach (PassiveContext effectContext in IteratePassives(GameEventPriority.USER_PORT_PRIORITY))
