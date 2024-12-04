@@ -2528,4 +2528,37 @@ namespace RogueEssence.Dev
             return objectType == typeof(Dictionary<SegLoc, Map>);
         }
     }
+
+    public class SegLocIntTableConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            Dictionary<SegLoc, int> dict = (Dictionary<SegLoc, int>)value;
+            writer.WriteStartArray();
+            foreach (SegLoc item in dict.Keys)
+            {
+                serializer.Serialize(writer, (item, dict[item]));
+            }
+            writer.WriteEndArray();
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<SegLoc, int> dict = new Dictionary<SegLoc, int>();
+
+            JArray jArray = JArray.Load(reader);
+            List<(SegLoc, int)> container = new List<(SegLoc, int)>();
+            serializer.Populate(jArray.CreateReader(), container);
+
+            foreach ((SegLoc, int) item in container)
+                dict[item.Item1] = item.Item2;
+
+            return dict;
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<SegLoc, Map>);
+        }
+    }
 }

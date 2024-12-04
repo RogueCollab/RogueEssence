@@ -45,6 +45,7 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(SegLocTableConverter))]
         protected Dictionary<SegLoc, Map> maps;
 
+        [JsonConverter(typeof(SegLocIntTableConverter))]
         protected Dictionary<SegLoc, int> revisits;
 
         public int MapCount { get { return maps.Count; } }
