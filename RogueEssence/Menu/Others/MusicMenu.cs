@@ -63,7 +63,7 @@ namespace RogueEssence.Menu
             {
                 if (song.file == "")
                     flatChoices.Add(new MenuTextChoice("---", () => { choose(""); }));
-                else if (!canSeeSong(song.song))
+                else if (!canSeeSong(song.file))
                     flatChoices.Add(new MenuTextChoice("???", () => { choose(""); }));
                 else
                     flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(song.file), () => { choose(Path.GetFileName(song.file)); }));
@@ -86,21 +86,22 @@ namespace RogueEssence.Menu
             if (item2.song.Tags.ContainsKey("DISCNUMBER"))
                 disc2 = int.Parse(item2.song.Tags["DISCNUMBER"][0]);
 
-            int cmp = disc1 - disc2;
+            int cmp = Math.Sign(disc1 - disc2);
             if (cmp != 0)
                 return cmp;
 
             int track1 = Int32.MaxValue;
             int track2 = Int32.MaxValue;
-            if (item1.song.Tags.ContainsKey("TRACK"))
-                track1 = int.Parse(item1.song.Tags["TRACK"][0]);
-            if (item2.song.Tags.ContainsKey("TRACK"))
-                track2 = int.Parse(item2.song.Tags["TRACK"][0]);
+            if (item1.song.Tags.ContainsKey("TRACKNUMBER"))
+                track1 = int.Parse(item1.song.Tags["TRACKNUMBER"][0]);
+            if (item2.song.Tags.ContainsKey("TRACKNUMBER"))
+                track2 = int.Parse(item2.song.Tags["TRACKNUMBER"][0]);
 
-            cmp = track1 - track2;
+            cmp = Math.Sign(track1 - track2);
             if (cmp != 0)
                 return cmp;
-            return String.Compare(item1.song.Name, item2.song.Name);
+            int stringcmp = String.Compare(item1.song.Name, item2.song.Name);
+            return stringcmp;
         }
 
         private void choose(string dir)
@@ -113,7 +114,7 @@ namespace RogueEssence.Menu
         {
             //SongSummary will be passed the tags
             int totalChoice = CurrentChoiceTotal;
-            if (!canSeeSong(songs[totalChoice].song))
+            if (!canSeeSong(songs[totalChoice].file))
                 summaryMenu.SetSong(null);
             else
                 summaryMenu.SetSong(songs[totalChoice].song);
@@ -130,22 +131,10 @@ namespace RogueEssence.Menu
             summaryMenu.Draw(spriteBatch);
         }
 
-        private bool canSeeSong(LoopedSong song)
+        private bool canSeeSong(string songfile)
         {
-            if (song == null)
-                return false;
-
-            if (song.Tags.ContainsKey("SPOILER"))
-            {
-                List<string> spoilers = song.Tags["SPOILER"];
-                foreach (string spoiler in spoilers)
-                {
-                    if (spoiledSongs.Contains(spoiler))
-                        return true;
-                }
-                return false;
-            }
-            return true;
+            string songName = Path.GetFileName(songfile);
+            return !spoiledSongs.Contains(songName);
         }
     }
 }
