@@ -14,15 +14,19 @@ namespace RogueEssence.Menu
 
         public delegate void MusicChoice(string song);
         private MusicChoice choice;
-        private List<string> unlocks;
+        private List<string> spoiledSongs;
         private List<(string file, LoopedSong song)> songs;
         private SongSummary summaryMenu;
 
-        public MusicMenu(List<string> unlockedTags, MusicChoice choice)
+        public MusicMenu(bool hardMod, List<string> spoiledSongs, MusicChoice choice)
         {
-            this.unlocks = unlockedTags;
+            this.spoiledSongs = spoiledSongs;
             this.choice = choice;
-            string[] pre_files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
+            string[] pre_files;
+            if (hardMod)
+                pre_files = PathMod.GetHardModFiles(GraphicsManager.MUSIC_PATH);
+            else
+                pre_files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
 
             //file list will be all songs
             //tag list will be all their tags
@@ -136,7 +140,7 @@ namespace RogueEssence.Menu
                 List<string> spoilers = song.Tags["SPOILER"];
                 foreach (string spoiler in spoilers)
                 {
-                    if (unlocks.Contains(spoiler))
+                    if (spoiledSongs.Contains(spoiler))
                         return true;
                 }
                 return false;
