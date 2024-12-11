@@ -504,7 +504,7 @@ namespace RogueEssence.Dungeon
                 yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, target.CharLoc));
             }
         }
-        public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx)
+        public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx, bool modifySpeed = true)
         {
             //play sound
             GameManager.Instance.BattleSE(fx.Sound);
@@ -513,7 +513,10 @@ namespace RogueEssence.Dungeon
             fxEmitter.SetupEmit(targetLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), userLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), userDir);
             CreateAnim(fxEmitter, DrawLayer.NoDraw);
             SetScreenShake(new ScreenMover(fx.ScreenMovement));
-            yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, targetLoc));
+            if (modifySpeed)
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, targetLoc));
+            else
+                yield return new WaitForFrames(fx.Delay);
         }
 
 
