@@ -129,8 +129,9 @@ namespace RogueEssence.Menu
 
         protected override void UpdateKeys(InputManager input)
         {
-            if ((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
+            if (((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
                     (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
+                    && replaceSlot == -2)
             {
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {
