@@ -476,7 +476,10 @@ namespace RogueEssence.Dungeon
                 endEmitter.SetupEmit(target.MapLoc, user.MapLoc, target.CharDir);
                 CreateAnim(endEmitter, DrawLayer.NoDraw);
                 SetScreenShake(new ScreenMover(data.HitFX.ScreenMovement));
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(data.HitFX.Delay, target.CharLoc));
+                if (data.HitFX.AbsoluteDelay)
+                    yield return new WaitForFrames(data.HitFX.Delay);
+                else
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(data.HitFX.Delay, target.CharLoc));
             }
         }
 
@@ -501,10 +504,13 @@ namespace RogueEssence.Dungeon
                 fxEmitter.SetupEmit(target.CharLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.CharLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.CharDir);
                 CreateAnim(fxEmitter, DrawLayer.NoDraw);
                 SetScreenShake(new ScreenMover(fx.ScreenMovement));
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, target.CharLoc));
+                if (fx.AbsoluteDelay)
+                    yield return new WaitForFrames(fx.Delay);
+                else
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, target.CharLoc));
             }
         }
-        public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx, bool modifySpeed = true)
+        public IEnumerator<YieldInstruction> ProcessBattleFX(Loc userLoc, Loc targetLoc, Dir8 userDir, BattleFX fx)
         {
             //play sound
             GameManager.Instance.BattleSE(fx.Sound);
@@ -513,10 +519,10 @@ namespace RogueEssence.Dungeon
             fxEmitter.SetupEmit(targetLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), userLoc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), userDir);
             CreateAnim(fxEmitter, DrawLayer.NoDraw);
             SetScreenShake(new ScreenMover(fx.ScreenMovement));
-            if (modifySpeed)
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, targetLoc));
-            else
+            if (fx.AbsoluteDelay)
                 yield return new WaitForFrames(fx.Delay);
+            else
+                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, targetLoc));
         }
 
 
