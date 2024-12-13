@@ -20,6 +20,7 @@ namespace RogueEssence.Menu
         public static void InitInstance()
         {
             instance = new MenuManager();
+            MenuBase.Transparent = false;
         }
         public static MenuManager Instance { get { return instance; } }
 
