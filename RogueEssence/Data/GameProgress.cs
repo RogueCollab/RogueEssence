@@ -755,7 +755,7 @@ namespace RogueEssence.Data
             {
                 //restore skills
                 while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0);
+                    character.DeleteSkill(0, false);
                 for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
                 {
                     if (!String.IsNullOrEmpty(charFrom.BaseSkills[ii].SkillNum))
@@ -769,7 +769,7 @@ namespace RogueEssence.Data
                                 break;
                             }
                         }
-                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
+                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled, false);
                     }
                 }
 
