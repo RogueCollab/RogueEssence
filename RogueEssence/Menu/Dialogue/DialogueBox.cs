@@ -500,11 +500,11 @@ namespace RogueEssence.Menu
                         totalLength += text.GetLineTrim(ii) + text.GetLineLength(ii);
                         for (; curTag < tags.Count; curTag++)
                         {
-                            TextTag pause = tags[curTag];
-                            if (pause.LetterIndex <= totalLength)
+                            TextTag tag = tags[curTag];
+                            if (tag.LetterIndex <= totalLength)
                             {
-                                pause.LetterIndex -= totalTrim;
-                                subTags.Add(pause);
+                                tag.LetterIndex -= totalTrim;
+                                subTags.Add(tag);
                             }
                             else
                                 break;
@@ -534,7 +534,7 @@ namespace RogueEssence.Menu
     public class TextPause : TextTag
     {
         public int Time;//1 in order to wait on button press
-        public virtual bool IsBlocking()
+        public override bool IsBlocking()
         {
             return true;
         }
@@ -559,7 +559,7 @@ namespace RogueEssence.Menu
     public class TextScript : TextTag
     {
         public int Script;
-        public virtual bool IsBlocking()
+        public override bool IsBlocking()
         {
             return true;
         }
