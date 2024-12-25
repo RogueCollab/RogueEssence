@@ -589,18 +589,18 @@ namespace RogueEssence.Data
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills, true);
                     if (!permanent)
                         ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills, true);
                     //no backref for guests
                 }
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills, false);
                     if (!permanent)
                         ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
                 }
@@ -620,7 +620,9 @@ namespace RogueEssence.Data
         /// <param name="character"></param>
         /// <param name="level"></param>
         /// <param name="capOnly">Will force lower level to specified level if false.</param>
-        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills)
+        /// <param name="keepSkills">Turn off to wipe skills to that of the target level.</param>
+        /// <param name="inTeam">On if it's part of the team, off if it's part of the assembly.  Used for refresh purposes.</param>
+        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills, bool inTeam)
         {
             //set level
             if (capOnly)
@@ -647,10 +649,10 @@ namespace RogueEssence.Data
 
             if (!keepSkills) {
                 while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0);
+                    character.DeleteSkill(0, inTeam);
                 List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
                 foreach (string skill in final_skills)
-                    character.LearnSkill(skill, GetDefaultEnable(skill));
+                    character.LearnSkill(skill, GetDefaultEnable(skill), inTeam);
             }
 
             character.Relearnables = new Dictionary<string, bool>();
