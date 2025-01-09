@@ -15,6 +15,7 @@ namespace RogueEssence.Menu
 
         public bool Enabled;
         public bool Selected { get; private set; }
+        public bool Hovered => hover;
 
         private bool hover;
         private bool click;
