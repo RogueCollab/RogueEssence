@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using RogueElements;
 using RogueEssence.Data;
 using System.IO;
@@ -17,8 +16,10 @@ namespace RogueEssence.Menu
         List<RecordHeaderData> validRecords;
         int massValidationIdx;
 
-        public ReplaysMenu()
+        public ReplaysMenu() : this(MenuLabel.REPLAY_LIST_MENU) { }
+        public ReplaysMenu(string label)
         {
+            Label = label;
             massValidationIdx = -1;
             List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION);
             validRecords = new List<RecordHeaderData>();
