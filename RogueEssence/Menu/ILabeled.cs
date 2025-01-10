@@ -29,6 +29,7 @@ namespace RogueEssence.Menu
         public const string SUMMARY_MENU_FEATS = "SUMMARY_MENU_FEATS";
         public const string SUMMARY_MENU_STATS = "SUMMARY_MENU_STATS";
         public const string SUMMARY_MENU_INFO = "SUMMARY_MENU_INFO";
+        public const string LEVELUP_MENU = "LEVELUP_MENU";
 
         //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
