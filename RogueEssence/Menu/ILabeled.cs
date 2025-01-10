@@ -24,6 +24,8 @@ namespace RogueEssence.Menu
         public const string GROUND_MENU_TILE = "GROUND_MENU_TILE";
         public const string OTHERS_MENU = "OTHERS_MENU";
         public const string SETTINGS_MENU = "SETTINGS_MENU";
+        public const string BANK_MENU = "BANK_MENU";
+        public const string ITEM_AMOUNT_MENU = "ITEM_AMOUNT_MENU";
 
         //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
