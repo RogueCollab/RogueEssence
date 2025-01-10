@@ -39,8 +39,11 @@ namespace RogueEssence.Menu
         public MenuDivider IntrinsicDiv;
         public MenuText Intrinsic;
         public DialogueText IntrinsicDesc;
-        public MemberFeaturesMenu(int teamSlot, bool assembly, bool allowAssembly)
+        public MemberFeaturesMenu(int teamSlot, bool assembly, bool allowAssembly) : this(MenuLabel.SUMMARY_MENU_FEATS, teamSlot, assembly, allowAssembly) { }
+        public MemberFeaturesMenu(string label, int teamSlot, bool assembly, bool allowAssembly)
         {
+            Label = label;
+
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
 
             this.teamSlot = teamSlot;
