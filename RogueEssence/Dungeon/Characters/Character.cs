@@ -603,8 +603,8 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="inTeam">True if the character is in the team, false if they're in the asembly.</param>
-        public void FullRestore(bool inTeam = true)
+        /// <param name="refresh">True if you want to carry out a refresh, false otherwise</param>
+        public void FullRestore(bool fullRefresh = true)
         {
             if (Dead)
             {
@@ -614,10 +614,10 @@ namespace RogueEssence.Dungeon
 
             List<int> skillIndices = baseRestore();
 
-            if (inTeam)
+            if (fullRefresh)
                 OnSkillsChanged(skillIndices.ToArray());
 
-            RefreshTraits(inTeam);
+            RefreshTraits(fullRefresh);
         }
 
         public bool HasElement(string element)
@@ -1252,7 +1252,7 @@ namespace RogueEssence.Dungeon
             BaseSkills[slot].CanForget = !lck;
         }
 
-        public void DeleteSkill(int slot, bool refresh=true)
+        public void DeleteSkill(int slot, bool fullRefresh = true)
         {
             BaseSkills.RemoveAt(slot);
             BaseSkills.Add(new SlotSkill());
@@ -1278,10 +1278,10 @@ namespace RogueEssence.Dungeon
                 skillIndices.RemoveAt(slot);
                 skillIndices.Insert(slot, -1);
 
-                OnSkillsChanged(skillIndices.ToArray());
+                if (fullRefresh)
+                    OnSkillsChanged(skillIndices.ToArray());
             }
-            if (refresh)
-                RefreshTraits();
+            RefreshTraits(fullRefresh);
         }
 
         public void LearnSkill(string skillNum, bool enabled, bool refresh = true)
@@ -1640,13 +1640,13 @@ namespace RogueEssence.Dungeon
         }
 
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
-        public void RefreshTraits(bool inTeam = true)
+        public void RefreshTraits(bool fullRefresh = true)
         {
             TerrainData.Mobility oldMobility = Mobility;
 
             baseRefresh();
 
-            if (inTeam)
+            if (fullRefresh)
             {
                 refreshProximity();
 

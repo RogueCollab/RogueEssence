@@ -560,6 +560,7 @@ namespace RogueEssence
         private void reInit()
         {
             //remove all state variables
+            MenuManager.InitInstance();
             DungeonScene.InitInstance();
             GroundScene.InitInstance();
             LuaEngine.Instance.Reset();

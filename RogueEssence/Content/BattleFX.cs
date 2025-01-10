@@ -11,6 +11,11 @@ namespace RogueEssence.Content
         public int Delay;
 
         /// <summary>
+        /// Do not modify delay due to batle speed
+        /// </summary>
+        public bool AbsoluteDelay;
+
+        /// <summary>
         /// The sound effect of the VFX
         /// </summary>
         [Dev.Sound(0)]
@@ -34,17 +39,19 @@ namespace RogueEssence.Content
             ScreenMovement = new ScreenMover();
             Sound = "";
         }
-        public BattleFX(FiniteEmitter emitter, string sound, int delay)
+        public BattleFX(FiniteEmitter emitter, string sound, int delay, bool absolute = false)
         {
             Emitter = emitter;
             Sound = sound;
             Delay = delay;
+            AbsoluteDelay = absolute;
             ScreenMovement = new ScreenMover();
         }
 
         public BattleFX(BattleFX other)
         {
             Delay = other.Delay;
+            AbsoluteDelay = other.AbsoluteDelay;
             Emitter = (FiniteEmitter)other.Emitter.Clone();
             ScreenMovement = new ScreenMover(other.ScreenMovement);
             Sound = other.Sound;
