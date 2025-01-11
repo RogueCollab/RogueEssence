@@ -39,6 +39,7 @@ namespace RogueEssence.Menu
         public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";
         public const string GROUND_MENU_TILE = "GROUND_MENU_TILE";
         public const string OTHERS_MENU = "OTHERS_MENU";
+        public const string MESSAGE_LOG_MENU = "MESSAGE_LOG_MENU";
         public const string SETTINGS_MENU = "SETTINGS_MENU";
         public const string SETTINGS_MENU_PAGE = "SETTINGS_MENU_PAGE";
         public const string KEYBOARD_MENU = "KEYBOARD_MENU";
