@@ -516,6 +516,8 @@ namespace RogueEssence
             cleanup();
             reInit();
             MoveToScene(new TitleScene(false));
+
+            fadeFront.SetFade(false, false);
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
@@ -556,6 +558,7 @@ namespace RogueEssence
         {
             DataManager.Instance.SetProgress(null);
             ZoneManager.Instance.Cleanup();
+            SoundManager.StopAllLoopedSE();
         }
         private void reInit()
         {
