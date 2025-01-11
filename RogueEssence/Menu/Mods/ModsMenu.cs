@@ -2,12 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
-using RogueEssence.Data;
-using System.IO;
 using Microsoft.Xna.Framework;
-using System.Linq;
-using System.Xml;
-using System;
 
 namespace RogueEssence.Menu
 {
@@ -20,8 +15,10 @@ namespace RogueEssence.Menu
 
         ModMiniSummary modSummary;
 
-        public ModsMenu()
+        public ModsMenu() : this(MenuLabel.MODS_MENU) { }
+        public ModsMenu(string label)
         {
+            Label = label;
             mods = PathMod.GetEligibleMods(PathMod.ModType.Mod);
             modStatus = new bool[mods.Count];
 
