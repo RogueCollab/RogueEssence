@@ -31,8 +31,11 @@ namespace RogueEssence.Menu
         private List<int> assemblyView;
         private AssemblySortMode sortMode;
 
-        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
+        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent) :
+            this(MenuLabel.ASSEMBLY_MENU, defaultChoice, teamChanged, sort) { }
+        public AssemblyMenu(string label, int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
         {
+            Label = label;
             int menuWidth = 160;
             this.teamChanged = teamChanged;
             sortMode = sort;

@@ -34,6 +34,9 @@ namespace RogueEssence.Menu
         public const string TACTICS_MENU = "TACTICS_MENU";
         public const string TEAM_MENU = "TEAM_MENU";
         public const string TEAM_CHOSEN_MENU = "TEAM_CHOSEN_MENU";
+        public const string SUMMARY_MENU_FEATS = "SUMMARY_MENU_FEATS";
+        public const string SUMMARY_MENU_STATS = "SUMMARY_MENU_STATS";
+        public const string SUMMARY_MENU_INFO = "SUMMARY_MENU_INFO";
         public const string TEAM_MENU_SWITCH = "TEAM_MENU_SWITCH";
         public const string TEAM_MENU_SENDHOME = "TEAM_MENU_SENDHOME";
         public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";
@@ -46,11 +49,14 @@ namespace RogueEssence.Menu
         public const string GAMEPAD_MENU = "GAMEPAD_MENU";
 
         public const string INFO_MENU = "INFO_MENU";
-        public const string BANK_MENU = "BANK_MENU";
+        public const string DEPOSIT_MENU = "DEPOSIT_MENU";
+        public const string DEPOSIT_CHOSEN_MENU = "DEPOSIT_CHOSEN_MENU";
+        public const string WITHDRAW_MENU = "WITHDRAW_MENU";
+        public const string WITHDRAW_CHOSEN_MENU = "WITHDRAW_CHOSEN_MENU";
         public const string ITEM_AMOUNT_MENU = "ITEM_AMOUNT_MENU";
-        public const string SUMMARY_MENU_FEATS = "SUMMARY_MENU_FEATS";
-        public const string SUMMARY_MENU_STATS = "SUMMARY_MENU_STATS";
-        public const string SUMMARY_MENU_INFO = "SUMMARY_MENU_INFO";
+        public const string BANK_MENU = "BANK_MENU";
+        public const string ASSEMBLY_MENU = "ASSEMBLY_MENU";
+        public const string ASSEMBLY_CHOSEN_MENU = "ASSEMBLY_CHOSEN_MENU";
         public const string LEVELUP_MENU = "LEVELUP_MENU";
         public const string NICKNAME_MENU = "NICKNAME_MENU";
         public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
