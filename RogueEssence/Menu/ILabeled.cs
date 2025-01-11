@@ -27,10 +27,13 @@ namespace RogueEssence.Menu
 
         public const string MAIN_MENU = "MAIN_MENU";
         public const string SKILLS_MENU = "SKILLS_MENU";
+        public const string SKILL_CHOSEN_MENU = "SKILL_CHOSEN_MENU";
         public const string INVENTORY_MENU = "INVENTORY_MENU";
+        public const string ITEM_CHOSEN_MENU = "ITEM_CHOSEN_MENU";
         public const string INVENTORY_MENU_REPLACE = "INVENTORY_MENU_REPLACE";
         public const string TACTICS_MENU = "TACTICS_MENU";
         public const string TEAM_MENU = "TEAM_MENU";
+        public const string TEAM_CHOSEN_MENU = "TEAM_CHOSEN_MENU";
         public const string TEAM_MENU_SWITCH = "TEAM_MENU_SWITCH";
         public const string TEAM_MENU_SENDHOME = "TEAM_MENU_SENDHOME";
         public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";

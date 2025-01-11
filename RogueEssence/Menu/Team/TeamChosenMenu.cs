@@ -14,8 +14,10 @@ namespace RogueEssence.Menu
 
         private int teamSlot;
 
-        public TeamChosenMenu(int teamSlot)
+        public TeamChosenMenu(int teamSlot) : this(MenuLabel.TEAM_CHOSEN_MENU, teamSlot) { }
+        public TeamChosenMenu(string label, int teamSlot)
         {
+            Label = label;
             this.teamSlot = teamSlot;
 
 
