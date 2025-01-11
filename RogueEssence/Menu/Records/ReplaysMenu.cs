@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
         List<RecordHeaderData> validRecords;
         int massValidationIdx;
 
-        public ReplaysMenu() : this(MenuLabel.REPLAY_LIST_MENU) { }
+        public ReplaysMenu() : this(MenuLabel.REPLAYS_MENU) { }
         public ReplaysMenu(string label)
         {
             Label = label;

@@ -15,7 +15,7 @@ namespace RogueEssence.Menu
         public const string MODS_MENU = "MODS_MENU";
         public const string OPTIONS_MENU = "OPTIONS_MENU";
         public const string RECORDS_MENU = "RECORDS_MENU";
-        public const string REPLAY_LIST_MENU = "REPLAY_LIST_MENU";
+        public const string REPLAYS_MENU = "REPLAS_MENU";
         public const string REPLAY_CHOSEN_MENU = "REPLAY_CHOSEN_MENU";
         public const string ROGUE_MENU = "ROGUE_MENU";
         public const string ROGUE_INFO_MENU = "ROGUE_INFO_MENU";
