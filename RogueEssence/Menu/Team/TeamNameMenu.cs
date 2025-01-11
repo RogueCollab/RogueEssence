@@ -7,7 +7,9 @@
         public delegate void OnChooseString(string name);
         private OnChooseString action;
 
-        public TeamNameMenu(string title, string desc, int maxLength, string defaultName, OnChooseString action)
+        public TeamNameMenu(string title, string desc, int maxLength, string defaultName, OnChooseString action) :
+            this(MenuLabel.TEAM_NAME_MENU, title, desc, maxLength, defaultName, action) { }
+        public TeamNameMenu(string label, string title, string desc, int maxLength, string defaultName, OnChooseString action)
         {
             this.action = action;
             this.maxLength = maxLength;

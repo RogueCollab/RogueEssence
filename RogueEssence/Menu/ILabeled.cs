@@ -44,6 +44,8 @@ namespace RogueEssence.Menu
         public const string ROGUE_TEAM_NAME_MENU = "ROGUE_TEAM_NAME_MENU";
         public const string ROGUE_CHAR_MENU = "ROGUE_CHAR_MENU";
         public const string ROGUE_CHAR_MENU_DETAILS = "ROGUE_CHAR_MENU_DETAILS";
+        public const string NICKNAME_MENU = "NICKNAME_MENU";
+        public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
 
         //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
