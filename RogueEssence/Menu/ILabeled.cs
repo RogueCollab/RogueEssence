@@ -33,6 +33,13 @@ namespace RogueEssence.Menu
         public const string REPLAY_LIST_MENU = "REPLAY_LIST_MENU";
         public const string RECORDS_MENU = "RECORDS_MENU";
         public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
+        public const string ROGUE_MENU = "ROGUE_MENU";
+        public const string ROGUE_INFO_MENU = "ROGUE_INFO_MENU";
+        public const string ROGUE_DEST_MENU = "ROGUE_DEST_MENU";
+        public const string ROGUE_SEED_MENU = "ROGUE_SEED_MENU";
+        public const string ROGUE_TEAM_NAME_MENU = "ROGUE_TEAM_NAME_MENU";
+        public const string ROGUE_CHAR_MENU = "ROGUE_CHAR_MENU";
+        public const string ROGUE_CHAR_MENU_DETAILS = "ROGUE_CHAR_MENU_DETAILS";
 
         //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
