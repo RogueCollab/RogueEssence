@@ -11,8 +11,21 @@ namespace RogueEssence.Menu
     {
         //MENU_LABELS
         public const string TOP_MENU = "TOP_MENU";
+        public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
+        public const string MODS_MENU = "MODS_MENU";
+        public const string OPTIONS_MENU = "OPTIONS_MENU";
+        public const string RECORDS_MENU = "RECORDS_MENU";
+        public const string REPLAY_LIST_MENU = "REPLAY_LIST_MENU";
+        public const string REPLAY_CHOSEN_MENU = "REPLAY_CHOSEN_MENU";
+        public const string ROGUE_MENU = "ROGUE_MENU";
+        public const string ROGUE_INFO_MENU = "ROGUE_INFO_MENU";
+        public const string ROGUE_DEST_MENU = "ROGUE_DEST_MENU";
+        public const string ROGUE_SEED_MENU = "ROGUE_SEED_MENU";
+        public const string ROGUE_TEAM_NAME_MENU = "ROGUE_TEAM_NAME_MENU";
+        public const string ROGUE_CHAR_MENU = "ROGUE_CHAR_MENU";
+        public const string ROGUE_CHAR_MENU_DETAILS = "ROGUE_CHAR_MENU_DETAILS";
+
         public const string MAIN_MENU = "MAIN_MENU";
-        public const string INFO_MENU = "INFO_MENU";
         public const string SKILLS_MENU = "SKILLS_MENU";
         public const string INVENTORY_MENU = "INVENTORY_MENU";
         public const string INVENTORY_MENU_REPLACE = "INVENTORY_MENU_REPLACE";
@@ -23,28 +36,18 @@ namespace RogueEssence.Menu
         public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";
         public const string GROUND_MENU_TILE = "GROUND_MENU_TILE";
         public const string OTHERS_MENU = "OTHERS_MENU";
-        public const string OPTIONS_MENU = "OPTIONS_MENU";
         public const string SETTINGS_MENU = "SETTINGS_MENU";
         public const string SETTINGS_MENU_PAGE = "SETTINGS_MENU_PAGE";
         public const string KEYBOARD_MENU = "KEYBOARD_MENU";
         public const string GAMEPAD_MENU = "GAMEPAD_MENU";
+
+        public const string INFO_MENU = "INFO_MENU";
         public const string BANK_MENU = "BANK_MENU";
         public const string ITEM_AMOUNT_MENU = "ITEM_AMOUNT_MENU";
         public const string SUMMARY_MENU_FEATS = "SUMMARY_MENU_FEATS";
         public const string SUMMARY_MENU_STATS = "SUMMARY_MENU_STATS";
         public const string SUMMARY_MENU_INFO = "SUMMARY_MENU_INFO";
         public const string LEVELUP_MENU = "LEVELUP_MENU";
-        public const string RECORDS_MENU = "RECORDS_MENU";
-        public const string REPLAY_LIST_MENU = "REPLAY_LIST_MENU";
-        public const string REPLAY_CHOSEN_MENU = "REPLAY_CHOSEN_MENU";
-        public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
-        public const string ROGUE_MENU = "ROGUE_MENU";
-        public const string ROGUE_INFO_MENU = "ROGUE_INFO_MENU";
-        public const string ROGUE_DEST_MENU = "ROGUE_DEST_MENU";
-        public const string ROGUE_SEED_MENU = "ROGUE_SEED_MENU";
-        public const string ROGUE_TEAM_NAME_MENU = "ROGUE_TEAM_NAME_MENU";
-        public const string ROGUE_CHAR_MENU = "ROGUE_CHAR_MENU";
-        public const string ROGUE_CHAR_MENU_DETAILS = "ROGUE_CHAR_MENU_DETAILS";
         public const string NICKNAME_MENU = "NICKNAME_MENU";
         public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
 
