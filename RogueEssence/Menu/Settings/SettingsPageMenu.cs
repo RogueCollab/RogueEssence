@@ -9,7 +9,8 @@ namespace RogueEssence.Menu
         public SettingsTitleMenu Parent;
         public SettingsPage Page;
         public Dictionary<MenuSetting, SettingData> SettingsData;
-        public SettingsPageMenu(SettingsTitleMenu parent, SettingsPage page)
+        public SettingsPageMenu(SettingsTitleMenu parent, SettingsPage page) : this(MenuLabel.SETTINGS_MENU_PAGE, parent, page) { }
+        public SettingsPageMenu(string label, SettingsTitleMenu parent, SettingsPage page)
         {
             SettingsData = new Dictionary<MenuSetting, SettingData>();
             Page = page;
