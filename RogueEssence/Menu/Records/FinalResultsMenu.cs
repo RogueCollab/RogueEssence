@@ -4,7 +4,6 @@ using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
@@ -23,8 +22,10 @@ namespace RogueEssence.Menu
         public MenuText Seed;
         public GameProgress Ending;
 
-        public FinalResultsMenu(GameProgress ending)
+        public FinalResultsMenu(GameProgress ending) : this(MenuLabel.RESULTS_MENU_RESULT, ending) { }
+        public FinalResultsMenu(string label, GameProgress ending)
         {
+            Label = label;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             Ending = ending;
 
