@@ -61,6 +61,18 @@ namespace RogueEssence.Menu
         public const string LEVELUP_MENU = "LEVELUP_MENU";
         public const string NICKNAME_MENU = "NICKNAME_MENU";
         public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
+        //Town services
+        public const string SHOP_MENU = "SHOP_MENU";
+        public const string SHOP_CHOSEN_MENU = "SHOP_CHOSEN_MENU";
+        public const string SELL_MENU = "SELL_MENU";
+        public const string SELL_CHOSEN_MENU = "SELL_CHOSEN_MENU";
+        public const string SKILL_RECALL_MENU = "SKILL_RECALL_MENU";
+        public const string SKILL_FORGET_MENU = "SKILL_FORGET_MENU";
+        public const string SWAP_SHOP_MENU = "SWAP_SHOP_MENU";
+        public const string SWAP_SHOP_MENU_GIVE = "SWAP_SHOP_MENU_GIVE";
+        public const string APPRAISE_MENU = "APPRAISE_MENU";
+        public const string APPRAISE_MENU_SPOILS = "APPRAISE_MENU_SPOILS";
+        public const string MUSIC_MENU = "MUSIC_MENU";
 
         //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
