@@ -11,6 +11,7 @@
             this(MenuLabel.TEAM_NAME_MENU, title, desc, maxLength, defaultName, action) { }
         public TeamNameMenu(string label, string title, string desc, int maxLength, string defaultName, OnChooseString action)
         {
+            Label = label;
             this.action = action;
             this.maxLength = maxLength;
             Initialize(title, desc, 256, defaultName);

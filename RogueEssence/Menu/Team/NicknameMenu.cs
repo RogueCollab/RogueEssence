@@ -13,7 +13,7 @@ namespace RogueEssence.Menu
         public NicknameMenu(OnChooseText action, Action cancelAction) : this(MenuLabel.NICKNAME_MENU, action, cancelAction) { }
         public NicknameMenu(string label, OnChooseText action, Action cancelAction)
         {
-            Label = Label;
+            Label = label;
             chooseTextAction = action;
             this.cancelAction = cancelAction;
             Initialize(RogueEssence.Text.FormatKey("INPUT_NAME_TITLE"), RogueEssence.Text.FormatKey("INPUT_NAME_DESC"), 256);
