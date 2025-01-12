@@ -53,6 +53,7 @@ namespace RogueEssence.Menu
         public const string REPLAY_MENU = "REPLAY_MENU";
         public const string REST_MENU = "REST_MENU";
         //Misc gameplay menus
+        public const string DUNGEONS_MENU = "DUNGEONS_MENU";
         public const string RESULTS_MENU_RESULT = "RESULTS_MENU_RESULT";
         public const string RESULTS_MENU_INV = "RESULTS_MENU_INV";
         public const string RESULTS_MENU_PARTY = "RESULTS_MENU_PARTY";
