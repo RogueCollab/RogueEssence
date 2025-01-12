@@ -10,13 +10,14 @@ namespace RogueEssence.Menu
     public abstract class MenuLabel
     {
         //MENU_LABELS
+        //Top Menu children menus
         public const string TOP_MENU = "TOP_MENU";
         public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
         public const string MODS_MENU = "MODS_MENU";
         public const string OPTIONS_MENU = "OPTIONS_MENU";
         public const string RECORDS_MENU = "RECORDS_MENU";
         public const string DEX_MENU = "DEX_MENU";
-        public const string REPLAYS_MENU = "REPLAS_MENU";
+        public const string REPLAYS_MENU = "REPLAYS_MENU";
         public const string REPLAY_CHOSEN_MENU = "REPLAY_CHOSEN_MENU";
         public const string ROGUE_MENU = "ROGUE_MENU";
         public const string ROGUE_INFO_MENU = "ROGUE_INFO_MENU";
@@ -68,6 +69,7 @@ namespace RogueEssence.Menu
         public const string ASSEMBLY_MENU = "ASSEMBLY_MENU";
         public const string ASSEMBLY_CHOSEN_MENU = "ASSEMBLY_CHOSEN_MENU";
         public const string LEVELUP_MENU = "LEVELUP_MENU";
+        public const string SKILL_REPLACE_MENU = "SKILL_REPLACE_MENU";
         public const string NICKNAME_MENU = "NICKNAME_MENU";
         public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
         //Town services
