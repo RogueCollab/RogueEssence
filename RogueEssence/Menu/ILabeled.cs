@@ -82,6 +82,17 @@ namespace RogueEssence.Menu
         public const string APPRAISE_MENU = "APPRAISE_MENU";
         public const string APPRAISE_MENU_SPOILS = "APPRAISE_MENU_SPOILS";
         public const string MUSIC_MENU = "MUSIC_MENU";
+        //Connectivity
+        public const string CONTACTS_MENU = "CONTACTS_MENU";    
+        public const string SELF_CHOSEN_MENU = "SELF_CHOSEN_MENU";
+        public const string CONTACT_CHOSEN_MENU = "CONTACT_CHOSEN_MENU";
+        public const string CONTACT_ADD_MENU = "CONTACT_ADD_MENU";
+        public const string SERVERS_MENU = "SERVERS_MENU";
+        public const string SERVER_CHOSEN_MENU = "SERVER_CHOSEN_MENU";
+        public const string SERVER_ADD_MENU = "SERVER_ADD_MENU";
+        public const string MAIL_MENU = "MAIL_MENU";
+        public const string MAIL_CHOSEN_MENU = "MAIL_CHOSEN_MENU";
+        public const string VERSION_DIFF_MENU = "VERSION_DIFF_MENU";
 
         //USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";

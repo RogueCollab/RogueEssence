@@ -9,9 +9,10 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 14;
 
-        public ServersMenu()
+        public ServersMenu() : this(MenuLabel.SERVERS_MENU) { }
+        public ServersMenu(string label)
         {
-
+            Label = label;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < DiagManager.Instance.CurSettings.ServerList.Count; ii++)
             {
