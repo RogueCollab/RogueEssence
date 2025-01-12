@@ -25,7 +25,7 @@ namespace RogueEssence.Menu
         public const string ROGUE_TEAM_NAME_MENU = "ROGUE_TEAM_NAME_MENU";
         public const string ROGUE_CHAR_MENU = "ROGUE_CHAR_MENU";
         public const string ROGUE_CHAR_MENU_DETAILS = "ROGUE_CHAR_MENU_DETAILS";
-
+        //Main Menu children menus
         public const string MAIN_MENU = "MAIN_MENU";
         public const string SKILLS_MENU = "SKILLS_MENU";
         public const string SKILL_CHOSEN_MENU = "SKILL_CHOSEN_MENU";
@@ -38,6 +38,7 @@ namespace RogueEssence.Menu
         public const string SUMMARY_MENU_FEATS = "SUMMARY_MENU_FEATS";
         public const string SUMMARY_MENU_STATS = "SUMMARY_MENU_STATS";
         public const string SUMMARY_MENU_INFO = "SUMMARY_MENU_INFO";
+        public const string SUMMARY_MENU_LEARNSET = "SUMMARY_MENU_LEARNSET";
         public const string TEAM_MENU_SWITCH = "TEAM_MENU_SWITCH";
         public const string TEAM_MENU_SENDHOME = "TEAM_MENU_SENDHOME";
         public const string GROUND_MENU_ITEM = "GROUND_MENU_ITEM";
@@ -48,7 +49,9 @@ namespace RogueEssence.Menu
         public const string SETTINGS_MENU_PAGE = "SETTINGS_MENU_PAGE";
         public const string KEYBOARD_MENU = "KEYBOARD_MENU";
         public const string GAMEPAD_MENU = "GAMEPAD_MENU";
-
+        public const string REPLAY_MENU = "REPLAY_MENU";
+        public const string REST_MENU = "REST_MENU";
+        //Misc gameplay menus
         public const string INFO_MENU = "INFO_MENU";
         public const string DEPOSIT_MENU = "DEPOSIT_MENU";
         public const string DEPOSIT_CHOSEN_MENU = "DEPOSIT_CHOSEN_MENU";
