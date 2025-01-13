@@ -10,6 +10,10 @@ namespace RogueEssence.Menu
     public abstract class MenuLabel
     {
         //MENU_LABELS
+        //Windowless
+        public const string WAIT = "WAIT";
+        public const string GET_KEY = "GET_KEY";
+        public const string GET_BUTTON = "GET_BUTTON";
         //Top Menu children menus
         public const string TOP_MENU = "TOP_MENU";
         public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
