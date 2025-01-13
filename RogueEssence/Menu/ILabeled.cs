@@ -68,7 +68,9 @@ namespace RogueEssence.Menu
         public const string REPLAY_MENU = "REPLAY_MENU";
         public const string REST_MENU = "REST_MENU";
         //Misc gameplay menus
+        public const string LANGUAGE_MENU = "LANGUAGE_MENU";
         public const string DUNGEONS_MENU = "DUNGEONS_MENU";
+        public const string SCORE_MENU = "SCORE_MENU";
         public const string RESULTS_MENU_RESULT = "RESULTS_MENU_RESULT";
         public const string RESULTS_MENU_INV = "RESULTS_MENU_INV";
         public const string RESULTS_MENU_PARTY = "RESULTS_MENU_PARTY";
@@ -77,6 +79,7 @@ namespace RogueEssence.Menu
         public const string RESULTS_MENU_VERSION = "RESULTS_MENU_VERSION";
         public const string INFO_MENU = "INFO_MENU";
         public const string LEVELUP_MENU = "LEVELUP_MENU";
+        public const string ADD_TO_TEAM_MENU = "ADD_TO_TEAM_MENU";
         public const string SKILL_REPLACE_MENU = "SKILL_REPLACE_MENU";
         public const string INTRINSIC_RECALL_MENU = "INTRINSIC_RECALL_MENU";
         public const string INTRINSIC_FORGET_MENU = "INTRINSIC_FORGET_MENU";

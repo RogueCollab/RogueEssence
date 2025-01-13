@@ -15,8 +15,11 @@ namespace RogueEssence.Menu
         private string chosenZone;
         private string highlightedPath;
 
-        public ScoreMenu(Dictionary<string, List<RecordHeaderData>> scoreDict, string chosenZone, string highlightedPath)
+        public ScoreMenu(Dictionary<string, List<RecordHeaderData>> scoreDict, string chosenZone, string highlightedPath) :
+            this(MenuLabel.SCORE_MENU, scoreDict, chosenZone, highlightedPath) { }
+        public ScoreMenu(string label, Dictionary<string, List<RecordHeaderData>> scoreDict, string chosenZone, string highlightedPath)
         {
+            Label = label;
             this.scoreDict = scoreDict;
             this.chosenZone = chosenZone;
             this.highlightedPath = highlightedPath;
