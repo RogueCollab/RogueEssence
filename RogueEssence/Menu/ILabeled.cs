@@ -19,7 +19,9 @@ namespace RogueEssence.Menu
         public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
         public const string RESCUE_MENU_GET_HELP = "RESCUE_MENU_GET_HELP";
         public const string RESCUE_MENU_SEND_HELP = "RESCUE_MENU_SEND_HELP";
+        public const string MODS_MENU_QUESTS = "MODS_MENU_QUESTS";
         public const string MODS_MENU = "MODS_MENU";
+        public const string MOD_LOG_MENU = "MOD_LOG_MENU";
         public const string OPTIONS_MENU = "OPTIONS_MENU";
         public const string RECORDS_MENU = "RECORDS_MENU";
         public const string DEX_MENU = "DEX_MENU";
