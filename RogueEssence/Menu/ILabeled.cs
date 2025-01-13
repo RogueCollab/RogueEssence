@@ -65,6 +65,13 @@ namespace RogueEssence.Menu
         public const string RESULTS_MENU_TRAIL = "RESULTS_MENU_TRAIL";
         public const string RESULTS_MENU_VERSION = "RESULTS_MENU_VERSION";
         public const string INFO_MENU = "INFO_MENU";
+        public const string LEVELUP_MENU = "LEVELUP_MENU";
+        public const string SKILL_REPLACE_MENU = "SKILL_REPLACE_MENU";
+        public const string INTRINSIC_RECALL_MENU = "INTRINSIC_RECALL_MENU";
+        public const string INTRINSIC_FORGET_MENU = "INTRINSIC_FORGET_MENU";
+        public const string NICKNAME_MENU = "NICKNAME_MENU";
+        public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
+        //Town services
         public const string DEPOSIT_MENU = "DEPOSIT_MENU";
         public const string DEPOSIT_CHOSEN_MENU = "DEPOSIT_CHOSEN_MENU";
         public const string WITHDRAW_MENU = "WITHDRAW_MENU";
@@ -73,11 +80,6 @@ namespace RogueEssence.Menu
         public const string BANK_MENU = "BANK_MENU";
         public const string ASSEMBLY_MENU = "ASSEMBLY_MENU";
         public const string ASSEMBLY_CHOSEN_MENU = "ASSEMBLY_CHOSEN_MENU";
-        public const string LEVELUP_MENU = "LEVELUP_MENU";
-        public const string SKILL_REPLACE_MENU = "SKILL_REPLACE_MENU";
-        public const string NICKNAME_MENU = "NICKNAME_MENU";
-        public const string TEAM_NAME_MENU = "TEAM_NAME_MENU";
-        //Town services
         public const string SHOP_MENU = "SHOP_MENU";
         public const string SHOP_CHOSEN_MENU = "SHOP_CHOSEN_MENU";
         public const string SELL_MENU = "SELL_MENU";
