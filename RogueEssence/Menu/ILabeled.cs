@@ -17,6 +17,8 @@ namespace RogueEssence.Menu
         //Top Menu children menus
         public const string TOP_MENU = "TOP_MENU";
         public const string CHOOSE_MONSTER_MENU = "CHOOSE_MONSTER_MENU";
+        public const string RESCUE_MENU_GET_HELP = "RESCUE_MENU_GET_HELP";
+        public const string RESCUE_MENU_SEND_HELP = "RESCUE_MENU_SEND_HELP";
         public const string MODS_MENU = "MODS_MENU";
         public const string OPTIONS_MENU = "OPTIONS_MENU";
         public const string RECORDS_MENU = "RECORDS_MENU";
@@ -107,6 +109,7 @@ namespace RogueEssence.Menu
         public const string SERVER_ADD_MENU = "SERVER_ADD_MENU";
         public const string MAIL_MENU = "MAIL_MENU";
         public const string MAIL_CHOSEN_MENU = "MAIL_CHOSEN_MENU";
+        public const string RESCUE_MENU = "RESCUE_MENU";
         public const string VERSION_DIFF_MENU = "VERSION_DIFF_MENU";
 
         //SUMMARY MENUS
