@@ -118,8 +118,10 @@ namespace RogueEssence.Menu
         public SettingsTitleMenu Parent;
         public SettingsPage Page;
         public Dictionary<MenuSetting, SettingData> SettingsData = new Dictionary<MenuSetting, SettingData>();
-        public SettingsPageSummaryMenu(SettingsTitleMenu parent, SettingsPage page) : base(new Rect(new Loc(parent.Bounds.Left, parent.Bounds.Bottom), new Loc(parent.Bounds.Width, 16)))
+        public SettingsPageSummaryMenu(SettingsTitleMenu parent, SettingsPage page) : this(MenuLabel.SETTINGS_PAGE_SUMMARY, parent, page) { }
+        public SettingsPageSummaryMenu(string label, SettingsTitleMenu parent, SettingsPage page) : base(new Rect(new Loc(parent.Bounds.Left, parent.Bounds.Bottom), new Loc(parent.Bounds.Width, 16)))
         {
+            Label = label;
             Parent = parent;
             Page = page;
             LoadOptions(Page);

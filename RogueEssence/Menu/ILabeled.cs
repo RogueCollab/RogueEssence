@@ -97,7 +97,25 @@ namespace RogueEssence.Menu
         public const string MAIL_CHOSEN_MENU = "MAIL_CHOSEN_MENU";
         public const string VERSION_DIFF_MENU = "VERSION_DIFF_MENU";
 
-        //USED IN MULTIPLE MENUS
+        //SUMMARY MENUS
+        public const string DUNGEON_SUMMARY = "DUNGEON_SUMMARY";
+        public const string ITEM_SUMMARY = "ITEM_SUMMARY";
+        public const string MONEY_SUMMARY = "MONEY_SUMMARY";
+        public const string TRADE_SUMMARY = "TRADE_SUMMARY";
+        public const string MOD_MINI_SUMMARY = "MOD_MINI_SUMMARY";
+        public const string CONTACT_MINI_SUMMARY = "CONTACT_MINI_SUMMARY";
+        public const string SONG_SUMMARY = "SONG_SUMMARY";
+        public const string REPLAY_MINI_SUMMARY = "REPLAY_MINI_SUMMARY";
+        public const string MAIL_MINI_SUMMARY = "MAIL_MINI_SUMMARY";
+        public const string CHARA_SUMMARY = "CHARA_SUMMARY";
+        public const string SEED_SUMMARY = "SEED_SUMMARY";
+        public const string SETTINGS_PAGE_SUMMARY = "SETTINGS_PAGE_SUMMARY";
+        public const string SKILL_SUMMARY = "SKILL_SUMMARY";
+        public const string TEAM_MINI_SUMMARY = "TEAM_MINI_SUMMARY";
+        public const string MOD_DIFF_SUMMARY = "MOD_DIFF_SUMMARY";
+        public const string TILE_SUMMARY = "TILE_SUMMARY";
+
+        //ELEMENTS USED IN MULTIPLE MENUS
         public const string TITLE = "TITLE";
         public const string DIV = "DIV";
         public const string MESSAGE = "MESSAGE";
