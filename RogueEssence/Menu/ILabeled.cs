@@ -97,11 +97,14 @@ namespace RogueEssence.Menu
         public const string SELL_CHOSEN_MENU = "SELL_CHOSEN_MENU";
         public const string SKILL_RECALL_MENU = "SKILL_RECALL_MENU";
         public const string SKILL_FORGET_MENU = "SKILL_FORGET_MENU";
+        public const string TUTOR_TEAM_MENU = "TUTOR_TEAM_MENU";
+        public const string TEAM_CHOSEN_MENU_FACILITY = "TEAM_CHOSEN_MENU_FACILITY";
         public const string SWAP_SHOP_MENU = "SWAP_SHOP_MENU";
         public const string SWAP_SHOP_MENU_GIVE = "SWAP_SHOP_MENU_GIVE";
         public const string APPRAISE_MENU = "APPRAISE_MENU";
         public const string APPRAISE_MENU_SPOILS = "APPRAISE_MENU_SPOILS";
         public const string MUSIC_MENU = "MUSIC_MENU";
+        public const string PROMOTE_MENU = "PROMOTE_MENU";
         //Connectivity
         public const string CONNECTING_MENU = "CONNECTING_MENU";
         public const string CONTACTS_MENU = "CONTACTS_MENU";    
