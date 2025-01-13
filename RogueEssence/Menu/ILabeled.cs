@@ -50,6 +50,7 @@ namespace RogueEssence.Menu
         public const string TACTICS_MENU = "TACTICS_MENU";
         public const string TEAM_MENU = "TEAM_MENU";
         public const string TEAM_CHOSEN_MENU = "TEAM_CHOSEN_MENU";
+        public const string STATUS_MENU = "STATUS_MENU";
         public const string SUMMARY_MENU_FEATS = "SUMMARY_MENU_FEATS";
         public const string SUMMARY_MENU_STATS = "SUMMARY_MENU_STATS";
         public const string SUMMARY_MENU_INFO = "SUMMARY_MENU_INFO";
