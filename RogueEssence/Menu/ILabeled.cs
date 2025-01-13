@@ -25,6 +25,8 @@ namespace RogueEssence.Menu
         public const string REPLAY_CHOSEN_MENU = "REPLAY_CHOSEN_MENU";
         public const string ROGUE_MENU = "ROGUE_MENU";
         public const string ROGUE_INFO_MENU = "ROGUE_INFO_MENU";
+        public const string ROGUE_QUICKSAVE_MENU = "ROGUE_QUICKSAVE_MENU";
+        public const string ROGUE_QUICKSAVE_CHOSEN_MENU = "ROGUE_QUICKSAVE_CHOSEN_MENU";
         public const string ROGUE_DEST_MENU = "ROGUE_DEST_MENU";
         public const string ROGUE_SEED_MENU = "ROGUE_SEED_MENU";
         public const string ROGUE_TEAM_NAME_MENU = "ROGUE_TEAM_NAME_MENU";
