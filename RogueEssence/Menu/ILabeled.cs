@@ -102,6 +102,7 @@ namespace RogueEssence.Menu
         public const string APPRAISE_MENU_SPOILS = "APPRAISE_MENU_SPOILS";
         public const string MUSIC_MENU = "MUSIC_MENU";
         //Connectivity
+        public const string CONNECTING_MENU = "CONNECTING_MENU";
         public const string CONTACTS_MENU = "CONTACTS_MENU";    
         public const string SELF_CHOSEN_MENU = "SELF_CHOSEN_MENU";
         public const string CONTACT_CHOSEN_MENU = "CONTACT_CHOSEN_MENU";
@@ -117,6 +118,7 @@ namespace RogueEssence.Menu
         public const string MAIL_CHOSEN_MENU = "MAIL_CHOSEN_MENU";
         public const string RESCUE_MENU = "RESCUE_MENU";
         public const string VERSION_DIFF_MENU = "VERSION_DIFF_MENU";
+        public const string PEERS_MENU = "PEERS_MENU";
 
         //SUMMARY MENUS
         public const string DUNGEON_SUMMARY = "DUNGEON_SUMMARY";
