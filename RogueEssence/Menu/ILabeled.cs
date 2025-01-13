@@ -89,6 +89,10 @@ namespace RogueEssence.Menu
         public const string CONTACTS_MENU = "CONTACTS_MENU";    
         public const string SELF_CHOSEN_MENU = "SELF_CHOSEN_MENU";
         public const string CONTACT_CHOSEN_MENU = "CONTACT_CHOSEN_MENU";
+        public const string TRADE_TEAM_MENU = "TRADE_TEAM_MENU";
+        public const string TRADE_TEAM_MENU_FEATS = "TRADE_TEAM_MENU_FEATS";
+        public const string TRADE_ITEM_MENU = "TRADE_ITEM_MENU";
+        public const string TRADE_ITEM_MENU_OFFER = "TRADE_ITEM_MENU_OFFER";
         public const string CONTACT_ADD_MENU = "CONTACT_ADD_MENU";
         public const string SERVERS_MENU = "SERVERS_MENU";
         public const string SERVER_CHOSEN_MENU = "SERVER_CHOSEN_MENU";
