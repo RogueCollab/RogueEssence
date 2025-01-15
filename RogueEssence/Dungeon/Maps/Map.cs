@@ -231,7 +231,11 @@ namespace RogueEssence.Dungeon
                 EntryPoints[ii] = new LocRay8(Collision.ClampToBounds(width, height, EntryPoints[ii].Loc + diff), EntryPoints[ii].Dir);
 
             this.lookup = new Dictionary<Loc, List<Character>>();
-            //wait... don't we need to recompute all entities?
+            //reconnect Teams' references
+            for (int ii = 0; ii < AllyTeams.Count; ii++)
+                addTeamLookup(AllyTeams[ii]);
+            for (int ii = 0; ii < MapTeams.Count; ii++)
+                addTeamLookup(MapTeams[ii]);
         }
 
 
