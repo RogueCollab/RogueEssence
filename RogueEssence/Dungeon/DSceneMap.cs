@@ -169,8 +169,8 @@ namespace RogueEssence.Dungeon
             }
 
 
-            if (!character.Dead) //add HP based on natural healing
-                yield return CoroutineManager.Instance.StartCoroutine(character.UpdateFullness(action));
+            //if (!character.Dead) //add HP based on natural healing. This is now Event driven to allow for flexibility.
+            //    yield return CoroutineManager.Instance.StartCoroutine(character.UpdateFullness(action));
 
             //check for EXP gain again
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
