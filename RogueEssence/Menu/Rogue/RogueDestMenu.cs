@@ -19,8 +19,10 @@ namespace RogueEssence.Menu
         private SeedSummary infoMenu;
         private ulong? seed;
 
-        public RogueDestMenu()
+        public RogueDestMenu() : this(MenuLabel.ROGUE_DEST_MENU) { }
+        public RogueDestMenu(string label)
         {
+            Label = label;
             dungeonIndices = GetDestinationsList();
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

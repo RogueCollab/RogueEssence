@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
 
         private AssemblyMenu baseMenu;
 
-        public AssemblyChosenMenu(int teamSlot, bool assembly, AssemblyMenu baseMenu)
+        public AssemblyChosenMenu(int teamSlot, bool assembly, AssemblyMenu baseMenu) : this(MenuLabel.ASSEMBLY_CHOSEN_MENU, teamSlot, assembly, baseMenu) { }
+        public AssemblyChosenMenu(string label, int teamSlot, bool assembly, AssemblyMenu baseMenu)
         {
+            Label = label;
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.baseMenu = baseMenu;

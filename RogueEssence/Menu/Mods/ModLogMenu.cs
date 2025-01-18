@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
-using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -10,8 +9,10 @@ namespace RogueEssence.Menu
     {
         List<string> failMsgs;
 
-        public ModLogMenu(List<(ModRelationship, List<ModHeader>)> loadErrors)
+        public ModLogMenu(List<(ModRelationship, List<ModHeader>)> loadErrors) : this(MenuLabel.MOD_LOG_MENU, loadErrors) { }
+        public ModLogMenu(string label, List<(ModRelationship, List<ModHeader>)> loadErrors)
         {
+            Label = label;
             failMsgs = new List<string>();
             foreach ((ModRelationship, List<ModHeader>) loadError in loadErrors)
             {

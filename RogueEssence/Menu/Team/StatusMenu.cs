@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
         List<string> mapIndices;
         List<string> indices;
 
-        public StatusMenu(int teamSlot)
+        public StatusMenu(int teamSlot) : this(MenuLabel.STATUS_MENU, teamSlot) { }
+        public StatusMenu(string label, int teamSlot)
         {
+            Label = label;
             int menuWidth = 168;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             mapIndices = new List<string>();

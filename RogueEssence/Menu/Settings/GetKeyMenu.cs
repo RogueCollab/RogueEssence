@@ -15,8 +15,10 @@ namespace RogueEssence.Menu
 
         private HashSet<Keys> forbidden;
 
-        public GetKeyMenu(HashSet<Keys> forbidden, OnChooseKey action, Action refuseAction)
+        public GetKeyMenu(HashSet<Keys> forbidden, OnChooseKey action, Action refuseAction) : this(MenuLabel.GET_KEY, forbidden, action, refuseAction) { }
+        public GetKeyMenu(string label, HashSet<Keys> forbidden, OnChooseKey action, Action refuseAction)
         {
+            Label = label;
             Bounds = new Rect();
 
             this.forbidden = forbidden;

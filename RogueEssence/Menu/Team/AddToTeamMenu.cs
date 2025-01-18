@@ -21,8 +21,10 @@ namespace RogueEssence.Menu
 
         private List<int> eligibleAssembly;
 
-        public AddToTeamMenu(OnChooseTeam teamChoice, Action refuseAction)
+        public AddToTeamMenu(OnChooseTeam teamChoice, Action refuseAction) : this(MenuLabel.ADD_TO_TEAM_MENU, teamChoice, refuseAction) { }
+        public AddToTeamMenu(string label, OnChooseTeam teamChoice, Action refuseAction)
         {
+            Label = label;
             int menuWidth = 160;
             this.teamChoice = teamChoice;
             this.refuseAction = refuseAction;

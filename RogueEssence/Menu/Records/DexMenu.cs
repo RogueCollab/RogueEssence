@@ -17,8 +17,10 @@ namespace RogueEssence.Menu
         SpeakerPortrait portrait;
         List<string> obtainableKeys;
 
-        public DexMenu()
+        public DexMenu() : this(MenuLabel.DEX_MENU) { }
+        public DexMenu(string label)
         {
+            Label = label;
             int lastEntry = -1;
             int seen = 0;
             int befriended = 0;

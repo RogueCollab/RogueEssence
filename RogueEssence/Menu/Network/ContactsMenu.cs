@@ -22,8 +22,10 @@ namespace RogueEssence.Menu
         private bool canTrade;
         private bool hasSwappable;
 
-        public ContactsMenu(bool rescueMode, OnChooseActivity action)
+        public ContactsMenu(bool rescueMode, OnChooseActivity action) : this(MenuLabel.CONTACTS_MENU, rescueMode, action) {}
+        public ContactsMenu(string label, bool rescueMode, OnChooseActivity action)
         {
+            Label = label;
             this.rescueMode = rescueMode;
             this.action = action;
 

@@ -9,8 +9,10 @@ namespace RogueEssence.Menu
     public class ReplayMenu : TitledStripMenu
     {
 
-        public ReplayMenu()
+        public ReplayMenu() : this(MenuLabel.REPLAY_MENU) { }
+        public ReplayMenu(string label)
         {
+            Label = label;
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAY_INFO"), () => { MenuManager.Instance.AddMenu(new ReplayInfoMenu(), false); }));
             if (DiagManager.Instance.DevMode)

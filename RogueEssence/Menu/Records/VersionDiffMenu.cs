@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
         public List<ModDiff> ModDiffs;
         public int Page;
 
-        public VersionDiffMenu(List<ModDiff> modDiffs, int page)
+        public VersionDiffMenu(List<ModDiff> modDiffs, int page) : this(MenuLabel.VERSION_DIFF_MENU, modDiffs, page) { }
+        public VersionDiffMenu(string label, List<ModDiff> modDiffs, int page)
         {
+            Label = label;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             ModDiffs = modDiffs;
             Page = page;

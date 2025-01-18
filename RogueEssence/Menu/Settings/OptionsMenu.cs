@@ -6,8 +6,10 @@ namespace RogueEssence.Menu
     public class OptionsMenu : TitledStripMenu
     {
 
-        public OptionsMenu()
+        public OptionsMenu() :this(MenuLabel.OPTIONS_MENU) { }
+        public OptionsMenu(string label)
         {
+            Label = label;
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_SETTINGS_TITLE"), () => { MenuManager.Instance.AddMenu(new SettingsTitleMenu(), false); }));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_KEYBOARD_TITLE"), () => { MenuManager.Instance.AddMenu(new KeyControlsMenu(), false); }));

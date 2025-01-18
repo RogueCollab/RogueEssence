@@ -12,8 +12,11 @@ namespace RogueEssence.Menu
         private List<int> selections;
         private OnMultiChoice action;
 
-        public BuyChosenMenu(List<int> selections, int origIndex, string itemID, OnMultiChoice chooseSlots)
+        public BuyChosenMenu(List<int> selections, int origIndex, string itemID, OnMultiChoice chooseSlots) :
+            this(MenuLabel.SHOP_CHOSEN_MENU, selections, origIndex, itemID, chooseSlots) { }
+        public BuyChosenMenu(string label, List<int> selections, int origIndex, string itemID, OnMultiChoice chooseSlots)
         {
+            Label = label;
             this.origIndex = origIndex;
             this.selections = selections;
             action = chooseSlots;

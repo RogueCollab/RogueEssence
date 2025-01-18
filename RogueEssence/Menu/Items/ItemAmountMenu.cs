@@ -8,8 +8,11 @@ namespace RogueEssence.Menu
         MenuText AskTitle;
         private SingleStripMenu.OnChooseSlot chooseAction;
 
-        public ItemAmountMenu(Loc start, int max, SingleStripMenu.OnChooseSlot chooseAction)
+        public ItemAmountMenu(Loc start, int max, SingleStripMenu.OnChooseSlot chooseAction) : this(MenuLabel.ITEM_AMOUNT_MENU, start, max, chooseAction) { }
+        public ItemAmountMenu(string label, Loc start, int max, SingleStripMenu.OnChooseSlot chooseAction)
         {
+            Label = label;
+
             this.chooseAction = chooseAction;
 
             Loc size = new Loc(80, 64);

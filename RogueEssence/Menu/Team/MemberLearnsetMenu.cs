@@ -20,8 +20,11 @@ namespace RogueEssence.Menu
 
         SkillSummary summaryMenu;
 
-        public MemberLearnsetMenu(int teamSlot, bool assembly, bool allowAssembly, bool maxPage)
+        public MemberLearnsetMenu(int teamSlot, bool assembly, bool allowAssembly, bool maxPage) :
+            this(MenuLabel.SUMMARY_MENU_LEARNSET, teamSlot, assembly, allowAssembly, maxPage) { }
+        public MemberLearnsetMenu(string label, int teamSlot, bool assembly, bool allowAssembly, bool maxPage)
         {
+            Label = label;
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;

@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
 
         OnChooseText chooseTextAction;
 
-        public ContactInputMenu(OnChooseText action)
+        public ContactInputMenu(OnChooseText action) : this(MenuLabel.CONTACT_ADD_MENU, action) { }
+        public ContactInputMenu(string label, OnChooseText action)
         {
+            Label = label;
             chooseTextAction = action;
 
             Initialize(RogueEssence.Text.FormatKey("INPUT_CONTACT_TITLE"), RogueEssence.Text.FormatKey("INPUT_CAN_PASTE"), 296);

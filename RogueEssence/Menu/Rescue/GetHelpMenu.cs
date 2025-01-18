@@ -15,9 +15,11 @@ namespace RogueEssence.Menu
 
         public ExchangeRescueState CurrentState;
 
-        public GetHelpMenu()
+        public GetHelpMenu() : this(MenuLabel.RESCUE_MENU_GET_HELP) { }
+        public GetHelpMenu(string label)
             : base()
         {
+            Label = label;
             yourSummary = new SummaryMenu(Rect.FromPoints(new Loc(Bounds.Start.X, Bounds.End.Y),
                 new Loc(Bounds.End.X, Bounds.End.Y + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2)));
             yourStatus = new MenuText("",

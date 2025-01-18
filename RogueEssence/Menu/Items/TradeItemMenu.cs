@@ -28,8 +28,10 @@ namespace RogueEssence.Menu
 
         public List<string> AllowedGoods;
 
-        public TradeItemMenu(int defaultChoice)
+        public TradeItemMenu(int defaultChoice) : this(MenuLabel.TRADE_ITEM_MENU, defaultChoice) { }
+        public TradeItemMenu(string label, int defaultChoice)
         {
+            Label = label;
             int menuWidth = 152;
             AllowedGoods = new List<string>();
 

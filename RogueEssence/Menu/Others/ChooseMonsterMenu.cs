@@ -22,7 +22,11 @@ namespace RogueEssence.Menu
         public override bool CanMenu => canMenu;
         public override bool CanCancel => onCancel is not null;
 
-        public ChooseMonsterMenu(string title, List<StartChar> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true, int slotsPerPage = SLOTS_PER_PAGE)
+        public ChooseMonsterMenu(string title, List<StartChar> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true, int slotsPerPage = SLOTS_PER_PAGE) :
+            this(MenuLabel.CHOOSE_MONSTER_MENU, title, choices, startIndex, chooseAction, onCancel, canMenu, slotsPerPage)
+        { }
+        
+        public ChooseMonsterMenu(string label, string title, List<StartChar> choices, int startIndex, OnChooseSlot chooseAction, Action onCancel, bool canMenu = true, int slotsPerPage = SLOTS_PER_PAGE)
         {
             this.chooseAction = chooseAction;
             this.onCancel = onCancel;

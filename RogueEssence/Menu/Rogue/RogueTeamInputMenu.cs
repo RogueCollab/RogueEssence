@@ -10,8 +10,10 @@ namespace RogueEssence.Menu
         private RogueConfig config;
         private bool randomized;
 
-        public RogueTeamInputMenu(RogueConfig config)
+        public RogueTeamInputMenu(RogueConfig config) : this(MenuLabel.ROGUE_TEAM_NAME_MENU, config) { }
+        public RogueTeamInputMenu(string label, RogueConfig config)
         {
+            Label = label;
             this.config = config;
             Initialize(RogueEssence.Text.FormatKey("INPUT_TEAM_TITLE"), RogueEssence.Text.FormatKey("INPUT_TEAM_DESC"), 256);
         }

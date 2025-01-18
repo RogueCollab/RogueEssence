@@ -17,8 +17,10 @@ namespace RogueEssence.Menu
 
         SkillSummary summaryMenu;
 
-        public SkillForgetMenu(Character player, OnChooseSlot action, Action refuseAction)
+        public SkillForgetMenu(Character player, OnChooseSlot action, Action refuseAction) : this(MenuLabel.SKILL_FORGET_MENU, player, action, refuseAction) { }
+        public SkillForgetMenu(string label, Character player, OnChooseSlot action, Action refuseAction)
         {
+            Label = label;
             int menuWidth = 152;
             this.player = player;
             this.chooseSlotAction = action;

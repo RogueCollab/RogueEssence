@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
-using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using System;
 
@@ -18,8 +17,10 @@ namespace RogueEssence.Menu
         public GameProgress Ending;
         public int Page;
 
-        public VersionResultsMenu(GameProgress ending, int page)
+        public VersionResultsMenu(GameProgress ending, int page) : this(MenuLabel.RESULTS_MENU_VERSION, ending, page) { }
+        public VersionResultsMenu(string label, GameProgress ending, int page)
         {
+            Label = label;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             Ending = ending;
             Page = page;
