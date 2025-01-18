@@ -16,6 +16,7 @@ namespace RogueEssence.Menu
 
         public Rect Bounds { get; set; }
         public bool Selected { get; private set; }
+        public bool Hovered { get; private set; }
 
         public Action ChoiceAction;
 
@@ -69,7 +70,7 @@ namespace RogueEssence.Menu
         public void OnSelect(bool select) { }
 
         //selected by mouse
-        public void OnHoverChanged(bool hover) { }
+        public void OnHoverChanged(bool hover) { Hovered = hover; }
 
         //chosen by confirm button
         public void OnConfirm()

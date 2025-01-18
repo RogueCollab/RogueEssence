@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
@@ -9,8 +8,10 @@ namespace RogueEssence.Menu
 {
     public class RecordsMenu : SingleStripMenu
     {
-        public RecordsMenu()
+        public RecordsMenu() : this(MenuLabel.RECORDS_MENU) { }
+        public RecordsMenu(string label)
         {
+            Label = label;
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             if (DataManager.Instance.FoundRecords(PathMod.ModSavePath(DataManager.REPLAY_PATH), DataManager.REPLAY_EXTENSION))
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REPLAYS_TITLE"), () => { MenuManager.Instance.AddMenu(new ReplaysMenu(), false); }));

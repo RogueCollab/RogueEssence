@@ -11,8 +11,10 @@ namespace RogueEssence.Menu
         private int chosenIndex;
 
 
-        public ServerChosenMenu(int index)
+        public ServerChosenMenu(int index) : this(MenuLabel.SERVER_CHOSEN_MENU, index) { }
+        public ServerChosenMenu(string label, int index)
         {
+            Label = label;
             this.chosenIndex = index;
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();

@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
         Buttons[] actionButtons;
         bool inactiveInput;
 
-        public GamepadControlsMenu()
+        public GamepadControlsMenu() : this(MenuLabel.GAMEPAD_MENU) { }
+        public GamepadControlsMenu(string label)
         {
+            Label = label;
             actionButtons = new Buttons[DiagManager.Instance.CurActionButtons.Length];
             DiagManager.Instance.CurActionButtons.CopyTo(actionButtons, 0);
             inactiveInput = DiagManager.Instance.CurSettings.InactiveInput;

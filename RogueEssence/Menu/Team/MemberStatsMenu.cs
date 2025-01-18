@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
-using System.Numerics;
 
 namespace RogueEssence.Menu
 {
@@ -60,9 +58,13 @@ namespace RogueEssence.Menu
 
         //allow moving up and down (but don't alter the team choice selection because it's hard)
 
-        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly) : this(teamSlot, assembly, allowAssembly, false) {}
-        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly, bool bonusView)
+        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly) : this(MenuLabel.SUMMARY_MENU_STATS, teamSlot, assembly, allowAssembly, false) { }
+        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly, bool bonusView) : this(MenuLabel.SUMMARY_MENU_STATS, teamSlot, assembly, allowAssembly, bonusView) { }
+        public MemberStatsMenu(string label, int teamSlot, bool assembly, bool allowAssembly) : this(label, teamSlot, assembly, allowAssembly, false) { }
+        public MemberStatsMenu(string label, int teamSlot, bool assembly, bool allowAssembly, bool bonusView)
         {
+            Label = label;
+
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
 
             this.teamSlot = teamSlot;

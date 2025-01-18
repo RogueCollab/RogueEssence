@@ -14,8 +14,10 @@ namespace RogueEssence.Menu
 
         OnChooseText chooseTextAction;
 
-        public SeedInputMenu(OnChooseText action, ulong? seed)
+        public SeedInputMenu(OnChooseText action, ulong? seed) : this(MenuLabel.ROGUE_SEED_MENU, action, seed) { }
+        public SeedInputMenu(string label, OnChooseText action, ulong? seed)
         {
+            Label = label;
             chooseTextAction = action;
 
             Initialize(RogueEssence.Text.FormatKey("INPUT_SEED_TITLE"), RogueEssence.Text.FormatKey("INPUT_CAN_PASTE"), 296);

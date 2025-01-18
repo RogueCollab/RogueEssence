@@ -16,8 +16,11 @@ namespace RogueEssence.Menu
         SummaryMenu summaryMenu;
         DialogueText Description;
 
-        public IntrinsicForgetMenu(Character player, OnChooseSlot action, Action refuseAction)
+        public IntrinsicForgetMenu(Character player, OnChooseSlot action, Action refuseAction) :
+            this(MenuLabel.INTRINSIC_FORGET_MENU, player, action, refuseAction) { }
+        public IntrinsicForgetMenu(string label, Character player, OnChooseSlot action, Action refuseAction)
         {
+            Label = label;
             this.player = player;
             this.chooseSlotAction = action;
             this.refuseAction = refuseAction;

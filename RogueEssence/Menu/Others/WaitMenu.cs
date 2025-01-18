@@ -8,9 +8,12 @@ namespace RogueEssence.Menu
     {
         private readonly List<FrameInput.InputType> allowedInputs = [];
 
-        public WaitMenu(bool anyInputs) : this(anyInputs ? [] : [FrameInput.InputType.Confirm]) { }
-        public WaitMenu(params FrameInput.InputType[] inputs)
+        public WaitMenu(bool anyInputs) : this(MenuLabel.WAIT, anyInputs ? [] : [FrameInput.InputType.Confirm]) { }
+        public WaitMenu(params FrameInput.InputType[] inputs) : this(MenuLabel.WAIT, inputs) { }
+        public WaitMenu(string label, bool anyInputs) : this(label, anyInputs ? [] : [FrameInput.InputType.Confirm]) { }
+        public WaitMenu(string label, params FrameInput.InputType[] inputs)
         {
+            Label = label;
             Bounds = new Rect();
 
             foreach (var input in inputs) {

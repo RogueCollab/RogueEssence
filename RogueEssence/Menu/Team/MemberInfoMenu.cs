@@ -28,8 +28,11 @@ namespace RogueEssence.Menu
         public DialogueText[] PromoteMethods;
 
 
-        public MemberInfoMenu(int teamSlot, bool assembly, bool allowAssembly)
+        public MemberInfoMenu(int teamSlot, bool assembly, bool allowAssembly) : this(MenuLabel.SUMMARY_MENU_INFO, teamSlot, assembly, allowAssembly) { }
+        public MemberInfoMenu(string label, int teamSlot, bool assembly, bool allowAssembly)
         {
+            Label = label;
+
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
 
             this.teamSlot = teamSlot;

@@ -18,8 +18,10 @@ namespace RogueEssence.Menu
         private List<(string file, LoopedSong song)> songs;
         private SongSummary summaryMenu;
 
-        public MusicMenu(bool hardMod, List<string> spoiledSongs, MusicChoice choice)
+        public MusicMenu(bool hardMod, List<string> spoiledSongs, MusicChoice choice) : this(MenuLabel.MUSIC_MENU, hardMod, spoiledSongs, choice) { }
+        public MusicMenu(string label, bool hardMod, List<string> spoiledSongs, MusicChoice choice)
         {
+            Label = label;
             this.spoiledSongs = spoiledSongs;
             this.choice = choice;
             string[] pre_files;

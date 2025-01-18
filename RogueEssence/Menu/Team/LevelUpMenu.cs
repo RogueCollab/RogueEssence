@@ -20,13 +20,21 @@ namespace RogueEssence.Menu
         public MenuDivider[] Divs;
 
         public LevelUpMenu(int teamIndex, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef) :
-            this(DungeonScene.Instance.ActiveTeam.Players[teamIndex], oldLevel, oldHP, oldSpeed, oldAtk, oldDef, oldMAtk, oldMDef)
-        {
-        }
+            this(MenuLabel.LEVELUP_MENU, DungeonScene.Instance.ActiveTeam.Players[teamIndex], oldLevel, oldHP, oldSpeed, oldAtk, oldDef, oldMAtk, oldMDef)
+        { }
 
-        public LevelUpMenu(Character player, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk,
+        public LevelUpMenu(Character player, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef) :
+            this(MenuLabel.LEVELUP_MENU, player, oldLevel, oldHP, oldSpeed, oldAtk, oldDef, oldMAtk, oldMDef)
+        { }
+
+        public LevelUpMenu(string label, int teamIndex, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk, int oldMDef) :
+            this(label, DungeonScene.Instance.ActiveTeam.Players[teamIndex], oldLevel, oldHP, oldSpeed, oldAtk, oldDef, oldMAtk, oldMDef)
+        { }
+        public LevelUpMenu(string label, Character player, int oldLevel, int oldHP, int oldSpeed, int oldAtk, int oldDef, int oldMAtk,
             int oldMDef)
         {
+            Label = label;
+
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 88, 32), new Loc(GraphicsManager.ScreenWidth / 2 + 88, 180));
 
             Title = new MenuText(Text.FormatKey("MENU_LEVEL_UP", player.GetDisplayName(true)), new Loc(GraphicsManager.MenuBG.TileWidth + 8, GraphicsManager.MenuBG.TileHeight));

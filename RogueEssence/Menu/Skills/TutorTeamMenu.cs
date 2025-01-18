@@ -19,8 +19,11 @@ namespace RogueEssence.Menu
 
         TeamMiniSummary summaryMenu;
 
-        public TutorTeamMenu(int teamSlot, OnEligibleCheck eligibleCheck, OnChooseSlot action, Action refuseAction)
+        public TutorTeamMenu(int teamSlot, OnEligibleCheck eligibleCheck, OnChooseSlot action, Action refuseAction) :
+            this(MenuLabel.TUTOR_TEAM_MENU, teamSlot, eligibleCheck, action, refuseAction) { }
+        public TutorTeamMenu(string label, int teamSlot, OnEligibleCheck eligibleCheck, OnChooseSlot action, Action refuseAction)
         {
+            Label = label;
             this.chooseSlotAction = action;
             this.refuseAction = refuseAction;
             int menuWidth = 160;

@@ -28,8 +28,10 @@ namespace RogueEssence.Menu
 
         private TradeTeamMenu baseMenu;
 
-        public OfferFeaturesMenu(Rect bounds, TradeTeamMenu baseMenu)
+        public OfferFeaturesMenu(Rect bounds, TradeTeamMenu baseMenu) : this(MenuLabel.TRADE_TEAM_MENU_FEATS, bounds, baseMenu) { }
+        public OfferFeaturesMenu(string label, Rect bounds, TradeTeamMenu baseMenu)
         {
+            Label = label;
             Bounds = bounds;
             this.baseMenu = baseMenu;
 

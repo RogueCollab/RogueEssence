@@ -13,9 +13,11 @@ namespace RogueEssence.Menu
         MenuText Title;
         MenuDivider MenuDiv;
 
-        public TradeSummary(Rect bounds)
+        public TradeSummary(Rect bounds) : this(MenuLabel.TRADE_SUMMARY, bounds) { }
+        public TradeSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Title = new MenuText(Text.FormatKey("MENU_SWAP_NEEDED"), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Title);
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),

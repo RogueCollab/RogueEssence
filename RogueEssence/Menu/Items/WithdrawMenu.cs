@@ -20,8 +20,11 @@ namespace RogueEssence.Menu
         OnWithdrawChoice storageChoice;
         bool continueOnChoose;
 
-        public WithdrawMenu(int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice)
+        public WithdrawMenu(int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice) :
+            this(MenuLabel.WITHDRAW_MENU, defaultChoice, continueOnChoose, storageChoice) { }
+        public WithdrawMenu(string label, int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice)
         {
+            Label = label;
             this.continueOnChoose = continueOnChoose;
             this.storageChoice = storageChoice;
             availableItems = new List<WithdrawSlot>();

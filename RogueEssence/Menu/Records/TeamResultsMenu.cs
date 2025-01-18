@@ -78,8 +78,10 @@ namespace RogueEssence.Menu
 
     public class PartyResultsMenu : TeamResultsMenu
     {
-        public PartyResultsMenu(GameProgress ending)
+        public PartyResultsMenu(GameProgress ending) : this(MenuLabel.RESULTS_MENU_PARTY, ending) { }
+        public PartyResultsMenu(string label, GameProgress ending)
         {
+            Label = label;
             Initialize(ending);
         }
 
@@ -128,8 +130,10 @@ namespace RogueEssence.Menu
     {
         public int Page;
 
-        public AssemblyResultsMenu(GameProgress ending, int page)
+        public AssemblyResultsMenu(GameProgress ending, int page) : this(MenuLabel.RESULTS_MENU_ASSEMBLY, ending, page) { }
+        public AssemblyResultsMenu(string label, GameProgress ending, int page)
         {
+            Label = label;
             Page = page;
 
             Initialize(ending);
