@@ -868,7 +868,11 @@ namespace RogueEssence.Data
             // A boolean for "in team" was set, because the more precise solution (checking if the character was actually part of the team) is more expensive
             // But this might be seen in other places in the future...
             foreach (Character character in ActiveTeam.Assembly)
-                character.FullRestore(false);
+            {
+                // if a character was absentee, it wasn't touched this ENTIRE adventure.  no need to restore anything.
+                if (!character.Absentee)
+                    character.FullRestore(false);
+            }
             MidAdventure = false;
             ClearDungeonItems();
             //clear rescue status

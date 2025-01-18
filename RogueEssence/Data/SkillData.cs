@@ -135,5 +135,15 @@ namespace RogueEssence.Data
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
         }
+
+        /// <summary>
+        /// Gets the colored text string of the skill, with icon included
+        /// </summary>
+        /// <returns></returns>
+        public string GetIconName()
+        {
+            ElementData element = DataManager.Instance.GetElement(Element);
+            return String.Format("{0}\u2060{1}", element.Symbol, GetColoredName());
+        }
     }
 }

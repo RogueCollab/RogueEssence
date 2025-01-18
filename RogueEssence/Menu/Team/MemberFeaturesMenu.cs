@@ -99,10 +99,11 @@ namespace RogueEssence.Menu
                 string totalCharges = "/--";
                 if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
-                    SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    skillString = data.GetIconName();
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(skill.SkillNum);
+                    skillString = summary.GetIconName();
                     skillCharges = skill.Charges.ToString();
-                    totalCharges = "/" + (data.BaseCharges + player.ChargeBoost);
+                    totalCharges = "/" + (summary.BaseCharges + player.ChargeBoost);
                 }
                 Skills[ii * 3] = new MenuText(skillString, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET));
                 Skills[ii * 3 + 1] = new MenuText(skillCharges, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 - GraphicsManager.TextFont.CharSpace, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Right);

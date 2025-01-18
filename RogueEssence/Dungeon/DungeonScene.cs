@@ -656,8 +656,9 @@ namespace RogueEssence.Dungeon
                             ShownHotkeys[ii].SetArrangement(DiagManager.Instance.GamePadActive);
                             if (!String.IsNullOrEmpty(skill.SkillNum))
                             {
-                                SkillData skillData = DataManager.Instance.GetSkill(skill.SkillNum);
-                                ShownHotkeys[ii].SetSkill(skillData.GetColoredName(), skillData.Data.Element, skill.Charges, skillData.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
+                                EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                                SkillDataSummary summary = (SkillDataSummary)idx.Get(skill.SkillNum);
+                                ShownHotkeys[ii].SetSkill(summary.GetColoredName(), summary.Element, skill.Charges, summary.BaseCharges+FocusedCharacter.ChargeBoost, skill.Sealed);
                             }
                             else
                                 ShownHotkeys[ii].SetSkill("", DataManager.Instance.DefaultElement, 0, 0, false);

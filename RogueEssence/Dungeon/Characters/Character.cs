@@ -429,7 +429,11 @@ namespace RogueEssence.Dungeon
             {
                 Skill newState = null;
                 if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
-                    newState = new Skill(BaseSkills[ii].SkillNum, DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges);
+                {
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(BaseSkills[ii].SkillNum);
+                    newState = new Skill(BaseSkills[ii].SkillNum, summary.BaseCharges);
+                }
                 else
                     newState = new Skill();
                 Skills.Add(new BackReference<Skill>(newState, ii));
@@ -573,7 +577,9 @@ namespace RogueEssence.Dungeon
                 Skill newState = null;
                 if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
-                    int baseCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(BaseSkills[ii].SkillNum);
+                    int baseCharges = summary.BaseCharges + ChargeBoost;
                     BaseSkills[ii].Charges = baseCharges;
                     newState = new Skill(BaseSkills[ii].SkillNum, baseCharges, turnOn[ii]);
                 }
@@ -1617,7 +1623,9 @@ namespace RogueEssence.Dungeon
             {
                 if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                 {
-                    int maxCharges = DataManager.Instance.GetSkill(Skills[ii].Element.SkillNum).BaseCharges + ChargeBoost;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(Skills[ii].Element.SkillNum);
+                    int maxCharges = summary.BaseCharges + ChargeBoost;
                     //bring charges up to maximum if maximum is enforced
                     if (DataManager.Instance.Save != null && !DataManager.Instance.Save.MidAdventure)
                         SetSkillCharges(ii, maxCharges);
@@ -1631,7 +1639,9 @@ namespace RogueEssence.Dungeon
             {
                 if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
-                    int maxCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(BaseSkills[ii].SkillNum);
+                    int maxCharges = summary.BaseCharges + ChargeBoost;
 
                     //cap off over-maximum values
                     if (BaseSkills[ii].Charges > maxCharges)
@@ -1676,10 +1686,13 @@ namespace RogueEssence.Dungeon
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
-                    if (itemData.BagEffect)
+                    string itemId = MemberTeam.GetInv(ii).ID;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                    ItemEntrySummary summary = (ItemEntrySummary)idx.Get(itemId);
+
+                    if (summary.BagEffect)
                     {
-                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                        if (!activeItems.ContainsKey(itemId))
                             activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
@@ -1769,11 +1782,18 @@ namespace RogueEssence.Dungeon
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
-                    if (itemData.BagEffect && itemData.ProximityEvent.Radius > -1)
+                    string itemId = MemberTeam.GetInv(ii).ID;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                    ItemEntrySummary summary = (ItemEntrySummary)idx.Get(itemId);
+
+                    if (summary.BagEffect)
                     {
-                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
-                            activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
+                        ItemData itemData = DataManager.Instance.GetItem(itemId);
+                        if (itemData.ProximityEvent.Radius > -1)
+                        {
+                            if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                                activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
+                        }
                     }
                 }
 

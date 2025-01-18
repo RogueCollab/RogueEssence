@@ -40,14 +40,16 @@ namespace RogueEssence.Menu
             foreach (LevelUpSkill levelUpSkill in formEntry.LevelSkills)
             {
                 string skill = levelUpSkill.Skill;
-                SkillData skillEntry = DataManager.Instance.GetSkill(levelUpSkill.Skill);
-                if (!skillEntry.Released)
+
+                EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                SkillDataSummary summary = (SkillDataSummary)idx.Get(levelUpSkill.Skill);
+                if (!summary.Released)
                     continue;
 
                 Skills.Add(skill);
                 if (levelUpSkill.Level > 0)
                 {
-                    MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
+                    MenuText skillText = new MenuText(summary.GetIconName(), new Loc(1, 1), Color.White);
                     MenuText levelLabel = new MenuText(Text.FormatKey("MENU_TEAM_LEVEL_SHORT"),
                         new Loc(GraphicsManager.ScreenWidth - 88, 1), DirH.Right);
                     MenuText level = new MenuText(levelUpSkill.Level.ToString(), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirH.Right);
@@ -56,7 +58,7 @@ namespace RogueEssence.Menu
                 }
                 else
                 {
-                    MenuText skillText = new MenuText(skillEntry.GetIconName(), new Loc(1, 1), Color.White);
+                    MenuText skillText = new MenuText(summary.GetIconName(), new Loc(1, 1), Color.White);
                     MenuText level = new MenuText(Text.FormatKey("MENU_TEAM_PROMOTE_SHORT"), new Loc(GraphicsManager.ScreenWidth - 88 + GraphicsManager.TextFont.SubstringWidth(DataManager.Instance.Start.MaxLevel.ToString()), 0), DirH.Right);
 
                     flatChoices.Add(new MenuElementChoice(() => { }, true, level, skillText));
