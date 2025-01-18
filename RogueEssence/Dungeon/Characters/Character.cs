@@ -36,7 +36,10 @@ namespace RogueEssence.Dungeon
                     if (!String.IsNullOrEmpty(Nickname))
                         return Nickname;
                     else
-                        return DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                    {
+                        EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                        return idx.Get(BaseForm.Species).Name.ToLocal();
+                    }
                 }
                 else
                 {
@@ -63,7 +66,10 @@ namespace RogueEssence.Dungeon
                     if (!String.IsNullOrEmpty(Nickname))
                         name = Nickname;
                     else
-                        name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                    {
+                        EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                        name = idx.Get(BaseForm.Species).Name.ToLocal();
+                    }
                 }
                 else
                 {
