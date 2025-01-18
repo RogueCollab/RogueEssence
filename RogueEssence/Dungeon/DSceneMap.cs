@@ -164,13 +164,9 @@ namespace RogueEssence.Dungeon
             //end turn
             if (!character.Dead)
             {
-                SingleCharContext turnContext = new SingleCharContext(character);
+                SingleCharContext turnContext = new SingleCharContext(character, action);
                 yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnEnd(turnContext));
             }
-
-
-            //if (!character.Dead) //add HP based on natural healing. This is now Event driven to allow for flexibility.
-            //    yield return CoroutineManager.Instance.StartCoroutine(character.UpdateFullness(action));
 
             //check for EXP gain again
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
