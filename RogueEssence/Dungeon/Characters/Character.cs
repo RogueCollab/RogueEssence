@@ -733,54 +733,6 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public IEnumerator<YieldInstruction> UpdateFullness(bool combat)
-        {
-            int recovery = (combat ? 0 : 12);
-
-            int residual = 0;
-            if (MemberTeam == DungeonScene.Instance.ActiveTeam && MemberTeam.Leader == this)
-            {
-                residual = 80;
-            }
-
-            int prevFullness = Fullness;
-            Fullness -= (residual + FullnessRemainder) / 1000;
-            FullnessRemainder = (residual + FullnessRemainder) % 1000;
-
-            if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-            {
-                if (Fullness <= 0 && prevFullness > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY", GetDisplayName(true)));
-                else if (Fullness <= 10 && prevFullness > 10)
-                {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_CRITICAL", GetDisplayName(true)));
-                    GameManager.Instance.SE(GraphicsManager.HungerSE);
-                }
-                else if (Fullness <= 20 && prevFullness > 20)
-                {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_LOW", GetDisplayName(true)));
-                    GameManager.Instance.SE(GraphicsManager.HungerSE);
-                }
-            }
-            else
-            {
-                if (Fullness <= 0 && prevFullness > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY_FOE", GetDisplayName(false)));
-            }
-
-            if (Fullness <= 0)
-            {
-                Fullness = 0;
-                FullnessRemainder = 0;
-
-                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-                    GameManager.Instance.SE(GraphicsManager.HungerSE);
-                recovery = -60;
-            }
-
-            yield return CoroutineManager.Instance.StartCoroutine(ModifyHP(MaxHP * recovery));
-        }
-
         public IEnumerator<YieldInstruction> ModifyHP(int residualHP)
         {
             OnModifyHP(ref residualHP);
