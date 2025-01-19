@@ -371,6 +371,8 @@ namespace RogueEssence.Menu
         {
             foreach(DialogueText text in Texts)
                 text.FinishText();
+            foreach (List<TextTag> tagList in Tags)
+                tagList.Clear();
         }
 
         private void updateMessage()
