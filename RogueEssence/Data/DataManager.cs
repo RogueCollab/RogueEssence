@@ -1140,8 +1140,11 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
+                //TODO: v1.1.: remove this
+                DiagManager.Instance.LogInfo(String.Format("Loading rsground file: {0}", name));
                 mapData = LoadEntryData<GroundMap>(name, GROUND_FOLDER, ".rsground");
                 mapData.AssetName = name;
+                DiagManager.Instance.LogInfo(String.Format("Completed file load."));
                 return mapData;
             }
             catch (Exception ex)
