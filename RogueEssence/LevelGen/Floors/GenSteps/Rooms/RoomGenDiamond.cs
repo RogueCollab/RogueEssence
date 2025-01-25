@@ -52,7 +52,7 @@ namespace RogueEssence.LevelGen
             {
                 for (int jj = 0; jj < this.Draw.Height; jj++)
                 {
-                    if (IsTileWithinRoom(ii, jj, diameter, this.Draw.Size))
+                    if (IsTileWithinDiamond(ii, jj, diameter, this.Draw.Size))
                         map.SetTile(new Loc(this.Draw.X + ii, this.Draw.Y + jj), map.RoomTerrain.Copy());
                 }
             }
@@ -71,7 +71,7 @@ namespace RogueEssence.LevelGen
             int diameter = Math.Min(this.Draw.Width, this.Draw.Height);
             for (int jj = 0; jj < this.Draw.Width; jj++)
             {
-                if (IsTileWithinRoom(jj, 0, diameter, this.Draw.Size))
+                if (IsTileWithinDiamond(jj, 0, diameter, this.Draw.Size))
                 {
                     this.FulfillableBorder[Dir4.Up][jj] = true;
                     this.FulfillableBorder[Dir4.Down][jj] = true;
@@ -80,7 +80,7 @@ namespace RogueEssence.LevelGen
 
             for (int jj = 0; jj < this.Draw.Height; jj++)
             {
-                if (IsTileWithinRoom(0, jj, diameter, this.Draw.Size))
+                if (IsTileWithinDiamond(0, jj, diameter, this.Draw.Size))
                 {
                     this.FulfillableBorder[Dir4.Left][jj] = true;
                     this.FulfillableBorder[Dir4.Right][jj] = true;
@@ -88,7 +88,7 @@ namespace RogueEssence.LevelGen
             }
         }
 
-        private static bool IsTileWithinRoom(int baseX, int baseY, int diameter, Loc size)
+        public static bool IsTileWithinDiamond(int baseX, int baseY, int diameter, Loc size)
         {
             Loc sizeX2 = size * 2;
             int x = (baseX * 2) + 1;
