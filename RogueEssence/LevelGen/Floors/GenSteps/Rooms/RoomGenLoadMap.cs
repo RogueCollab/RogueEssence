@@ -152,6 +152,9 @@ namespace RogueEssence.LevelGen
         [Dev.DataFolder(0, "Map/")]
         public string MapID;
 
+        /// <summary>
+        /// Prevents later steps from changing the tiles or items specified by this room.
+        /// </summary>
         public PostProcType PreventChanges { get; set; }
 
         [NonSerialized]

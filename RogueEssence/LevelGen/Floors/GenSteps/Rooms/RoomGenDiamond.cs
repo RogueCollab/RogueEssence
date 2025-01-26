@@ -88,7 +88,7 @@ namespace RogueEssence.LevelGen
             }
         }
 
-        public static bool IsTileWithinDiamond(int baseX, int baseY, int diameter, Loc size)
+        private static bool IsTileWithinDiamond(int baseX, int baseY, int diameter, Loc size)
         {
             Loc sizeX2 = size * 2;
             int x = (baseX * 2) + 1;
