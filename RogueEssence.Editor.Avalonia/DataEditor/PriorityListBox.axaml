@@ -23,7 +23,7 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="30"/>
     </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50">
+    <DataGrid Name="gridItems" IsReadOnly="true" ItemsSource="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Priority"
                       Binding="{Binding PriorityObj}" />

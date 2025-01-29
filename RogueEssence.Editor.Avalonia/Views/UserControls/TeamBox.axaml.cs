@@ -8,18 +8,13 @@ using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
-    public class TeamBox : UserControl
+    public partial class TeamBox : UserControl
     {
         public TeamBox()
         {
             this.InitializeComponent();
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         bool doubleclick;
         public void doubleClickStart(object sender, RoutedEventArgs e)
         {

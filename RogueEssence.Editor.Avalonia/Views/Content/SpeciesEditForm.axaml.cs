@@ -12,21 +12,12 @@ using System.Threading;
 
 namespace RogueEssence.Dev.Views
 {
-    public class SpeciesEditForm : Window
+    public partial class SpeciesEditForm : Window
     {
 
         public SpeciesEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
     }
 }

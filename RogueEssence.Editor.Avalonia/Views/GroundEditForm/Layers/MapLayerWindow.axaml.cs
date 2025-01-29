@@ -5,24 +5,13 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapLayerWindow : Window
+    public partial class MapLayerWindow : Window
     {
         public MapLayerWindow()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
-
-
+        
         public void btnOK_Click(object sender, RoutedEventArgs e)
         {
             this.Close(true);

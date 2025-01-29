@@ -25,7 +25,7 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <DataGrid Grid.ColumnSpan="3" Items="{Binding GameStrings}" SelectedIndex="{Binding CurrentString, Mode=TwoWay}"
+      <DataGrid Grid.ColumnSpan="3" ItemsSource="{Binding GameStrings}" SelectedIndex="{Binding CurrentString, Mode=TwoWay}"
                 CanUserResizeColumns="True" HorizontalScrollBarVisibility="Disabled" Margin="4">
 
         <DataGrid.Styles>

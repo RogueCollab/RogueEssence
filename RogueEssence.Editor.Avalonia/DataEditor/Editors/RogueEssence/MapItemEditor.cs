@@ -32,8 +32,7 @@ namespace RogueEssence.Dev
             lblItem.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
 
             ComboBox cbItem = new SearchComboBox();
-
-            cbItem.VirtualizationMode = ItemVirtualizationMode.Simple;
+            
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Item];
             List<string> itemKeys = nameIndex.GetOrderedKeys(false);
@@ -50,7 +49,7 @@ namespace RogueEssence.Dev
 
             var itemsSubject = new Subject<List<string>>();
 
-            cbItem.Bind(ComboBox.ItemsProperty, itemsSubject);
+            cbItem.Bind(ComboBox.ItemsSourceProperty, itemsSubject);
             itemsSubject.OnNext(items);
 
             innerPanel1.ColumnDefinitions[0].Width = new GridLength(70);

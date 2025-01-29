@@ -4,16 +4,11 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class GroundTabScript : UserControl
+    public partial class GroundTabScript : UserControl
     {
         public GroundTabScript()
         {
             this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }
