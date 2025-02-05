@@ -47,6 +47,38 @@ namespace RogueEssence.Script
             return new ModDiff("", uuid, null, null);
         }
 
+        /// <summary>
+        /// Returns the header of a mod whose UUID corresponds to the supplied string.
+        /// Use the IsValid() method to then check if the mod exists or not.
+        /// </summary>
+        /// <param name="uuidStr"> the UUID of the mod to look for</param>
+        /// <returns></returns>
+        public ModHeader GetModByUUID(string uuidStr)
+        {
+            Guid uuid = new Guid(uuidStr);
+            foreach (ModHeader mod in DataManager.Instance.Save.Mods)
+            {
+                if (mod.UUID == uuid)
+                    return mod;
+            }
+            return new ModHeader();
+        }
+        /// <summary>
+        /// Returns the header of a mod whose namespace corresponds to the supplied string.
+        /// Use the IsValid() method to then check if the mod exists or not.
+        /// </summary>
+        /// <param name="namespc"> the namespace of the mod to look for</param>
+        /// <returns></returns>
+        public ModHeader GetModByNamespace(string namespc)
+        {
+            foreach (ModHeader mod in DataManager.Instance.Save.Mods)
+            {
+                if (mod.Namespace == namespc)
+                    return mod;
+            }
+            return new ModHeader();
+        }
+
         //===================================
         // Current Map
         //===================================
