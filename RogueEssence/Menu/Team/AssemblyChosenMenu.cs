@@ -87,7 +87,7 @@ namespace RogueEssence.Menu
 
         private void SummaryAction()
         {
-            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(teamSlot, assembly, DataManager.Instance.Save.ActiveTeam.Assembly.Count > 0), false);
+            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(DataManager.Instance.Save.ActiveTeam, teamSlot, assembly, DataManager.Instance.Save.ActiveTeam.Assembly.Count > 0, false), false);
         }
 
         private void JoinAction()
