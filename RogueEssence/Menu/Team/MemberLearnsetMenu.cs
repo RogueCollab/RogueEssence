@@ -14,24 +14,35 @@ namespace RogueEssence.Menu
         public static readonly int SLOTS_PER_PAGE = 6;
         private List<string> Skills = new List<string>();
 
+		Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+		bool guest;
 
         SkillSummary summaryMenu;
 
-        public MemberLearnsetMenu(int teamSlot, bool assembly, bool allowAssembly, bool maxPage) :
-            this(MenuLabel.SUMMARY_MENU_LEARNSET, teamSlot, assembly, allowAssembly, maxPage) { }
-        public MemberLearnsetMenu(string label, int teamSlot, bool assembly, bool allowAssembly, bool maxPage)
+        public MemberLearnsetMenu(Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest, bool maxPage) :
+            this(MenuLabel.SUMMARY_MENU_LEARNSET, team, teamSlot, assembly, allowAssembly, guest, maxPage) { }
+        public MemberLearnsetMenu(string label, Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest, bool maxPage)
         {
             Label = label;
+            this.team = team;
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
+			this.guest = guest;
             
-            Character player = assembly
-                ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot]
-                : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
+            Character player = null;
+			
+			if (guest)
+			{
+				player = team.Guests[teamSlot];
+			}
+			else
+			{
+				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+			}
             
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
@@ -90,7 +101,16 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
+            Character player = null;
+			
+			if (guest)
+			{
+				player = team.Guests[teamSlot];
+			}
+			else
+			{
+				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+			}
             Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET", player.GetDisplayName(true)));
             summaryMenu.SetSkill(Skills[CurrentChoiceTotal]);
             base.ChoiceChanged();
@@ -101,28 +121,35 @@ namespace RogueEssence.Menu
             if (CurrentPage - 1 < 0 && IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, teamSlot, assembly, allowAssembly, guest));
             }
             else if (CurrentPage + 1 >= TotalChoices.Length && IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, teamSlot, assembly, allowAssembly, guest));
             }
             else if (CurrentChoice - 1 < 0 && IsInputting(input, Dir8.Up))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
-                    int amtLimit = (!assembly) ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    int amtLimit = (!assembly) ? ((ExplorerTeam)team).Assembly.Count : team.Players.Count;
                     if (teamSlot - 1 < 0)
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(amtLimit - 1, !assembly, allowAssembly, false));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, amtLimit - 1, !assembly, true, false, false));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot - 1, assembly, allowAssembly, false));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, teamSlot - 1, assembly, true, false, false));
                 }
+				else if (guest)
+				{
+                    if (team.Guests.Count != 1)
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true, false));
+                    else
+                        CurrentChoice = TotalChoices[CurrentPage].Length - 1;
+				}
                 else
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Players.Count != 1)
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, false));
+                    if (team.Players.Count != 1)
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, (teamSlot + team.Players.Count - 1) % team.Players.Count, false, false, false, false));
                     else
                         CurrentChoice = TotalChoices[CurrentPage].Length - 1;
                 }
@@ -132,17 +159,23 @@ namespace RogueEssence.Menu
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
-                    int amtLimit = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    int amtLimit = assembly ? ((ExplorerTeam)team).Assembly.Count : team.Players.Count;
                     if (teamSlot + 1 >= amtLimit)
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(0, !assembly, allowAssembly,
-                            false));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, 0, !assembly, true, false, false));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot + 1, assembly, allowAssembly, false));
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, teamSlot + 1, assembly, true, false, false));
+                }
+                else if (guest)
+                {
+                    if (team.Guests.Count != 1)
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true, false));
+                    else
+                        CurrentChoice = 0;
                 }
                 else
                 {
-                    if (DataManager.Instance.Save.ActiveTeam.Players.Count != 1)
-                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, false));
+                    if (team.Players.Count != 1)
+                        MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, (teamSlot + 1) % team.Players.Count, false, false, false, false));
                     else
                         CurrentChoice = 0;
                 }
