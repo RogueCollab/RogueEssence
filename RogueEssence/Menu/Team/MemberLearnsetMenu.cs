@@ -14,11 +14,11 @@ namespace RogueEssence.Menu
         public static readonly int SLOTS_PER_PAGE = 6;
         private List<string> Skills = new List<string>();
 
-		Team team;
+        Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
-		bool guest;
+        bool guest;
 
         SkillSummary summaryMenu;
 
@@ -31,18 +31,18 @@ namespace RogueEssence.Menu
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
-			this.guest = guest;
-            
+            this.guest = guest;
+
             Character player = null;
-			
-			if (guest)
-			{
-				player = team.Guests[teamSlot];
-			}
-			else
-			{
-				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-			}
+
+            if (guest)
+            {
+                player = team.Guests[teamSlot];
+            }
+            else
+            {
+                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+            }
             
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
@@ -102,20 +102,20 @@ namespace RogueEssence.Menu
         protected override void ChoiceChanged()
         {
             Character player = null;
-			
-			if (guest)
-			{
-				player = team.Guests[teamSlot];
-			}
-			else
-			{
-				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-			}
+
+            if (guest)
+            {
+                player = team.Guests[teamSlot];
+            }
+            else
+            {
+                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+            }
             Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET", player.GetDisplayName(true)));
             summaryMenu.SetSkill(Skills[CurrentChoiceTotal]);
             base.ChoiceChanged();
         }
-        
+
         protected override void UpdateKeys(InputManager input)
         {
             if (CurrentPage - 1 < 0 && IsInputting(input, Dir8.Left))
@@ -139,13 +139,13 @@ namespace RogueEssence.Menu
                     else
                         MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, teamSlot - 1, assembly, true, false, false));
                 }
-				else if (guest)
-				{
+                else if (guest)
+                {
                     if (team.Guests.Count != 1)
                         MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true, false));
                     else
                         CurrentChoice = TotalChoices[CurrentPage].Length - 1;
-				}
+                }
                 else
                 {
                     if (team.Players.Count != 1)
@@ -183,7 +183,7 @@ namespace RogueEssence.Menu
             else
                 base.UpdateKeys(input);
         }
-    
+
         protected override void SetPage(int page)
         {
             int totalOtherMemberPages = 3;

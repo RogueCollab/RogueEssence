@@ -9,13 +9,13 @@ namespace RogueEssence.Menu
 {
     public class MemberStatsMenu : InteractableMenu
     {
-    	Team team;
+        Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
-		bool guest;
+        bool guest;
         bool boostView;
-        
+
         public MenuText Title;
         public MenuText PageText;
         public MenuDivider Div;
@@ -73,20 +73,19 @@ namespace RogueEssence.Menu
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
-			this.guest = guest;
-			
-            Character player = null;
-			
-			if (guest)
-			{
-				player = team.Guests[teamSlot];
-			}
-			else
-			{
-				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-			}
+            this.guest = guest;
 
-            
+            Character player = null;
+
+            if (guest)
+            {
+                player = team.Guests[teamSlot];
+            }
+            else
+            {
+                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+            }
+
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             
@@ -233,18 +232,18 @@ namespace RogueEssence.Menu
         private int calcLength(Team team, Stat stat, BaseMonsterForm form, int statVal, int level, bool guest)
         {
             int avgLevel = 0;
-			if (guest)
-			{
-				for (int ii = 0; ii < team.Guests.Count; ii++)
-					avgLevel += team.Guests[ii].Level;
-				avgLevel /= team.Guests.Count;
-			}
-			else
-			{
-				for (int ii = 0; ii < team.Players.Count; ii++)
-					avgLevel += team.Players[ii].Level;
-				avgLevel /= team.Players.Count;
-			}
+            if (guest)
+            {
+                for (int ii = 0; ii < team.Guests.Count; ii++)
+                    avgLevel += team.Guests[ii].Level;
+                avgLevel /= team.Guests.Count;
+            }
+            else
+            {
+                for (int ii = 0; ii < team.Players.Count; ii++)
+                    avgLevel += team.Players[ii].Level;
+                avgLevel /= team.Players.Count;
+            }
             int baseStat = form.ReverseGetStat(stat, statVal, level);
             baseStat = baseStat * level / avgLevel;
             return Math.Min(Math.Max(1, baseStat * 140 / 120), 168);
@@ -302,9 +301,9 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, teamSlot - 1, assembly, true, false, boostView));
                 }
                 else if (guest)
-				{
-					MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true, boostView));
-				}
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true, boostView));
+                }
                 else
                     MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + team.Players.Count - 1) % team.Players.Count, false, false, false, boostView));
             }
@@ -320,9 +319,9 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, teamSlot + 1, assembly, true, false, boostView));
                 }
                 else if (guest)
-				{
-					MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true, boostView));
-				}
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true, boostView));
+                }
                 else
                     MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + 1) % team.Players.Count, false, false, false, boostView));
             }
@@ -334,16 +333,16 @@ namespace RogueEssence.Menu
             int MAX_STAT_BOOST = 256;
 
             Character player = null;
-			
-			if (guest)
-			{
-				player = team.Guests[teamSlot];
-			}
-			else
-			{
-				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-			}
-			
+
+            if (guest)
+            {
+                player = team.Guests[teamSlot];
+            }
+            else
+            {
+                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+            }
+
             BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
 
             int mhp = player.MaxHPBonus;

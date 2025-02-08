@@ -10,12 +10,12 @@ namespace RogueEssence.Menu
 {
     public class MemberInfoMenu : InteractableMenu
     {
-    	Team team;
+        Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
-		bool guest;
-        
+        bool guest;
+
         public MenuText Title;
         public MenuText PageText;
         public MenuDivider Div;
@@ -41,18 +41,18 @@ namespace RogueEssence.Menu
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
-			this.guest = guest;
+            this.guest = guest;
 
             Character player = null;
-			
-			if (guest)
-			{
-				player = team.Guests[teamSlot];
-			}
-			else
-			{
-				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-			}
+
+            if (guest)
+            {
+                player = team.Guests[teamSlot];
+            }
+            else
+            {
+                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+            }
             
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
@@ -78,14 +78,14 @@ namespace RogueEssence.Menu
             Species = new MenuText(Text.FormatKey("MENU_TEAM_SPECIES", speciesName), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 0 + TitledStripMenu.TITLE_OFFSET));
             Category = new MenuText(dexEntry.Title.ToLocal(), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 1 + TitledStripMenu.TITLE_OFFSET));
             MetAt = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET));
-			
-			if(!guest && !string.IsNullOrWhiteSpace(player.MetAt))
-			{
-				if (DataManager.Instance.Save.UUID == player.OriginalUUID)
-					MetAt.SetText(Text.FormatKey("MENU_TEAM_MET_AT", player.MetAt));
-				else
-					MetAt.SetText(Text.FormatKey("MENU_TEAM_TRADED_FROM", player.OriginalTeam));
-			}
+
+            if(!guest && !string.IsNullOrWhiteSpace(player.MetAt))
+            {
+                if (DataManager.Instance.Save.UUID == player.OriginalUUID)
+                    MetAt.SetText(Text.FormatKey("MENU_TEAM_MET_AT", player.MetAt));
+                else
+                    MetAt.SetText(Text.FormatKey("MENU_TEAM_TRADED_FROM", player.OriginalTeam));
+            }
 
             MainDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5), Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2);
 
@@ -189,9 +189,9 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, teamSlot - 1, assembly, true, false));
                 }
                 else if (guest)
-				{
-					MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true));
-				}
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true));
+                }
                 else
                     MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, (teamSlot + team.Players.Count - 1) % team.Players.Count, false, false, false));
             }
@@ -207,9 +207,9 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, teamSlot + 1, assembly, true, false));
                 }
                 else if (guest)
-				{
-					MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true));
-				}
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true));
+                }
                 else
                     MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, (teamSlot + 1) % team.Players.Count, false, false, false));
             }

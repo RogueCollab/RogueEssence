@@ -10,11 +10,11 @@ namespace RogueEssence.Menu
 {
     public class MemberFeaturesMenu : InteractableMenu
     {
-    	Team team;
+        Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
-		bool guest;
+        bool guest;
 
         public MenuText Title;
         public MenuText PageText;
@@ -52,19 +52,19 @@ namespace RogueEssence.Menu
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
-			this.guest = guest;
-			
-			Character player = null;
-			
-			if (guest)
-			{
-				player = team.Guests[teamSlot];
-			}
-			else
-			{
-				player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-			}
-            
+            this.guest = guest;
+
+            Character player = null;
+
+            if (guest)
+            {
+                player = team.Guests[teamSlot];
+            }
+            else
+            {
+                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+            }
+
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             
@@ -198,10 +198,10 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, teamSlot - 1, assembly, true, false));
                 }
                 else if (guest)
-				{
-					MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true));
-				}
-				else
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true));
+                }
+                else
                     MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + team.Players.Count - 1) % team.Players.Count, false, false, false));
             }
             else if (IsInputting(input, Dir8.Down))
@@ -216,10 +216,10 @@ namespace RogueEssence.Menu
                         MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, teamSlot + 1, assembly, true, false));
                 }
                 else if (guest)
-				{
-					MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true));
-				}
-				else
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true));
+                }
+                else
                     MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + 1) % team.Players.Count, false, false, false));
             }
         }
