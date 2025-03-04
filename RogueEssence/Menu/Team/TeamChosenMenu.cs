@@ -113,7 +113,7 @@ namespace RogueEssence.Menu
 
         private void SummaryAction()
         {
-            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(teamSlot, false, false), false);
+            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(DataManager.Instance.Save.ActiveTeam, teamSlot, false, false, false), false);
         }
 
         private void StatusAction()
