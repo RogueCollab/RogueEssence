@@ -42,16 +42,16 @@ namespace RogueEssence.Menu
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
             this.guest = guest;
-
+            
             Character player = null;
-
-            if (guest)
-            {
-                player = team.Guests[teamSlot];
-            }
+            if (assembly)
+                player = ((ExplorerTeam)team).Assembly[teamSlot];
             else
             {
-                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
+                if (guest)
+                    player = team.Guests[teamSlot];
+                else
+                    player = team.Players[teamSlot];
             }
             
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
