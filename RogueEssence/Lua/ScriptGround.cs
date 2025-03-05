@@ -460,9 +460,9 @@ namespace RogueEssence.Script
         /// </example>
         public LuaFunction MoveInDirection;
 
-        public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, int speed = 2)
+        public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, float speed = 2)
         {
-            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
+            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * (int)speed);
             return _MoveToPosition(chara, endLoc.X, endLoc.Y, run, speed);
         }
 
@@ -530,7 +530,7 @@ namespace RogueEssence.Script
         /// GROUND:MoveInDirection(player, marker, false, 2)
         /// </example>
         public LuaFunction MoveToMarker;
-        public YieldInstruction _MoveToMarker(GroundEntity chara, GroundMarker mark, bool run = false, int speed = 2)
+        public YieldInstruction _MoveToMarker(GroundEntity chara, GroundMarker mark, bool run = false, float speed = 2)
         {
             return _MoveToPosition(chara, mark.X, mark.Y, run, speed);
         }
@@ -585,9 +585,9 @@ namespace RogueEssence.Script
         /// GROUND:AnimateInDirection(player, "Hurt", Dir8.Down, 24, 0.5, 2)
         /// </example>
         public LuaFunction AnimateInDirection;
-        public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, int speed)
+        public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, float speed)
         {
-            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
+            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * (int)speed);
             return _AnimateToPosition(chara, anim, animDir, endLoc.X, endLoc.Y, animSpeed, speed, 0);
         }
 
@@ -606,7 +606,7 @@ namespace RogueEssence.Script
         /// GROUND:AnimateToPosition(player, "Hurt", Dir8.Down, 200, 240, 0.5, 2)
         /// </example>
         public LuaFunction AnimateToPosition;
-        public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, int speed, int height)
+        public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, float speed, int height)
         {
             try
             {
