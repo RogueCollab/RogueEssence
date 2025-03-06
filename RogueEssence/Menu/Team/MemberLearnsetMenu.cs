@@ -33,16 +33,7 @@ namespace RogueEssence.Menu
             this.allowAssembly = allowAssembly;
             this.guest = guest;
 
-            Character player = null;
-            if (assembly)
-                player = ((ExplorerTeam)team).Assembly[teamSlot];
-            else
-            {
-                if (guest)
-                    player = team.Guests[teamSlot];
-                else
-                    player = team.Players[teamSlot];
-            }
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
 
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
@@ -101,16 +92,8 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            Character player = null;
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
 
-            if (guest)
-            {
-                player = team.Guests[teamSlot];
-            }
-            else
-            {
-                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-            }
             Title.SetText(Text.FormatKey("MENU_TEAM_LEARNSET", player.GetDisplayName(true)));
             summaryMenu.SetSkill(Skills[CurrentChoiceTotal]);
             base.ChoiceChanged();

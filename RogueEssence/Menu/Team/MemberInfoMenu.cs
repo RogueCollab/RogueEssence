@@ -42,17 +42,8 @@ namespace RogueEssence.Menu
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
             this.guest = guest;
-            
-            Character player = null;
-            if (assembly)
-                player = ((ExplorerTeam)team).Assembly[teamSlot];
-            else
-            {
-                if (guest)
-                    player = team.Guests[teamSlot];
-                else
-                    player = team.Players[teamSlot];
-            }
+
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
             
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];

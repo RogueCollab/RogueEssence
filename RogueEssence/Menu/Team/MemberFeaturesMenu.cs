@@ -54,16 +54,7 @@ namespace RogueEssence.Menu
             this.allowAssembly = allowAssembly;
             this.guest = guest;
 
-            Character player = null;
-            if (assembly)
-                player = ((ExplorerTeam)team).Assembly[teamSlot];
-            else
-            {
-                if (guest)
-                    player = team.Guests[teamSlot];
-                else
-                    player = team.Players[teamSlot];
-            }
+            Character player = GetPresentedPlayer(team, teamSlot, assembly, guest);
 
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
@@ -130,6 +121,21 @@ namespace RogueEssence.Menu
             Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
             IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
                 new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 3, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 3)), LINE_HEIGHT);
+        }
+
+        public static Character GetPresentedPlayer(Team team, int teamSlot, bool assembly, bool guest)
+        {
+            Character player = null;
+            if (assembly)
+                player = ((ExplorerTeam)team).Assembly[teamSlot];
+            else
+            {
+                if (guest)
+                    player = team.Guests[teamSlot];
+                else
+                    player = team.Players[teamSlot];
+            }
+            return player;
         }
 
         protected override IEnumerable<IMenuElement> GetDrawElements()

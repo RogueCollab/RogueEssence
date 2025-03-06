@@ -75,16 +75,7 @@ namespace RogueEssence.Menu
             this.allowAssembly = allowAssembly;
             this.guest = guest;
 
-            Character player = null;
-            if (assembly)
-                player = ((ExplorerTeam)team).Assembly[teamSlot];
-            else
-            {
-                if (guest)
-                    player = team.Guests[teamSlot];
-                else
-                    player = team.Players[teamSlot];
-            }
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
 
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
@@ -332,16 +323,7 @@ namespace RogueEssence.Menu
             boostView = !boostView;
             int MAX_STAT_BOOST = 256;
 
-            Character player = null;
-
-            if (guest)
-            {
-                player = team.Guests[teamSlot];
-            }
-            else
-            {
-                player = assembly ? ((ExplorerTeam)team).Assembly[teamSlot] : team.Players[teamSlot];
-            }
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
 
             BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
 
