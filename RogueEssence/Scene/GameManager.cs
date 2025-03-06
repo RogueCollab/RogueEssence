@@ -1170,6 +1170,14 @@ namespace RogueEssence
                     else
                         SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc(-1, 0), 0), 0);
                 }
+                if (MetaInputManager[FrameInput.InputType.Cancel] && MetaInputManager[FrameInput.InputType.Ctrl])
+                {
+                    if (MenuManager.Instance.MenuCount > 0)
+                    {
+                        SE("Menu/Cancel");
+                        MenuManager.Instance.ClearMenus();
+                    }
+                }
             }
 
             if (MetaInputManager.JustPressed(FrameInput.InputType.MuteMusic))
