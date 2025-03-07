@@ -135,7 +135,7 @@ namespace RogueEssence.Dungeon
 
             LogMsg(Text.DIVIDER_STR);
 
-            yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolations());
+            yield return CoroutineManager.Instance.StartCoroutine(CheckAllMobilityViolations());
         }
 
 
