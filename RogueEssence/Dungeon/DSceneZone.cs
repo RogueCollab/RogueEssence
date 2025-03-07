@@ -43,7 +43,11 @@ namespace RogueEssence.Dungeon
 
                 //remove statuses
                 foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.EnumerateChars())
+                {
                     character.OnRemove();
+                    // character may have been displaced when removing, remove them from displacement.
+                    ZoneManager.Instance.CurrentMap.DisplacedChars.Remove(character);
+                }
 
                 ZoneManager.Instance.CurrentMap.ActiveTeam = null;
 
