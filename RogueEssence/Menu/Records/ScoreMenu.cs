@@ -42,6 +42,8 @@ namespace RogueEssence.Menu
                 Scores[ii * 3 + 2] = new MenuText(scores[ii].Score.ToString(),
                 new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, color);
             }
+
+            base.Initialize();
         }
 
         protected override IEnumerable<IMenuElement> GetDrawElements()
