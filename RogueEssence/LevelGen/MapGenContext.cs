@@ -208,6 +208,9 @@ namespace RogueEssence.LevelGen
 
         protected virtual bool canPlaceItemTile(Loc loc)
         {
+            if (!Map.GetLocInMapBounds(ref loc))
+                return false;
+
             Tile tile = Map.GetTile(loc);
             TerrainData data = (TerrainData)tile.Data.GetData();
 
