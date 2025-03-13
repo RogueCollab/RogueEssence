@@ -1505,7 +1505,8 @@ namespace RogueEssence.Dungeon
             Normal,
             DropDown,
             Invisible,
-            Kidnap
+            Kidnap,
+            Leap
         }
 
         public AnimData Anim;
@@ -1589,6 +1590,11 @@ namespace RogueEssence.Dungeon
                 case DashAppearance.Kidnap:
                     {
                         rushAnim = new CharAnimKidnapDash();
+                        break;
+                    }
+                case DashAppearance.Leap:
+                    {
+                        rushAnim = new CharAnimLeapingDash();
                         break;
                     }
             }
