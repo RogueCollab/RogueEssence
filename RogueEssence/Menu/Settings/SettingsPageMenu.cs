@@ -135,7 +135,8 @@ namespace RogueEssence.Menu
             for (int i = 0; i < page.Choices.Count; i++)
             {
                 SettingData setting = page.Choices[i];
-                MenuSetting element = new MenuSetting(setting.Name, 88, 72, setting.Options, setting.Default, () => {});
+                int settings_width = 72;
+                MenuSetting element = new MenuSetting(setting.Name, Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4 - 32 + 5 - 4 - settings_width, settings_width, setting.Options, setting.Default, () => { });
                 element.Bounds = new Rect(new Loc(GraphicsManager.MenuBG.TileWidth + 16 - 5, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * i - 1),
                     new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + 5 - 4, VERT_SPACE - 2));
                 Elements.Add(element);
