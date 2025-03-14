@@ -971,9 +971,9 @@ namespace RogueEssence.Script
             if (loaded != null)
             {
                 loaded.ActiveTeam.LoadLua();
+                //Tell the script we've just resumed a save!
+                m_scrsvc.Publish(EServiceEvents.LoadSavedData.ToString());
             }
-            //Tell the script we've just resumed a save!
-            m_scrsvc.Publish(EServiceEvents.LoadSavedData.ToString());
         }
 
         /// <summary>
