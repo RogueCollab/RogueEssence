@@ -60,80 +60,80 @@ namespace RogueEssence.Script
             }
         }
 
-        /// <summary>
-        /// TODO: WIP
-        /// </summary>
-        /// <param name="objtype"></param>
-        /// <param name="instancename"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="w"></param>
-        /// <param name="h"></param>
-        /// <returns></returns>
-        public object CreateObject(string objtype, string instancename, int x, int y, int w, int h)
-        {
-            try
-            {
-                GroundMap map = ZoneManager.Instance.CurrentGround;
+        ///// <summary>
+        ///// TODO: WIP
+        ///// </summary>
+        ///// <param name="objtype"></param>
+        ///// <param name="instancename"></param>
+        ///// <param name="x"></param>
+        ///// <param name="y"></param>
+        ///// <param name="w"></param>
+        ///// <param name="h"></param>
+        ///// <returns></returns>
+        //public object CreateObject(string objtype, string instancename, int x, int y, int w, int h)
+        //{
+        //    try
+        //    {
+        //        GroundMap map = ZoneManager.Instance.CurrentGround;
 
-                GroundObject groundobject = null;
-                var template = TemplateManager.Instance.FindTemplate(objtype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
-                if (template == null)
-                    return null;
+        //        GroundObject groundobject = null;
+        //        var template = TemplateManager.Instance.FindTemplate(objtype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
+        //        if (template == null)
+        //            return null;
 
-                groundobject = (GroundObject)template.create(instancename);
-                groundobject.Bounds = new Rect(x, y, w, h);
-                groundobject.ReloadEvents();
-                map.AddObject(groundobject);
-                return groundobject; //Object's properties can be tweaked later on
+        //        groundobject = (GroundObject)template.create(instancename);
+        //        groundobject.Bounds = new Rect(x, y, w, h);
+        //        groundobject.ReloadEvents();
+        //        map.AddObject(groundobject);
+        //        return groundobject; //Object's properties can be tweaked later on
 
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
-            }
-            return null;
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+        //    }
+        //    return null;
+        //}
 
-        /// <summary>
-        /// TODO: WIP
-        /// </summary>
-        /// <param name="chartype"></param>
-        /// <param name="instancename"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="actionfun"></param>
-        /// <param name="thinkfun"></param>
-        /// <returns></returns>
-        public object CreateCharacter(string chartype, string instancename, int x, int y, string actionfun, string thinkfun)
-        {
-            try
-            {
-                GroundMap map = ZoneManager.Instance.CurrentGround;
+        ///// <summary>
+        ///// TODO: WIP
+        ///// </summary>
+        ///// <param name="chartype"></param>
+        ///// <param name="instancename"></param>
+        ///// <param name="x"></param>
+        ///// <param name="y"></param>
+        ///// <param name="actionfun"></param>
+        ///// <param name="thinkfun"></param>
+        ///// <returns></returns>
+        //public object CreateCharacter(string chartype, string instancename, int x, int y, string actionfun, string thinkfun)
+        //{
+        //    try
+        //    {
+        //        GroundMap map = ZoneManager.Instance.CurrentGround;
 
-                //Ideally this is how we'd create characters :
-                /*
-                GroundChar groundchar = null;
-                    GroundCharTemplate template = CharacterTemplates.Find(chartype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
-                    if (template == null)
-                        return null;
+        //        //Ideally this is how we'd create characters :
+        //        /*
+        //        GroundChar groundchar = null;
+        //            GroundCharTemplate template = CharacterTemplates.Find(chartype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
+        //            if (template == null)
+        //                return null;
 
-                    groundchar = template.create(instancename, x, y);
+        //            groundchar = template.create(instancename, x, y);
 
-                    groundchar.SetRoutine(thinkfun); //Aka the code that makes the npc wander, or do stuff over and over again
-                    groundchar.SetAction(actionfun);
+        //            groundchar.SetRoutine(thinkfun); //Aka the code that makes the npc wander, or do stuff over and over again
+        //            groundchar.SetAction(actionfun);
 
-                    map.AddMapChar(groundChar);
-                    return groundchar; //Object's properties can be tweaked later on
-                */
-                throw new NotImplementedException();
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
-            }
-            return null;
-        }
+        //            map.AddMapChar(groundChar);
+        //            return groundchar; //Object's properties can be tweaked later on
+        //        */
+        //        throw new NotImplementedException();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+        //    }
+        //    return null;
+        //}
 
         /// <summary>
         /// Deletes an object from the ground map, identified by its instance name.
@@ -145,11 +145,20 @@ namespace RogueEssence.Script
             try
             {
                 GroundMap map = ZoneManager.Instance.CurrentGround;
+                
+                GroundObject objectToRemove = map.FindObject(instancename);
+                if (objectToRemove != null)
+                {
+                    map.RemoveObject(objectToRemove);
+                    return true;
+                }
 
-                throw new NotImplementedException();
-                /*
-                map.RemoveObject(instancename); //Removal by instance name, since lua can't do via .NET pointer reliably, and pointers to .NET aren't practical in lua
-                */
+                objectToRemove = map.FindTempObject(instancename);
+                if (objectToRemove != null)
+                {
+                    map.RemoveTempObject(objectToRemove);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
