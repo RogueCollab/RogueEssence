@@ -615,7 +615,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="refresh">True if you want to carry out a refresh, false otherwise</param>
+        /// <param name="fullRefresh">True if you want to carry out a refresh, false otherwise</param>
         public void FullRestore(bool fullRefresh = true)
         {
             if (Dead)

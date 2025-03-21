@@ -152,8 +152,16 @@ namespace RogueEssence.Menu
         /// <returns></returns>
         public bool CanChooseAssembly(int choice)
         {
-            Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
-            return !character.Dead && (DataManager.Instance.Save.ActiveTeam.Players.Count < ExplorerTeam.MAX_TEAM_SLOTS);
+            if (DataManager.Instance.Save.ActiveTeam.Players.Count >= ExplorerTeam.MAX_TEAM_SLOTS)
+                return false;
+
+            if (DataManager.Instance.Save.MidAdventure)
+            {
+                Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
+                if (character.Dead)
+                    return false;
+            }
+            return true;
         }
 
         public void ChooseLeader(int choice)

@@ -543,6 +543,7 @@ namespace RogueEssence.Script
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, false, character);
+                character.Absentee = false;
                 character.RefreshTraits();
                 character.Tactic.Initialize(character);
             }
