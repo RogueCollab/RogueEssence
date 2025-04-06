@@ -287,9 +287,7 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(tile.Data.LandedOnTile(character));
                     character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
                 }
-            }
-            else
-                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
+            }   
 
             //check to make sure the character is on the same tile still, before moving on
             if (character.CharLoc == landTile)
@@ -301,8 +299,6 @@ namespace RogueEssence.Dungeon
                     character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
                 }
             }
-            else
-                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
         }
 
 
