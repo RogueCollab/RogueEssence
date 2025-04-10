@@ -73,7 +73,7 @@ namespace RogueEssence.Menu
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 bool hasGround = DungeonScene.Instance.CanCheckGround();
-                Choices.Add(new MenuTextChoice(MenuLabel.MAIN_GROUND, Text.FormatKey("MENU_GROUND_TITLE"), checkGround, (hasGround && !inReplay), (hasGround && !inReplay) ? Color.White : Color.Red));
+                Choices.Add(new MenuTextChoice(MenuLabel.MAIN_GROUND, Text.FormatKey("MENU_GROUND_TITLE"), checkGround, hasGround, hasGround ? Color.White : Color.Red));
             }
 
             Choices.Add(new MenuTextChoice(MenuLabel.MAIN_OTHERS, Text.FormatKey("MENU_OTHERS_TITLE"), () => { MenuManager.Instance.AddMenu(OthersMenu.InitDefaultOthersMenu(), false); }));
