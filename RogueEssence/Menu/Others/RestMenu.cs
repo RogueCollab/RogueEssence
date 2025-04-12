@@ -11,8 +11,10 @@ namespace RogueEssence.Menu
     public class RestMenu : TitledStripMenu
     {
 
-        public RestMenu()
+        public RestMenu() : this(MenuLabel.REST_MENU) { }
+        public RestMenu(string label)
         {
+            Label = label;
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             bool isRecording = DataManager.Instance.RecordingReplay;
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_REST_SUSPEND"), SuspendAction, isRecording, isRecording ? Color.White : Color.Red));

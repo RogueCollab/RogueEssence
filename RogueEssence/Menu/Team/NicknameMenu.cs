@@ -10,8 +10,10 @@ namespace RogueEssence.Menu
         OnChooseText chooseTextAction;
         Action cancelAction;
 
-        public NicknameMenu(OnChooseText action, Action cancelAction)
+        public NicknameMenu(OnChooseText action, Action cancelAction) : this(MenuLabel.NICKNAME_MENU, action, cancelAction) { }
+        public NicknameMenu(string label, OnChooseText action, Action cancelAction)
         {
+            Label = label;
             chooseTextAction = action;
             this.cancelAction = cancelAction;
             Initialize(RogueEssence.Text.FormatKey("INPUT_NAME_TITLE"), RogueEssence.Text.FormatKey("INPUT_NAME_DESC"), 256);
@@ -19,9 +21,15 @@ namespace RogueEssence.Menu
 
         protected override void Confirmed()
         {
+            if (Text.Text != "" && Text.Text.Trim() == "")
+            {
+                GameManager.Instance.SE("Menu/Cancel");
+                return;
+            }
+
             GameManager.Instance.SE("Menu/Confirm");
             MenuManager.Instance.RemoveMenu();
-            chooseTextAction(Text.Text);
+            chooseTextAction(Text.Text.Trim());
         }
 
         protected override void Canceled()

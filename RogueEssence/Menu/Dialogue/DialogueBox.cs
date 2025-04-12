@@ -41,26 +41,10 @@ namespace RogueEssence.Menu
 
         public bool Skippable;
 
-        public List<List<TextPause>> Pauses;
-
-        protected List<TextPause> CurrentPause { get { return Pauses[curTextIndex]; } }
-
-        public List<List<TextScript>> ScriptCalls;
+        public List<List<TextTag>> Tags;
+        protected List<TextTag> CurrentTag { get { return Tags[curTextIndex]; } }
 
         public object[] Scripts;
-        protected List<TextScript> CurrentScript
-        {
-            get { return ScriptCalls[curTextIndex]; }
-        }
-
-        public List<List<TextSpeed>> Speeds;
-        protected List<TextSpeed> CurrentSpeed { get { return Speeds[curTextIndex]; } }
-        
-        public List<List<TextSoundEffect>> SoundEffects;
-        protected List<TextSoundEffect> CurrentSoundEffect { get { return SoundEffects[curTextIndex]; } }
-        
-        public List<List<TextEmote>> Emotes;
-        protected List<TextEmote> CurrentEmote { get { return Emotes[curTextIndex]; } }
         
         //Dialogue Text needs to be able to set character index accurately
         protected List<DialogueText> Texts;
@@ -74,7 +58,7 @@ namespace RogueEssence.Menu
         protected DialogueText CurrentText { get { return Texts[curTextIndex]; } }
         protected DialogueText NextText { get { return nextTextIndex > -1 ? Texts[nextTextIndex] : null; } }
         
-        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentPause.Count == 0 && CurrentSpeed.Count == 0 && CurrentSoundEffect.Count == 0 && CurrentEmote.Count == 0 && CurrentScript.Count == 0; } }
+        protected bool CurrentBoxFinished { get { return CurrentText.Finished && CurrentTag.Count == 0; } }
         public bool Finished { get { return CurrentText.Finished && curTextIndex == Texts.Count-1; } }
         
         public bool Sound;
@@ -128,11 +112,7 @@ namespace RogueEssence.Menu
         {
             Bounds = bounds;
             Scripts = scripts;
-            Pauses = new List<List<TextPause>>();
-            ScriptCalls = new List<List<TextScript>>();
-            Speeds = new List<List<TextSpeed>>();
-            SoundEffects = new List<List<TextSoundEffect>>();
-            Emotes = new List<List<TextEmote>>();
+            Tags = new List<List<TextTag>>();
             speakerName = "";
             currSe = soundEffect;
             currSpeakTime = speakTime;
@@ -162,80 +142,75 @@ namespace RogueEssence.Menu
         {
             if (!CurrentBoxFinished)
             {
-                TextScript textScript = getCurrentTextScript();
-                if (textScript != null)
+                TextTag curTag = getCurrentTextTag();
+                while (curTag != null)
                 {
-                    if (!startedScript && textScript.Script < Scripts.Length && textScript.Script >= 0)
+                    TextScript textScript = curTag as TextScript;
+                    if (textScript != null)
                     {
-                        object script = Scripts[textScript.Script];
-                        if (script is Coroutine)
+                        if (!startedScript && textScript.Script < Scripts.Length && textScript.Script >= 0)
                         {
-                            MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine((Coroutine) script, true) ); 
-                            runningScript = true;
-                            startedScript = true;
+                            object script = Scripts[textScript.Script];
+                            if (script is Coroutine)
+                            {
+                                MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine((Coroutine)script, true));
+                                runningScript = true;
+                                startedScript = true;
+                            }
+                            else if (script is LuaFunction)
+                            {
+                                LuaFunction luaFun = script as LuaFunction;
+                                MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine(new Coroutine(LuaEngine.Instance.CallScriptFunction(luaFun)), true));
+                                runningScript = true;
+                                startedScript = true;
+                            }
                         }
-                        else if (script is LuaFunction)
-                        {
-                            LuaFunction luaFun = script as LuaFunction;
-                            MenuManager.Instance.NextAction = waitForTaskDone(CoroutineManager.Instance.StartCoroutine(new Coroutine(LuaEngine.Instance.CallScriptFunction(luaFun)), true) );
-                            runningScript = true;
-                            startedScript = true;
-                        }
-                    }
-                    
-                    if (runningScript)
-                    {
-                        return;
-                    }
-                    else
-                    {
+
+                        if (runningScript)
+                            return;
+
                         startedScript = false;
                         runningScript = false;
-                        CurrentScript.RemoveAt(0);      
                         CurrentTextTime = new FrameTick();
                     }
-                }
-                
-                TextSpeed textSpeed = getCurrentTextSpeed();
-                if (textSpeed != null)
-                {
-                    currSpeed = textSpeed.Speed;
-                    CurrentSpeed.RemoveAt(0);
-                }
-                
-                TextSoundEffect textSoundEffect = getCurrentTextSoundEffect();
-                if (textSoundEffect != null)
-                {
-                    currSe = textSoundEffect.Sound;
-                    currSpeakTime = textSoundEffect.SpeakTime;
-                    CurrentSoundEffect.RemoveAt(0);
-                }
-                
-                TextEmote textEmote = getCurrentTextEmote();
-                if (textEmote != null)
-                {
-                    SetPortraitEmote(textEmote.Emote);
-                    CurrentEmote.RemoveAt(0);
-                }
-                
-                TextPause textPause = getCurrentTextPause();
-                if (textPause != null)
-                {
-                    bool continueText;
-                    if (textPause.Time > 0)
-                        continueText = CurrentTextTime >= textPause.Time;
-                    else
-                        continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
-                            || input.JustPressed(FrameInput.InputType.LeftMouse));
 
-                    if (!continueText)
-                        return;
-                    else
+                    TextSpeed textSpeed = curTag as TextSpeed;
+                    if (textSpeed != null)
                     {
-                        //remove last text pause
-                        CurrentPause.RemoveAt(0);
+                        currSpeed = textSpeed.Speed;
+                    }
+
+                    TextSoundEffect textSoundEffect = curTag as TextSoundEffect;
+                    if (textSoundEffect != null)
+                    {
+                        currSe = textSoundEffect.Sound;
+                        currSpeakTime = textSoundEffect.SpeakTime;
+                    }
+
+                    TextEmote textEmote = curTag as TextEmote;
+                    if (textEmote != null)
+                    {
+                        SetPortraitEmote(textEmote.Emote);
+                    }
+
+                    TextPause textPause = curTag as TextPause;
+                    if (textPause != null)
+                    {
+                        bool continueText;
+                        if (textPause.Time > 0)
+                            continueText = CurrentTextTime >= textPause.Time;
+                        else
+                            continueText = (input.JustPressed(FrameInput.InputType.Confirm) || input[FrameInput.InputType.Cancel]
+                                || input.JustPressed(FrameInput.InputType.LeftMouse));
+
+                        if (!continueText)
+                            return;
+
                         CurrentTextTime = new FrameTick();
                     }
+
+                    CurrentTag.RemoveAt(0);
+                    curTag = getCurrentTextTag();
                 }
 
                 bool addedText = false;
@@ -244,7 +219,8 @@ namespace RogueEssence.Menu
                 FrameTick subTick = speed > 0 ? new FrameTick((long)(FrameTick.FrameToTick(1) / speed)) : FrameTick.FromFrames(1);
                 while (true)
                 {
-                    if (CurrentText.Finished || getCurrentTextScript() != null || getCurrentTextPause() != null)
+                    TextTag blockingTag = getCurrentTextTag();
+                    if (CurrentText.Finished || blockingTag != null && blockingTag.IsBlocking())
                     {
                         CurrentTextTime = new FrameTick();
                         break;
@@ -304,7 +280,7 @@ namespace RogueEssence.Menu
             base.Draw(spriteBatch);
             
             //when text is paused and waiting for input, flash a tick at the end
-            TextPause textPause = getCurrentTextPause();
+            TextPause textPause = getCurrentTextTag() as TextPause;
             if (textPause != null && textPause.Time == 0)
             {
                 //text needs a "GetTextProgress" method, which returns the end loc of the string as its currently shown.
@@ -333,52 +309,12 @@ namespace RogueEssence.Menu
                 yield return NextText;
         }
 
-        protected TextPause getCurrentTextPause()
+        protected TextTag getCurrentTextTag()
         {
-            if (CurrentPause.Count > 0)
+            if (CurrentTag.Count > 0)
             {
-                if (CurrentText.CurrentCharIndex < 0 || CurrentPause[0].LetterIndex <= CurrentText.CurrentCharIndex)
-                    return CurrentPause[0];
-            }
-            return null;
-        }
-        
-        protected TextSpeed getCurrentTextSpeed()
-        {
-            if (CurrentSpeed.Count > 0)
-            {
-                if (CurrentText.CurrentCharIndex < 0 || CurrentSpeed[0].LetterIndex <= CurrentText.CurrentCharIndex)
-                    return CurrentSpeed[0];
-            }
-            return null;
-        }
-        
-        
-        protected TextSoundEffect getCurrentTextSoundEffect()
-        {
-            if (CurrentSoundEffect.Count > 0)
-            {
-                if (CurrentText.CurrentCharIndex < 0 || CurrentSoundEffect[0].LetterIndex <= CurrentText.CurrentCharIndex)
-                    return CurrentSoundEffect[0];
-            }
-            return null;
-        }
-        protected TextEmote getCurrentTextEmote()
-        {
-            if (CurrentEmote.Count > 0)
-            {
-                if (CurrentText.CurrentCharIndex < 0 || CurrentEmote[0].LetterIndex <= CurrentText.CurrentCharIndex)
-                    return CurrentEmote[0];
-            }
-            return null;
-        }
-
-        protected TextScript getCurrentTextScript()
-        {
-            if (CurrentScript.Count > 0)
-            {
-                if (CurrentText.CurrentCharIndex < 0 || CurrentScript[0].LetterIndex <= CurrentText.CurrentCharIndex)
-                    return CurrentScript[0];
+                if (CurrentText.CurrentCharIndex < 0 || CurrentTag[0].LetterIndex <= CurrentText.CurrentCharIndex)
+                    return CurrentTag[0];
             }
             return null;
         }
@@ -435,6 +371,8 @@ namespace RogueEssence.Menu
         {
             foreach(DialogueText text in Texts)
                 text.FinishText();
+            foreach (List<TextTag> tagList in Tags)
+                tagList.Clear();
         }
 
         private void updateMessage()
@@ -444,11 +382,7 @@ namespace RogueEssence.Menu
             Texts.Clear();
             curTextIndex = 0;
             nextTextIndex = -1;
-            Pauses.Clear();
-            Speeds.Clear();
-            SoundEffects.Clear();
-            Emotes.Clear();
-            ScriptCalls.Clear();
+            Tags.Clear();
 
             int curCharIndex = 0;
             string msg = message;
@@ -462,12 +396,8 @@ namespace RogueEssence.Menu
             string[] scrolls = SplitTags.Split(msg);
             for (int nn = 0; nn < scrolls.Length; nn++)
             {
-                List<TextPause> pauses = new List<TextPause>();
-                List<TextScript> scripts = new List<TextScript>();
+                List<TextTag> tags = new List<TextTag>();
                 List<IntRange> tagRanges = new List<IntRange>();
-                List<TextSpeed> speeds = new List<TextSpeed>();
-                List<TextSoundEffect> soundEffects = new List<TextSoundEffect>();
-                List<TextEmote> emotes = new List<TextEmote>();
                 
                 int lag = 0;
                 MatchCollection matches = Text.MsgTags.Matches(scrolls[nn]);
@@ -487,7 +417,7 @@ namespace RogueEssence.Menu
                                     int param;
                                     if (Int32.TryParse(match.Groups["pauseval"].Value, out param))
                                         pause.Time = param;
-                                    pauses.Add(pause);
+                                    tags.Add(pause);
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
@@ -498,7 +428,7 @@ namespace RogueEssence.Menu
                                     int param;
                                     if (Int32.TryParse(match.Groups["scriptval"].Value, out param))
                                         script.Script = param;
-                                    scripts.Add(script);
+                                    tags.Add(script);
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
@@ -509,7 +439,7 @@ namespace RogueEssence.Menu
                                     double param;
                                     if (Double.TryParse(match.Groups["speedval"].Value, out param))
                                         speed.Speed = param;
-                                    speeds.Add(speed);
+                                    tags.Add(speed);
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
@@ -522,7 +452,7 @@ namespace RogueEssence.Menu
                                     int param;
                                     if (Int32.TryParse(match.Groups["speaktime"].Value, out param))
                                         sound.SpeakTime = param;
-                                    soundEffects.Add(sound);
+                                    tags.Add(sound);
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
@@ -531,7 +461,7 @@ namespace RogueEssence.Menu
                                     TextEmote emote = new TextEmote();
                                     emote.LetterIndex = match.Index - lag;
                                     emote.Emote = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name.ToLower() == match.Groups["emoteval"].Value.ToLower());
-                                    emotes.Add(emote);
+                                    tags.Add(emote);
                                     tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
                                 }
                                 break;
@@ -557,81 +487,26 @@ namespace RogueEssence.Menu
 
                 int totalTrim = 0;
                 int totalLength = 0;
-                int curPause = 0;
-                int curScript = 0;
-                int curSpeed = 0;
-                int curSoundEffect = 0;
-                int curEmote = 0;
+                int curTag = 0;
                 for (int kk = 0; kk < texts.Count; kk++)
                 {
                     DialogueText text = texts[kk];
 
-                    //pauses and scripts need to be re-aligned to the removals done by breaking the text into lines
-                    List<TextPause> subPauses = new List<TextPause>();
-                    List<TextScript> subScripts = new List<TextScript>();
-                    List<TextSpeed> subSpeeds = new List<TextSpeed>();
-                    List<TextSoundEffect> subSoundEffects = new List<TextSoundEffect>();
-                    List<TextEmote> subEmotes = new List<TextEmote>();
+                    //tags need to be re-aligned to the removals done by breaking the text into lines
+                    List<TextTag> subTags = new List<TextTag>();
                     int lineCount = text.GetLineCount();
                     for (int ii = 0; ii < lineCount; ii++)
                     {
                         totalTrim += text.GetLineTrim(ii);
                         int oldLength = totalLength;
                         totalLength += text.GetLineTrim(ii) + text.GetLineLength(ii);
-                        for (; curPause < pauses.Count; curPause++)
+                        for (; curTag < tags.Count; curTag++)
                         {
-                            TextPause pause = pauses[curPause];
-                            if (pause.LetterIndex <= totalLength)
+                            TextTag tag = tags[curTag];
+                            if (tag.LetterIndex <= totalLength)
                             {
-                                pause.LetterIndex -= totalTrim;
-                                subPauses.Add(pause);
-                            }
-                            else
-                                break;
-                        }
-                        for (; curScript < scripts.Count; curScript++)
-                        {
-                            TextScript script = scripts[curScript];
-                            if (script.LetterIndex <= totalLength)
-                            {
-                                script.LetterIndex -= totalTrim;
-                                subScripts.Add(script);
-                            }
-                            else
-                                break;
-                        }
-                        
-                        for (; curSpeed < speeds.Count; curSpeed++)
-                        {
-                            TextSpeed speed = speeds[curSpeed];
-                            if (speed.LetterIndex <= totalLength)
-                            {
-                                speed.LetterIndex -= totalTrim;
-                                subSpeeds.Add(speed);
-                            }
-                            else
-                                break;
-                        }
-                        
-                        for (; curSoundEffect < soundEffects.Count; curSoundEffect++)
-                        {
-                            TextSoundEffect soundEffect = soundEffects[curSpeed];
-                            if (soundEffect.LetterIndex <= totalLength)
-                            {
-                                soundEffect.LetterIndex -= totalTrim;
-                                subSoundEffects.Add(soundEffect);
-                            }
-                            else
-                                break;
-                        }
-                        
-                        for (; curEmote < emotes.Count; curEmote++)
-                        {
-                            TextEmote emote = emotes[curEmote];
-                            if (emote.LetterIndex <= totalLength)
-                            {
-                                emote.LetterIndex -= totalTrim;
-                                subEmotes.Add(emote);
+                                tag.LetterIndex -= totalTrim;
+                                subTags.Add(tag);
                             }
                             else
                                 break;
@@ -639,11 +514,7 @@ namespace RogueEssence.Menu
                     }
                     totalTrim = totalLength;
 
-                    Pauses.Add(subPauses);
-                    ScriptCalls.Add(subScripts);
-                    Speeds.Add(subSpeeds);
-                    SoundEffects.Add(subSoundEffects);
-                    Emotes.Add(subEmotes);
+                    Tags.Add(subTags);
                     Texts.Add(text);
                 }
 
@@ -651,35 +522,49 @@ namespace RogueEssence.Menu
             CurrentText.CurrentCharIndex = curCharIndex - startLag;
         }
     }
-    public class TextPause
+
+    public abstract class TextTag
     {
         public int LetterIndex;
+
+        public virtual bool IsBlocking()
+        {
+            return false;
+        }
+    }
+
+    public class TextPause : TextTag
+    {
         public int Time;//1 in order to wait on button press
+        public override bool IsBlocking()
+        {
+            return true;
+        }
     }
     
-    public class TextSpeed
+    public class TextSpeed : TextTag
     {
-        public int LetterIndex;
         public double Speed;
     }
 
-    public class TextEmote
+    public class TextEmote : TextTag
     {
-        public int LetterIndex;
         public int Emote;
     }
     
-    public class TextSoundEffect
+    public class TextSoundEffect : TextTag
     {
-        public int LetterIndex;
         public string Sound;
         public int SpeakTime;
     }
 
-    public class TextScript
+    public class TextScript : TextTag
     {
-        public int LetterIndex;
         public int Script;
+        public override bool IsBlocking()
+        {
+            return true;
+        }
     }
 
 }

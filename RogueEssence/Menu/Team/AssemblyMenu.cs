@@ -31,9 +31,12 @@ namespace RogueEssence.Menu
         private List<int> assemblyView;
         private AssemblySortMode sortMode;
 
-        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
+        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent) :
+            this(MenuLabel.ASSEMBLY_MENU, defaultChoice, teamChanged, sort) { }
+        public AssemblyMenu(string label, int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
         {
-            int menuWidth = 152;
+            Label = label;
+            int menuWidth = 160;
             this.teamChanged = teamChanged;
             sortMode = sort;
 
@@ -74,7 +77,7 @@ namespace RogueEssence.Menu
                 GraphicsManager.ScreenHeight - 8 - GraphicsManager.MenuBG.TileHeight * 2 - VERT_SPACE * 5),
                 new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 8)));
 
-            portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 32 - 40, 16), true);
+            portrait = new SpeakerPortrait(MonsterID.Invalid, new EmoteStyle(0), new Loc(GraphicsManager.ScreenWidth - 24 - 40, 16), true);
 
             Initialize(new Loc(16, 16), menuWidth, Text.FormatKey("MENU_ASSEMBLY_TITLE"), box, startChoice, startPage, SLOTS_PER_PAGE);
 
@@ -149,8 +152,16 @@ namespace RogueEssence.Menu
         /// <returns></returns>
         public bool CanChooseAssembly(int choice)
         {
-            Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
-            return !character.Dead && (DataManager.Instance.Save.ActiveTeam.Players.Count < ExplorerTeam.MAX_TEAM_SLOTS);
+            if (DataManager.Instance.Save.ActiveTeam.Players.Count >= ExplorerTeam.MAX_TEAM_SLOTS)
+                return false;
+
+            if (DataManager.Instance.Save.MidAdventure)
+            {
+                Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
+                if (character.Dead)
+                    return false;
+            }
+            return true;
         }
 
         public void ChooseLeader(int choice)

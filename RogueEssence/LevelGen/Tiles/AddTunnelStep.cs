@@ -50,6 +50,7 @@ namespace RogueEssence
 
         private bool getCrossedSelf(List<(LocRay4, int)> drawnRays, Loc checkLoc)
         {
+            // TODO: make this wrap friendly
             foreach ((LocRay4 ray, int range) drawn in drawnRays)
             {
                 if (Collision.InFront(drawn.ray.Loc, checkLoc, drawn.ray.Dir.ToDir8(), drawn.range))

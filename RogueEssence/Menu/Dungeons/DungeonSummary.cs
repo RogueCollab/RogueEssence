@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
         MenuDivider MenuDiv;
         MenuText Floors;
 
-        public DungeonSummary(Rect bounds) : base(bounds)
+        public DungeonSummary(Rect bounds) : this(MenuLabel.DUNGEON_SUMMARY, bounds) { }
+        public DungeonSummary(string label, Rect bounds) : base(bounds)
         {
+            Label = label;
             DungeonName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(DungeonName);
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),

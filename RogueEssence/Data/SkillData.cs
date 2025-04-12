@@ -41,7 +41,7 @@ namespace RogueEssence.Data
         public EntrySummary GenerateEntrySummary()
         {
             BasePowerState powerState = Data.SkillStates.GetWithDefault<BasePowerState>();
-            SkillDataSummary summary = new SkillDataSummary(Name, Released, Comment);
+            SkillDataSummary summary = new SkillDataSummary(Name, Released, Comment, IndexNum);
             summary.RangeDescription = HitboxAction.GetDescription();
             summary.BaseCharges = BaseCharges;
             summary.BasePower = powerState != null ? powerState.Power : -1;
@@ -127,13 +127,23 @@ namespace RogueEssence.Data
         
         public SkillDataSummary() : base() { }
 
-        public SkillDataSummary(LocalText name, bool released, string comment)
-            : base(name, released, comment)
+        public SkillDataSummary(LocalText name, bool released, string comment, int sort)
+            : base(name, released, comment, sort)
         { }
         
         public override string GetColoredName()
         {
             return String.Format("[color=#00FF00]{0}[color]", Name.ToLocal());
+        }
+
+        /// <summary>
+        /// Gets the colored text string of the skill, with icon included
+        /// </summary>
+        /// <returns></returns>
+        public string GetIconName()
+        {
+            ElementData element = DataManager.Instance.GetElement(Element);
+            return String.Format("{0}\u2060{1}", element.Symbol, GetColoredName());
         }
     }
 }

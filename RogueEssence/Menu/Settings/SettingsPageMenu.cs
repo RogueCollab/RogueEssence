@@ -9,8 +9,10 @@ namespace RogueEssence.Menu
         public SettingsTitleMenu Parent;
         public SettingsPage Page;
         public Dictionary<MenuSetting, SettingData> SettingsData;
-        public SettingsPageMenu(SettingsTitleMenu parent, SettingsPage page)
+        public SettingsPageMenu(SettingsTitleMenu parent, SettingsPage page) : this(MenuLabel.SETTINGS_MENU_PAGE, parent, page) { }
+        public SettingsPageMenu(string label, SettingsTitleMenu parent, SettingsPage page)
         {
+            Label = label;
             SettingsData = new Dictionary<MenuSetting, SettingData>();
             Page = page;
             Parent = parent;
@@ -26,7 +28,8 @@ namespace RogueEssence.Menu
             List<MenuSetting> choices = new List<MenuSetting>();
             foreach(SettingData setting in page.Choices)
             {
-                MenuSetting element = new MenuSetting(setting.Name, 88, 72, setting.Options, setting.Default, ConfirmAction);
+                int settings_width = 72;
+                MenuSetting element = new MenuSetting(setting.Name, Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4 - 32 + 5 - 4 - settings_width, settings_width, setting.Options, setting.Default, ConfirmAction);
                 choices.Add(element);
                 SettingsData.Add(element, setting);
             }
@@ -115,8 +118,10 @@ namespace RogueEssence.Menu
         public SettingsTitleMenu Parent;
         public SettingsPage Page;
         public Dictionary<MenuSetting, SettingData> SettingsData = new Dictionary<MenuSetting, SettingData>();
-        public SettingsPageSummaryMenu(SettingsTitleMenu parent, SettingsPage page) : base(new Rect(new Loc(parent.Bounds.Left, parent.Bounds.Bottom), new Loc(parent.Bounds.Width, 16)))
+        public SettingsPageSummaryMenu(SettingsTitleMenu parent, SettingsPage page) : this(MenuLabel.SETTINGS_PAGE_SUMMARY, parent, page) { }
+        public SettingsPageSummaryMenu(string label, SettingsTitleMenu parent, SettingsPage page) : base(new Rect(new Loc(parent.Bounds.Left, parent.Bounds.Bottom), new Loc(parent.Bounds.Width, 16)))
         {
+            Label = label;
             Parent = parent;
             Page = page;
             LoadOptions(Page);
@@ -130,7 +135,8 @@ namespace RogueEssence.Menu
             for (int i = 0; i < page.Choices.Count; i++)
             {
                 SettingData setting = page.Choices[i];
-                MenuSetting element = new MenuSetting(setting.Name, 88, 72, setting.Options, setting.Default, () => {});
+                int settings_width = 72;
+                MenuSetting element = new MenuSetting(setting.Name, Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4 - 32 + 5 - 4 - settings_width, settings_width, setting.Options, setting.Default, () => { });
                 element.Bounds = new Rect(new Loc(GraphicsManager.MenuBG.TileWidth + 16 - 5, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * i - 1),
                     new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 + 5 - 4, VERT_SPACE - 2));
                 Elements.Add(element);

@@ -63,7 +63,7 @@ namespace RogueEssence.Data
 
         public EntrySummary GenerateEntrySummary()
         {
-            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, SortCategory, Icon, UsageType);
+            ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, SortCategory, Icon, UsageType, MaxStack, CannotDrop, BagEffect);
             foreach (ItemState state in ItemStates)
                 summary.States.Add(new FlagType(state.GetType()));
             return summary;
@@ -202,17 +202,24 @@ namespace RogueEssence.Data
         public int Icon;
         public ItemData.UseType UsageType;
         public List<FlagType> States;
+        public int MaxStack;
+        public bool CannotDrop;
+        public bool BagEffect;
+
 
         public ItemEntrySummary() : base()
         {
             States = new List<FlagType>();
         }
 
-        public ItemEntrySummary(LocalText name, bool released, string comment, int sort, int icon, ItemData.UseType useType) : base(name, released, comment, sort)
+        public ItemEntrySummary(LocalText name, bool released, string comment, int sort, int icon, ItemData.UseType useType, int maxStack, bool cannotDrop, bool bagEffect) : base(name, released, comment, sort)
         {
             Icon = icon;
             UsageType = useType;
             States = new List<FlagType>();
+            MaxStack = maxStack;
+            CannotDrop = cannotDrop;
+            BagEffect = bagEffect;
         }
 
         public override string GetColoredName()

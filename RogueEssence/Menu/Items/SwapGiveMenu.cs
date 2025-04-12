@@ -17,8 +17,11 @@ namespace RogueEssence.Menu
         public List<string> AllowedGoods;
         private OnMultiChoice action;
 
-        public SwapGiveMenu(int defaultChoice, int openSpaces, OnMultiChoice chooseSlots)
+        public SwapGiveMenu(int defaultChoice, int openSpaces, OnMultiChoice chooseSlots) :
+            this(MenuLabel.SWAP_SHOP_MENU_GIVE, defaultChoice, openSpaces, chooseSlots) { }
+        public SwapGiveMenu(string label, int defaultChoice, int openSpaces, OnMultiChoice chooseSlots)
         {
+            Label = label;
             action = chooseSlots;
             AllowedGoods = new List<string>();
 

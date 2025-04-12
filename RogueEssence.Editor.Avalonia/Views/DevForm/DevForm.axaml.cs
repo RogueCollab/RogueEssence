@@ -138,6 +138,7 @@ namespace RogueEssence.Dev.Views
                 try
                 {
                     pendingEditorAction();
+                    pendingException = null;
                 }
                 catch (Exception ex)
                 {

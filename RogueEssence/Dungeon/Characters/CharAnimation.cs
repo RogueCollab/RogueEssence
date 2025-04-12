@@ -872,6 +872,25 @@ namespace RogueEssence.Dungeon
 
     }
 
+    public class CharAnimLeapingDash : DashAnimation
+    {
+        protected override void UpdateFrameInternal()
+        {
+            base.UpdateFrameInternal();
+
+            int height = (FromLoc - ToLoc).Dist8() * GraphicsManager.TileSize;
+            if (ActionTime < AnimRushTime)
+            {
+                
+            }
+            else if (ActionTime < AnimHitTime)
+            {
+                double maxDistance = Math.Sqrt(height);
+                LocHeight = AnimMath.GetArc(height / 2, AnimHitTime - AnimRushTime, ActionTime.ToFrames());
+            }
+        }
+    }
+
     public class CharAnimDropDash : DashAnimation
     {
         protected override void UpdateFrameInternal()

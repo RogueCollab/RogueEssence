@@ -10,9 +10,11 @@ namespace RogueEssence.Menu
 {
     public class MemberFeaturesMenu : InteractableMenu
     {
+        Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+        bool guest;
 
         public MenuText Title;
         public MenuText PageText;
@@ -39,16 +41,21 @@ namespace RogueEssence.Menu
         public MenuDivider IntrinsicDiv;
         public MenuText Intrinsic;
         public DialogueText IntrinsicDesc;
-        public MemberFeaturesMenu(int teamSlot, bool assembly, bool allowAssembly)
+        public MemberFeaturesMenu(Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest) : this(MenuLabel.SUMMARY_MENU_FEATS, team, teamSlot, assembly, allowAssembly, guest) { }
+        public MemberFeaturesMenu(string label, Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest)
         {
+            Label = label;
+
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
 
+            this.team = team;
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
+            this.guest = guest;
 
-            Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
-            
+            Character player = GetPresentedPlayer(team, teamSlot, assembly, guest);
+
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             
@@ -96,10 +103,11 @@ namespace RogueEssence.Menu
                 string totalCharges = "/--";
                 if (!String.IsNullOrEmpty(skill.SkillNum))
                 {
-                    SkillData data = DataManager.Instance.GetSkill(skill.SkillNum);
-                    skillString = data.GetIconName();
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(skill.SkillNum);
+                    skillString = summary.GetIconName();
                     skillCharges = skill.Charges.ToString();
-                    totalCharges = "/" + (data.BaseCharges + player.ChargeBoost);
+                    totalCharges = "/" + (summary.BaseCharges + player.ChargeBoost);
                 }
                 Skills[ii * 3] = new MenuText(skillString, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET));
                 Skills[ii * 3 + 1] = new MenuText(skillCharges, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 16 - GraphicsManager.TextFont.CharSpace, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * (ii + 5) + TitledStripMenu.TITLE_OFFSET), DirH.Right);
@@ -113,6 +121,21 @@ namespace RogueEssence.Menu
             Intrinsic = new MenuText(Text.FormatKey("MENU_TEAM_INTRINSIC", entry.GetColoredName()), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), origIntrinsic ? Color.White : Color.Yellow);
             IntrinsicDesc = new DialogueText(entry.Desc.ToLocal(), new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET),
                 new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 3, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 3)), LINE_HEIGHT);
+        }
+
+        public static Character GetPresentedPlayer(Team team, int teamSlot, bool assembly, bool guest)
+        {
+            Character player = null;
+            if (assembly)
+                player = ((ExplorerTeam)team).Assembly[teamSlot];
+            else
+            {
+                if (guest)
+                    player = team.Guests[teamSlot];
+                else
+                    player = team.Players[teamSlot];
+            }
+            return player;
         }
 
         protected override IEnumerable<IMenuElement> GetDrawElements()
@@ -162,40 +185,48 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(teamSlot, assembly, allowAssembly, true));
+                MenuManager.Instance.ReplaceMenu(new MemberLearnsetMenu(team, teamSlot, assembly, allowAssembly, guest, true));
             }
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, teamSlot, assembly, allowAssembly, guest));
             }
             else if (IsInputting(input, Dir8.Up))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
-                    int amtLimit = (!assembly) ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    int amtLimit = (!assembly) ? ((ExplorerTeam)team).Assembly.Count : team.Players.Count;
                     if (teamSlot - 1 < 0)
-                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(amtLimit - 1, !assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, amtLimit - 1, !assembly, true, false));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(teamSlot - 1, assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, teamSlot - 1, assembly, true, false));
+                }
+                else if (guest)
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly));
+                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + team.Players.Count - 1) % team.Players.Count, false, false, false));
             }
             else if (IsInputting(input, Dir8.Down))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
-                    int amtLimit = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    int amtLimit = assembly ? ((ExplorerTeam)team).Assembly.Count : team.Players.Count;
                     if (teamSlot + 1 >= amtLimit)
-                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(0, !assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, 0, !assembly, true, false));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(teamSlot + 1, assembly, allowAssembly));
+                        MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, teamSlot + 1, assembly, true, false));
+                }
+                else if (guest)
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly));
+                    MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, (teamSlot + 1) % team.Players.Count, false, false, false));
             }
         }
     }

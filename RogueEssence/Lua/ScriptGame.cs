@@ -240,6 +240,39 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Fade out the screen. Waits to complete before continuing.
+        /// This fade specifically comes in front of the menu.
+        /// </summary>
+        /// <param name="white">Fade to white if set to true.  Fades to black otherwise.</param>
+        /// <param name="duration">The amount of time to fade in frames.</param>
+        /// <example>
+        /// GAME:FadeOutFront(false, 60)
+        /// </example>
+        public LuaFunction FadeOutFront;
+
+        public Coroutine _FadeOutFront(bool white, int duration)
+        {
+            return new Coroutine(GameManager.Instance.FadeOutFront(white, duration));
+        }
+
+
+        /// <summary>
+        /// Fade in the screen. Waits to complete before continuing.
+        /// This fade specifically comes in front of the menu.
+        /// </summary>
+        /// <param name="duration">The amount of time to fade in frames.</param>
+        /// <example>
+        /// GAME:FadeOutFront(false, 60)
+        /// </example>
+        public LuaFunction FadeInFront;
+
+        public Coroutine _FadeInFront(int duration)
+        {
+            return new Coroutine(GameManager.Instance.FadeInFront(duration));
+        }
+
+
+        /// <summary>
+        /// Fade out the screen. Waits to complete before continuing.
         /// </summary>
         /// <param name="white">Fade to white if set to true.  Fades to black otherwise.</param>
         /// <param name="duration">The amount of time to fade in frames.</param>
@@ -510,6 +543,7 @@ namespace RogueEssence.Script
             if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
             {
                 DungeonScene.Instance.AddCharToTeam(Faction.Player, 0, false, character);
+                character.Absentee = false;
                 character.RefreshTraits();
                 character.Tactic.Initialize(character);
             }
@@ -1551,6 +1585,8 @@ namespace RogueEssence.Script
             EnterDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict) return coroutine.yield(GAME:_EnterDungeon(dungeonid, structureid, mapid, entryid, stakes, recorded, silentRestrict)) end").First() as LuaFunction;
             ContinueDungeon = state.RunString("return function(_, dungeonid, structureid, mapid, entryid) return coroutine.yield(GAME:_ContinueDungeon(dungeonid, structureid, mapid, entryid)) end").First() as LuaFunction;
             EndDungeonRun = state.RunString("return function(_, result, destzoneid, structureid, mapid, entryid, display, fanfare, completedZone) return coroutine.yield(GAME:_EndDungeonRun(result, destzoneid, structureid, mapid, entryid, display, fanfare, completedZone)) end").First() as LuaFunction;
+            FadeOutFront = state.RunString("return function(_, bwhite, duration) return coroutine.yield(GAME:_FadeOutFront(bwhite, duration)) end").First() as LuaFunction;
+            FadeInFront = state.RunString("return function(_, duration) return coroutine.yield(GAME:_FadeInFront(duration)) end").First() as LuaFunction;
             FadeOut = state.RunString("return function(_, bwhite, duration) return coroutine.yield(GAME:_FadeOut(bwhite, duration)) end").First() as LuaFunction;
             FadeIn = state.RunString("return function(_, duration) return coroutine.yield(GAME:_FadeIn(duration)) end").First() as LuaFunction;
             MoveCamera = state.RunString("return function(_, x, y, duration, toPlayer) return coroutine.yield(GAME:_MoveCamera(x, y, duration, toPlayer)) end").First() as LuaFunction;

@@ -1,5 +1,4 @@
 ﻿using RogueElements;
-using RogueEssence.Content;
 using Microsoft.Xna.Framework.Input;
 using System.IO;
 

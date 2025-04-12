@@ -378,6 +378,17 @@ namespace RogueEssence.Ground
             groundChar.Map = this;
             grid.Add(groundChar, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
+
+        public GroundObject FindObject(string entname)
+        {
+            foreach (GroundObject obj in Entities[0].GroundObjects)
+            {
+                if (obj.EntName == entname)
+                    return obj;
+            }
+            return null;
+        }
+
         public void AddObject(GroundObject groundObj)
         {
             Entities[0].GroundObjects.Add(groundObj);
@@ -409,6 +420,16 @@ namespace RogueEssence.Ground
         {
             Entities[0].TemporaryChars.Remove(ch);
             grid.Remove(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
+        }
+
+        public GroundObject FindTempObject(string entname)
+        {
+            foreach (GroundObject obj in Entities[0].TemporaryObjects)
+            {
+                if (obj.EntName == entname)
+                    return obj;
+            }
+            return null;
         }
 
         public void AddTempObject(GroundObject groundObj)

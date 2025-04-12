@@ -20,8 +20,11 @@ namespace RogueEssence.Menu
         DialogueText Description;
 
 
-        public IntrinsicRecallMenu(Character player, string[] intrinsicChoices, OnChooseSlot action, Action refuseAction)
+        public IntrinsicRecallMenu(Character player, string[] intrinsicChoices, OnChooseSlot action, Action refuseAction) :
+            this(MenuLabel.INTRINSIC_RECALL_MENU, player, intrinsicChoices, action, refuseAction) { }
+        public IntrinsicRecallMenu(string label, Character player, string[] intrinsicChoices, OnChooseSlot action, Action refuseAction)
         {
+            Label = label;
             this.player = player;
             this.intrinsicChoices = intrinsicChoices;
             this.chooseSlotAction = action;

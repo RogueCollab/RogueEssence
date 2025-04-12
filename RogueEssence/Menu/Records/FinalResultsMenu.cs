@@ -4,7 +4,6 @@ using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace RogueEssence.Menu
 {
@@ -12,7 +11,7 @@ namespace RogueEssence.Menu
     {
         public MenuText Title;
         public MenuText Team;
-        public MenuText Description;
+        public DialogueText Description;
         public MenuDivider Div;
         public MenuText MoneyTally;
         public MenuText InvValueTally;
@@ -23,8 +22,10 @@ namespace RogueEssence.Menu
         public MenuText Seed;
         public GameProgress Ending;
 
-        public FinalResultsMenu(GameProgress ending)
+        public FinalResultsMenu(GameProgress ending) : this(MenuLabel.RESULTS_MENU_RESULT, ending) { }
+        public FinalResultsMenu(string label, GameProgress ending)
         {
+            Label = label;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             Ending = ending;
 
@@ -66,7 +67,10 @@ namespace RogueEssence.Menu
                     }
             }
 
-            Description = new MenuText(message, new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET), DirH.None);
+            Description = new DialogueText(message,
+                new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET),
+                new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 2 + TitledStripMenu.TITLE_OFFSET + LINE_HEIGHT * 2)),
+                LINE_HEIGHT, true, false, -1);
 
             MoneyTally = new MenuText(Text.FormatKey("MENU_BAG_MONEY", Text.FormatKey("MONEY_AMOUNT", Ending.ActiveTeam.Money)),
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 4 + TitledStripMenu.TITLE_OFFSET), DirH.None);

@@ -19,8 +19,10 @@ namespace RogueEssence.Menu
         private bool useItem;
         private int commandIdx;
 
-        public ItemTargetMenu(int invSlot, bool useItem, int commandIdx)
+        public ItemTargetMenu(int invSlot, bool useItem, int commandIdx) : this(MenuLabel.ITEM_TARGET_MENU, invSlot, useItem, commandIdx) { }
+        public ItemTargetMenu(string label, int invSlot, bool useItem, int commandIdx)
         {
+            Label = label;
             this.invSlot = invSlot;
             this.useItem = useItem;
             this.commandIdx = commandIdx;
@@ -34,11 +36,11 @@ namespace RogueEssence.Menu
             }
 
             summaryMenu = new SummaryMenu(new Rect(new Loc(16, 16 + team.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + ContentOffset),
-                new Loc(144, VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
+                new Loc(160, VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2)));
             Text = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             summaryMenu.Elements.Add(Text);
 
-            Initialize(new Loc(16, 16), 144, RogueEssence.Text.FormatKey("MENU_ITEM_TARGET_TITLE"), team.ToArray(), 0);
+            Initialize(new Loc(16, 16), 160, RogueEssence.Text.FormatKey("MENU_ITEM_TARGET_TITLE"), team.ToArray(), 0);
 
         }
 

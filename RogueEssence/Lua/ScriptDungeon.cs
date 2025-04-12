@@ -214,6 +214,22 @@ namespace RogueEssence.Script
         }
 
 
+
+        public LuaFunction AddMapStatus;
+        public Coroutine _AddMapStatus(string statusId)
+        {
+            MapStatus status = new MapStatus(statusId);
+            status.LoadFromData();
+            return new Coroutine(DungeonScene.Instance.AddMapStatus(status));
+        }
+
+        public LuaFunction RemoveMapStatus;
+        public Coroutine _RemoveMapStatus(string statusId)
+        {
+            return new Coroutine(DungeonScene.Instance.RemoveMapStatus(statusId));
+        }
+
+
         public override void SetupLuaFunctions(LuaEngine state)
         {
             //Implement stuff that should be written in lua!
@@ -221,6 +237,10 @@ namespace RogueEssence.Script
             CharEndAnim = state.RunString("return function(_, chara) return coroutine.yield(DUNGEON:_CharEndAnim(chara)) end", "CharEndAnim").First() as LuaFunction;
             CharWaitAnim = state.RunString("return function(_, chara, anim) return coroutine.yield(DUNGEON:_CharWaitAnim(chara, anim)) end", "CharWaitAnim").First() as LuaFunction;
             CharSetAction = state.RunString("return function(_, chara, anim) return coroutine.yield(DUNGEON:_CharSetAction(chara, anim)) end", "CharSetAction").First() as LuaFunction;
+
+            AddMapStatus = state.RunString("return function(_, status_id) return coroutine.yield(DUNGEON:_AddMapStatus(status_id)) end", "AddMapStatus").First() as LuaFunction;
+            RemoveMapStatus = state.RunString("return function(_, status_id) return coroutine.yield(DUNGEON:_RemoveMapStatus(status_id)) end", "RemoveMapStatus").First() as LuaFunction;
+
         }
     }
 }

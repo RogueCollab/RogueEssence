@@ -169,7 +169,7 @@ namespace RogueEssence.Dungeon
                 return true;
 
             Tile tile = Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             if (TerrainBlocked(terrain, mobility, diagonal))
                 return true;
             if (!String.IsNullOrEmpty(tile.Effect.ID))
@@ -186,7 +186,7 @@ namespace RogueEssence.Dungeon
                 return true;
 
             Tile tile = Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             return TerrainBlocked(terrain, mobility, false);
         }
 
@@ -225,7 +225,7 @@ namespace RogueEssence.Dungeon
                 return false;
 
             Tile tile = Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             if (terrain.ItemAllow > threshold)
                 return false;
 
@@ -272,7 +272,7 @@ namespace RogueEssence.Dungeon
                     Tile tile = GetTile(testLoc);
                     if (tile == null)
                         return true;
-                    if (tile.Data.GetData().BlockType == TerrainData.Mobility.Impassable)
+                    if (((TerrainData)tile.Data.GetData()).BlockType == TerrainData.Mobility.Impassable)
                         return true;
                     return false;
                 },
@@ -281,7 +281,7 @@ namespace RogueEssence.Dungeon
                     Tile tile = GetTile(testLoc);
                     if (tile == null)
                         return true;
-                    TerrainData terrain = tile.Data.GetData();
+                    TerrainData terrain = (TerrainData)tile.Data.GetData();
                     if (!terrain.BlockDiagonal)
                         return false;
                     if (terrain.BlockType == TerrainData.Mobility.Impassable)

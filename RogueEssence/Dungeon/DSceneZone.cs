@@ -43,7 +43,11 @@ namespace RogueEssence.Dungeon
 
                 //remove statuses
                 foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.EnumerateChars())
+                {
                     character.OnRemove();
+                    // character may have been displaced when removing, remove them from displacement.
+                    ZoneManager.Instance.CurrentMap.DisplacedChars.Remove(character);
+                }
 
                 ZoneManager.Instance.CurrentMap.ActiveTeam = null;
 
@@ -135,7 +139,7 @@ namespace RogueEssence.Dungeon
 
             LogMsg(Text.DIVIDER_STR);
 
-            yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolations());
+            yield return CoroutineManager.Instance.StartCoroutine(CheckAllMobilityViolations());
         }
 
 
@@ -301,7 +305,7 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(name, mail));
 
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
+            yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart());
 
         }
 
@@ -904,14 +908,8 @@ namespace RogueEssence.Dungeon
                         //if we've switched to the other side, order the turns again
                         RegenerateTurnMap();
 
-                        //if turn starts were to happen in a group, they would all occur in character-index sequence here
-                        //check each character in the sequence to ensure they are acting in this turn
-                        //what about sped-up characters?
-                        //should they not be allowed to take their turn? (do not add them to list)
 
-                        //what about revived characters?
-                        //should they not be allowed to take their turn? (do not add them to list)
-
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart());
                     }
 
                 }
@@ -924,8 +922,6 @@ namespace RogueEssence.Dungeon
 
                 if (!IsPlayerTurn())
                     OrganizeAIMovement(0);
-
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
             }
         }
 
@@ -1075,16 +1071,30 @@ namespace RogueEssence.Dungeon
             //DataManager.Instance.Save.LogMsg(Text.FormatKey("MENU_TIME_OF_DAY", DataManager.Instance.Save.Time));
         }
 
-
-        private IEnumerator<YieldInstruction> ProcessTurnStart(Character character)
+        /// <summary>
+        /// Processes the turn start of a faction.
+        /// Turn starts are given all at once to a whole faction before they move.
+        /// This is to prevent leaderswap inconsistencies in the turn system.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator<YieldInstruction> ProcessTurnStart()
         {
-            if (!character.Dead)
+            //if turn starts were to happen in a group, they would all occur in character-index sequence here
+            //check each character in the sequence to ensure they are acting in this turn
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Count; ii++)
             {
-                SingleCharContext context = new SingleCharContext(character);
-                //process turn start (assume live characters)
-                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart(context));
-            }
+                CharIndex charIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar[ii];
+                Character character = ZoneManager.Instance.CurrentMap.LookupCharIndex(charIndex);
 
+                //note: this will skip sped-up characters and characters that aren't around to take a turn, but may take a turn later.
+
+                if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
+                {
+                    SingleCharContext context = new SingleCharContext(character);
+                    //process turn start (assume live characters)
+                    yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart(context));
+                }
+            }
         }
 
     }

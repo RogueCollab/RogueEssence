@@ -90,7 +90,10 @@ namespace RogueEssence.Dungeon
                 fxEmitter.SetupEmit(tile * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), user.MapLoc, user.CharDir);
                 DungeonScene.Instance.CreateAnim(fxEmitter, DrawLayer.NoDraw);
                 DungeonScene.Instance.SetScreenShake(new ScreenMover(fx.ScreenMovement));
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, tile));
+                if (fx.AbsoluteDelay)
+                    yield return new WaitForFrames(fx.Delay);
+                else
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, tile));
             }
 
             GameManager.Instance.BattleSE(ExplodeFX.Sound);

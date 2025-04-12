@@ -89,7 +89,7 @@ namespace RogueEssence.Script
         }
 
 
-        
+
 
         //================================================================
         // Dialogue
@@ -98,6 +98,10 @@ namespace RogueEssence.Script
         /// <summary>
         /// Waits for the player to press a button before continuing.
         /// </summary>
+        /// <param name="anyInput">If false, only the Continue button will let the game continue. If true, any button will work.</param>
+        /// <example>
+        /// UI:WaitInput(true)
+        /// </example>
         public LuaFunction WaitInput;
 
         public void EmptyWaitMenu(bool anyInput)
@@ -105,7 +109,10 @@ namespace RogueEssence.Script
             try
             {
                 if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetWaitMenu(anyInput);
+                {
+                    FrameInput.InputType[] input = anyInput ? [] : [FrameInput.InputType.Confirm]; 
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(input);
+                }
             }
             catch (Exception e)
             {
@@ -113,6 +120,39 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Waits for the player to press at least one of the given inputs before continuing.
+        /// If an empty table is supplied, then this function behaves like WaitInput.
+        /// </summary>
+        /// <param name="inputs">A table of inputs, either as InputTypes or as ints. The game will continue if any one of them are hit. If empty, any button will work.</param>
+        /// <example>
+        /// local input = RogueEssence.FrameInput.InputType
+        /// 
+        /// UI:WaitForPlayerInput({}) --This will accept any input
+        /// UI:WaitForPlayerInput({input.Menu, input.Cancel}) --This only accepts the menu or cancel button specifically
+        /// </example>
+        public LuaFunction WaitForPlayerInput;
+
+        public void EmptyWaitInputMenu(LuaTable inputs)
+        {
+            List<FrameInput.InputType> inputTypes = [];
+            foreach(var input in inputs.Values)
+            {
+                if (input is FrameInput.InputType inputType)
+                    inputTypes.Add(inputType);
+                else if (input is long inputTypeId && inputTypeId < (int)FrameInput.InputType.Count)
+                    inputTypes.Add((FrameInput.InputType)inputTypeId);
+            }
+            try
+            {
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetWaitMenu(inputTypes.ToArray());
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.EmptyWaitInputMenu({0}): Encountered exception", inputs), e), DiagManager.Instance.DevMode);
+            }
+        }
 
         /// <summary>
         /// Displays a dialogue box with text, waiting until the player completes it.
@@ -1124,9 +1164,10 @@ namespace RogueEssence.Script
         /// and for execution to suspend until the choice is returned.
         /// Then to recover the string representing the chosen song, UI:ChoiceResult() must be called.
         /// </summary>
+        /// <param name="hardMod">Set to true if you want to only include music of the current quest mod.</param>
         /// <param name="spoilerUnlocks">A lua table of strings representing progression flags that have been completed.
         /// Any ogg file that uses this tag as a spoiler tag will display in the menu only if the flag has been passed.</param>
-        public void ShowMusicMenu(LuaTable spoilerUnlocks)
+        public void ShowMusicMenu(bool hardMod, LuaTable spoilerUnlocks)
         {
             try
             {
@@ -1138,7 +1179,7 @@ namespace RogueEssence.Script
                 }
 
                 m_choiceresult = null;
-                m_curchoice = new MusicMenu(unlockedTags, (string dir) => { m_choiceresult = dir; });
+                m_curchoice = new MusicMenu(hardMod, unlockedTags, (string dir) => { m_choiceresult = dir; });
             }
             catch (Exception e)
             {
@@ -1655,6 +1696,12 @@ namespace RogueEssence.Script
             WaitInput = state.RunString(@"
             return function(_, any)
                 UI:EmptyWaitMenu(any)
+                return coroutine.yield(UI:_WaitDialog())
+            end", "WaitInput").First() as LuaFunction;
+
+            WaitForPlayerInput = state.RunString(@"
+            return function(_, inputs)
+                UI:EmptyWaitInputMenu(inputs)
                 return coroutine.yield(UI:_WaitDialog())
             end", "WaitInput").First() as LuaFunction;
 

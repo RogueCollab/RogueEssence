@@ -117,6 +117,10 @@ namespace RogueEssence.Data
 
         public bool NoSwitching;
         public bool NoRecruiting;
+
+        /// <summary>
+        /// Data about the current rescue mission
+        /// </summary>
         public RescueState Rescue;
 
         public ZoneLoc NextDest;
@@ -585,18 +589,18 @@ namespace RogueEssence.Data
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills, true);
                     if (!permanent)
                         ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills, true);
                     //no backref for guests
                 }
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills, false);
                     if (!permanent)
                         ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
                 }
@@ -616,7 +620,9 @@ namespace RogueEssence.Data
         /// <param name="character"></param>
         /// <param name="level"></param>
         /// <param name="capOnly">Will force lower level to specified level if false.</param>
-        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills)
+        /// <param name="keepSkills">Turn off to wipe skills to that of the target level.</param>
+        /// <param name="inTeam">On if it's part of the team, off if it's part of the assembly.  Used for refresh purposes.</param>
+        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills, bool inTeam)
         {
             //set level
             if (capOnly)
@@ -643,10 +649,10 @@ namespace RogueEssence.Data
 
             if (!keepSkills) {
                 while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0);
+                    character.DeleteSkill(0, inTeam);
                 List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
                 foreach (string skill in final_skills)
-                    character.LearnSkill(skill, GetDefaultEnable(skill));
+                    character.LearnSkill(skill, GetDefaultEnable(skill), inTeam);
             }
 
             character.Relearnables = new Dictionary<string, bool>();
@@ -751,7 +757,7 @@ namespace RogueEssence.Data
             {
                 //restore skills
                 while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0);
+                    character.DeleteSkill(0, false);
                 for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
                 {
                     if (!String.IsNullOrEmpty(charFrom.BaseSkills[ii].SkillNum))
@@ -765,7 +771,7 @@ namespace RogueEssence.Data
                                 break;
                             }
                         }
-                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
+                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled, false);
                     }
                 }
 
@@ -857,8 +863,16 @@ namespace RogueEssence.Data
         {
             foreach (Character character in ActiveTeam.EnumerateChars())
                 character.FullRestore();
+
+            // Calling full restore here causes problems because we are still in dungeon mode, so the assembly character gets refreshed as though they were in the dungeon!
+            // A boolean for "in team" was set, because the more precise solution (checking if the character was actually part of the team) is more expensive
+            // But this might be seen in other places in the future...
             foreach (Character character in ActiveTeam.Assembly)
-                character.FullRestore();
+            {
+                // if a character was absentee, it wasn't touched this ENTIRE adventure.  no need to restore anything.
+                if (!character.Absentee)
+                    character.FullRestore(false);
+            }
             MidAdventure = false;
             ClearDungeonItems();
             //clear rescue status

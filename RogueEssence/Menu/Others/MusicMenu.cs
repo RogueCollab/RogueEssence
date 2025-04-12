@@ -4,6 +4,7 @@ using RogueEssence.Content;
 using RogueElements;
 using RogueEssence.Data;
 using System.IO;
+using System;
 
 namespace RogueEssence.Menu
 {
@@ -13,29 +14,61 @@ namespace RogueEssence.Menu
 
         public delegate void MusicChoice(string song);
         private MusicChoice choice;
-        private List<string> unlocks;
-        private List<string> files;
-        SongSummary summaryMenu;
+        private List<string> spoiledSongs;
+        private List<(string file, LoopedSong song)> songs;
+        private SongSummary summaryMenu;
 
-        public MusicMenu(List<string> unlockedTags, MusicChoice choice)
+        public MusicMenu(bool hardMod, List<string> spoiledSongs, MusicChoice choice) : this(MenuLabel.MUSIC_MENU, hardMod, spoiledSongs, choice) { }
+        public MusicMenu(string label, bool hardMod, List<string> spoiledSongs, MusicChoice choice)
         {
-            this.unlocks = unlockedTags;
+            Label = label;
+            this.spoiledSongs = spoiledSongs;
             this.choice = choice;
-            string[] pre_files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
+            string[] pre_files;
+            if (hardMod)
+                pre_files = PathMod.GetHardModFiles(GraphicsManager.MUSIC_PATH);
+            else
+                pre_files = PathMod.GetModFiles(GraphicsManager.MUSIC_PATH);
 
-            files = new List<string>();
-            List<MenuChoice> flatChoices = new List<MenuChoice>();
-            flatChoices.Add(new MenuTextChoice("---", () => { choose(""); }));
-            foreach (string song in pre_files)
+            //file list will be all songs
+            //tag list will be all their tags
+            //go through all files and get their tags
+
+            songs = new List<(string, LoopedSong)>();
+            foreach (string fileName in pre_files)
             {
-                if (!DataManager.IsNonTrivialFile(song))
+                if (!DataManager.IsNonTrivialFile(fileName))
                     continue;
 
-                if (!canSeeSong(song))
-                    continue;
+                try
+                {
+                    LoopedSong song = new LoopedSong(fileName);
+                    songs.Add((fileName, song));
+                }
+                catch (Exception ex)
+                {
+                    //skip any that don't load tags
+                }
 
-                files.Add(song);
-                flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(song), () => { choose(Path.GetFileName(song)); }));
+            }
+
+            //sort them based on DISCNUMBER and TRACK
+            songs.Sort(DiscTrackSort);
+
+            //add to menu with blank first item
+            songs.Insert(0, ("", null));
+
+
+            //add menu text without extension, or ??? if cannot see song, with choose being ""
+            List<MenuChoice> flatChoices = new List<MenuChoice>();
+            foreach ((string file, LoopedSong song) song in songs)
+            {
+                if (song.file == "")
+                    flatChoices.Add(new MenuTextChoice("---", () => { choose(""); }));
+                else if (!canSeeSong(song.file))
+                    flatChoices.Add(new MenuTextChoice("???", () => { choose(""); }));
+                else
+                    flatChoices.Add(new MenuTextChoice(Path.GetFileNameWithoutExtension(song.file), () => { choose(Path.GetFileName(song.file)); }));
             }
             IChoosable[][] choices = SortIntoPages(flatChoices.ToArray(), SLOTS_PER_PAGE);
 
@@ -46,6 +79,33 @@ namespace RogueEssence.Menu
             Initialize(new Loc(8, 16), 304, Text.FormatKey("MENU_MUSIC_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
+        private int DiscTrackSort((string file, LoopedSong song) item1, (string file, LoopedSong song) item2)
+        {
+            int disc1 = int.MaxValue;
+            int disc2 = int.MaxValue;
+            if (item1.song.Tags.ContainsKey("DISCNUMBER"))
+                disc1 = int.Parse(item1.song.Tags["DISCNUMBER"][0]);
+            if (item2.song.Tags.ContainsKey("DISCNUMBER"))
+                disc2 = int.Parse(item2.song.Tags["DISCNUMBER"][0]);
+
+            int cmp = Math.Sign(disc1 - disc2);
+            if (cmp != 0)
+                return cmp;
+
+            int track1 = Int32.MaxValue;
+            int track2 = Int32.MaxValue;
+            if (item1.song.Tags.ContainsKey("TRACKNUMBER"))
+                track1 = int.Parse(item1.song.Tags["TRACKNUMBER"][0]);
+            if (item2.song.Tags.ContainsKey("TRACKNUMBER"))
+                track2 = int.Parse(item2.song.Tags["TRACKNUMBER"][0]);
+
+            cmp = Math.Sign(track1 - track2);
+            if (cmp != 0)
+                return cmp;
+            int stringcmp = String.Compare(item1.song.Name, item2.song.Name);
+            return stringcmp;
+        }
+
         private void choose(string dir)
         {
             GameManager.Instance.BGM(dir, false);
@@ -54,8 +114,12 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
+            //SongSummary will be passed the tags
             int totalChoice = CurrentChoiceTotal;
-            summaryMenu.SetSong(totalChoice > 0 ? files[totalChoice-1] : "");
+            if (!canSeeSong(songs[totalChoice].file))
+                summaryMenu.SetSong(null);
+            else
+                summaryMenu.SetSong(songs[totalChoice].song);
             base.ChoiceChanged();
         }
         
@@ -69,15 +133,10 @@ namespace RogueEssence.Menu
             summaryMenu.Draw(spriteBatch);
         }
 
-        private bool canSeeSong(string fileName)
+        private bool canSeeSong(string songfile)
         {
-            LoopedSong song = new LoopedSong(fileName);
-            if (song.Tags.ContainsKey("SPOILER"))
-            {
-                string spoiler = song.Tags["SPOILER"];
-                return unlocks.Contains(spoiler);
-            }
-            return true;
+            string songName = Path.GetFileName(songfile);
+            return !spoiledSongs.Contains(songName);
         }
     }
 }

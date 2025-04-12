@@ -1,20 +1,24 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
 
 namespace RogueEssence.Menu
 {
     public class WaitMenu : InteractableMenu
     {
-        private bool anyKey;
+        private readonly List<FrameInput.InputType> allowedInputs = [];
 
-        public WaitMenu(bool anyInput)
+        public WaitMenu(bool anyInputs) : this(MenuLabel.WAIT, anyInputs ? [] : [FrameInput.InputType.Confirm]) { }
+        public WaitMenu(params FrameInput.InputType[] inputs) : this(MenuLabel.WAIT, inputs) { }
+        public WaitMenu(string label, bool anyInputs) : this(label, anyInputs ? [] : [FrameInput.InputType.Confirm]) { }
+        public WaitMenu(string label, params FrameInput.InputType[] inputs)
         {
+            Label = label;
             Bounds = new Rect();
 
-            this.anyKey = anyInput;
+            foreach (var input in inputs) {
+                allowedInputs.Add(input);
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -31,8 +35,19 @@ namespace RogueEssence.Menu
         {
             Visible = true;
 
-            if (input.JustPressed(FrameInput.InputType.Confirm) || anyKey && (input.AnyButtonPressed() || input.AnyKeyPressed()))
-                MenuManager.Instance.RemoveMenu();
+            if (allowedInputs.Count > 0)
+            {
+                foreach (FrameInput.InputType inputType in allowedInputs)
+                {
+                    if (input.JustPressed(inputType))
+                        MenuManager.Instance.RemoveMenu();
+                }
+            }
+            else
+            {
+                if (input.AnyButtonPressed() || input.AnyKeyPressed())
+                    MenuManager.Instance.RemoveMenu();
+            }
         }
     }
 }

@@ -60,80 +60,80 @@ namespace RogueEssence.Script
             }
         }
 
-        /// <summary>
-        /// TODO: WIP
-        /// </summary>
-        /// <param name="objtype"></param>
-        /// <param name="instancename"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="w"></param>
-        /// <param name="h"></param>
-        /// <returns></returns>
-        public object CreateObject(string objtype, string instancename, int x, int y, int w, int h)
-        {
-            try
-            {
-                GroundMap map = ZoneManager.Instance.CurrentGround;
+        ///// <summary>
+        ///// TODO: WIP
+        ///// </summary>
+        ///// <param name="objtype"></param>
+        ///// <param name="instancename"></param>
+        ///// <param name="x"></param>
+        ///// <param name="y"></param>
+        ///// <param name="w"></param>
+        ///// <param name="h"></param>
+        ///// <returns></returns>
+        //public object CreateObject(string objtype, string instancename, int x, int y, int w, int h)
+        //{
+        //    try
+        //    {
+        //        GroundMap map = ZoneManager.Instance.CurrentGround;
 
-                GroundObject groundobject = null;
-                var template = TemplateManager.Instance.FindTemplate(objtype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
-                if (template == null)
-                    return null;
+        //        GroundObject groundobject = null;
+        //        var template = TemplateManager.Instance.FindTemplate(objtype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
+        //        if (template == null)
+        //            return null;
 
-                groundobject = (GroundObject)template.create(instancename);
-                groundobject.Bounds = new Rect(x, y, w, h);
-                groundobject.ReloadEvents();
-                map.AddObject(groundobject);
-                return groundobject; //Object's properties can be tweaked later on
+        //        groundobject = (GroundObject)template.create(instancename);
+        //        groundobject.Bounds = new Rect(x, y, w, h);
+        //        groundobject.ReloadEvents();
+        //        map.AddObject(groundobject);
+        //        return groundobject; //Object's properties can be tweaked later on
 
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
-            }
-            return null;
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+        //    }
+        //    return null;
+        //}
 
-        /// <summary>
-        /// TODO: WIP
-        /// </summary>
-        /// <param name="chartype"></param>
-        /// <param name="instancename"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="actionfun"></param>
-        /// <param name="thinkfun"></param>
-        /// <returns></returns>
-        public object CreateCharacter(string chartype, string instancename, int x, int y, string actionfun, string thinkfun)
-        {
-            try
-            {
-                GroundMap map = ZoneManager.Instance.CurrentGround;
+        ///// <summary>
+        ///// TODO: WIP
+        ///// </summary>
+        ///// <param name="chartype"></param>
+        ///// <param name="instancename"></param>
+        ///// <param name="x"></param>
+        ///// <param name="y"></param>
+        ///// <param name="actionfun"></param>
+        ///// <param name="thinkfun"></param>
+        ///// <returns></returns>
+        //public object CreateCharacter(string chartype, string instancename, int x, int y, string actionfun, string thinkfun)
+        //{
+        //    try
+        //    {
+        //        GroundMap map = ZoneManager.Instance.CurrentGround;
 
-                //Ideally this is how we'd create characters :
-                /*
-                GroundChar groundchar = null;
-                    GroundCharTemplate template = CharacterTemplates.Find(chartype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
-                    if (template == null)
-                        return null;
+        //        //Ideally this is how we'd create characters :
+        //        /*
+        //        GroundChar groundchar = null;
+        //            GroundCharTemplate template = CharacterTemplates.Find(chartype); //Templates are created by the modders, and stored as data (This is handy, because its pretty certain a lot of characters and entities will be repeated throughout the maps)
+        //            if (template == null)
+        //                return null;
 
-                    groundchar = template.create(instancename, x, y);
+        //            groundchar = template.create(instancename, x, y);
 
-                    groundchar.SetRoutine(thinkfun); //Aka the code that makes the npc wander, or do stuff over and over again
-                    groundchar.SetAction(actionfun);
+        //            groundchar.SetRoutine(thinkfun); //Aka the code that makes the npc wander, or do stuff over and over again
+        //            groundchar.SetAction(actionfun);
 
-                    map.AddMapChar(groundChar);
-                    return groundchar; //Object's properties can be tweaked later on
-                */
-                throw new NotImplementedException();
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
-            }
-            return null;
-        }
+        //            map.AddMapChar(groundChar);
+        //            return groundchar; //Object's properties can be tweaked later on
+        //        */
+        //        throw new NotImplementedException();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        DiagManager.Instance.LogError(ex, DiagManager.Instance.DevMode);
+        //    }
+        //    return null;
+        //}
 
         /// <summary>
         /// Deletes an object from the ground map, identified by its instance name.
@@ -145,11 +145,20 @@ namespace RogueEssence.Script
             try
             {
                 GroundMap map = ZoneManager.Instance.CurrentGround;
+                
+                GroundObject objectToRemove = map.FindObject(instancename);
+                if (objectToRemove != null)
+                {
+                    map.RemoveObject(objectToRemove);
+                    return true;
+                }
 
-                throw new NotImplementedException();
-                /*
-                map.RemoveObject(instancename); //Removal by instance name, since lua can't do via .NET pointer reliably, and pointers to .NET aren't practical in lua
-                */
+                objectToRemove = map.FindTempObject(instancename);
+                if (objectToRemove != null)
+                {
+                    map.RemoveTempObject(objectToRemove);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -346,6 +355,8 @@ namespace RogueEssence.Script
             return new Coroutine(_DoAnimatedTurn(ch, _CountDirectionDifference(ch.CharDir, direction), framedur, ccw));
         }
 
+        public LuaFunction CharAnimateTurnTo;
+
         /// <summary>
         /// Makes a character do an animated turn to face a chosen direction over the specified time.
         /// Waits until the operation is completed.
@@ -354,9 +365,8 @@ namespace RogueEssence.Script
         /// <param name="direction">The direction to turn to</param>
         /// <param name="framedur">The time spent in each intermediate direction, in frames</param>
         /// <example>
-        /// CharTurnToCharAnimated(charFrom, Dir8.Left, 3)
+        /// CharAnimateTurnTo(charFrom, Dir8.Left, 3)
         /// </example>
-        public LuaFunction CharAnimateTurnTo;
         public Coroutine _CharAnimateTurnTo(GroundChar ch, Dir8 direction, int framedur)
         {
             if (ch == null || direction == Dir8.None)
@@ -459,9 +469,9 @@ namespace RogueEssence.Script
         /// </example>
         public LuaFunction MoveInDirection;
 
-        public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, int speed = 2)
+        public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, float speed = 2)
         {
-            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
+            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * (int)speed);
             return _MoveToPosition(chara, endLoc.X, endLoc.Y, run, speed);
         }
 
@@ -529,7 +539,7 @@ namespace RogueEssence.Script
         /// GROUND:MoveInDirection(player, marker, false, 2)
         /// </example>
         public LuaFunction MoveToMarker;
-        public YieldInstruction _MoveToMarker(GroundEntity chara, GroundMarker mark, bool run = false, int speed = 2)
+        public YieldInstruction _MoveToMarker(GroundEntity chara, GroundMarker mark, bool run = false, float speed = 2)
         {
             return _MoveToPosition(chara, mark.X, mark.Y, run, speed);
         }
@@ -584,9 +594,9 @@ namespace RogueEssence.Script
         /// GROUND:AnimateInDirection(player, "Hurt", Dir8.Down, 24, 0.5, 2)
         /// </example>
         public LuaFunction AnimateInDirection;
-        public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, int speed)
+        public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, float speed)
         {
-            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * speed);
+            Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * (int)speed);
             return _AnimateToPosition(chara, anim, animDir, endLoc.X, endLoc.Y, animSpeed, speed, 0);
         }
 
@@ -605,7 +615,7 @@ namespace RogueEssence.Script
         /// GROUND:AnimateToPosition(player, "Hurt", Dir8.Down, 200, 240, 0.5, 2)
         /// </example>
         public LuaFunction AnimateToPosition;
-        public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, int speed, int height)
+        public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, float speed, int height)
         {
             try
             {

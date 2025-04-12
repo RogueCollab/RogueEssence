@@ -41,7 +41,12 @@ namespace RogueEssence.LevelGen
         public override List<MobSpawn> ChooseSpawns(IRandom rand)
         {
             List<MobSpawn> chosenSpawns = new List<MobSpawn>();
-            chosenSpawns.AddRange(Spawns);
+            foreach (MobSpawn spawner in Spawns)
+            {
+                if (!spawner.CanSpawn())
+                        continue;
+                chosenSpawns.Add(spawner);
+            }
             return chosenSpawns;
         }
     }

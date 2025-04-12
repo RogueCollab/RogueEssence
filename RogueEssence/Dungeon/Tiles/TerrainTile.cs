@@ -8,7 +8,7 @@ using RogueEssence.Dev;
 namespace RogueEssence.Dungeon
 {
     [Serializable]
-    public class TerrainTile : GameEventOwner
+    public class TerrainTile : PassiveActive
     {
         public override GameEventPriority.EventCause GetEventCause()
         {
@@ -17,8 +17,8 @@ namespace RogueEssence.Dungeon
 
         public override string GetID() { return ID; }
 
-        public TerrainData GetData() { return DataManager.Instance.GetTerrain(ID); }
-        public override string GetDisplayName() { return GetData().GetColoredName(); }
+        public override PassiveData GetData() { return DataManager.Instance.GetTerrain(ID); }
+        public override string GetDisplayName() { return ((TerrainData)GetData()).GetColoredName(); }
 
 
         [JsonConverter(typeof(TerrainConverter))]

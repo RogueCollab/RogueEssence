@@ -57,6 +57,23 @@ namespace RogueEssence.Script
             return DiagManager.Instance.CurSettings.Language;
         }
 
+
+        public string ShiftString(string baseStr, int shift)
+        {
+            string resultStr = "";
+            for (int ii = 0; ii < baseStr.Length; ii++)
+            {
+                if (!string.IsNullOrWhiteSpace(baseStr[ii].ToString()))
+                {
+                    int en = (int)baseStr[ii];
+                    int un = en + shift;
+                    resultStr = resultStr + (char)un;
+                }
+                else
+                    resultStr += baseStr[ii];
+            }
+            return resultStr;
+        }
         /// <summary>
         /// Formats a string.  Will unescape escaped characters and process grammar tags.
         /// </summary>

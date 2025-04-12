@@ -16,8 +16,11 @@ namespace RogueEssence.Menu
         MenuDigits BankDigits;
         int onHand;
 
-        public BankMenu(int onHand, OnChooseAmount chooseAmount)
+        public BankMenu(int onHand, OnChooseAmount chooseAmount) : this(MenuLabel.BANK_MENU, onHand, chooseAmount) { }
+        public BankMenu(string label, int onHand, OnChooseAmount chooseAmount)
         {
+            Label = label;
+
             this.onHand = onHand;
             this.chooseAmount = chooseAmount;
             long total = (long)DataManager.Instance.Save.ActiveTeam.Bank + (long)onHand;

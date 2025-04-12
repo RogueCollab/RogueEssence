@@ -45,6 +45,9 @@ namespace RogueEssence.Dungeon
         [JsonConverter(typeof(SegLocTableConverter))]
         protected Dictionary<SegLoc, Map> maps;
 
+        [JsonConverter(typeof(SegLocIntTableConverter))]
+        protected Dictionary<SegLoc, int> revisits;
+
         public int MapCount { get { return maps.Count; } }
 
         public string ID { get; private set; }
@@ -55,8 +58,6 @@ namespace RogueEssence.Dungeon
         public GroundMap CurrentGround { get; private set; }
 
         public List<MapStatus> CarryOver;
-
-        public int MapsLoaded;
 
         /// <summary>
         /// For containing entire dungeon-related events. (Since we can't handle some of those things inside the dungeon floors themselves)
@@ -80,6 +81,7 @@ namespace RogueEssence.Dungeon
 
             structureContexts = new Dictionary<int, ZoneGenContext>();
             maps = new Dictionary<SegLoc, Map>();
+            revisits = new Dictionary<SegLoc, int>();
             Segments = new List<ZoneSegmentBase>();
 
             CarryOver = new List<MapStatus>();
@@ -224,12 +226,21 @@ namespace RogueEssence.Dungeon
             CurrentMapID = new SegLoc(-1, 0);
         }
 
+        /// <summary>
+        /// Decrement the visit count of the current map, so that GetMap can be called to generate the same layout
+        /// </summary>
+        public void Unvisit()
+        {
+            revisits[CurrentMapID] = revisits[CurrentMapID] - 1;
+        }
 
         public Map GetMap(SegLoc id)
         {
             if (!maps.ContainsKey(id))
             {
                 DiagManager.Instance.LogInfo("Zone Seed: " + rand.FirstSeed);
+                int curRevisit = 0;
+                revisits.TryGetValue(id, out curRevisit);
                 ReNoise totalNoise = new ReNoise(rand.FirstSeed);
                 ulong[] doubleSeed = totalNoise.GetTwoUInt64((ulong)id.Segment);
                 ulong structSeed = doubleSeed[0];
@@ -258,9 +269,9 @@ namespace RogueEssence.Dungeon
                 zoneContext.CurrentID = id.ID;
                 ulong finalSeed = (ulong)id.ID;
                 finalSeed <<= 32;
-                finalSeed |= (ulong)MapsLoaded;
+                finalSeed |= (ulong)curRevisit;
 
-                DiagManager.Instance.LogInfo("Map Count: " + MapsLoaded);
+                DiagManager.Instance.LogInfo("Map Count: " + curRevisit);
                 DiagManager.Instance.LogInfo("Map Seed: " + finalSeed);
                 zoneContext.Seed = idNoise.GetUInt64(finalSeed);
 
@@ -270,13 +281,14 @@ namespace RogueEssence.Dungeon
                 {
                     try
                     {
+                        curRevisit += 1;
                         IGenContext context = Segments[id.Segment].GetMap(zoneContext);
                         Map map = ((BaseMapGenContext)context).Map;
 
                         if (Persistent)
                             maps.Add(id, map);
                         else
-                            MapsLoaded++;
+                            revisits[id] = curRevisit;
                         return map;
                     }
                     catch (Exception ex)
@@ -285,7 +297,7 @@ namespace RogueEssence.Dungeon
                         DiagManager.Instance.LogInfo(String.Format("{0}th attempt.", ii + 1));
                         ulong subSeed = (ulong)id.ID;
                         subSeed <<= 32;
-                        subSeed |= (ulong)(MapsLoaded + ii);
+                        subSeed |= (ulong)curRevisit;
                         zoneContext.Seed = structNoise.GetUInt64(subSeed);
                     }
                     finally

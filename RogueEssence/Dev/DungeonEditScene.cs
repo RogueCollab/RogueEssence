@@ -205,7 +205,7 @@ namespace RogueEssence.Dev
 
                         if (ShowTerrain)
                         {
-                            TerrainData data = tile.GetData();
+                            TerrainData data = (TerrainData)tile.GetData();
                             Color color = Color.Transparent;
                             switch (data.BlockType)
                             {

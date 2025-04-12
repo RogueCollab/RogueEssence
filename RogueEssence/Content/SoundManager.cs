@@ -125,6 +125,13 @@ namespace RogueEssence.Content
             }
         }
 
+        public static void StopAllLoopedSE()
+        {
+            foreach (string fileName in loopedSE.Keys)
+                loopedSE[fileName].Stop();
+            loopedSE.Clear();
+        }
+
         public static void SetLoopedSEVolume(string fileName, float volume)
         {
             LoopedSong se;

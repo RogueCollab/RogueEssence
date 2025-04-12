@@ -129,7 +129,7 @@ namespace RogueEssence.Dungeon
             return FinishTurn(character, advanceTurn, true, false);
         }
 
-        public IEnumerator<YieldInstruction> CheckMobilityViolations()
+        public IEnumerator<YieldInstruction> CheckAllMobilityViolations()
         {
             //check for mobility violation at the end of anyone's turn
             //only do this when someone has changed location, or when someone has changed mobility
@@ -139,16 +139,19 @@ namespace RogueEssence.Dungeon
                 displaced.AddRange(ZoneManager.Instance.CurrentMap.DisplacedChars);
                 ZoneManager.Instance.CurrentMap.DisplacedChars.Clear();
                 foreach (Character standChar in displaced)
+                    yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolation(standChar));
+            }
+        }
+
+        public IEnumerator<YieldInstruction> CheckMobilityViolation(Character standChar)
+        {
+            if (!standChar.Dead)
+            {
+                HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
+                while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
                 {
-                    if (!standChar.Dead)
-                    {
-                        HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
-                        while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
-                        {
-                            iterWarpHistory.Add(standChar.CharLoc);
-                            yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
-                        }
-                    }
+                    iterWarpHistory.Add(standChar.CharLoc);
+                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
                 }
             }
         }
@@ -159,18 +162,14 @@ namespace RogueEssence.Dungeon
 
             LogMsg(Text.DIVIDER_STR);
 
-            yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolations());
+            yield return CoroutineManager.Instance.StartCoroutine(CheckAllMobilityViolations());
 
             //end turn
             if (!character.Dead)
             {
-                SingleCharContext turnContext = new SingleCharContext(character);
+                SingleCharContext turnContext = new SingleCharContext(character, action);
                 yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnEnd(turnContext));
             }
-
-
-            if (!character.Dead) //add HP based on natural healing
-                yield return CoroutineManager.Instance.StartCoroutine(character.UpdateFullness(action));
 
             //check for EXP gain again
             yield return CoroutineManager.Instance.StartCoroutine(CheckEXP());
@@ -288,9 +287,18 @@ namespace RogueEssence.Dungeon
                     yield return CoroutineManager.Instance.StartCoroutine(tile.Data.LandedOnTile(character));
                     character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
                 }
+            }   
+
+            //check to make sure the character is on the same tile still, before moving on
+            if (character.CharLoc == landTile)
+            {
+                if (!character.WarpHistory.Contains(character.CharLoc))
+                {
+                    character.WarpHistory.Add(character.CharLoc);
+                    yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolation(character));
+                    character.WarpHistory.RemoveAt(character.WarpHistory.Count - 1);
+                }
             }
-            else
-                yield return CoroutineManager.Instance.StartCoroutine(RecurseDisplacements(character));
         }
 
 
@@ -1083,6 +1091,12 @@ namespace RogueEssence.Dungeon
                 {
                     if (!silent)
                     {
+                        if (loc != start)
+                        {
+                            ItemAnim itemAnim = new ItemAnim(start * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), loc * GraphicsManager.TileSize + new Loc(GraphicsManager.TileSize / 2), mapItem.IsMoney ? GraphicsManager.MoneySprite : DataManager.Instance.GetItem(mapItem.Value).Sprite, GraphicsManager.TileSize / 2, 1);
+                            CreateAnim(itemAnim, DrawLayer.Normal);
+                            yield return new WaitForFrames(ItemAnim.ITEM_ACTION_TIME);
+                        }
                         LogMsg(Text.FormatKey("MSG_MAP_ITEM_LOST", itemName));
                         yield return CoroutineManager.Instance.StartCoroutine(DungeonScene.Instance.ProcessBattleFX(loc, loc, Dir8.Down, DataManager.Instance.ItemLostFX));
                     }
@@ -1101,7 +1115,7 @@ namespace RogueEssence.Dungeon
                 }
             }
             Tile tile = ZoneManager.Instance.CurrentMap.GetTile(loc);
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             if (terrain.ItemLand == TerrainData.TileItemLand.Destroy)
             {
                 if (!silent)
@@ -1575,7 +1589,7 @@ namespace RogueEssence.Dungeon
                 return true;
 
             Tile tile = ZoneManager.Instance.CurrentMap.Tiles[loc.X][loc.Y];
-            TerrainData terrain = tile.Data.GetData();
+            TerrainData terrain = (TerrainData)tile.Data.GetData();
             if (terrain.BlockLight)
                 return true;
             //TileData effect = DataManager.Instance.GetTile(tile.Effect.ID);
@@ -1655,7 +1669,7 @@ namespace RogueEssence.Dungeon
 
             if (tile != null)//TODO: make this not so hardcoded??
             {
-                TerrainData terrain = tile.Data.GetData();
+                TerrainData terrain = (TerrainData)tile.Data.GetData();
                 return (terrain.BlockType == TerrainData.Mobility.Lava || terrain.BlockType == TerrainData.Mobility.Block);
             }
 

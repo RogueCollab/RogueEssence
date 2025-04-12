@@ -21,8 +21,10 @@ namespace RogueEssence.Menu
         private bool held;
         private int commandIdx;
 
-        public TeachMenu(int slot, bool held, int commandIdx)
+        public TeachMenu(int slot, bool held, int commandIdx) : this(MenuLabel.TEACH_MENU, slot, held, commandIdx) { }
+        public TeachMenu(string label, int slot, bool held, int commandIdx)
         {
+            Label = label;
             this.slot = slot;
             this.held = held;
             this.commandIdx = commandIdx;

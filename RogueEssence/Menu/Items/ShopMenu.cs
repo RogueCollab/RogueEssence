@@ -19,8 +19,11 @@ namespace RogueEssence.Menu
         private OnMultiChoice action;
         public List<Tuple<InvItem, int>> Goods;
 
-        public ShopMenu(List<Tuple<InvItem, int>> goods, int defaultChoice, OnMultiChoice chooseSlots)
+        public ShopMenu(List<Tuple<InvItem, int>> goods, int defaultChoice, OnMultiChoice chooseSlots) :
+            this(MenuLabel.SHOP_MENU, goods, defaultChoice, chooseSlots) { }
+        public ShopMenu(string label, List<Tuple<InvItem, int>> goods, int defaultChoice, OnMultiChoice chooseSlots)
         {
+            Label = label;
             Goods = goods;
             action = chooseSlots;
 

@@ -18,8 +18,11 @@ namespace RogueEssence.Menu
         private List<string> names;
         private List<string> titles;
 
-        public DungeonsMenu(List<string> names, List<string> titles, List<ZoneLoc> dests, int defaultChoice, OnChooseSlot destAction)
+        public DungeonsMenu(List<string> names, List<string> titles, List<ZoneLoc> dests, int defaultChoice, OnChooseSlot destAction) :
+            this(MenuLabel.DUNGEONS_MENU, names, titles, dests, defaultChoice, destAction) { }
+        public DungeonsMenu(string label, List<string> names, List<string> titles, List<ZoneLoc> dests, int defaultChoice, OnChooseSlot destAction)
         {
+            Label = label;
             this.destAction = destAction;
             this.dests = dests;
             this.names = names;

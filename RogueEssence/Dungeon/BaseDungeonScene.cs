@@ -278,7 +278,7 @@ namespace RogueEssence.Dungeon
                 foreach(Loc viewLoc in IterateRelevantDraw(wrapped, wrapSize, item))
                 {
                     TerrainTile tile = ZoneManager.Instance.CurrentMap.Tiles[item.TileLoc.X][item.TileLoc.Y].Data;
-                    TerrainData terrain = tile.GetData();
+                    TerrainData terrain = (TerrainData)tile.GetData();
                     if (terrain.ItemDraw == TerrainData.TileItemDraw.Hide)
                     {
                         if (showHiddenItem)
@@ -315,6 +315,9 @@ namespace RogueEssence.Dungeon
             Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
             bool seeTrap = CanSeeTraps();
 
+            //draw the background
+            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, ViewRect.Start);
+
             //draw a little more outside the view rect
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
@@ -330,6 +333,9 @@ namespace RogueEssence.Dungeon
                         else
                             ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
                     }
+                    else
+                        GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), null,
+                                    Color.Black, new Vector2(GraphicsManager.TileSize));
                 }
             }
 
@@ -359,7 +365,7 @@ namespace RogueEssence.Dungeon
             //draw shadows
             foreach ((Character sprite, Loc viewOffset) shadowChar in shownChars)
             {
-                TerrainData terrain = ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
+                TerrainData terrain = (TerrainData)ZoneManager.Instance.CurrentMap.Tiles[shadowChar.sprite.CharLoc.X][shadowChar.sprite.CharLoc.Y].Data.GetData();
                 int terrainShadow = terrain.ShadowType;
                 shadowChar.sprite.DrawShadow(spriteBatch, shadowChar.viewOffset, terrainShadow);
             }
@@ -436,9 +442,6 @@ namespace RogueEssence.Dungeon
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
-            //draw the background
-            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, ViewRect.Start);
-
             spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 
             spriteBatch.End();
@@ -467,8 +470,8 @@ namespace RogueEssence.Dungeon
             {
                 Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
                 Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 112, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 122, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
             }
         }
 

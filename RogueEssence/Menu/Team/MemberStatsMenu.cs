@@ -1,21 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using RogueElements;
 using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
-using System.Numerics;
 
 namespace RogueEssence.Menu
 {
     public class MemberStatsMenu : InteractableMenu
     {
+        Team team;
         int teamSlot;
         bool assembly;
         bool allowAssembly;
+        bool guest;
         bool boostView;
-        
+
         public MenuText Title;
         public MenuText PageText;
         public MenuDivider Div;
@@ -60,17 +60,23 @@ namespace RogueEssence.Menu
 
         //allow moving up and down (but don't alter the team choice selection because it's hard)
 
-        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly) : this(teamSlot, assembly, allowAssembly, false) {}
-        public MemberStatsMenu(int teamSlot, bool assembly, bool allowAssembly, bool bonusView)
+        public MemberStatsMenu(Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest) : this(MenuLabel.SUMMARY_MENU_STATS, team, teamSlot, assembly, allowAssembly, guest, false) { }
+        public MemberStatsMenu(Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest, bool bonusView) : this(MenuLabel.SUMMARY_MENU_STATS, team, teamSlot, assembly, allowAssembly, guest, bonusView) { }
+        public MemberStatsMenu(string label, Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest) : this(label, team, teamSlot, assembly, allowAssembly, guest, false) { }
+        public MemberStatsMenu(string label, Team team, int teamSlot, bool assembly, bool allowAssembly, bool guest, bool bonusView)
         {
+            Label = label;
+
             Bounds = Rect.FromPoints(new Loc(24, 16), new Loc(296, 224));
 
+            this.team = team;
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.allowAssembly = allowAssembly;
+            this.guest = guest;
 
-            Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
-            
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
+
             MonsterData dexEntry = DataManager.Instance.GetMonster(player.BaseForm.Species);
             BaseMonsterForm formEntry = dexEntry.Forms[player.BaseForm.Form];
             
@@ -155,22 +161,22 @@ namespace RogueEssence.Menu
             Speed = new MenuText(player.Speed.ToString(), new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 72, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), DirV.Up, DirH.Right, player.ProxySpeed > -1 ? Color.Yellow : Color.White);
             Elements.Add(Speed);
 
-            int hpLength = calcLength(Stat.HP, monsterForm, player.MaxHP, player.Level);
+            int hpLength = calcLength(team, Stat.HP, monsterForm, player.MaxHP, player.Level, guest);
             HPBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 5 + TitledStripMenu.TITLE_OFFSET), hpLength, calcColor(hpLength));
             Elements.Add(HPBar);
-            int atkLength = calcLength(Stat.Attack, monsterForm, player.Atk, player.Level);
+            int atkLength = calcLength(team, Stat.Attack, monsterForm, player.Atk, player.Level, guest);
             AttackBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 6 + TitledStripMenu.TITLE_OFFSET), atkLength, calcColor(atkLength));
             Elements.Add(AttackBar);
-            int defLength = calcLength(Stat.Defense, monsterForm, player.Def, player.Level);
+            int defLength = calcLength(team, Stat.Defense, monsterForm, player.Def, player.Level, guest);
             DefenseBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 7 + TitledStripMenu.TITLE_OFFSET), defLength, calcColor(defLength));
             Elements.Add(DefenseBar);
-            int mAtkLength = calcLength(Stat.MAtk, monsterForm, player.MAtk, player.Level);
+            int mAtkLength = calcLength(team, Stat.MAtk, monsterForm, player.MAtk, player.Level, guest);
             MAtkBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 8 + TitledStripMenu.TITLE_OFFSET), mAtkLength, calcColor(mAtkLength));
             Elements.Add(MAtkBar);
-            int mDefLength = calcLength(Stat.MDef, monsterForm, player.MDef, player.Level);
+            int mDefLength = calcLength(team, Stat.MDef, monsterForm, player.MDef, player.Level, guest);
             MDefBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), mDefLength, calcColor(mDefLength));
             Elements.Add(MDefBar);
-            int speedLength = calcLength(Stat.Speed, monsterForm, player.Speed, player.Level);
+            int speedLength = calcLength(team, Stat.Speed, monsterForm, player.Speed, player.Level, guest);
             SpeedBar = new MenuStatBar(new Loc(GraphicsManager.MenuBG.TileWidth * 2 + 76, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), speedLength, calcColor(speedLength));
             Elements.Add(SpeedBar);
 
@@ -214,12 +220,21 @@ namespace RogueEssence.Menu
             return Math.Min(Math.Max(0, statBonus * 128 / MAX_STAT_BOOST), 128)+1;
         }
 
-        private int calcLength(Stat stat, BaseMonsterForm form, int statVal, int level)
+        private int calcLength(Team team, Stat stat, BaseMonsterForm form, int statVal, int level, bool guest)
         {
             int avgLevel = 0;
-            for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
-                avgLevel += DataManager.Instance.Save.ActiveTeam.Players[ii].Level;
-            avgLevel /= DataManager.Instance.Save.ActiveTeam.Players.Count;
+            if (guest)
+            {
+                for (int ii = 0; ii < team.Guests.Count; ii++)
+                    avgLevel += team.Guests[ii].Level;
+                avgLevel /= team.Guests.Count;
+            }
+            else
+            {
+                for (int ii = 0; ii < team.Players.Count; ii++)
+                    avgLevel += team.Players[ii].Level;
+                avgLevel /= team.Players.Count;
+            }
             int baseStat = form.ReverseGetStat(stat, statVal, level);
             baseStat = baseStat * level / avgLevel;
             return Math.Min(Math.Max(1, baseStat * 140 / 120), 168);
@@ -258,40 +273,48 @@ namespace RogueEssence.Menu
             else if (IsInputting(input, Dir8.Left))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberFeaturesMenu(team, teamSlot, assembly, allowAssembly, guest));
             }
             else if (IsInputting(input, Dir8.Right))
             {
                 GameManager.Instance.SE("Menu/Skip");
-                MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(teamSlot, assembly, allowAssembly));
+                MenuManager.Instance.ReplaceMenu(new MemberInfoMenu(team, teamSlot, assembly, allowAssembly, guest));
             }
             else if (IsInputting(input, Dir8.Up))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
-                    int amtLimit = (!assembly) ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    int amtLimit = (!assembly) ? ((ExplorerTeam)team).Assembly.Count : team.Players.Count;
                     if (teamSlot - 1 < 0)
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(amtLimit - 1, !assembly, allowAssembly, boostView));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, amtLimit - 1, !assembly, true, false, boostView));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot - 1, assembly, allowAssembly, boostView));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, teamSlot - 1, assembly, true, false, boostView));
+                }
+                else if (guest)
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + team.Guests.Count - 1) % team.Guests.Count, false, false, true, boostView));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu((teamSlot + DataManager.Instance.Save.ActiveTeam.Players.Count - 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, boostView));
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + team.Players.Count - 1) % team.Players.Count, false, false, false, boostView));
             }
             else if (IsInputting(input, Dir8.Down))
             {
                 GameManager.Instance.SE("Menu/Skip");
                 if (allowAssembly)
                 {
-                    int amtLimit = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly.Count : DataManager.Instance.Save.ActiveTeam.Players.Count;
+                    int amtLimit = assembly ? ((ExplorerTeam)team).Assembly.Count : team.Players.Count;
                     if (teamSlot + 1 >= amtLimit)
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(0, !assembly, allowAssembly, boostView));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, 0, !assembly, true, false, boostView));
                     else
-                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(teamSlot + 1, assembly, allowAssembly, boostView));
+                        MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, teamSlot + 1, assembly, true, false, boostView));
+                }
+                else if (guest)
+                {
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + 1) % team.Guests.Count, false, false, true, boostView));
                 }
                 else
-                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu((teamSlot + 1) % DataManager.Instance.Save.ActiveTeam.Players.Count, false, allowAssembly, boostView));
+                    MenuManager.Instance.ReplaceMenu(new MemberStatsMenu(team, (teamSlot + 1) % team.Players.Count, false, false, false, boostView));
             }
         }
 
@@ -299,7 +322,9 @@ namespace RogueEssence.Menu
         {
             boostView = !boostView;
             int MAX_STAT_BOOST = 256;
-            Character player = assembly ? DataManager.Instance.Save.ActiveTeam.Assembly[teamSlot] : DataManager.Instance.Save.ActiveTeam.Players[teamSlot];
+
+            Character player = MemberFeaturesMenu.GetPresentedPlayer(team, teamSlot, assembly, guest);
+
             BaseMonsterForm monsterForm = DataManager.Instance.GetMonster(player.BaseForm.Species).Forms[player.BaseForm.Form];
 
             int mhp = player.MaxHPBonus;
@@ -310,12 +335,12 @@ namespace RogueEssence.Menu
             int spd = player.SpeedBonus;
 
             BonusTooltip.Color = boostView ? Color.Yellow : Color.White;
-            HPBar.Length = boostView ? calcBoostLength(Stat.HP, player) : calcLength(Stat.HP, monsterForm, player.MaxHP, player.Level);
-            AttackBar.Length = boostView ? calcBoostLength(Stat.Attack, player) : calcLength(Stat.Attack, monsterForm, player.Atk, player.Level);
-            DefenseBar.Length = boostView ? calcBoostLength(Stat.Defense, player) : calcLength(Stat.Defense, monsterForm, player.Def, player.Level);
-            MAtkBar.Length = boostView ? calcBoostLength(Stat.MAtk, player) : calcLength(Stat.MAtk, monsterForm, player.MAtk, player.Level);
-            MDefBar.Length = boostView ? calcBoostLength(Stat.MDef, player) : calcLength(Stat.MDef, monsterForm, player.MDef, player.Level);
-            SpeedBar.Length = boostView ? calcBoostLength(Stat.Speed, player) : calcLength(Stat.Speed, monsterForm, player.Speed, player.Level);
+            HPBar.Length = boostView ? calcBoostLength(Stat.HP, player) : calcLength(team, Stat.HP, monsterForm, player.MaxHP, player.Level, guest);
+            AttackBar.Length = boostView ? calcBoostLength(Stat.Attack, player) : calcLength(team, Stat.Attack, monsterForm, player.Atk, player.Level, guest);
+            DefenseBar.Length = boostView ? calcBoostLength(Stat.Defense, player) : calcLength(team, Stat.Defense, monsterForm, player.Def, player.Level, guest);
+            MAtkBar.Length = boostView ? calcBoostLength(Stat.MAtk, player) : calcLength(team, Stat.MAtk, monsterForm, player.MAtk, player.Level, guest);
+            MDefBar.Length = boostView ? calcBoostLength(Stat.MDef, player) : calcLength(team, Stat.MDef, monsterForm, player.MDef, player.Level, guest);
+            SpeedBar.Length = boostView ? calcBoostLength(Stat.Speed, player) : calcLength(team, Stat.Speed, monsterForm, player.Speed, player.Level, guest);
             HPBar.Color = calcColor(HPBar.Length);
             AttackBar.Color = calcColor(AttackBar.Length);
             DefenseBar.Color = calcColor(DefenseBar.Length);

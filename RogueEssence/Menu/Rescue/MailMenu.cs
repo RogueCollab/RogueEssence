@@ -4,7 +4,6 @@ using System.IO;
 using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Content;
-using Microsoft.Xna.Framework;
 
 namespace RogueEssence.Menu
 {
@@ -20,8 +19,10 @@ namespace RogueEssence.Menu
         private string[] files;
         private bool sosMode;
 
-        public MailMenu(bool sosMode, OnChoosePath action)
+        public MailMenu(bool sosMode, OnChoosePath action) : this(MenuLabel.MAIL_MENU, sosMode, action) { }
+        public MailMenu(string label, bool sosMode, OnChoosePath action)
         {
+            Label = label;
             this.sosMode = sosMode;
             this.action = action;
 

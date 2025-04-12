@@ -180,7 +180,10 @@ namespace RogueEssence.Dungeon
                     fxEmitter.SetupEmit(owner.MapLoc, owner.MapLoc, owner.CharDir);
                     DungeonScene.Instance.CreateAnim(fxEmitter, DrawLayer.NoDraw);
                     DungeonScene.Instance.SetScreenShake(new ScreenMover(fx.ScreenMovement));
-                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, owner.CharLoc));
+                    if (fx.AbsoluteDelay)
+                        yield return new WaitForFrames(fx.Delay);
+                    else
+                        yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(fx.Delay, owner.CharLoc));
                 }
             }
         }
@@ -194,7 +197,10 @@ namespace RogueEssence.Dungeon
                 emitter.SetupEmit(origin, origin, owner.CharDir);
                 DungeonScene.Instance.CreateAnim(emitter, DrawLayer.NoDraw);
                 DungeonScene.Instance.SetScreenShake(new ScreenMover(ActionFX.ScreenMovement));
-                yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(ActionFX.Delay, owner.CharLoc));
+                if (ActionFX.AbsoluteDelay)
+                    yield return new WaitForFrames(ActionFX.Delay);
+                else
+                    yield return new WaitForFrames(GameManager.Instance.ModifyBattleSpeed(ActionFX.Delay, owner.CharLoc));
             }
         }
         public abstract IEnumerator<YieldInstruction> ReleaseHitboxes(IActionContext actionContext, DungeonScene.HitboxEffect effect, DungeonScene.HitboxEffect tileEffect);
@@ -651,8 +657,8 @@ namespace RogueEssence.Dungeon
         }
         public static bool IsTargetedInArea(Character user, Loc loc, Dir8 dir, Alignment targetAlignments, int range, Hitbox.AreaLimit hitArea, Character target)
         {
-            Loc diff = loc - target.CharLoc;
-            if (DungeonScene.Instance.IsTargeted(user, target, targetAlignments) && Hitbox.IsInCircleSquareHitbox(target.CharLoc, loc, range * 2, range, hitArea, dir))
+            Loc targetLoc = ZoneManager.Instance.CurrentMap.GetClosestUnwrappedLoc(loc, target.CharLoc);
+            if (DungeonScene.Instance.IsTargeted(user, target, targetAlignments) && Hitbox.IsInCircleSquareHitbox(targetLoc, loc, range * 2, range, hitArea, dir))
                 return true;
 
             return false;
@@ -1499,7 +1505,8 @@ namespace RogueEssence.Dungeon
             Normal,
             DropDown,
             Invisible,
-            Kidnap
+            Kidnap,
+            Leap
         }
 
         public AnimData Anim;
@@ -1583,6 +1590,11 @@ namespace RogueEssence.Dungeon
                 case DashAppearance.Kidnap:
                     {
                         rushAnim = new CharAnimKidnapDash();
+                        break;
+                    }
+                case DashAppearance.Leap:
+                    {
+                        rushAnim = new CharAnimLeapingDash();
                         break;
                     }
             }

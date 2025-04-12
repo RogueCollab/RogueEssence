@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Data;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using RogueEssence.Content;
 
 namespace RogueEssence.LevelGen
 {
@@ -54,10 +55,20 @@ namespace RogueEssence.LevelGen
         [Dev.DataType(0, DataManager.DataType.Element, false)]
         public string GroundElement;
 
-        public MapTextureStep() { GroundElement = ""; }
+        /// <summary>
+        /// Background behind all floor tiles.
+        /// </summary>
+        public IBackgroundSprite Background;
+
+        public MapTextureStep()
+        {
+            GroundElement = "";
+            Background = new MapBG();
+        }
 
         public override void Apply(T map)
         {
+            map.Map.Background = Background;
             map.Map.BlankBG = new AutoTile(BlockTileset);
             map.Map.TextureMap[DataManager.Instance.GenFloor] = new AutoTile(GroundTileset);
             if (IndependentGround)

@@ -2,10 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using RogueEssence.Content;
 using RogueElements;
-using RogueEssence.Data;
-using System.IO;
-using System.Xml;
-using System;
 
 namespace RogueEssence.Menu
 {
@@ -16,8 +12,10 @@ namespace RogueEssence.Menu
         List<ModHeader> quests;
         ModMiniSummary modSummary;
 
-        public QuestsMenu()
+        public QuestsMenu() : this(MenuLabel.MODS_MENU_QUESTS) { }
+        public QuestsMenu(string label)
         {
+            Label = label;
             quests = PathMod.GetEligibleMods(PathMod.ModType.Quest);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

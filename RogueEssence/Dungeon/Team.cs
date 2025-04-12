@@ -218,14 +218,16 @@ namespace RogueEssence.Dungeon
             bool update = false;
             if (oldItem != null)
             {
-                ItemData itemEntry = DataManager.Instance.GetItem(oldItem.ID);
-                if (itemEntry.BagEffect)
+                EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                ItemEntrySummary summary = (ItemEntrySummary)idx.Get(oldItem.ID);
+                if (summary.BagEffect)
                     update = true;
             }
             if (newItem != null)
             {
-                ItemData itemEntry = DataManager.Instance.GetItem(newItem.ID);
-                if (itemEntry.BagEffect)
+                EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                ItemEntrySummary summary = (ItemEntrySummary)idx.Get(newItem.ID);
+                if (summary.BagEffect)
                     update = true;
             }
             if (oldItem == null && newItem == null)

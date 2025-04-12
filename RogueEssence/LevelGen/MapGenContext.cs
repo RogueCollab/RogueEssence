@@ -125,18 +125,18 @@ namespace RogueEssence.LevelGen
             }
         }
 
-        public bool TileBlocked(Loc loc)
+        public virtual bool TileBlocked(Loc loc)
         {
             return Map.TileBlocked(loc);
         }
 
-        public bool TileBlocked(Loc loc, bool diagonal)
+        public virtual bool TileBlocked(Loc loc, bool diagonal)
         {
             return Map.TileBlocked(loc, false, diagonal);
         }
 
 
-        public bool HasTileEffect(Loc loc)
+        public virtual bool HasTileEffect(Loc loc)
         {
             Tile tile = Map.GetTile(loc);
             if (tile == null)
@@ -172,22 +172,53 @@ namespace RogueEssence.LevelGen
             return Grid.FindTilesInBox(rect.Start, rect.Size, checkOp);
         }
 
-        protected bool isObstructed(Loc loc)
-        {
-            Tile tile = Map.GetTile(loc);
-            TerrainData data = tile.Data.GetData();
-            return (data.BlockType != TerrainData.Mobility.Passable || HasTileEffect(loc));
-        }
-
         bool IPlaceableGenContext<MoneySpawn>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<InvItem>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<MapItem>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
         bool IPlaceableGenContext<EffectTile>.CanPlaceItem(Loc loc) { return canPlaceItemTile(loc); }
 
+        protected bool isObstructed(Loc loc)
+        {
+            Tile tile = Map.GetTile(loc);
+
+            if (!String.IsNullOrEmpty(tile.Effect.ID))
+            {
+                //Need to check if that specific tile is an obstruction
+                //Traps are counted as obstructions
+                TileData effect = (TileData)tile.Effect.GetData();
+                if (effect.StepType == TileData.TriggerType.None || effect.StepType == TileData.TriggerType.Passage)
+                {
+                    //non-trigger and passage tiles are considered non-obstructing
+                }
+                if (effect.StepType == TileData.TriggerType.Unlockable)
+                {
+                    //unlockables are always counted as non-obstructing: they can be unlocked and turn into a path!
+                    return false;
+                }
+                else
+                    return true;
+            }
+
+            TerrainData data = (TerrainData)tile.Data.GetData();
+            if (data.BlockType != TerrainData.Mobility.Passable)
+                return true;
+
+            return false;
+        }
+
         protected virtual bool canPlaceItemTile(Loc loc)
         {
-            if (isObstructed(loc))
+            if (!Map.GetLocInMapBounds(ref loc))
                 return false;
+
+            Tile tile = Map.GetTile(loc);
+            TerrainData data = (TerrainData)tile.Data.GetData();
+
+            if (data.BlockType != TerrainData.Mobility.Passable)
+                return false;
+            if (HasTileEffect(loc))
+                return false;
+
             if ((GetPostProc(loc).Status & (PostProcType.Panel | PostProcType.Item)) != PostProcType.None)
                 return false;
 
@@ -235,7 +266,7 @@ namespace RogueEssence.LevelGen
             //TODO: refactor to tell apart trap placement (remove terrain) and other effect tile placement (keep terrain)
             //This is a general problem, in which placeables of the same data type want to be placed, but placed differently
             //other example: money placement  instead of item placement, mob placement being multiple entities
-            TerrainData data = tile.Data.GetData();
+            TerrainData data = (TerrainData)tile.Data.GetData();
             if (data.BlockType == TerrainData.Mobility.Passable)
             {
                 Tile tmpTile = (Tile)RoomTerrain.Copy();
@@ -465,23 +496,23 @@ namespace RogueEssence.LevelGen
         Loc IViewPlaceableGenContext<MapGenExit>.GetLoc(int index) { return GenExits[index].Loc; }
 
 
-        protected override bool canPlaceItemTile(Loc loc)
+        public override bool HasTileEffect(Loc loc)
         {
-            if (!base.canPlaceItemTile(loc))
-                return false;
+            if (base.HasTileEffect(loc))
+                return true;
 
             for (int ii = 0; ii < GenEntrances.Count; ii++)
             {
                 if (GenEntrances[ii].Loc == loc)
-                    return false;
+                    return true;
             }
             for (int ii = 0; ii < GenExits.Count; ii++)
             {
                 if (GenExits[ii].Loc == loc)
-                    return false;
+                    return true;
             }
 
-            return true;
+            return false;
         }
 
         protected override bool canPlaceTeam(Loc loc)

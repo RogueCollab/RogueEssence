@@ -121,8 +121,11 @@ namespace RogueEssence.Ground
         public override void DoCleanup()
         {
             base.DoCleanup();
-            //Clear the current character action so nothing will wait on it
-            currentCharAction = null;
+            //Clear the current character action so nothing will wait on it (ScriptGround wait deadlock issue)
+            //do not set this to null, or else some AI tasks, such as random wander, that request the animation data,
+            //will throw an error if called afer the map is unloaded.
+            //TODO: fix the ability for ai to continue running after a map is disposed.  fix the ability for tasks to continue waiting after a map is disposed.
+            currentCharAction = new IdleGroundAction(currentCharAction.MapLoc, 0, currentCharAction.CharDir);
         }
 
 

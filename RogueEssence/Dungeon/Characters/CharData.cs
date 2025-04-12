@@ -23,7 +23,10 @@ namespace RogueEssence.Dungeon
             {
                 string name = Nickname;
                 if (String.IsNullOrEmpty(Nickname))
-                    name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                {
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                    name = idx.Get(BaseForm.Species).Name.ToLocal();
+                }
 
                 return name;
             }
@@ -221,8 +224,8 @@ namespace RogueEssence.Dungeon
                 index = 1;
             else if (form.Intrinsic3 == intrinsic)
                 index = 2;
-            else if (index<0)
-                index = DataManager.Instance.Save.Rand.Next(0, 3);
+            else if (index < 0)
+                index = 0;
             return index;
         }
 

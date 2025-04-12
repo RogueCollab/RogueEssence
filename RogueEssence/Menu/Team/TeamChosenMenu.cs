@@ -14,8 +14,10 @@ namespace RogueEssence.Menu
 
         private int teamSlot;
 
-        public TeamChosenMenu(int teamSlot)
+        public TeamChosenMenu(int teamSlot) : this(MenuLabel.TEAM_CHOSEN_MENU, teamSlot) { }
+        public TeamChosenMenu(string label, int teamSlot)
         {
+            Label = label;
             this.teamSlot = teamSlot;
 
 
@@ -111,7 +113,7 @@ namespace RogueEssence.Menu
 
         private void SummaryAction()
         {
-            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(teamSlot, false, false), false);
+            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(DataManager.Instance.Save.ActiveTeam, teamSlot, false, false, false), false);
         }
 
         private void StatusAction()

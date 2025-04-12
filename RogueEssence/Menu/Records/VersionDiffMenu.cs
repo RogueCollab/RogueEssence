@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
         public List<ModDiff> ModDiffs;
         public int Page;
 
-        public VersionDiffMenu(List<ModDiff> modDiffs, int page)
+        public VersionDiffMenu(List<ModDiff> modDiffs, int page) : this(MenuLabel.VERSION_DIFF_MENU, modDiffs, page) { }
+        public VersionDiffMenu(string label, List<ModDiff> modDiffs, int page)
         {
+            Label = label;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             ModDiffs = modDiffs;
             Page = page;
@@ -31,9 +33,9 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < displayTotal; ii++)
             {
                 Versions[ii] = new MenuText[3];
-                Versions[ii][0] = new MenuText(ModDiffs[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
-                Versions[ii][1] = new MenuText(ModDiffs[ii].OldVersionString + " \u2192", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
-                Versions[ii][2] = new MenuText(ModDiffs[ii].NewVersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Versions[ii][0] = new MenuText(ModDiffs[ii + Page * MAX_LINES].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET));
+                Versions[ii][1] = new MenuText(ModDiffs[ii + Page * MAX_LINES].OldVersionString + " \u2192", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2 - 48, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
+                Versions[ii][2] = new MenuText(ModDiffs[ii + Page * MAX_LINES].NewVersionString, new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * ii + TitledStripMenu.TITLE_OFFSET), DirH.Right);
             }
 
             base.Initialize();

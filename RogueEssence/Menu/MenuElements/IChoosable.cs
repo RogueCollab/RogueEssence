@@ -6,6 +6,7 @@ namespace RogueEssence.Menu
     {
         Rect Bounds { get; set; }
         bool Selected { get; }
+        bool Hovered { get; }
 
         //chosen by clicking
         void OnMouseState(bool clicked);

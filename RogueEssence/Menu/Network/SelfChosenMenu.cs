@@ -17,8 +17,11 @@ namespace RogueEssence.Menu
 
         const int CHAR_NAME_SIZE = 116;
 
-        public SelfChosenMenu(string copyString, bool rescueMode, ContactsMenu.OnChooseActivity action)
+        public SelfChosenMenu(string copyString, bool rescueMode, ContactsMenu.OnChooseActivity action) :
+            this(MenuLabel.SELF_CHOSEN_MENU, copyString, rescueMode, action) { }
+        public SelfChosenMenu(string label, string copyString, bool rescueMode, ContactsMenu.OnChooseActivity action)
         {
+            Label = label;
             this.copyString = copyString;
             this.rescueMode = rescueMode;
             this.action = action;
