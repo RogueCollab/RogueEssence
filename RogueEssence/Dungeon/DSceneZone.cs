@@ -571,7 +571,6 @@ namespace RogueEssence.Dungeon
         public void OnCharAdd(Character newChar)
         {
             newChar.TurnWait = 0;
-            newChar.TiersUsed = 0;
             newChar.TurnUsed = false;
         }
 
@@ -869,7 +868,6 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> MoveToUsableTurn(bool action, bool walked)
         {
             CurrentCharacter.TurnWait = (walked ? -CurrentCharacter.MovementSpeed : 0) + 1;
-            CurrentCharacter.TiersUsed++;
             CurrentCharacter.TurnUsed = action;
 
             if (!IsGameOver())
@@ -877,26 +875,34 @@ namespace RogueEssence.Dungeon
 
                 ReorderDeadLeaders();
 
+                TurnState currentTurnState = ZoneManager.Instance.CurrentMap.CurrentTurnMap;
                 do
                 {
                     //move to next turn
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex++;
+                    currentTurnState.CurrentOrder.TurnIndex++;
 
                     //if we're over he index of the current faction list, it means we must move to the next faction
-                    while (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex >= ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Count)
+                    while (currentTurnState.CurrentOrder.TurnIndex >= currentTurnState.TurnToChar.Count)
                     {
-                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction = (Faction)(((int)ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction + 1) % 3);
-                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex = 0;
+                        // clear the turntochar mapping as soon as we're done with it
+                        currentTurnState.TurnToChar.Clear();
+
+                        // Attack action flag MUST be reset between the player and enemy faction of turn tier 0
+                        if (currentTurnState.CurrentOrder.TurnTier == 0 && currentTurnState.CurrentOrder.Faction == Faction.Player)
+                            ResetAttackAction();
+
+                        currentTurnState.CurrentOrder.Faction = (Faction)(((int)currentTurnState.CurrentOrder.Faction + 1) % 3);
+                        currentTurnState.CurrentOrder.TurnIndex = 0;
 
                         //if we looped back to the player faction, it means we must move on to the next turn tier
-                        if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction == Faction.Player)
+                        if (currentTurnState.CurrentOrder.Faction == Faction.Player)
                         {
-                            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier++;
+                            currentTurnState.CurrentOrder.TurnTier++;
 
                             //if we're on the last turn tier, we loop back to the first one
-                            if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier > TurnOrder.TURN_TIER_3_4)
+                            if (currentTurnState.CurrentOrder.TurnTier > TurnOrder.TURN_TIER_3_4)
                             {
-                                ResetRound();
+                                currentTurnState.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
 
                                 yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
 
@@ -972,6 +978,16 @@ namespace RogueEssence.Dungeon
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], false);
         }
 
+        public void ResetAttackAction()
+        {
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.ActiveTeam, true);
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.AllyTeams[ii], true);
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], true);
+
+        }
+
         /// <summary>
         /// Resets the current turn state to blank.
         /// Turn order is set to player 0
@@ -981,11 +997,7 @@ namespace RogueEssence.Dungeon
         {
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.ActiveTeam, true);
-            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.AllyTeams[ii], true);
-            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], true);
+            ResetAttackAction();
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Clear();
         }

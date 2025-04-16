@@ -37,10 +37,7 @@ namespace RogueEssence.Dungeon
                 return;
 
             if (reset)
-            {
-                character.TiersUsed = 0;
                 character.TurnUsed = false;
-            }
             else
                 character.TurnUsed = true;
         }
@@ -51,7 +48,6 @@ namespace RogueEssence.Dungeon
                 return CharIndex.Invalid;
             return TurnToChar[CurrentOrder.TurnIndex];
         }
-
 
 
         public void UpdateCharRemoval(CharIndex charIndex)
@@ -105,6 +101,23 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Gets how many times the character can move within this round, assuming it doesnt attack.
+        /// Assumes it has not moved on this faction-turn.
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public int GetRemainingTurns(ITurnChar character)
+        {
+            int remaining = 0;
+            for (int ii = CurrentOrder.TurnTier; ii <= TurnOrder.TURN_TIER_3_4; ii++)
+            {
+                if (canCharacterMoveOnTier(character, ii))
+                    remaining++;
+            }
+            return remaining;
+        }
+
         public bool IsEligibleToMove(ITurnChar character)
         {
             if (character.Dead)
@@ -113,8 +126,16 @@ namespace RogueEssence.Dungeon
             if (character.TurnUsed)
                 return false;
 
+            if (canCharacterMoveOnTier(character, CurrentOrder.TurnTier))
+                return true;
+
+            return false;
+        }
+
+        private bool canCharacterMoveOnTier(ITurnChar character, int turnTier)
+        {
             //switch statement on the turn tier
-            switch (CurrentOrder.TurnTier)
+            switch (turnTier)
             {
                 case TurnOrder.TURN_TIER_0: //for 0, check to see if the character's turnwait is at or exceeds its -(movement speed) + 1
                     return (character.MovementSpeed >= 0 || character.TurnWait <= 0);

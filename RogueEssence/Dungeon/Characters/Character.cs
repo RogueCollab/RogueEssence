@@ -289,11 +289,6 @@ namespace RogueEssence.Dungeon
         public int TurnWait { get; set; }
 
         /// <summary>
-        /// The number of turn tiers that this character has moved OR acted on.
-        /// </summary>
-        public int TiersUsed { get; set; }
-
-        /// <summary>
         /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
         /// </summary>
         public bool TurnUsed { get; set; }
