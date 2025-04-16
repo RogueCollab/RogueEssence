@@ -227,7 +227,6 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
             ResetRound();
             RegenerateTurnMap();
 
@@ -900,6 +899,12 @@ namespace RogueEssence.Dungeon
                                 ResetRound();
 
                                 yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
+
+                                //reorder again in case something happened to deaths.
+                                ReorderDeadLeaders();
+
+                                RemoveDeadTeams();
+
                             }
                         }
 
@@ -915,11 +920,6 @@ namespace RogueEssence.Dungeon
                 }
                 while (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(CurrentCharacter));
 
-                //reorder again in case something happened to deaths.
-                ReorderDeadLeaders();
-
-                RemoveDeadTeams();
-
                 if (!IsPlayerTurn())
                     OrganizeAIMovement(0);
             }
@@ -930,8 +930,6 @@ namespace RogueEssence.Dungeon
             //silently set team mode to false
             DataManager.Instance.Save.TeamMode = false;
             ResetRound();
-            //silently reset turn map
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
             ReloadFocusedPlayer();
         }
@@ -974,15 +972,22 @@ namespace RogueEssence.Dungeon
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], false);
         }
 
+        /// <summary>
+        /// Resets the current turn state to blank.
+        /// Turn order is set to player 0
+        /// TurnChars are cleared.
+        /// </summary>
         public void ResetRound()
         {
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.ActiveTeam, true);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.AllyTeams[ii], true);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], true);
+
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Clear();
         }
 
         private void OrganizeAIMovement(int depth)
