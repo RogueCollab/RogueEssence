@@ -6,6 +6,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class TurnState
     {
+
         public TurnOrder CurrentOrder;
 
         /// <summary>
@@ -115,15 +116,15 @@ namespace RogueEssence.Dungeon
             //switch statement on the turn tier
             switch (CurrentOrder.TurnTier)
             {
-                case 0: //for 0, check to see if the character's turnwait is at or exceeds its -(movement speed) + 1
+                case TurnOrder.TURN_TIER_0: //for 0, check to see if the character's turnwait is at or exceeds its -(movement speed) + 1
                     return (character.MovementSpeed >= 0 || character.TurnWait <= 0);
-                case 1:
-                case 5: //for 1 and 5, check to see if the character's movement speed is +3
+                case TurnOrder.TURN_TIER_1_4:
+                case TurnOrder.TURN_TIER_3_4: //for 1/4 and 3/4, check to see if the character's movement speed is +3
                     return (character.MovementSpeed == 3);
-                case 2:
-                case 4: //for 2 and 4, check to see if the character's movement speed is +2
+                case TurnOrder.TURN_TIER_1_3:
+                case TurnOrder.TURN_TIER_2_3: //for 1/3 and 2/3, check to see if the character's movement speed is +2
                     return (character.MovementSpeed == 2);
-                case 3://for 3, check to see if the character's movement speed is +1 or +3
+                case TurnOrder.TURN_TIER_1_2: //for 1/2, check to see if the character's movement speed is +1 or +3
                     return (character.MovementSpeed == 1 || character.MovementSpeed == 3);
             }
             return false;
@@ -156,7 +157,7 @@ namespace RogueEssence.Dungeon
             ITurnChar character = playerList[charIndex];
             if (!character.Dead)
             {
-                if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
+                if (CurrentOrder.TurnTier == TurnOrder.TURN_TIER_0)//decrement wait for all slow charas
                     character.TurnWait--;
             }
 

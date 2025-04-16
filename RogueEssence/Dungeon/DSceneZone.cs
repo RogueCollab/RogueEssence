@@ -894,7 +894,7 @@ namespace RogueEssence.Dungeon
                             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier++;
 
                             //if we're on the last turn tier, we loop back to the first one
-                            if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier >= 6)
+                            if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier > TurnOrder.TURN_TIER_3_4)
                             {
                                 ResetRound();
 
