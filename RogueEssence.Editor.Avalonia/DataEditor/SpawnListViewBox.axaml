@@ -22,7 +22,7 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
-    <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
+    <DataGrid IsReadOnly="true" ItemsSource="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Chance"
                       Binding="{Binding Path=Chance, Converter={StaticResource PercentConverter}, Mode=OneWay}" />

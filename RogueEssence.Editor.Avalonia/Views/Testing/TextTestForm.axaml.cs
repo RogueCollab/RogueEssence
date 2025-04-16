@@ -13,21 +13,13 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Views
 {
-    public class TextTestForm : Window
+    public partial class TextTestForm : Window
     {
 
         public TextTestForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
     }
 }

@@ -12,7 +12,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class PriorityListBox : UserControl
+    public partial class PriorityListBox : UserControl
     {
         public PriorityListBox()
         {
@@ -23,11 +23,7 @@ namespace RogueEssence.Dev.Views
             Button editButton = this.FindControl<Button>("PriorityListBoxEditButton");
             editButton.AddHandler(PointerReleasedEvent, PriorityListBoxEditButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+        
 
         bool doubleclick;
         public void doubleClickStart(object sender, RoutedEventArgs e)

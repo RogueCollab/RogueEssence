@@ -17,6 +17,7 @@ using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -79,11 +80,10 @@ namespace RogueEssence.Dev.ViewModels
             filter.Name = "Ground Files";
             filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
             openFileDialog.Filters.Add(filter);
-
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
+            
             string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
-
+            
             if (results != null && results.Length > 0)
             {
                 bool legalPath = false;
