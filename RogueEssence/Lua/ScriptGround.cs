@@ -619,7 +619,7 @@ namespace RogueEssence.Script
         {
             try
             {
-                if (speed < 1)
+                if (speed <= 0f)
                     throw new ArgumentException(String.Format("Invalid Walk Speed: {0}", speed));
 
                 if (ent is GroundChar)
