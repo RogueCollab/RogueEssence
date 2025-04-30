@@ -6,6 +6,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class TurnState
     {
+
         public TurnOrder CurrentOrder;
 
         /// <summary>
@@ -36,10 +37,7 @@ namespace RogueEssence.Dungeon
                 return;
 
             if (reset)
-            {
-                character.TiersUsed = 0;
                 character.TurnUsed = false;
-            }
             else
                 character.TurnUsed = true;
         }
@@ -50,7 +48,6 @@ namespace RogueEssence.Dungeon
                 return CharIndex.Invalid;
             return TurnToChar[CurrentOrder.TurnIndex];
         }
-
 
 
         public void UpdateCharRemoval(CharIndex charIndex)
@@ -104,6 +101,23 @@ namespace RogueEssence.Dungeon
             }
         }
 
+        /// <summary>
+        /// Gets how many times the character can move within this round, assuming it doesnt attack.
+        /// Assumes it has not moved on this faction-turn.
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
+        public int GetRemainingTurns(ITurnChar character)
+        {
+            int remaining = 0;
+            for (int ii = CurrentOrder.TurnTier; ii <= TurnOrder.TURN_TIER_3_4; ii++)
+            {
+                if (canCharacterMoveOnTier(character, ii))
+                    remaining++;
+            }
+            return remaining;
+        }
+
         public bool IsEligibleToMove(ITurnChar character)
         {
             if (character.Dead)
@@ -112,18 +126,26 @@ namespace RogueEssence.Dungeon
             if (character.TurnUsed)
                 return false;
 
+            if (canCharacterMoveOnTier(character, CurrentOrder.TurnTier))
+                return true;
+
+            return false;
+        }
+
+        private bool canCharacterMoveOnTier(ITurnChar character, int turnTier)
+        {
             //switch statement on the turn tier
-            switch (CurrentOrder.TurnTier)
+            switch (turnTier)
             {
-                case 0: //for 0, check to see if the character's turnwait is at or exceeds its -(movement speed) + 1
+                case TurnOrder.TURN_TIER_0: //for 0, check to see if the character's turnwait is at or exceeds its -(movement speed) + 1
                     return (character.MovementSpeed >= 0 || character.TurnWait <= 0);
-                case 1:
-                case 5: //for 1 and 5, check to see if the character's movement speed is +3
+                case TurnOrder.TURN_TIER_1_4:
+                case TurnOrder.TURN_TIER_3_4: //for 1/4 and 3/4, check to see if the character's movement speed is +3
                     return (character.MovementSpeed == 3);
-                case 2:
-                case 4: //for 2 and 4, check to see if the character's movement speed is +2
+                case TurnOrder.TURN_TIER_1_3:
+                case TurnOrder.TURN_TIER_2_3: //for 1/3 and 2/3, check to see if the character's movement speed is +2
                     return (character.MovementSpeed == 2);
-                case 3://for 3, check to see if the character's movement speed is +1 or +3
+                case TurnOrder.TURN_TIER_1_2: //for 1/2, check to see if the character's movement speed is +1 or +3
                     return (character.MovementSpeed == 1 || character.MovementSpeed == 3);
             }
             return false;
@@ -156,7 +178,7 @@ namespace RogueEssence.Dungeon
             ITurnChar character = playerList[charIndex];
             if (!character.Dead)
             {
-                if (CurrentOrder.TurnTier == 0)//decrement wait for all slow charas
+                if (CurrentOrder.TurnTier == TurnOrder.TURN_TIER_0)//decrement wait for all slow charas
                     character.TurnWait--;
             }
 
