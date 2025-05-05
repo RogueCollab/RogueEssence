@@ -1169,7 +1169,7 @@ namespace RogueEssence.Dungeon
         /// <param name="intrinsicNum">The intrinsic to learn</param>
         /// <param name="slot">The slot to replace the new intrinsic into.  -1 to add it to the earliest available slot.</param>
         /// <exception cref="Exception"></exception>
-        public void LearnIntrinsic(string intrinsicNum, int slot = -1)
+        public void LearnIntrinsic(string intrinsicNum, int slot = -1, bool refresh = true)
         {
             if (slot == -1)
             {
@@ -1193,7 +1193,8 @@ namespace RogueEssence.Dungeon
                     Intrinsics[ii].Element = new Intrinsic(BaseIntrinsics[slot]);
             }
 
-            RefreshTraits();
+            if (refresh)
+                RefreshTraits();
         }
 
 
