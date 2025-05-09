@@ -8,18 +8,13 @@ using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
-    public class LayerBox : UserControl
+    public partial class LayerBox : UserControl
     {
         public LayerBox()
         {
             this.InitializeComponent();
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         bool doubleclick;
         public void doubleClickStart(object sender, RoutedEventArgs e)
         {
