@@ -129,7 +129,7 @@ namespace RogueEssence.Ground
             {
                 Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
                 //DataManager.Instance.Save.ViewCenter = coords * GraphicsManager.TILE_SIZE;
-                if (Collision.InBounds(ZoneManager.Instance.CurrentGround.GroundWidth, ZoneManager.Instance.CurrentGround.GroundHeight, coords))
+                if (ZoneManager.Instance.CurrentGround.GetLocInGroundBounds(ref coords))
                 {
                     FocusedCharacter.SetMapLoc(coords);
                     FocusedCharacter.UpdateFrame();

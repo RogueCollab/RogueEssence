@@ -553,6 +553,25 @@ namespace RogueEssence.Ground
         {
             return Loc.Wrap(loc, GroundSize);
         }
+
+
+        /// <summary>
+        /// Checks to see if the loc is in map's ground bounds.
+        /// If it's not wrapped, expect normal results.
+        /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
+        /// </summary>
+        /// <param name="loc">The location to test.  Will be wrapped if the map is wrapped.</param>
+        /// <returns></returns>
+        public bool GetLocInGroundBounds(ref Loc loc)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+            {
+                loc = WrapLoc(loc);
+                return true;
+            }
+            return RogueElements.Collision.InBounds(GroundWidth, GroundHeight, loc);
+        }
+
         public bool InMapBounds(Loc loc)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)
