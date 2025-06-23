@@ -352,6 +352,9 @@ namespace RogueEssence.Script
 
         //Global lua symbol names
         public const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
+        public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
+        public const string EVENT_AI_SWITCH_NAME = "AI_SWITCH_SCRIPT";
+        public const string EVENT_AI_THINK_NAME = "AI_THINK_SCRIPT";
         public const string EVENT_SINGLE_NAME = "SINGLE_CHAR_SCRIPT";
         public const string EVENT_BATTLE_NAME = "BATTLE_SCRIPT";
         public const string EVENT_CONDITION_NAME = "CONDITION_SCRIPT";
