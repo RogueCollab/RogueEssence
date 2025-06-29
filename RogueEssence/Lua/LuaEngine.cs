@@ -352,9 +352,6 @@ namespace RogueEssence.Script
 
         //Global lua symbol names
         public const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
-        public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
-        public const string EVENT_AI_SWITCH_NAME = "AI_SWITCH_SCRIPT";
-        public const string EVENT_AI_THINK_NAME = "AI_THINK_SCRIPT";
         public const string EVENT_SINGLE_NAME = "SINGLE_CHAR_SCRIPT";
         public const string EVENT_BATTLE_NAME = "BATTLE_SCRIPT";
         public const string EVENT_CONDITION_NAME = "CONDITION_SCRIPT";
@@ -366,6 +363,9 @@ namespace RogueEssence.Script
         public const string EVENT_SKILLCHANGE_NAME = "SKILL_CHANGE_SCRIPT";
         public const string EVENT_FLOORGEN_NAME = "FLOOR_GEN_SCRIPT";
         public const string EVENT_ZONEGEN_NAME = "ZONE_GEN_SCRIPT";
+        public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
+        public const string EVENT_AI_SWITCH_NAME = "AI_SWITCH_SCRIPT";
+        public const string EVENT_AI_THINK_NAME = "AI_THINK_SCRIPT";
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -717,6 +717,7 @@ namespace RogueEssence.Script
             //Make the callbacks table
             LuaState.NewTable(EVENT_SINGLE_NAME);
             LuaState.NewTable(EVENT_BATTLE_NAME);
+            LuaState.NewTable(EVENT_CONDITION_NAME);
             LuaState.NewTable(EVENT_STATUS_NAME);
             LuaState.NewTable(EVENT_MAPSTATUS_NAME);
             LuaState.NewTable(EVENT_ITEM_NAME);
@@ -725,6 +726,9 @@ namespace RogueEssence.Script
             LuaState.NewTable(EVENT_SKILLCHANGE_NAME);
             LuaState.NewTable(EVENT_FLOORGEN_NAME);
             LuaState.NewTable(EVENT_ZONEGEN_NAME);
+            LuaState.NewTable(EVENT_AI_INIT_NAME);
+            LuaState.NewTable(EVENT_AI_SWITCH_NAME);
+            LuaState.NewTable(EVENT_AI_THINK_NAME);
 
             //Make empty script variable table
             LuaState.NewTable(SCRIPT_VARS_NAME);
