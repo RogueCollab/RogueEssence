@@ -3,11 +3,9 @@ using RogueEssence.Script;
 using System;
 using System.Linq;
 using RogueElements;
-using Dev = RogueEssence.Dev;
-using RogueEssence.Dungeon;
 using RogueEssence.Data;
 
-namespace PMDC.Dungeon
+namespace RogueEssence.Dungeon
 {
     [Serializable]
     public class ScriptPlan : BasePlan
@@ -25,8 +23,11 @@ namespace PMDC.Dungeon
         [Dev.Multiline(0)]
         public string SwitchedInArgTable;
 
+        private LuaTable luaTable;
+
         public ScriptPlan()
         {
+            luaTable = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             ThinkScript = ""; ThinkArgTable = "{}";
             InitializeScript = ""; InitializeArgTable = "{}";
             SwitchedInScript = ""; SwitchedInArgTable = "{}";
@@ -34,24 +35,28 @@ namespace PMDC.Dungeon
 
         public ScriptPlan(string script) 
         {
+            luaTable = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             ThinkScript = script; ThinkArgTable = "{}";
             InitializeScript = ""; InitializeArgTable = "{}";
             SwitchedInScript = ""; SwitchedInArgTable = "{}";
         }
         public ScriptPlan(string think, string thinkTable) 
         {
+            luaTable = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             ThinkScript = think; ThinkArgTable = thinkTable;
             InitializeScript = ""; InitializeArgTable = "{}";
             SwitchedInScript = ""; SwitchedInArgTable = "{}";
         }
         public ScriptPlan(string think, string thinkTable, string init, string initTable, string switched, string switchedTable) 
         {
+            luaTable = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
             ThinkScript = think; ThinkArgTable = thinkTable;
             InitializeScript = init; InitializeArgTable = initTable;
             SwitchedInScript = switched; SwitchedInArgTable = switchedTable;
         }
         protected ScriptPlan(ScriptPlan other)
         {
+            luaTable = other.luaTable;
             ThinkScript = other.ThinkScript;
             ThinkArgTable = other.ThinkArgTable;
             InitializeScript = other.InitializeScript;
@@ -66,7 +71,7 @@ namespace PMDC.Dungeon
         {
             if (string.IsNullOrEmpty(InitializeScript)) return;
             LuaTable args = LuaEngine.Instance.RunString("return " + InitializeArgTable).First() as LuaTable;
-            object[] parameters = new object[] { controlledChar, args };
+            object[] parameters = new object[] { controlledChar, luaTable, args };
             string name = LuaEngine.EVENT_AI_INIT_NAME + "." + InitializeScript;
             LuaEngine.Instance.CallLuaFunctions(name, parameters);
         }
@@ -75,7 +80,7 @@ namespace PMDC.Dungeon
         {
             if (string.IsNullOrEmpty(SwitchedInScript)) return;
             LuaTable args = LuaEngine.Instance.RunString("return " + SwitchedInArgTable).First() as LuaTable;
-            object[] parameters = new object[] { currentPlan, args };
+            object[] parameters = new object[] { currentPlan, luaTable, args };
             string name = LuaEngine.EVENT_AI_SWITCH_NAME + "." + SwitchedInScript;
             LuaEngine.Instance.CallLuaFunctions(name, parameters);
         }
@@ -83,7 +88,7 @@ namespace PMDC.Dungeon
         public override GameAction Think(Character controlledChar, bool preThink, IRandom rand)
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ThinkArgTable).First() as LuaTable;
-            object[] parameters = new object[] { controlledChar, preThink, rand, args };
+            object[] parameters = new object[] { controlledChar, preThink, rand, luaTable, args };
             string name = LuaEngine.EVENT_AI_THINK_NAME + "." + ThinkScript;
             object result = LuaEngine.Instance.CallLuaFunctions(name, parameters).First();
 
