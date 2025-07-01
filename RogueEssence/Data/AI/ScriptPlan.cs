@@ -22,7 +22,8 @@ namespace RogueEssence.Dungeon
         public string SwitchedInScript;
         [Dev.Multiline(0)]
         public string SwitchedInArgTable;
-
+        
+        [NonSerialized]
         private LuaTable luaTable;
 
         public ScriptPlan()
@@ -90,7 +91,9 @@ namespace RogueEssence.Dungeon
             LuaTable args = LuaEngine.Instance.RunString("return " + ThinkArgTable).First() as LuaTable;
             object[] parameters = new object[] { controlledChar, preThink, rand, luaTable, args };
             string name = LuaEngine.EVENT_AI_THINK_NAME + "." + ThinkScript;
-            object result = LuaEngine.Instance.CallLuaFunctions(name, parameters).First();
+            object result = null;
+            object[] res = LuaEngine.Instance.CallLuaFunctions(name, parameters);
+            if (res.Length > 0) result = res.First();
 
             if (result is GameAction action) return action;
             if (result == null) return null;
