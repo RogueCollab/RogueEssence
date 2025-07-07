@@ -320,6 +320,26 @@ namespace RogueEssence.Script
         }
 
 
+
+
+        /// <summary>
+        /// Displays a custom dialogue of the caller's choice.
+        /// 
+        /// UI:WaitDialog() must be called afterwards for the dialogue to be actually displayed,
+        /// and for execution to suspend until the dialogue is completed.
+        /// </summary>
+        public void SetCustomDialogue(DialogueBox dialogue)
+        {
+            try
+            {
+                m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(dialogue);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SetCustomDialogue(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
         /// <summary>
         /// Fades in a chosen background image, with a chosen framerate, at a certain fade time, waiting until the fade-in is complete.
         /// </summary>

@@ -123,7 +123,7 @@ namespace RogueEssence.Menu
             Texts = new List<DialogueText>();
             this.centerH = centerH;
             this.centerV = centerV;
-            updateMessage();
+            updateMessage(0);
         }
 
         public virtual void ProcessActions(FrameTick elapsedTime)
@@ -345,14 +345,14 @@ namespace RogueEssence.Menu
                 speakerName = name;
             else
                 speakerName = "";
-            updateMessage();
+            updateMessage(0);
         }
 
         public void SetMessage(string msg, bool sound)
         {
             message = msg;
             Sound = sound;
-            updateMessage();
+            updateMessage(0);
         }
 
         private IEnumerator<YieldInstruction> waitForTaskDone(Coroutine coroutine)
@@ -375,7 +375,21 @@ namespace RogueEssence.Menu
                 tagList.Clear();
         }
 
-        private void updateMessage()
+        public void SetTextProgress(int curCharIndex)
+        {
+            updateMessage(curCharIndex);
+        }
+
+        private void updateTagWithRange(List<TextTag> tags, List<IntRange> tagRanges, TextTag tag, Match match, int curCharIndex)
+        {
+            if (match.Index + match.Length <= curCharIndex)
+                return;
+
+            tags.Add(tag);
+            tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+        }
+
+        private void updateMessage(int curCharIndex)
         {
             //message will contain pauses, which get parsed here.
             //and colors, which will get parsed by the text renderer
@@ -384,12 +398,11 @@ namespace RogueEssence.Menu
             nextTextIndex = -1;
             Tags.Clear();
 
-            int curCharIndex = 0;
             string msg = message;
             if (speakerName != "")
             {
                 msg = String.Format("{0}: {1}", speakerName, msg);
-                curCharIndex = speakerName.Length + 2;
+                curCharIndex += speakerName.Length + 2;
             }
             int startLag = 0;
 
@@ -417,8 +430,7 @@ namespace RogueEssence.Menu
                                     int param;
                                     if (Int32.TryParse(match.Groups["pauseval"].Value, out param))
                                         pause.Time = param;
-                                    tags.Add(pause);
-                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                    updateTagWithRange(tags, tagRanges, pause, match, curCharIndex);
                                 }
                                 break;
                             case "script":
@@ -428,8 +440,7 @@ namespace RogueEssence.Menu
                                     int param;
                                     if (Int32.TryParse(match.Groups["scriptval"].Value, out param))
                                         script.Script = param;
-                                    tags.Add(script);
-                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                    updateTagWithRange(tags, tagRanges, script, match, curCharIndex);
                                 }
                                 break;
                             case "speed":
@@ -439,8 +450,7 @@ namespace RogueEssence.Menu
                                     double param;
                                     if (Double.TryParse(match.Groups["speedval"].Value, out param))
                                         speed.Speed = param;
-                                    tags.Add(speed);
-                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                    updateTagWithRange(tags, tagRanges, speed, match, curCharIndex);
                                 }
                                 break;
                             case "sound":
@@ -452,8 +462,7 @@ namespace RogueEssence.Menu
                                     int param;
                                     if (Int32.TryParse(match.Groups["speaktime"].Value, out param))
                                         sound.SpeakTime = param;
-                                    tags.Add(sound);
-                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                    updateTagWithRange(tags, tagRanges, sound, match, curCharIndex);
                                 }
                                 break;
                             case "emote":
@@ -461,8 +470,7 @@ namespace RogueEssence.Menu
                                     TextEmote emote = new TextEmote();
                                     emote.LetterIndex = match.Index - lag;
                                     emote.Emote = GraphicsManager.Emotions.FindIndex((EmotionType element) => element.Name.ToLower() == match.Groups["emoteval"].Value.ToLower());
-                                    tags.Add(emote);
-                                    tagRanges.Add(new IntRange(match.Index, match.Index + match.Length));
+                                    updateTagWithRange(tags, tagRanges, emote, match, curCharIndex);
                                 }
                                 break;
                             case "colorstart":

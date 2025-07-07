@@ -1713,19 +1713,28 @@ namespace RogueEssence.Script
         /// Makes a .net Action to be used in lua
         /// </summary>
         /// <param name="fun"></param>
+        /// <param name="param"></param>
         /// <returns></returns>
         public Action MakeLuaAction( LuaFunction fun, params object[] param )
         {
             return new Action( ()=>{ fun.Call(param); } );
         }
 
+        /// <summary>
+        /// Creates a dotnet array based on the lua table for use by lua.
+        /// It coerces types to fit for the array, which can be helpful for initializing an int array.
+        /// However, this is also slower, so it is recommended to use luanet.make_array for all other cases.
+        /// </summary>
+        /// <param name="class_type"></param>
+        /// <param name="table"></param>
+        /// <returns></returns>
         public Array MakeLuaArray(ProxyType class_type, LuaTable table)
         {
             Array arr = Array.CreateInstance(class_type.UnderlyingSystemType, table.Values.Count);
             int idx = 0;
             foreach (object val in table.Values)
             {
-                arr.SetValue(val, idx);
+                arr.SetValue(Convert.ChangeType(val, class_type.UnderlyingSystemType), idx);
                 idx++;
             }
             return arr;

@@ -227,7 +227,7 @@ namespace RogueEssence.Dungeon
             {
                 Loc coords = ScreenCoordsToMapCoords(input.MouseLoc);
                 //DataManager.Instance.Save.ViewCenter = coords * GraphicsManager.TILE_SIZE;
-                if (Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, coords))
+                if (ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref coords))
                 {
                     FocusedCharacter.CharLoc = coords;
                     FocusedCharacter.UpdateFrame();

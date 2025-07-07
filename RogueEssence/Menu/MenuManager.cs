@@ -206,6 +206,13 @@ namespace RogueEssence.Menu
         {
             return CreateDialogue(speaker, speakerName, emotion, sound, () => { }, -1, false, false, false, msgs);
         }
+
+        public DialogueBox CreateDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, params string[] msgs)
+        {
+            return CreateDialogue(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, sound, DialogueBox.SOUND_EFFECT, DialogueBox.SPEAK_FRAMES, finishAction, waitTime, autoFinish, centerH,
+                centerV, DialogueBox.DefaultBounds, new object[] { }, msgs);
+        }
+
         public DialogueBox CreateDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound, string soundEffect, int speakTime, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, Rect bounds, object[] scripts, params string[] msgs)
         {
             if (msgs.Length > 0)
@@ -225,12 +232,6 @@ namespace RogueEssence.Menu
                 return box;
             }
             return null;
-        }
-        
-        public DialogueBox CreateDialogue(MonsterID speaker, string speakerName, EmoteStyle emotion, bool sound, Action finishAction, int waitTime, bool autoFinish, bool centerH, bool centerV, params string[] msgs)
-        {
-            return CreateDialogue(speaker, speakerName, emotion, SpeakerPortrait.DefaultLoc, sound, DialogueBox.SOUND_EFFECT, DialogueBox.SPEAK_FRAMES, finishAction, waitTime, autoFinish, centerH,
-                centerV, DialogueBox.DefaultBounds, new object[] {}, msgs);
         }
         
         public DialogueBox CreateBox(MonsterID speaker, string speakerName, EmoteStyle emotion, Loc speakerLoc, bool sound, string soundEffect, int speakTime,
