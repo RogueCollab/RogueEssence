@@ -72,28 +72,25 @@ namespace RogueEssence.Dungeon
         {
             if (string.IsNullOrEmpty(InitializeScript)) return;
             LuaTable args = LuaEngine.Instance.RunString("return " + InitializeArgTable).First() as LuaTable;
-            object[] parameters = new object[] { controlledChar, luaTable, args };
             string name = LuaEngine.EVENT_AI_INIT_NAME + "." + InitializeScript;
-            LuaEngine.Instance.CallLuaFunctions(name, parameters);
+            LuaEngine.Instance.CallLuaFunctions(name, controlledChar, luaTable, args );
         }
         
         public override void SwitchedIn(BasePlan currentPlan)
         {
             if (string.IsNullOrEmpty(SwitchedInScript)) return;
             LuaTable args = LuaEngine.Instance.RunString("return " + SwitchedInArgTable).First() as LuaTable;
-            object[] parameters = new object[] { currentPlan, luaTable, args };
             string name = LuaEngine.EVENT_AI_SWITCH_NAME + "." + SwitchedInScript;
-            LuaEngine.Instance.CallLuaFunctions(name, parameters);
+            LuaEngine.Instance.CallLuaFunctions(name, currentPlan, luaTable, args);
         }
         
         public override GameAction Think(Character controlledChar, bool preThink, IRandom rand)
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ThinkArgTable).First() as LuaTable;
-            object[] parameters = new object[] { controlledChar, preThink, rand, luaTable, args };
             string name = LuaEngine.EVENT_AI_THINK_NAME + "." + ThinkScript;
             object result = null;
-            object[] res = LuaEngine.Instance.CallLuaFunctions(name, parameters);
-            if (res.Length > 0) result = res.First();
+            object[] res = LuaEngine.Instance.CallLuaFunctions(name, controlledChar, preThink, rand, luaTable, args);
+            if (result is not null && res.Length > 0) result = res.First();
 
             if (result is GameAction action) return action;
             if (result == null) return null;
