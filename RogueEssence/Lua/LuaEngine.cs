@@ -908,10 +908,10 @@ namespace RogueEssence.Script
                     print('Length == ' .. tostring(params.Length))
                     local i = 0
                     while i < size do
-                        table.insert(transittbl, params[i])
+                        transittbl[i+1] = params[i]
                         i = i + 1
                     end
-                    return fun(table.unpack(transittbl))
+                    return fun(table.unpack(transittbl, 1, size))
                 end",
                 "UnpackParamsAndRun").First() as LuaFunction;
         }
