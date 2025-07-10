@@ -713,6 +713,7 @@ namespace RogueEssence.Script
             RunString(DungeonMapCurrentScriptSym + " = nil");
 
             //Make the callbacks table
+            LuaState.NewTable(EVENT_SPAWN_NAME);
             LuaState.NewTable(EVENT_SINGLE_NAME);
             LuaState.NewTable(EVENT_BATTLE_NAME);
             LuaState.NewTable(EVENT_STATUS_NAME);
