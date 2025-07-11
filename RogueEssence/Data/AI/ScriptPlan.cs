@@ -90,7 +90,7 @@ namespace RogueEssence.Dungeon
             string name = LuaEngine.EVENT_AI_THINK_NAME + "." + ThinkScript;
             object result = null;
             object[] res = LuaEngine.Instance.CallLuaFunctions(name, controlledChar, preThink, rand, luaTable, args);
-            if (result is not null && res.Length > 0) result = res.First();
+            if (res is not null && res.Length > 0) result = res.First();
 
             if (result is GameAction action) return action;
             if (result == null) return null;
