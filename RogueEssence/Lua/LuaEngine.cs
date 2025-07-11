@@ -905,7 +905,6 @@ namespace RogueEssence.Script
                 @"return function(fun, params)
                     local size = params.Length
                     local transittbl = {}
-                    print('Length == ' .. tostring(params.Length))
                     local i = 0
                     while i < size do
                         transittbl[i+1] = params[i]
