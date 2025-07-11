@@ -361,6 +361,7 @@ namespace RogueEssence.Script
         public const string EVENT_GROUNDITEM_NAME = "GROUND_ITEM_EVENT_SCRIPT";
         public const string EVENT_REFRESH_NAME = "REFRESH_SCRIPT";
         public const string EVENT_SKILLCHANGE_NAME = "SKILL_CHANGE_SCRIPT";
+        public const string EVENT_SPAWN_NAME = "SPAWN_SCRIPT";
         public const string EVENT_FLOORGEN_NAME = "FLOOR_GEN_SCRIPT";
         public const string EVENT_ZONEGEN_NAME = "ZONE_GEN_SCRIPT";
         public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
@@ -715,6 +716,7 @@ namespace RogueEssence.Script
             RunString(DungeonMapCurrentScriptSym + " = nil");
 
             //Make the callbacks table
+            LuaState.NewTable(EVENT_SPAWN_NAME);
             LuaState.NewTable(EVENT_SINGLE_NAME);
             LuaState.NewTable(EVENT_BATTLE_NAME);
             LuaState.NewTable(EVENT_CONDITION_NAME);
