@@ -725,6 +725,9 @@ namespace RogueEssence
             }
 
             int mapId = ZoneManager.Instance.CurrentZone.GroundMaps.FindIndex((str) => (str == mapname));
+            if (mapId == -1)
+                throw new Exception(String.Format("Cannot find ground map of name {0} in zone {1}.", mapname, ZoneManager.Instance.CurrentZone.ID));
+
             SegLoc destSegLoc = new SegLoc(-1, mapId);
 
             if (newSegment)
