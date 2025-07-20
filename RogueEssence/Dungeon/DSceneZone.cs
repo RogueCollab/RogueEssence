@@ -572,6 +572,7 @@ namespace RogueEssence.Dungeon
         {
             newChar.TurnWait = 0;
             newChar.TurnUsed = false;
+            newChar.EndTurnLock = false;
         }
 
         public void RemoveChar(Character character)
@@ -904,6 +905,8 @@ namespace RogueEssence.Dungeon
                             {
                                 currentTurnState.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
 
+                                ResetEndTurnLock();
+
                                 yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
 
                                 //reorder again in case something happened to deaths.
@@ -969,23 +972,35 @@ namespace RogueEssence.Dungeon
             }
         }
 
-        public void SkipRemainingTurns()
+        /// <summary>
+        /// Forces everyone to skip their turns until the next tier 0 main leader turn.
+        /// The main leader turn may skip on that point due to other factors, but this ensures that no one acts until that opportunity is reached.
+        /// </summary>
+        public void SkipToMainLeader()
         {
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.ActiveTeam, false);
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.SkipTeamToEnd(ZoneManager.Instance.CurrentMap.ActiveTeam);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.AllyTeams[ii], false);
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SkipTeamToEnd(ZoneManager.Instance.CurrentMap.AllyTeams[ii]);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], false);
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SkipTeamToEnd(ZoneManager.Instance.CurrentMap.MapTeams[ii]);
+        }
+
+        public void ResetEndTurnLock()
+        {
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.UnlockTeamAtEnd(ZoneManager.Instance.CurrentMap.ActiveTeam);
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.UnlockTeamAtEnd(ZoneManager.Instance.CurrentMap.AllyTeams[ii]);
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.UnlockTeamAtEnd(ZoneManager.Instance.CurrentMap.MapTeams[ii]);
         }
 
         public void ResetAttackAction()
         {
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.ActiveTeam, true);
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.ResetTeamAttackUsed(ZoneManager.Instance.CurrentMap.ActiveTeam);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.AllyTeams[ii], true);
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.ResetTeamAttackUsed(ZoneManager.Instance.CurrentMap.AllyTeams[ii]);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
-                ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], true);
-
+                ZoneManager.Instance.CurrentMap.CurrentTurnMap.ResetTeamAttackUsed(ZoneManager.Instance.CurrentMap.MapTeams[ii]);
         }
 
         /// <summary>
@@ -998,6 +1013,7 @@ namespace RogueEssence.Dungeon
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
 
             ResetAttackAction();
+            ResetEndTurnLock();
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Clear();
         }

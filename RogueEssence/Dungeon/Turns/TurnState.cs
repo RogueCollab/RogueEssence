@@ -20,26 +20,40 @@ namespace RogueEssence.Dungeon
             TurnToChar = new List<CharIndex>();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="team"></param>
-        /// <param name="reset">True = Reset everyone's turns.  False = Skip everyone's turns</param>
-        public void SetTeamRound(Team team, bool reset)
+        public void SkipTeamToEnd(Team team)
         {
-            foreach(ITurnChar character in team.IterateByRank())
-                setCharacterRound(character, reset);
+            foreach (ITurnChar character in team.IterateByRank())
+                setCharacterEndTurnLock(character, true);
         }
 
-        private void setCharacterRound(ITurnChar character, bool reset)
+        public void UnlockTeamAtEnd(Team team)
+        {
+            foreach (ITurnChar character in team.IterateByRank())
+                setCharacterEndTurnLock(character, false);
+        }
+
+        public void ResetTeamAttackUsed(Team team)
+        {
+            foreach (ITurnChar character in team.IterateByRank())
+                setCharacterTurnUsed(character, false);
+        }
+
+        private void setCharacterTurnUsed(ITurnChar character, bool turnUsed)
         {
             if (character.Dead)
                 return;
 
-            if (reset)
+            character.TurnUsed = turnUsed;
+        }
+
+        private void setCharacterEndTurnLock(ITurnChar character, bool endTurnLock)
+        {
+            if (character.Dead)
+                return;
+
+            if (character.EndTurnLock && endTurnLock == false)
                 character.TurnUsed = false;
-            else
-                character.TurnUsed = true;
+            character.EndTurnLock = endTurnLock;
         }
 
         public CharIndex GetCurrentTurnChar()
@@ -124,6 +138,9 @@ namespace RogueEssence.Dungeon
                 return false;
 
             if (character.TurnUsed)
+                return false;
+
+            if (character.EndTurnLock)
                 return false;
 
             if (canCharacterMoveOnTier(character, CurrentOrder.TurnTier))
