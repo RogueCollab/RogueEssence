@@ -36,7 +36,7 @@ namespace RogueEssence.Menu
         private void ViewVersionDiff(string fileName)
         {
             SOSMail mail = DataManager.LoadRescueMail(fileName) as SOSMail;
-            List<ModVersion> curVersions = PathMod.GetModVersion();
+            List<ModVersion> curVersions = PathMod.GetModVersionList();
             List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
             MenuManager.Instance.AddMenu(new VersionDiffMenu(versionDiff, 0), false);
         }

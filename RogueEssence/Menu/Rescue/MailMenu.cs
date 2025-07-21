@@ -54,7 +54,7 @@ namespace RogueEssence.Menu
                 mail = DataManager.LoadRescueMail(fileName) as SOSMail;
                 if (mail != null)
                 {
-                    List<ModVersion> curVersions = PathMod.GetModVersion();
+                    List<ModVersion> curVersions = PathMod.GetModVersionList();
                     List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
                     if (versionDiff.Count > 0)
                     {

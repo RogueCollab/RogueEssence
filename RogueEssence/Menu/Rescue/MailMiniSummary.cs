@@ -46,7 +46,7 @@ namespace RogueEssence.Menu
         {
             if (mail != null)
             {
-                List<ModVersion> curVersions = PathMod.GetModVersion();
+                List<ModVersion> curVersions = PathMod.GetModVersionList();
                 List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
                 Name.SetText(mail.TeamName);
                 Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' ')));

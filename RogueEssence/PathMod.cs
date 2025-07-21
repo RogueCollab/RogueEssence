@@ -673,9 +673,22 @@ namespace RogueEssence
             //TODO: generate a README.md
         }
 
+        public static Version GetVersion(Guid uuid)
+        {
+            if (uuid == Guid.Empty)
+                return Versioning.GetVersion();
+            if (Quest.IsValid() && Quest.UUID == uuid)
+                return Quest.Version;
+            foreach (ModHeader mod in Mods)
+            {
+                if (mod.UUID == uuid)
+                    return mod.Version;
+            }
 
+            return new Version();
+        }
 
-        public static List<ModVersion> GetModVersion()
+        public static List<ModVersion> GetModVersionList()
         {
             List<ModVersion> result = new List<ModVersion>();
             result.Add(new ModVersion("[Game]", Guid.Empty, Versioning.GetVersion()));

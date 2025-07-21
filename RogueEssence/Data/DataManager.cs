@@ -2287,7 +2287,7 @@ namespace RogueEssence.Data
                                 ModVersion diff = new ModVersion(name, uuid, version);
                                 versions.Add(diff);
                             }
-                            List<ModVersion> curVersions = PathMod.GetModVersion();
+                            List<ModVersion> curVersions = PathMod.GetModVersionList();
                             List<ModDiff> versionDiff = PathMod.DiffModVersions(versions, curVersions);
                             if (versionDiff.Count > 0)
                                 continue;

@@ -920,7 +920,7 @@ namespace RogueEssence.Data
         public List<ModDiff> GetModDiffs()
         {
             List<ModVersion> oldVersion = GetModVersion();
-            List<ModVersion> newVersion = PathMod.GetModVersion();
+            List<ModVersion> newVersion = PathMod.GetModVersionList();
 
             return PathMod.DiffModVersions(oldVersion, newVersion);
         }
@@ -969,6 +969,20 @@ namespace RogueEssence.Data
             return false;
         }
 
+        public Version GetVersion(Guid uuid)
+        {
+            if (uuid == Guid.Empty)
+                return GameVersion;
+            if (Quest.IsValid() && Quest.UUID == uuid)
+                return Quest.Version;
+            foreach (ModHeader mod in Mods)
+            {
+                if (mod.UUID == uuid)
+                    return mod.Version;
+            }
+
+            return new Version();
+        }
 
         public void UpdateVersion()
         {
