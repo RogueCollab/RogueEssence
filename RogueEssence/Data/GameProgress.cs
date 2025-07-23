@@ -104,6 +104,8 @@ namespace RogueEssence.Data
 
         [JsonConverter(typeof(MonsterUnlockConverter))]
         public Dictionary<string, UnlockState> Dex;
+        [JsonConverter(typeof(FormUnlockDictConverter))]
+        public Dictionary<MonsterID, UnlockState> FormDex;
         [JsonConverter(typeof(MonsterBoolDictConverter))]
         public Dictionary<string, bool> RogueStarters;
 
@@ -169,6 +171,7 @@ namespace RogueEssence.Data
             Mods = new List<ModHeader>();
 
             Dex = new Dictionary<string, UnlockState>();
+            FormDex = new Dictionary<MonsterID, UnlockState>();
             RogueStarters = new Dictionary<string, bool>();
             DungeonUnlocks = new Dictionary<string, UnlockState>();
 
@@ -285,13 +288,45 @@ namespace RogueEssence.Data
             Dex.TryGetValue(index, out state);
             return state;
         }
+        public UnlockState GetMonsterFormUnlock(MonsterID form)
+        {
+            return GetMonsterFormUnlock(form.Species, form.Form);
+        }
+        public UnlockState GetMonsterFormUnlock(string species, int form)
+        {
+            MonsterID index = new MonsterID(species, form, "", Gender.Unknown);
+            UnlockState state = UnlockState.None;
+            FormDex.TryGetValue(index, out state);
+            return state;
+        }
 
         public int GetTotalMonsterUnlock(UnlockState state)
         {
             int total = 0;
-            foreach(string key in Dex.Keys)
+            foreach (string key in Dex.Keys)
             {
                 if (Dex[key] == state)
+                    total++;
+            }
+            return total;
+        }
+        public int GetTotalFormUnlock(UnlockState state)
+        {
+            int total = 0;
+            foreach (MonsterID key in FormDex.Keys)
+            {
+                if (FormDex[key] == state)
+                    total++;
+            }
+            return total;
+        }
+        public int GetTotalFormUnlock(string species, UnlockState state)
+        {
+            int total = 0;
+            MonsterEntrySummary summary = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(species);
+            for (int ii = 0; ii < summary.Forms.Count; ii++)
+            {
+                if (GetMonsterFormUnlock(species, ii) == state)
                     total++;
             }
             return total;
@@ -299,13 +334,38 @@ namespace RogueEssence.Data
 
         public virtual void RegisterMonster(string index)
         {
-            Dex[index] = UnlockState.Completed;
+            //TODO should this be marked as deprecated like MenuElements was?
+            RegisterMonster(index, 0);
+        }
+        public virtual void RegisterMonster(MonsterID index)
+        {
+            RegisterMonster(index.Species, index.Form);
+        }
+        public virtual void RegisterMonster(string species, int form)
+        {
+            Dex[species] = UnlockState.Completed;
+
+            MonsterID index = new MonsterID(species, form, "", Gender.Unknown);
+            FormDex[index] = UnlockState.Completed;
         }
 
         public virtual void SeenMonster(string index)
         {
-            if (GetMonsterUnlock(index) == UnlockState.None)
-                Dex[index] = UnlockState.Discovered;
+            //TODO should this be marked as deprecated like MenuElements was?
+            SeenMonster(index, 0);
+        }
+        public virtual void SeenMonster(MonsterID index)
+        {
+            SeenMonster(index.Species, index.Form);
+        }
+        public virtual void SeenMonster(string species, int form)
+        {
+            if (GetMonsterUnlock(species) == UnlockState.None)
+                Dex[species] = UnlockState.Discovered;
+
+            MonsterID index = new MonsterID(species, form, "", Gender.Unknown);
+            if (GetMonsterFormUnlock(species, form) == UnlockState.None)
+                FormDex[index] = UnlockState.Discovered;
         }
 
         public virtual void RogueUnlockMonster(string index)
@@ -647,7 +707,8 @@ namespace RogueEssence.Data
             BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species)
                 .Forms[character.BaseForm.Form];
 
-            if (!keepSkills) {
+            if (!keepSkills)
+            {
                 while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
                     character.DeleteSkill(0, inTeam);
                 List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
@@ -883,17 +944,21 @@ namespace RogueEssence.Data
         {
             //monster encounters
             List<string> newRecruits = new List<string>();
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
+            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
             {
-                if (GetMonsterUnlock(key) == UnlockState.Completed && destProgress.GetMonsterUnlock(key) != UnlockState.Completed)
+                MonsterEntrySummary entry = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key);
+                for (int ii = 0; ii < entry.Forms.Count; ii++)
                 {
-                    if (completion)
-                        destProgress.RegisterMonster(key);
-                }
-                if (GetMonsterUnlock(key) == UnlockState.Discovered && destProgress.GetMonsterUnlock(key) == UnlockState.None)
-                {
-                    if (completion)
-                        destProgress.SeenMonster(key);
+                    if (GetMonsterFormUnlock(key, ii) == UnlockState.Completed && destProgress.GetMonsterFormUnlock(key, ii) != UnlockState.Completed)
+                    {
+                        if (completion)
+                            destProgress.RegisterMonster(key, ii);
+                    }
+                    if (GetMonsterFormUnlock(key, ii) == UnlockState.Discovered && destProgress.GetMonsterFormUnlock(key, ii) == UnlockState.None)
+                    {
+                        if (completion)
+                            destProgress.SeenMonster(key, ii);
+                    }
                 }
                 if (GetRogueUnlock(key) && !destProgress.GetRogueUnlock(key))
                 {
@@ -992,6 +1057,29 @@ namespace RogueEssence.Data
             //TODO: v1.1 delete this
             if (Mods == null)
                 Mods = new List<ModHeader>();
+            //TODO: v1.1 delete this
+            if (FormDex.Count == 0 && Dex.Count > 0)
+            {
+                PopulateFormDex();
+            }
+        }
+        
+        private void PopulateFormDex() {
+            foreach (Character chara in ActiveTeam.Players)
+            {
+                MonsterID index = new MonsterID(chara.BaseForm.Species, chara.BaseForm.Form, "", Gender.Unknown);
+                FormDex[index] = UnlockState.Completed;
+            }
+            foreach (Character chara in ActiveTeam.Assembly)
+            {
+                MonsterID index = new MonsterID(chara.BaseForm.Species, chara.BaseForm.Form, "", Gender.Unknown);
+                FormDex[index] = UnlockState.Completed;
+            }
+            foreach (KeyValuePair<string, UnlockState> entry in Dex)
+            {
+                MonsterID index = new MonsterID(entry.Key, 0, "", Gender.Unknown);
+                FormDex.TryAdd(index, entry.Value);
+            }
         }
     }
 
