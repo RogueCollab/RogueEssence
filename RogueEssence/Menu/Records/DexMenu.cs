@@ -11,11 +11,16 @@ namespace RogueEssence.Menu
 {
     public class DexMenu : MultiPageMenu
     {
+        private const int FRAMES_PER_PORTRAIT = 120;
         private const int SLOTS_PER_PAGE = 14;
 
         SummaryMenu summaryMenu;
         SpeakerPortrait portrait;
+        List<int> forms;
+        int currentFormIndex;
+        int timer;
         List<string> obtainableKeys;
+
 
         public DexMenu() : this(MenuLabel.DEX_MENU) { }
         public DexMenu(string label)
@@ -89,32 +94,87 @@ namespace RogueEssence.Menu
             Initialize(new Loc(0, 0), 208, Text.FormatKey("MENU_DEX_TITLE"), choices, 0, 0, SLOTS_PER_PAGE);
         }
 
+        public override void Update(InputManager input)
+        {
+            if (!Visible)
+                return;
+            base.Update(input);
+
+            timer++;
+            if (timer >= FRAMES_PER_PORTRAIT)
+            {
+                timer = 0;
+                if (forms.Count == 0)
+                    return;
+                currentFormIndex++;
+                if (currentFormIndex >= forms.Count)
+                    currentFormIndex = 0;
+                if (DataManager.Instance.Save.GetMonsterUnlock(obtainableKeys[CurrentChoiceTotal]) > GameProgress.UnlockState.None)
+                    portrait.Speaker = new MonsterID(obtainableKeys[CurrentChoiceTotal], forms[currentFormIndex], DataManager.Instance.DefaultSkin, Gender.Unknown);
+                else
+                    portrait.Speaker = MonsterID.Invalid;
+                Color color = DataManager.Instance.Save.GetMonsterFormUnlock(obtainableKeys[CurrentChoiceTotal], forms[currentFormIndex]) == GameProgress.UnlockState.Completed ? Color.White : Color.Gray;
+                ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal]).Elements[1]).SetText(((MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(obtainableKeys[CurrentChoiceTotal])).Forms[forms[currentFormIndex]].Name.ToLocal());
+                ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal]).Elements[0]).Color = color;
+                ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal]).Elements[1]).Color = color;                
+            }
+        }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (!Visible)
                 return;
             base.Draw(spriteBatch);
-            
+
             summaryMenu.Draw(spriteBatch);
 
             if (!String.IsNullOrEmpty(portrait.Speaker.Species))
+            {
                 portrait.Draw(spriteBatch, new Loc());
+            }
 
         }
 
         protected override void ChoiceChanged()
         {
+            timer = 0;
+            currentFormIndex = 0;
+            LoadForms();
             if (DataManager.Instance.Save.GetMonsterUnlock(obtainableKeys[CurrentChoiceTotal]) > GameProgress.UnlockState.None)
-                portrait.Speaker = new MonsterID(obtainableKeys[CurrentChoiceTotal], 0, DataManager.Instance.DefaultSkin, Gender.Unknown);
+                portrait.Speaker = new MonsterID(obtainableKeys[CurrentChoiceTotal], forms[currentFormIndex], DataManager.Instance.DefaultSkin, Gender.Unknown);
             else
                 portrait.Speaker = MonsterID.Invalid;
+            int[] offsets = new int[] { -SLOTS_PER_PAGE, -1, 1, SLOTS_PER_PAGE };
+            foreach (int ii in offsets)
+            {
+                if (CurrentChoiceTotal + ii < 0 || CurrentChoiceTotal + ii >= ExportChoices().Count)
+                    continue;
+                if (DataManager.Instance.Save.GetMonsterUnlock(obtainableKeys[CurrentChoiceTotal + ii]) > GameProgress.UnlockState.None)
+                {
+                    Color color = DataManager.Instance.Save.GetMonsterUnlock(obtainableKeys[CurrentChoiceTotal + ii]) == GameProgress.UnlockState.Completed ? Color.White : Color.Gray;
+                    ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal + ii]).Elements[1]).SetText(((MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(obtainableKeys[CurrentChoiceTotal + ii])).Name.ToLocal());
+                    ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal + ii]).Elements[0]).Color = color;
+                    ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal + ii]).Elements[1]).Color = color;
+                }
+            }
             base.ChoiceChanged();
+        }
+
+        private void LoadForms()
+        {
+            string key = obtainableKeys[CurrentChoiceTotal];
+            forms = new List<int>();
+            MonsterEntrySummary monster = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key);
+            for (int ii = 0; ii < monster.Forms.Count; ii++)
+            {
+                if (DataManager.Instance.Save.GetMonsterFormUnlock(key, ii) > GameProgress.UnlockState.None)
+                    forms.Add(ii);
+            }
         }
 
         private void choose(int species)
         {
-            
+
         }
 
     }
