@@ -950,7 +950,7 @@ namespace RogueEssence.Script
             //remove exception item if there is one...
             if (bypass)
                 character.SilentDequipItem();
-            DataManager.Instance.Save.RegisterMonster(character.BaseForm.Species);
+            DataManager.Instance.Save.RegisterMonster(character.BaseForm);
             DataManager.Instance.Save.RogueUnlockMonster(character.BaseForm.Species);
         }
 

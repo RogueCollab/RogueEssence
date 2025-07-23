@@ -190,7 +190,7 @@ namespace RogueEssence.Menu
                         AITactic tactic = DataManager.Instance.GetAITactic(DataManager.Instance.DefaultAI);
                         chara.Tactic = new AITactic(tactic);
                         DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex] = chara;
-                        DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
+                        DataManager.Instance.Save.RegisterMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm);
                         DataManager.Instance.Save.RogueUnlockMonster(DataManager.Instance.Save.ActiveTeam.Assembly[chosenIndex].BaseForm.Species);
 
                         baseMenu.CurrentState = ExchangeState.PostTradeWait;
