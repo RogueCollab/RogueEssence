@@ -141,7 +141,13 @@ namespace RogueEssence.Menu
             currentFormIndex = 0;
             LoadForms();
             if (DataManager.Instance.Save.GetMonsterUnlock(obtainableKeys[CurrentChoiceTotal]) > GameProgress.UnlockState.None)
+            {
                 portrait.Speaker = new MonsterID(obtainableKeys[CurrentChoiceTotal], forms[currentFormIndex], DataManager.Instance.DefaultSkin, Gender.Unknown);
+                Color color = DataManager.Instance.Save.GetMonsterFormUnlock(obtainableKeys[CurrentChoiceTotal], forms[currentFormIndex]) == GameProgress.UnlockState.Completed ? Color.White : Color.Gray;
+                ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal]).Elements[1]).SetText(((MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(obtainableKeys[CurrentChoiceTotal])).Forms[forms[currentFormIndex]].Name.ToLocal());
+                ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal]).Elements[0]).Color = color;
+                ((MenuText)((MenuElementChoice)ExportChoices()[CurrentChoiceTotal]).Elements[1]).Color = color;
+            }
             else
                 portrait.Speaker = MonsterID.Invalid;
             int[] offsets = new int[] { -SLOTS_PER_PAGE, -1, 1, SLOTS_PER_PAGE };
