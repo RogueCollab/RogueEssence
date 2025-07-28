@@ -948,7 +948,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            if(Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -1085,7 +1085,7 @@ namespace RogueEssence.Dev
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            if(Serializer.OldVersion < DevHelper.StringAssetVersion)
+            if (Serializer.OldVersion < DevHelper.StringAssetVersion)
             {
                 JObject jObject = JObject.Load(reader);
                 Dictionary<int, int> container = new Dictionary<int, int>();
@@ -1969,7 +1969,7 @@ namespace RogueEssence.Dev
                 List<bool> container = new List<bool>();
                 serializer.Populate(jArray.CreateReader(), container);
 
-                for(int ii = 0; ii < container.Count; ii++)
+                for (int ii = 0; ii < container.Count; ii++)
                 {
                     if (container[ii])
                     {
@@ -2460,7 +2460,7 @@ namespace RogueEssence.Dev
                 IntRange container = new IntRange();
                 serializer.Populate(jObject.CreateReader(), container);
 
-                for(int ii = container.Min; ii < container.Max; ii++)
+                for (int ii = container.Min; ii < container.Max; ii++)
                 {
                     string asset_name = DataManager.Instance.MapAssetName(DataManager.DataType.Item, ii);
                     dict.Add(asset_name);
@@ -2559,6 +2559,48 @@ namespace RogueEssence.Dev
         public override bool CanConvert(Type objectType)
         {
             return objectType == typeof(Dictionary<SegLoc, Map>);
+        }
+    }
+
+    // Without this, the system just doesn't like deserializing MonsterID for some reason
+    public class FormUnlockDictConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            Dictionary<MonsterID, GameProgress.UnlockState> dict = (Dictionary<MonsterID, GameProgress.UnlockState>)value;
+            writer.WriteStartArray();
+            foreach (MonsterID item in dict.Keys)
+            {
+                serializer.Serialize(writer, (item, dict[item]));
+            }
+            writer.WriteEndArray();
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            Dictionary<MonsterID, GameProgress.UnlockState> dict = new Dictionary<MonsterID, GameProgress.UnlockState>();
+
+            List<(MonsterID, GameProgress.UnlockState)> container = new List<(MonsterID, GameProgress.UnlockState)>();
+
+            try
+            {
+                JArray jArray = JArray.Load(reader);
+                serializer.Populate(jArray.CreateReader(), container);
+            }
+            catch (JsonSerializationException)
+            {
+                // Do nothing, return empty and let OnDeserialized handle it
+            }
+
+            foreach ((MonsterID, GameProgress.UnlockState) item in container)
+                dict[item.Item1] = item.Item2;
+
+            return dict;
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Dictionary<MonsterID, GameProgress.UnlockState>);
         }
     }
 }
