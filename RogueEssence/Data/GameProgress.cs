@@ -334,7 +334,7 @@ namespace RogueEssence.Data
 
         public virtual void RegisterMonster(string index)
         {
-            //TODO should this be marked as deprecated like MenuElements was?
+            DiagManager.Instance.LogInfo("WARNING: RegisterMonster(string) only registers form 0. Please use RegisterMonster(string, int) or RegisterMonster(MonsterID) instead.");
             RegisterMonster(index, 0);
         }
         public virtual void RegisterMonster(MonsterID index)
@@ -351,7 +351,7 @@ namespace RogueEssence.Data
 
         public virtual void SeenMonster(string index)
         {
-            //TODO should this be marked as deprecated like MenuElements was?
+            DiagManager.Instance.LogInfo("WARNING: SeenMonster(string) only registers form 0. Please use SeenMonster(string, int) or SeenMonster(MonsterID) instead.");
             SeenMonster(index, 0);
         }
         public virtual void SeenMonster(MonsterID index)
