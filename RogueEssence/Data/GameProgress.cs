@@ -232,6 +232,13 @@ namespace RogueEssence.Data
 
             return display;
         }
+
+        //TODO: make this apply only to player characters
+        /// <summary>
+        /// Used for learning new skills.  Determines whether the newly learned skill should be switched on or off.
+        /// </summary>
+        /// <param name="moveIndex"></param>
+        /// <returns></returns>
         public bool GetDefaultEnable(string moveIndex)
         {
             if (String.IsNullOrEmpty(moveIndex))
