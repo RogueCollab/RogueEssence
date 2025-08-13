@@ -9,6 +9,9 @@ using RogueElements;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// Filters to rooms that have an IndexRoom component, with a specific numeric value.
+    /// </summary>
     [Serializable]
     public class RoomFilterIndex : BaseRoomFilter
     {
@@ -25,8 +28,14 @@ namespace RogueEssence.LevelGen
                 this.Indices.Add(idx);
         }
 
+        /// <summary>
+        /// Negates the condition if turned on.
+        /// </summary>
         public bool Negate { get; set; }
 
+        /// <summary>
+        /// The numeric index values to filter for.
+        /// </summary>
         public HashSet<int> Indices { get; set; }
 
         public override bool PassesFilter(IRoomPlan plan)
