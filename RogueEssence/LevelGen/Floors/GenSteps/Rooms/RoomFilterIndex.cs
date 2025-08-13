@@ -10,7 +10,7 @@ using RogueElements;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Filters to rooms that have an IndexRoom component, with a specific numeric value.
+    /// Filters for rooms that have an IndexRoom component, with a specific numeric value.
     /// </summary>
     [Serializable]
     public class RoomFilterIndex : BaseRoomFilter
