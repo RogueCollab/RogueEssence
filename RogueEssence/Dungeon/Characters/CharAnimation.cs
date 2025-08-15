@@ -886,7 +886,7 @@ namespace RogueEssence.Dungeon
             else if (ActionTime < AnimHitTime)
             {
                 double maxDistance = Math.Sqrt(height);
-                LocHeight = AnimMath.GetArc(height / 2, AnimHitTime - AnimRushTime, ActionTime.ToFrames());
+                LocHeight = AnimMath.GetArc(height / 2, AnimHitTime - AnimRushTime, (ActionTime - AnimRushTime).ToFrames());
             }
         }
     }

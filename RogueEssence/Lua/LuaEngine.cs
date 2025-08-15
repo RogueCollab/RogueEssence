@@ -836,7 +836,7 @@ namespace RogueEssence.Script
                 SPWN = function(spawnername)
                     local curlvl = __GetLevel()
                     if curlvl then
-                      return curlvl:GetSpanwer(spawnername)
+                      return curlvl:GetSpawner(spawnername)
                     end
                     return nil
                 end
