@@ -59,8 +59,16 @@ namespace RogueEssence.Dungeon
             ZoomChanged();
         }
 
+        protected void dispose()
+        {
+            if (gameScreen != null)
+                gameScreen.Dispose();
+        }
+
         public void ZoomChanged()
         {
+            if (gameScreen != null)
+                gameScreen.Dispose();
             int zoomMult = Math.Min(GraphicsManager.WindowZoom, (int)Math.Max(1, 1 / GraphicsManager.Zoom.GetScale()));
             gameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
                 GraphicsManager.ScreenWidth * zoomMult, GraphicsManager.ScreenHeight * zoomMult,

@@ -20,7 +20,10 @@ namespace RogueEssence.Dungeon
         public static void InitInstance()
         {
             if (instance != null)
+            {
+                instance.dispose();
                 GraphicsManager.ZoomChanged -= instance.ZoomChanged;
+            }
             instance = new DungeonScene();
             GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }

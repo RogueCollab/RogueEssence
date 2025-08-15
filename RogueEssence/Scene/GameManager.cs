@@ -110,6 +110,8 @@ namespace RogueEssence
 
         public void ZoomChanged()
         {
+            if (GameScreen != null)
+                GameScreen.Dispose();
             GameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
                 GraphicsManager.WindowWidth, GraphicsManager.WindowHeight,
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24Stencil8);

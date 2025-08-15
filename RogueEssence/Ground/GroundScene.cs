@@ -18,7 +18,10 @@ namespace RogueEssence.Ground
         public static void InitInstance()
         {
             if (instance != null)
+            {
+                instance.dispose();
                 GraphicsManager.ZoomChanged -= instance.ZoomChanged;
+            }
             instance = new GroundScene();
             GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
