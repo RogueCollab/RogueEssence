@@ -413,6 +413,13 @@ namespace RogueEssence.Dungeon
         public int Fame;
         public int RankExtra;
 
+        /// <summary>
+        /// When a character is temporarily set to a level, a backup of the character pre-reset is created and added to this list.
+        /// The resetted character will carry a reference to its backup's index in this list.
+        /// It will be used when levels are restored.
+        /// </summary>
+        public List<CharData> BackupList;
+
         public ExplorerTeam() : this(true)
         { }
         [JsonConstructor]
@@ -421,6 +428,7 @@ namespace RogueEssence.Dungeon
             Assembly = new EventedList<Character>();
             BoxStorage = new List<InvItem>();
             Storage = new Dictionary<string, int>();
+            BackupList = new List<CharData>();
 
             if (initEvents)
                 setMemberEvents();
@@ -708,6 +716,22 @@ namespace RogueEssence.Dungeon
             foreach (Character player in Assembly)
                 player.LoadLua();
         }
+
+        public void MakeBackup(bool assembly, int idx)
+        {
+            CharData backup;
+            if (!assembly)
+            {
+                Players[idx].BackRef = new TempCharBackRef(BackupList.Count);
+                backup = new CharData(Players[idx]);
+            }
+            else
+            {
+                Assembly[idx].BackRef = new TempCharBackRef(BackupList.Count);
+                backup = new CharData(Assembly[idx]);
+            }
+            BackupList.Add(backup);
+        }
     }
 
     [Serializable]
@@ -728,12 +752,10 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public struct TempCharBackRef
     {
-        public bool Assembly;
         public int Index;
 
-        public TempCharBackRef(bool assembly, int index)
+        public TempCharBackRef(int index)
         {
-            Assembly = assembly;
             Index = index;
         }
     }

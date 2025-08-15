@@ -417,7 +417,7 @@ namespace RogueEssence.Dungeon
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
-            BackRef = new TempCharBackRef(false, -1);
+            BackRef = new TempCharBackRef(-1);
         }
 
         public Character(CharData baseChar)
@@ -476,7 +476,7 @@ namespace RogueEssence.Dungeon
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
-            BackRef = new TempCharBackRef(false, -1);
+            BackRef = new TempCharBackRef(-1);
 
             UpdateFrame();
         }

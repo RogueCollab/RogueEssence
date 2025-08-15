@@ -642,23 +642,25 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// 
+        /// Restricts the entire team's level
         /// </summary>
-        /// <param name="zone"></param>
-        /// <param name="capOnly">Will force lower level to specified level if false.</param>
+        /// <param name="level"></param>
+        /// <param name="capOnly">Teammates below the capped level will not be leveled up if set to true.</param>
         /// <param name="permanent"></param>
         /// <param name="silent"></param>
+        /// <param name="keepSkills"></param>
         /// <returns></returns>
         public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent, bool keepSkills)
         {
             StartLevel = level;
+            ActiveTeam.BackupList.Clear();
             try
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills, true);
                     if (!permanent)
-                        ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
+                        ActiveTeam.MakeBackup(false, ii);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills, true);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
@@ -667,9 +669,9 @@ namespace RogueEssence.Data
                 }
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills, false);
                     if (!permanent)
-                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
+                        ActiveTeam.MakeBackup(true, ii);
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills, false);
                 }
             }
             catch (Exception ex)
@@ -730,21 +732,12 @@ namespace RogueEssence.Data
         {
             if (StartLevel > -1)
             {
-                GameState state = DataManager.Instance.LoadMainGameState(false);
-                //the current save file has the level-restricted characters
-                //the other save file has the original characters
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
-                {
-                    TempCharBackRef backRef = ActiveTeam.Players[ii].BackRef;
-                    if (backRef.Index > -1)
-                        restoreCharLevel(ActiveTeam.Players[ii], backRef.Assembly ? state.Save.ActiveTeam.Assembly[backRef.Index] : state.Save.ActiveTeam.Players[backRef.Index], StartLevel);
-                }
+                    restoreCharLevel(ActiveTeam.Players[ii], StartLevel);
+
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
-                {
-                    TempCharBackRef backRef = ActiveTeam.Assembly[ii].BackRef;
-                    if (ActiveTeam.Assembly[ii].BackRef.Index > -1)
-                        restoreCharLevel(ActiveTeam.Assembly[ii], backRef.Assembly ? state.Save.ActiveTeam.Assembly[backRef.Index] : state.Save.ActiveTeam.Players[backRef.Index], StartLevel);
-                }
+                    restoreCharLevel(ActiveTeam.Assembly[ii], StartLevel);
+
                 StartLevel = -1;
             }
             //also, restore default hunger values
@@ -762,98 +755,104 @@ namespace RogueEssence.Data
             }
         }
 
-        private void restoreCharLevel(Character character, Character charFrom, int level)
+        private void restoreCharLevel(Character character, int level)
         {
-            //compute the amount of experience removed from the original character
-            MonsterData monsterData = DataManager.Instance.GetMonster(charFrom.BaseForm.Species);
-            BaseMonsterForm monsterForm = monsterData.Forms[charFrom.BaseForm.Form];
             try
             {
-                int removedEXP = 0;
-                string growth = monsterData.EXPTable;
-                GrowthData growthData = DataManager.Instance.GetGrowth(growth);
-                if (level <= charFrom.Level)
+                TempCharBackRef backRef = character.BackRef;
+                if (backRef.Index > -1)
                 {
-                    removedEXP += charFrom.EXP;
-                    int origLevel = charFrom.Level;
-                    while (origLevel > level)
-                    {
-                        removedEXP += growthData.GetExpToNext(origLevel - 1);
-                        origLevel--;
-                    }
-                }
-                //add the EXP to the character
-                if (character.Level < DataManager.Instance.Start.MaxLevel)
-                {
-                    character.EXP += removedEXP;
+                    CharData charFrom = ActiveTeam.BackupList[character.BackRef.Index];
 
-                    while (character.EXP >= growthData.GetExpToNext(character.Level))
+                    //compute the amount of experience removed from the original character
+                    MonsterData monsterData = DataManager.Instance.GetMonster(charFrom.BaseForm.Species);
+                    BaseMonsterForm monsterForm = monsterData.Forms[charFrom.BaseForm.Form];
+                    try
                     {
-                        character.EXP -= growthData.GetExpToNext(character.Level);
-                        character.Level++;
-
-                        if (character.Level >= DataManager.Instance.Start.MaxLevel)
+                        int removedEXP = 0;
+                        string growth = monsterData.EXPTable;
+                        GrowthData growthData = DataManager.Instance.GetGrowth(growth);
+                        if (level <= charFrom.Level)
                         {
-                            character.EXP = 0;
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            try
-            {
-                //add stat boosts
-                character.MaxHPBonus = Math.Min(character.MaxHPBonus + charFrom.MaxHPBonus, monsterForm.GetMaxStatBonus(Stat.HP));
-                character.AtkBonus = Math.Min(character.AtkBonus + charFrom.AtkBonus, monsterForm.GetMaxStatBonus(Stat.Attack));
-                character.DefBonus = Math.Min(character.DefBonus + charFrom.DefBonus, monsterForm.GetMaxStatBonus(Stat.Defense));
-                character.MAtkBonus = Math.Min(character.MAtkBonus + charFrom.MAtkBonus, monsterForm.GetMaxStatBonus(Stat.MAtk));
-                character.MDefBonus = Math.Min(character.MDefBonus + charFrom.MDefBonus, monsterForm.GetMaxStatBonus(Stat.MDef));
-                character.SpeedBonus = Math.Min(character.SpeedBonus + charFrom.SpeedBonus, monsterForm.GetMaxStatBonus(Stat.Speed));
-                character.HP = character.MaxHP;
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            try
-            {
-                //restore skills
-                while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0, false);
-                for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
-                {
-                    if (!String.IsNullOrEmpty(charFrom.BaseSkills[ii].SkillNum))
-                    {
-                        bool enabled = false;
-                        foreach (BackReference<Skill> skill in charFrom.Skills)
-                        {
-                            if (skill.BackRef == ii)
+                            removedEXP += charFrom.EXP;
+                            int origLevel = charFrom.Level;
+                            while (origLevel > level)
                             {
-                                enabled = skill.Element.Enabled;
-                                break;
+                                removedEXP += growthData.GetExpToNext(origLevel - 1);
+                                origLevel--;
                             }
                         }
-                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled, false);
+                        //add the EXP to the character
+                        if (character.Level < DataManager.Instance.Start.MaxLevel)
+                        {
+                            character.EXP += removedEXP;
+
+                            while (character.EXP >= growthData.GetExpToNext(character.Level))
+                            {
+                                character.EXP -= growthData.GetExpToNext(character.Level);
+                                character.Level++;
+
+                                if (character.Level >= DataManager.Instance.Start.MaxLevel)
+                                {
+                                    character.EXP = 0;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
+
+                    try
+                    {
+                        //add stat boosts
+                        character.MaxHPBonus = Math.Min(character.MaxHPBonus + charFrom.MaxHPBonus, monsterForm.GetMaxStatBonus(Stat.HP));
+                        character.AtkBonus = Math.Min(character.AtkBonus + charFrom.AtkBonus, monsterForm.GetMaxStatBonus(Stat.Attack));
+                        character.DefBonus = Math.Min(character.DefBonus + charFrom.DefBonus, monsterForm.GetMaxStatBonus(Stat.Defense));
+                        character.MAtkBonus = Math.Min(character.MAtkBonus + charFrom.MAtkBonus, monsterForm.GetMaxStatBonus(Stat.MAtk));
+                        character.MDefBonus = Math.Min(character.MDefBonus + charFrom.MDefBonus, monsterForm.GetMaxStatBonus(Stat.MDef));
+                        character.SpeedBonus = Math.Min(character.SpeedBonus + charFrom.SpeedBonus, monsterForm.GetMaxStatBonus(Stat.Speed));
+                        character.HP = character.MaxHP;
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
+
+                    try
+                    {
+                        //restore skills
+                        while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
+                            character.DeleteSkill(0, false);
+                        for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
+                        {
+                            string moveIndex = charFrom.BaseSkills[ii].SkillNum;
+                            if (!String.IsNullOrEmpty(moveIndex))
+                            {
+                                bool enabled = GetDefaultEnable(moveIndex);
+                                character.LearnSkill(moveIndex, enabled, false);
+                            }
+                        }
+
+                        //restore remembered skills
+                        foreach (string key in charFrom.Relearnables.Keys)
+                            character.Relearnables[key] = charFrom.Relearnables[key];
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
                     }
                 }
-
-                //restore remembered skills
-                foreach (string key in charFrom.Relearnables.Keys)
-                    character.Relearnables[key] = charFrom.Relearnables[key];
             }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex);
             }
 
-            //restoreCharLevel the backref
-            character.BackRef = new TempCharBackRef(false, -1);
+            //restore the backref
+            character.BackRef = new TempCharBackRef(-1);
         }
 
         /// <summary>
