@@ -28,6 +28,7 @@ namespace RogueEssence.Menu
             MenuManager.Instance.AddMenu(MenuManager.Instance.CreateQuestion(Text.FormatKey("DLG_SUSPEND_ASK"), () =>
                 {
                     MenuManager.Instance.ClearMenus();
+                    GameManager.Instance.BGM("", true);
                     //suspend
                     if (GameManager.Instance.CurrentScene == GroundScene.Instance) //the only time you can quicksave in ground mode is in rogue mode
                         GameManager.Instance.SceneOutcome = GroundScene.Instance.SuspendGame();
@@ -42,6 +43,7 @@ namespace RogueEssence.Menu
                 null, new EmoteStyle(0), Text.FormatKey("DLG_QUIT_ASK"), true, false, false, false, () =>
                 {
                     MenuManager.Instance.ClearMenus();
+                    GameManager.Instance.BGM("", true);
                     //give up
                     MenuManager.Instance.EndAction = (GameManager.Instance.CurrentScene == DungeonScene.Instance) ? DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.GiveUp, Dir8.None, (int)GameProgress.ResultType.GaveUp)) : GroundScene.Instance.ProcessInput(new GameAction(GameAction.ActionType.GiveUp, Dir8.None, (int)GameProgress.ResultType.GaveUp));
                 }, () => { }, true), false);
