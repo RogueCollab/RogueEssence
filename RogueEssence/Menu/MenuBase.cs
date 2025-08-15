@@ -31,10 +31,6 @@ namespace RogueEssence.Menu
         public static int BorderStyle;
         public static int BorderFlash;
 
-        DepthStencilState s1;
-        DepthStencilState s2;
-        AlphaTestEffect alphaTest;
-
         public bool HasLabel()
         {
             return !string.IsNullOrEmpty(Label);
@@ -48,25 +44,6 @@ namespace RogueEssence.Menu
         {
             Label = "";
             Visible = true;
-
-            s1 = new DepthStencilState
-            {
-                StencilEnable = true,
-                StencilFunction = CompareFunction.Always,
-                StencilPass = StencilOperation.Replace,
-                ReferenceStencil = 1,
-                DepthBufferEnable = false,
-            };
-
-            s2 = new DepthStencilState
-            {
-                StencilEnable = true,
-                StencilFunction = CompareFunction.LessEqual,
-                StencilPass = StencilOperation.Keep,
-                ReferenceStencil = 1,
-                DepthBufferEnable = false,
-            };
-            alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
 
             elements = new List<IMenuElement>();
         }
@@ -94,12 +71,7 @@ namespace RogueEssence.Menu
             spriteBatch.End();
             float scale = GraphicsManager.WindowZoom;
             Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
-            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(
-                0, GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, 0,
-                0, 1);
-
-            alphaTest.Projection = orthMatrix;
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s1, null, alphaTest);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, GraphicsManager.MenuPreStencil, null, GraphicsManager.MenuAlpha);
 
             TileSheet menuBack = GraphicsManager.MenuBG;
             TileSheet menuBorder = GraphicsManager.MenuBorder;
@@ -109,7 +81,7 @@ namespace RogueEssence.Menu
             DrawMenuPiece(spriteBatch, menuBack, Color.White, 0, addTrans);
 
             spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s2, null, null, zoomMatrix);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, GraphicsManager.MenuPostStencil, null, null, zoomMatrix);
 
             //draw Texts
             foreach (IMenuElement element in GetDrawElements())

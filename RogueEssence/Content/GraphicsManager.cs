@@ -177,6 +177,16 @@ namespace RogueEssence.Content
 
         private static int windowZoom;
 
+        private static void graphicsZoomChanged()
+        {
+            float scale = WindowZoom;
+            Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
+            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(
+                0, WindowWidth, WindowHeight, 0, 0, 1);
+
+            MenuAlpha.Projection = orthMatrix;
+        }
+
         /// <summary>
         /// Game zoom based on window settings, affecting all graphics.  Independent of Zoom, which is used to zoom the map.
         /// </summary>
@@ -258,6 +268,10 @@ namespace RogueEssence.Content
         public static TileGuide TileIndex { get; private set; }
         public static CharaIndexNode CharaIndex { get; private set; }
         public static CharaIndexNode PortraitIndex { get; private set; }
+
+        public static AlphaTestEffect MenuAlpha { get; private set; }
+        public static DepthStencilState MenuPreStencil { get; private set; }
+        public static DepthStencilState MenuPostStencil { get; private set; }
 
         public static BaseSheet DivTex { get; private set; }
         public static TileSheet MenuBG { get; private set; }
@@ -431,6 +445,29 @@ namespace RogueEssence.Content
 
         public static void loadStatic()
         {
+            //load menu alpha
+            MenuAlpha = new AlphaTestEffect(GraphicsDevice);
+
+            MenuPreStencil = new DepthStencilState
+            {
+                StencilEnable = true,
+                StencilFunction = CompareFunction.Always,
+                StencilPass = StencilOperation.Replace,
+                ReferenceStencil = 1,
+                DepthBufferEnable = false,
+            };
+
+            MenuPostStencil = new DepthStencilState
+            {
+                StencilEnable = true,
+                StencilFunction = CompareFunction.LessEqual,
+                StencilPass = StencilOperation.Keep,
+                ReferenceStencil = 1,
+                DepthBufferEnable = false,
+            };
+            graphicsZoomChanged();
+
+
             //load menu data
             MenuBG = TileSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "MenuBG.png")), 8, 8);
                
@@ -467,6 +504,8 @@ namespace RogueEssence.Content
             Title = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Title.png")));
             Subtitle = BaseSheet.Import(Text.ModLangPath(PathMod.ModPath(UI_PATH + "Enter.png")));
 
+            ZoomChanged -= graphicsZoomChanged;
+
             DiagManager.Instance.LoadMsg = "Loading Font";
 
             //load font
@@ -481,6 +520,8 @@ namespace RogueEssence.Content
             DiagManager.Instance.LoadMsg = "Loading Graphics";
 
             loadStatic();
+
+            ZoomChanged += graphicsZoomChanged;
 
             LoadContentParams();
             
@@ -527,7 +568,15 @@ namespace RogueEssence.Content
 
         private static void unloadStatic()
         {
+            DiagManager.Instance.LoadMsg = "Unloading Font";
+            EXPFont.Dispose();
+            HealFont.Dispose();
+            DamageFont.Dispose();
+            DungeonFont.Dispose();
+            TextFont.Dispose();
+
             DiagManager.Instance.LoadMsg = "Unloading Graphics";
+
             Subtitle.Dispose();
             Title.Dispose();
             MarkerShadow.Dispose();
@@ -546,11 +595,7 @@ namespace RogueEssence.Content
             PicBorder.Dispose();
             MenuBorder.Dispose();
             MenuBG.Dispose();
-            EXPFont.Dispose();
-            HealFont.Dispose();
-            DamageFont.Dispose();
-            DungeonFont.Dispose();
-            TextFont.Dispose();
+            MenuAlpha.Dispose();
         }
 
         public static void Unload()
