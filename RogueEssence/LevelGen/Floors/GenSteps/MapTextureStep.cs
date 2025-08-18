@@ -183,10 +183,14 @@ namespace RogueEssence.LevelGen
                 map.Map.AddLayer("Under");
                 MapLayer layer = map.Map.Layers[map.Map.Layers.Count - 1];
                 layer.Layer = Content.DrawLayer.Under;
+                AutoTileData autoTile = DataManager.Instance.GetAutoTile(TextureMap[DataManager.Instance.GenFloor]);
+                List<TileLayer> layers = autoTile.Tiles.GetLayers(-1);
                 for (int xx = 0; xx < map.Width; xx++)
                 {
                     for (int yy = 0; yy < map.Height; yy++)
-                        layer.Tiles[xx][yy] = new AutoTile(TextureMap[DataManager.Instance.GenFloor]);
+                    {
+                        layer.Tiles[xx][yy] = new AutoTile(layers.ToArray());
+                    }
                 }
             }
         }
