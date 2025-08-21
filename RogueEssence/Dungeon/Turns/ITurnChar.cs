@@ -6,7 +6,6 @@ namespace RogueEssence.Dungeon
     {
         bool Dead { get; set; }
         bool TurnUsed { get; set; }
-        bool EndTurnLock { get; set; }
         int TurnWait { get; set; }
         int MovementSpeed { get; set; }
     }

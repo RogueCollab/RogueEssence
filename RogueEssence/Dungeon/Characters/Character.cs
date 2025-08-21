@@ -289,17 +289,9 @@ namespace RogueEssence.Dungeon
         public int TurnWait { get; set; }
 
         /// <summary>
-        /// Whether the character has made an action during this map turn.  Refreshed in between player and enemy faction actions on tier 0.
-        /// Only one action per map turn permitted.
+        /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
         /// </summary>
         public bool TurnUsed { get; set; }
-
-        /// <summary>
-        /// Prevents action like TurnUsed, but is removed before player phase tier 0.
-        /// Used for enemies that need to be postponed until the next player turn.
-        /// </summary>
-        public bool EndTurnLock { get; set; }
-
         [NonSerialized]
         public List<StatusRef> StatusesTargetingThis;
         public bool EXPMarked;
