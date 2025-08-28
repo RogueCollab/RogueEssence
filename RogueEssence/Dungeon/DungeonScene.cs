@@ -36,7 +36,7 @@ namespace RogueEssence.Dungeon
             Detail
         }
 
-        private const float DARK_TRANSPARENT = 0.75f;
+        private const float DARK_TRANSPARENT = 0.5f;
 
         const int MAX_MINIMAP_WIDTH = 80;
         const int MAX_MINIMAP_HEIGHT = 56;
