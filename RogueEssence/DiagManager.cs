@@ -120,14 +120,14 @@ namespace RogueEssence
             LogError(ex);
             if (ListenGen)
             {
-                logMsgs.Add(String.Format("[{0}] Mapgen: {1}: {2}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), ex.GetType().ToString(), ex.Message));
+                logMsgs.Add(String.Format("[{0}] Mapgen: {1}: {2}", String.Format("{0:yyyy/MM/dd HH:mm:ss.fff}", DateTime.Now), ex.GetType().ToString(), ex.Message));
             }
         }
         private void logRogueElements(string msg)
         {
             if (ListenGen)
             {
-                logMsgs.Add(String.Format("[{1}] Mapgen: {0}", msg, String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now)));
+                logMsgs.Add(String.Format("[{1}] Mapgen: {0}", msg, String.Format("{0:yyyy/MM/dd HH:mm:ss.fff}", DateTime.Now)));
             }
         }
 
@@ -253,7 +253,7 @@ namespace RogueEssence
                 try
                 {
                     StringBuilder errorMsg = new StringBuilder();
-                    errorMsg.Append(String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), exception.Message));
+                    errorMsg.Append(String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.fff}", DateTime.Now), exception.Message));
                     errorMsg.Append("\n");
                     Exception innerException = exception;
                     int depth = 0;
@@ -298,7 +298,7 @@ namespace RogueEssence
         {
             lock (lockObj)
             {
-                string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), diagInfo);
+                string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.fff}", DateTime.Now), diagInfo);
                 if (DevMode)
                 {
                     Console.WriteLine(fullMsg);
