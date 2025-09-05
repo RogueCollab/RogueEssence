@@ -27,8 +27,6 @@ namespace RogueEssence.Dev
 
             ComboBox cbItem = new SearchComboBox();
 
-            cbItem.VirtualizationMode = ItemVirtualizationMode.Simple;
-
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Item];
             List<string> itemKeys = nameIndex.GetOrderedKeys(false);
             int chosenItem = itemKeys.IndexOf(member.ID);
@@ -40,7 +38,7 @@ namespace RogueEssence.Dev
 
             var itemsSubject = new Subject<List<string>>();
 
-            cbItem.Bind(ComboBox.ItemsProperty, itemsSubject);
+            cbItem.Bind(ComboBox.ItemsSourceProperty, itemsSubject);
             itemsSubject.OnNext(items);
 
             innerPanel1.ColumnDefinitions[0].Width = new GridLength(70);

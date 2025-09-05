@@ -1,15 +1,15 @@
 ﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:RogueEssence.Dev"
+             RequestedThemeVariant="Light"
              x:Class="RogueEssence.Dev.App">
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
 
     <Application.Styles>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+        <SimpleTheme/>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
         <Style Selector="TabItem">
             <Setter Property="Foreground" Value="Black" />
             <Setter Property="FontSize" Value="12"/>
@@ -17,8 +17,14 @@
       <Style Selector="DataGridRow">
         <Setter Property="Background" Value="#FFFFFF"/>
       </Style>
+        <Style Selector="Button:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+            <!-- <Setter Property="Background" Value="" /> -->
+            <!-- <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" /> -->
+            <Setter Property="TextBlock.Foreground" Value="#454545" />
+        </Style>
       <Style Selector="DataGridTextColumn">
         <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
       </Style>
     </Application.Styles>
+
 </Application>

@@ -5,24 +5,13 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class AnimChoiceWindow : Window
+    public partial class AnimChoiceWindow : Window
     {
         public AnimChoiceWindow()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
-
-
+        
         public void btnOK_Click(object sender, RoutedEventArgs e)
         {
             this.Close(true);

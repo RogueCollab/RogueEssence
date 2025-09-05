@@ -41,7 +41,7 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <ListBox SelectionMode="AlwaysSelected" Items="{Binding Associates}" SelectedIndex="{Binding ChosenAssociate}" Margin="4,2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ToolTip.Tip="The actual list of associate tiles.">
+      <ListBox SelectionMode="AlwaysSelected" ItemsSource="{Binding Associates}" SelectedIndex="{Binding ChosenAssociate}" Margin="4,2" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ToolTip.Tip="The actual list of associate tiles.">
         <ListBox.ItemTemplate>
           <DataTemplate>
             <TextBlock Text="{Binding Converter={StaticResource DataEntryConverter}, ConverterParameter=1024}"/>

@@ -17,7 +17,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class GroundEditForm : ParentForm, IGroundEditor
+    public partial class GroundEditForm : ParentForm, IGroundEditor
     {
 
         public bool Active { get; private set; }
@@ -27,19 +27,11 @@ namespace RogueEssence.Dev.Views
         public GroundEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
             Edits = new UndoStack();
 
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
+        
         public void ProcessInput(InputManager input)
         {
             DevForm.ExecuteOrInvoke(() => ((GroundEditViewModel)DataContext).ProcessInput(input));

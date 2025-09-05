@@ -6,17 +6,11 @@ using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public class TileBox : UserControl
+    public partial class TileBox : UserControl
     {
         public TileBox()
         {
             this.InitializeComponent();
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
     }
 }

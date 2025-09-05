@@ -470,10 +470,11 @@ namespace RogueEssence.Dev.ViewModels
             MenuItem saveAsFileMenuItem = new MenuItem();
             MenuItem saveAsDiffMenuItem = new MenuItem();
 
-            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)saveAsStrip.Items;
+            Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
             list.AddRange(new MenuItem[] {
                             saveAsFileMenuItem,
                             saveAsDiffMenuItem});
+            saveAsStrip.ItemsSource = list;
 
             saveAsFileMenuItem.Header = "Resave as File";
             saveAsDiffMenuItem.Header = "Resave as Patch";

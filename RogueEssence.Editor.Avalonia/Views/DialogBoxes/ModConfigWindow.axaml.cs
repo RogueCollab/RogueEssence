@@ -7,23 +7,12 @@ using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public class ModConfigWindow : Window
+    public partial class ModConfigWindow : Window
     {
         public ModConfigWindow()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
-
 
         public async void btnOK_Click(object sender, RoutedEventArgs e)
         {

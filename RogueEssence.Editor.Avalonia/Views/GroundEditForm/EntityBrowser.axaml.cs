@@ -9,17 +9,11 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class EntityBrowser : UserControl
+    public partial class EntityBrowser : UserControl
     {
         public EntityBrowser()
         {
             this.InitializeComponent();
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
     }
 }

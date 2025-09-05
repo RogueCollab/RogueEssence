@@ -42,10 +42,10 @@ namespace RogueEssence.Dev
             reactiveObject.RaisePropertyChanged(propertyName);
         }
 
-        public static ParentForm GetOwningForm(this IControl control)
+        public static ParentForm GetOwningForm(this Control control)
         {
             while (control.Parent != null)
-                control = control.Parent;
+                control = (Control) control.Parent;
             return (ParentForm)control;
         }
     }

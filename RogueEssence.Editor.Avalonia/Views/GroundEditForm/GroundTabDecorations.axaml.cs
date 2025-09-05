@@ -4,16 +4,11 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views
 {
-    public class GroundTabDecorations : UserControl
+    public partial class GroundTabDecorations : UserControl
     {
         public GroundTabDecorations()
         {
             this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

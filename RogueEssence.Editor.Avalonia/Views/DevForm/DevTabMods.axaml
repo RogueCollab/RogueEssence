@@ -25,7 +25,7 @@
     </Grid.ColumnDefinitions>
     <TextBlock VerticalAlignment="Bottom" Text="{Binding CurrentMod, Converter={StaticResource NullableToStringConverter}, StringFormat=Currently Editing Mod: {0}}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"></TextBlock>
     <Button Command="{Binding btnEdit_Click}" IsEnabled="{Binding CurrentMod, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Margin="4" Grid.Row="0" Grid.Column="2">Edit</Button>
-    <TreeView Items="{Binding Mods}" SelectedItem="{Binding ChosenMod}" SelectionMode="AlwaysSelected" Margin="4" Grid.Row="1" Grid.ColumnSpan="3">
+    <TreeView ItemsSource="{Binding Mods}" SelectedItem="{Binding ChosenMod}" SelectionMode="AlwaysSelected" Margin="4" Grid.Row="1" Grid.ColumnSpan="3">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:ModsNodeViewModel" ItemsSource="{Binding Nodes}">
           <TextBlock VerticalAlignment="Center">
