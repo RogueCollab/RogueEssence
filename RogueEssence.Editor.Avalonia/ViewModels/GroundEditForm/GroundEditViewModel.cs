@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -72,34 +73,49 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuOpen_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Directory = mapDir;
 
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "Ground Files";
-            filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
-            openFileDialog.Filters.Add(filter);
+            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            
-            string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
-            
-            if (results != null && results.Length > 0)
+            IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                bool legalPath = false;
-                foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
+                IReadOnlyList<IStorageFile> results = await form.GroundEditForm.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    if (comparePaths(proposedPath, Path.GetDirectoryName(results[0])))
-                        legalPath = true;
-                }
-                if (!legalPath)
-                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.", PathMod.ModPath(DataManager.GROUND_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
-                else
+                    Title = "Open .rsground File",
+                    SuggestedStartLocation = directory,
+                    AllowMultiple = false,
+                    FileTypeFilter =
+                    [
+                        new FilePickerFileType("Ground Files")
+                        {
+                            Patterns = ["*." + DataManager.GROUND_EXT.Substring(1)]
+                        }
+                    ]
+                });
+                
+                if (results.Count > 0)
                 {
-                    lock (GameBase.lockObj)
-                        DoLoad(Path.GetFileNameWithoutExtension(results[0]));
+                    IStorageFile result = results.First();
+                   
+                    bool legalPath = false;
+                    foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
+                    {
+                        if (comparePaths(proposedPath, Path.GetDirectoryName(result.Path.LocalPath)))
+                            legalPath = true;
+                    }
+
+                    if (!legalPath)
+                        await MessageBox.Show(form.GroundEditForm,
+                            String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.",
+                                PathMod.ModPath(DataManager.GROUND_PATH)), "Error",
+                            MessageBox.MessageBoxButtons.Ok);
+                    else
+                    {
+                        lock (GameBase.lockObj)
+                            DoLoad(Path.GetFileNameWithoutExtension(result.Name));
+                    }
                 }
-            }
+            });
         }
 
         public async Task<bool> mnuSave_Click()
@@ -173,20 +189,33 @@ namespace RogueEssence.Dev.ViewModels
         public async void mnuImportFromPng_Click()
         {
             string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Directory = mapDir;
 
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "PNG Files";
-            filter.Extensions.Add("png");
-            openFileDialog.Filters.Add(filter);
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            string[] results = await openFileDialog.ShowAsync(form.GroundEditForm);
-
-            if (results != null && results.Length > 0)
-                DoImportPng(results[0]);
+            
+            IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                IReadOnlyList<IStorageFile> results = await form.GroundEditForm.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions 
+                    {
+                        Title = "Open .png File",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                        FileTypeFilter =
+                        [
+                            new FilePickerFileType("PNG Files")
+                            {
+                                Patterns = ["*.PNG"]
+                            }
+                        ]
+                    }
+                );
+                
+                if (results.Count > 0)
+                    DoImportPng(results.First().Path.LocalPath);
+  
+            });
         }
 
 

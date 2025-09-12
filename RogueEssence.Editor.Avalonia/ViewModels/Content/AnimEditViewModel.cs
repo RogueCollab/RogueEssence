@@ -9,7 +9,10 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using RogueElements;
 using RogueEssence.Dev.Views;
 
@@ -130,53 +133,59 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Directory = folderName;
-
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                FileDialogFilter filter = new FileDialogFilter();
-                filter.Name = "PNG Files";
-                filter.Extensions.Add("png");
-                openFileDialog.Filters.Add(filter);
-            }
-            {
-                FileDialogFilter filter = new FileDialogFilter();
-                filter.Name = "DirData XML";
-                filter.Extensions.Add("xml");
-                openFileDialog.Filters.Add(filter);
-            }
-
-            string[] results = await openFileDialog.ShowAsync(parent);
-
-            if (results != null && results.Length > 0)
-            {
-                string animName = Path.GetFileNameWithoutExtension(results[0]);
-
-                if (anims.Contains(animName))
+                IReadOnlyList<IStorageFile> results = await parent.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions 
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Sprite Sheet already exists.",
-                        MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    Title = "Open .png or .xml File",
+                    SuggestedStartLocation = directory,
+                    AllowMultiple = false,
+                    FileTypeFilter =
+                    [
+                        new FilePickerFileType("PNG Files")
+                        {
+                            Patterns = ["*.png"]
+                        },
+                        new FilePickerFileType("DirData XML")
+                        {
+                            Patterns = ["*.xml"]
+                        }
+                    ]
+                });
+
+                if (results.Count > 0)
+                {
+                    string filePath = results.First().Path.LocalPath;
+                    string animName = Path.GetFileNameWithoutExtension(filePath);
+
+                    if (anims.Contains(animName))
+                    {
+                        MessageBox.MessageBoxResult result = await MessageBox.Show(parent,
+                            "Are you sure you want to overwrite the existing sheet:\n" + animName,
+                            "Sprite Sheet already exists.",
+                            MessageBox.MessageBoxButtons.YesNo);
+                        if (result == MessageBox.MessageBoxResult.No)
+                            return;
+                    }
+                    DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(filePath));
+                    if (Path.GetExtension(filePath) == ".xml")
+                        CachedPath = Path.GetDirectoryName(filePath);
+                    else
+                        CachedPath = filePath;
+
+                    try
+                    {
+                        Import(CachedPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex, false);
+                        await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                         return;
+                    }
                 }
-
-                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(results[0]));
-                if (Path.GetExtension(results[0]) == ".xml")
-                    CachedPath = Path.GetDirectoryName(results[0]);
-                else
-                    CachedPath = results[0];
-
-                try
-                {
-                    Import(CachedPath);
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-            }
+            });
         }
 
         public async void btnReImport_Click()
