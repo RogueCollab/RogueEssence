@@ -25,8 +25,10 @@ namespace RogueEssence.Menu
 
         public ExchangeState CurrentState;
 
-        public TradeTeamMenu(int defaultChoice)
+        public TradeTeamMenu(int defaultChoice) : this(MenuLabel.TRADE_TEAM_MENU, defaultChoice) { }
+        public TradeTeamMenu(string label, int defaultChoice)
         {
+            Label = label;
             int menuWidth = 152;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

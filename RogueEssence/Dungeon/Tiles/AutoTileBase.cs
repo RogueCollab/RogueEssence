@@ -30,7 +30,7 @@ namespace RogueEssence.Dungeon
         /// Gets a variant code based on a randomly given code and the base neighborcode.
         /// If the input is already a variant code (ie, upper bits are nonzero), it recomputes it.
         /// </summary>
-        /// <param name="rand"></param>
+        /// <param name="randCode"></param>
         /// <param name="neighborCode"></param>
         /// <returns></returns>
         public abstract int GetVariantCode(ulong randCode, int neighborCode);
@@ -38,7 +38,7 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// Every variant is half as likely as the variant before it.
         /// </summary>
-        /// <param name="rand"></param>
+        /// <param name="randCode"></param>
         /// <param name="count"></param>
         /// <returns></returns>
         protected int SelectTileVariant(ulong randCode, int count)

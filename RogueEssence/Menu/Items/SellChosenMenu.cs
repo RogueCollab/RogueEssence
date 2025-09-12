@@ -14,8 +14,11 @@ namespace RogueEssence.Menu
         private List<InvSlot> selections;
         private SellMenu.OnChooseSlots action;
 
-        public SellChosenMenu(List<InvSlot> selections, int origIndex, SellMenu.OnChooseSlots chooseSlots)
+        public SellChosenMenu(List<InvSlot> selections, int origIndex, SellMenu.OnChooseSlots chooseSlots) :
+            this(MenuLabel.SELL_CHOSEN_MENU, selections, origIndex, chooseSlots) { }
+        public SellChosenMenu(string label, List<InvSlot> selections, int origIndex, SellMenu.OnChooseSlots chooseSlots)
         {
+            Label = label;
             this.origIndex = origIndex;
             this.selections = selections;
             action = chooseSlots;

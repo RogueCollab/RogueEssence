@@ -47,8 +47,11 @@ namespace RogueEssence.Menu
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.GetInvCount(); ii++)
             {
                 int index = ii;
-                ItemData entry = DataManager.Instance.GetItem(DataManager.Instance.Save.ActiveTeam.GetInv(index).ID);
-                bool enable = !entry.CannotDrop || enableBound;
+
+                EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                ItemEntrySummary summary = (ItemEntrySummary)idx.Get(DataManager.Instance.Save.ActiveTeam.GetInv(index).ID);
+
+                bool enable = enableBound || !summary.CannotDrop;
                 MenuText itemText = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetDisplayName(), new Loc(2, 1), !enable ? Color.Red : Color.White);
                 MenuText itemPrice = new MenuText(DataManager.Instance.Save.ActiveTeam.GetInv(index).GetPriceString(), new Loc(ItemMenu.ITEM_MENU_WIDTH - 8 * 4, 1), DirV.Up, DirH.Right, !enable ? Color.Red : Color.White);
                 flatChoices.Add(new MenuElementChoice(() => { choose(index); }, enable, itemText, itemPrice));
@@ -129,8 +132,9 @@ namespace RogueEssence.Menu
 
         protected override void UpdateKeys(InputManager input)
         {
-            if ((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
+            if (((IsInputting(input, Dir8.Left) && CurrentPage == 0) ||
                     (IsInputting(input, Dir8.Right) && CurrentPage == TotalChoices.Length - 1))
+                    && replaceSlot == -2)
             {
                 if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
                 {

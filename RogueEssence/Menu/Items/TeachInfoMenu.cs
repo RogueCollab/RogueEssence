@@ -22,8 +22,10 @@ namespace RogueEssence.Menu
         MenuText SkillHitRate;
         MenuText SkillTargets;
 
-        public TeachInfoMenu(string itemNum)
+        public TeachInfoMenu(string itemNum) : this(MenuLabel.TEACH_MENU_INFO, itemNum) { }
+        public TeachInfoMenu(string label, string itemNum)
         {
+            Label = label;
             itemId = itemNum;
             Bounds = Rect.FromPoints(new Loc(16, 24), new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 72));
             

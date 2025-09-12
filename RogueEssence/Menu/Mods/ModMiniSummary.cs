@@ -1,7 +1,5 @@
 ﻿using RogueElements;
-using System.Collections.Generic;
 using RogueEssence.Content;
-using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -13,9 +11,11 @@ namespace RogueEssence.Menu
         MenuText Author;
         DialogueText Description;
 
-        public ModMiniSummary(Rect bounds)
+        public ModMiniSummary(Rect bounds) : this(MenuLabel.MOD_MINI_SUMMARY, bounds) { }
+        public ModMiniSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Name);
 

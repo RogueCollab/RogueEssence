@@ -12,8 +12,10 @@ namespace RogueEssence.Menu
         public MenuText BackMsg;
 
         private Action action;
-        public ConnectingMenu(Action successAction)
+        public ConnectingMenu(Action successAction) : this(MenuLabel.CONNECTING_MENU, successAction) { }
+        public ConnectingMenu(string label, Action successAction)
         {
+            Label = label;
             action = successAction;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 80, GraphicsManager.ScreenHeight / 2 - GraphicsManager.MenuBG.TileHeight - VERT_SPACE), new Loc(GraphicsManager.ScreenWidth / 2 + 80, GraphicsManager.ScreenHeight / 2 + GraphicsManager.MenuBG.TileHeight + VERT_SPACE));
 

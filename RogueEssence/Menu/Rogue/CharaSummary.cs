@@ -10,8 +10,10 @@ namespace RogueEssence.Menu
         MenuText Details;
         MenuDivider MenuDiv;
 
-        public CharaSummary(Rect bounds) : base(bounds)
+        public CharaSummary(Rect bounds) : this(MenuLabel.CHARA_SUMMARY, bounds) { }
+        public CharaSummary(string label, Rect bounds) : base(bounds)
         {
+            Label = label;
             Details = new MenuText(Text.FormatKey("MENU_CHARA_CUSTOMIZE", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Details);
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),

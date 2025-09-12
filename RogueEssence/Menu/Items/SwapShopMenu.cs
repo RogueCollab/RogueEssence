@@ -24,8 +24,11 @@ namespace RogueEssence.Menu
         HashSet<string> itemPresence;
         int presenceCount;
 
-        public SwapShopMenu(List<Tuple<string, string[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot)
+        public SwapShopMenu(List<Tuple<string, string[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot) :
+            this(MenuLabel.SWAP_SHOP_MENU, goods, priceList, defaultChoice, chooseSlot) { }
+        public SwapShopMenu(string label, List<Tuple<string, string[]>> goods, int[] priceList, int defaultChoice, OnChooseSlot chooseSlot)
         {
+            Label = label;
             Goods = goods;
             PriceList = priceList;
             action = chooseSlot;

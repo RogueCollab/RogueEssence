@@ -320,6 +320,26 @@ namespace RogueEssence.Script
         }
 
 
+
+
+        /// <summary>
+        /// Displays a custom dialogue of the caller's choice.
+        /// 
+        /// UI:WaitDialog() must be called afterwards for the dialogue to be actually displayed,
+        /// and for execution to suspend until the dialogue is completed.
+        /// </summary>
+        public void SetCustomDialogue(DialogueBox dialogue)
+        {
+            try
+            {
+                m_curdialogue = MenuManager.Instance.ProcessMenuCoroutine(dialogue);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SetCustomDialogue(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
         /// <summary>
         /// Fades in a chosen background image, with a chosen framerate, at a certain fade time, waiting until the fade-in is complete.
         /// </summary>
@@ -1164,9 +1184,10 @@ namespace RogueEssence.Script
         /// and for execution to suspend until the choice is returned.
         /// Then to recover the string representing the chosen song, UI:ChoiceResult() must be called.
         /// </summary>
+        /// <param name="hardMod">Set to true if you want to only include music of the current quest mod.</param>
         /// <param name="spoilerUnlocks">A lua table of strings representing progression flags that have been completed.
         /// Any ogg file that uses this tag as a spoiler tag will display in the menu only if the flag has been passed.</param>
-        public void ShowMusicMenu(LuaTable spoilerUnlocks)
+        public void ShowMusicMenu(bool hardMod, LuaTable spoilerUnlocks)
         {
             try
             {
@@ -1178,7 +1199,7 @@ namespace RogueEssence.Script
                 }
 
                 m_choiceresult = null;
-                m_curchoice = new MusicMenu(unlockedTags, (string dir) => { m_choiceresult = dir; });
+                m_curchoice = new MusicMenu(hardMod, unlockedTags, (string dir) => { m_choiceresult = dir; });
             }
             catch (Exception e)
             {

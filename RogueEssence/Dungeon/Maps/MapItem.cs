@@ -167,19 +167,23 @@ namespace RogueEssence.Dungeon
                 return Text.FormatKey("MONEY_AMOUNT", Amount);
             else
             {
-                ItemData entry = DataManager.Instance.GetItem(Value);
+                EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                if (!idx.ContainsKey(Value))
+                    return String.Format("[color=#FF0000]{0}[color]", Value);
+
+                ItemEntrySummary summary = (ItemEntrySummary)idx.Get(Value);
 
                 string prefix = "";
-                if (entry.Icon > -1)
-                    prefix += ((char)(entry.Icon + 0xE0A0)).ToString();
+                if (summary.Icon > -1)
+                    prefix += ((char)(summary.Icon + 0xE0A0)).ToString();
                 if (Cursed)
                     prefix += "\uE10B";
 
-                string nameStr = entry.Name.ToLocal();
-                if (entry.MaxStack > 1)
+                string nameStr = summary.Name.ToLocal();
+                if (summary.MaxStack > 1)
                     nameStr += " (" + Amount + ")";
 
-                if (entry.UsageType == ItemData.UseType.Treasure)
+                if (summary.UsageType == ItemData.UseType.Treasure)
                     return String.Format("{0}[color=#6384E6]{1}[color]", prefix, nameStr);
                 else
                     return String.Format("{0}[color=#FFCEFF]{1}[color]", prefix, nameStr);

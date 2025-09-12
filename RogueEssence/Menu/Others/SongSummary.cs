@@ -13,9 +13,11 @@ namespace RogueEssence.Menu
         MenuText Origin;
         DialogueText Artist;
 
-        public SongSummary(Rect bounds)
+        public SongSummary(Rect bounds) : this(MenuLabel.SONG_SUMMARY, bounds) { }
+        public SongSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
             OriginName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));

@@ -7,6 +7,18 @@ namespace RogueEssence.Menu
     {
         public List<IMenuElement> NonChoices { get { return Elements; } }
         public List<IChoosable> Choices;
+        public IChoosable Hovered
+        {
+            get
+            {
+                foreach (IChoosable choice in Choices)
+                {
+                    if (choice.Hovered)
+                        return choice;
+                }
+                return null;
+            }
+        }
 
         protected MenuCursor cursor;
 

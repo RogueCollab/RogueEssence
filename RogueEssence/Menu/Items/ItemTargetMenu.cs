@@ -19,8 +19,10 @@ namespace RogueEssence.Menu
         private bool useItem;
         private int commandIdx;
 
-        public ItemTargetMenu(int invSlot, bool useItem, int commandIdx)
+        public ItemTargetMenu(int invSlot, bool useItem, int commandIdx) : this(MenuLabel.ITEM_TARGET_MENU, invSlot, useItem, commandIdx) { }
+        public ItemTargetMenu(string label, int invSlot, bool useItem, int commandIdx)
         {
+            Label = label;
             this.invSlot = invSlot;
             this.useItem = useItem;
             this.commandIdx = commandIdx;

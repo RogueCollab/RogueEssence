@@ -11,8 +11,10 @@ namespace RogueEssence.Menu
     {
         private const int SLOTS_PER_PAGE = 14;
 
-        public QuicksaveMenu()
+        public QuicksaveMenu() : this(MenuLabel.ROGUE_QUICKSAVE_MENU) { }
+        public QuicksaveMenu(string label)
         {
+            Label = label;
             List<RecordHeaderData> records = DataManager.Instance.GetRecordHeaders(PathMod.ModSavePath(DataManager.ROGUE_PATH), DataManager.QUICKSAVE_EXTENSION);
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

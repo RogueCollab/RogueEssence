@@ -51,6 +51,7 @@ namespace RogueEssence.Dungeon
     [Serializable]
     public class MapIDState : MapStatusState
     {
+        [DataType(0, DataManager.DataType.MapStatus, false)]
         public string ID;
         public MapIDState() { ID = ""; }
         public MapIDState(string index) { ID = index; }

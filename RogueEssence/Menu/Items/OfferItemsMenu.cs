@@ -17,8 +17,10 @@ namespace RogueEssence.Menu
 
         private TradeItemMenu baseMenu;
 
-        public OfferItemsMenu(Rect bounds, TradeItemMenu baseMenu)
+        public OfferItemsMenu(Rect bounds, TradeItemMenu baseMenu) : this(MenuLabel.TRADE_ITEM_MENU_OFFER, bounds, baseMenu) { }
+        public OfferItemsMenu(string label, Rect bounds, TradeItemMenu baseMenu)
         {
+            Label = label;
             Bounds = bounds;
             this.baseMenu = baseMenu;
 

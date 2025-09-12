@@ -11,9 +11,11 @@ namespace RogueEssence.Menu
         MenuText Rarity;
         MenuText SalePrice;
 
-        public ItemSummary(Rect bounds)
+        public ItemSummary(Rect bounds) : this(MenuLabel.ITEM_SUMMARY, bounds) { }
+        public ItemSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Description = new DialogueText("", new Rect(new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight),
                 new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 4, Bounds.Height - GraphicsManager.MenuBG.TileHeight * 4)), LINE_HEIGHT);
             Elements.Add(Description);

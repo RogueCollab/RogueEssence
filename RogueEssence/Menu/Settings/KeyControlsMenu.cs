@@ -14,9 +14,10 @@ namespace RogueEssence.Menu
         bool enter;
         bool numpad;
 
-        public KeyControlsMenu()
+        public KeyControlsMenu() : this(MenuLabel.KEYBOARD_MENU) { }
+        public KeyControlsMenu(string label)
         {
-
+            Label = label;
             dirKeys = new Keys[DiagManager.Instance.CurSettings.DirKeys.Length];
             actionKeys = new Keys[DiagManager.Instance.CurSettings.ActionKeys.Length];
             enter = DiagManager.Instance.CurSettings.Enter;

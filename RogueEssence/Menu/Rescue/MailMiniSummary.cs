@@ -14,9 +14,11 @@ namespace RogueEssence.Menu
         MenuText Goal;
         SpeakerPortrait[] Portraits;
 
-        public MailMiniSummary(Rect bounds)
+        public MailMiniSummary(Rect bounds) : this(MenuLabel.MAIL_MINI_SUMMARY, bounds) { }
+        public MailMiniSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
             Goal = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));
@@ -44,7 +46,7 @@ namespace RogueEssence.Menu
         {
             if (mail != null)
             {
-                List<ModVersion> curVersions = PathMod.GetModVersion();
+                List<ModVersion> curVersions = PathMod.GetModVersionList();
                 List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
                 Name.SetText(mail.TeamName);
                 Goal.SetText(Text.FormatKey("MENU_SOS_GOAL", mail.GoalText.ToLocal().Replace('\n', ' ')));

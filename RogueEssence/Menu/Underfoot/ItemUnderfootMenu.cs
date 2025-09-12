@@ -24,6 +24,7 @@ namespace RogueEssence.Menu
 
             bool invFull = (DungeonScene.Instance.ActiveTeam.GetInvCount() >= DungeonScene.Instance.ActiveTeam.GetMaxInvSlots(ZoneManager.Instance.CurrentZone));
             bool hasItem = !String.IsNullOrEmpty(DungeonScene.Instance.FocusedCharacter.EquippedItem.ID);
+            bool inReplay = DataManager.Instance.CurrentReplay != null;
 
             if (mapItem.IsMoney)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_GET"), PickupAction));
@@ -47,32 +48,32 @@ namespace RogueEssence.Menu
                 }
                 bool hasItems = (DungeonScene.Instance.ActiveTeam.GetInvCount() > 0);
 
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_GET"), PickupAction, canGet, canGet ? Color.White : Color.Red));
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_REPLACE"), ReplaceAction, hasItems, hasItems ? Color.White : Color.Red));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_GET"), PickupAction, !inReplay && canGet, !inReplay && canGet ? Color.White : Color.Red));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_REPLACE"), ReplaceAction, !inReplay && hasItems, !inReplay && hasItems ? Color.White : Color.Red));
 
                 switch (entry.UsageType)
                 {
                     case ItemData.UseType.Eat:
                         {
-                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseSelfAction, !mapItem.Cursed, mapItem.Cursed ? Color.Red : Color.White));
+                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_EAT"), UseSelfAction, !inReplay && !mapItem.Cursed, inReplay || mapItem.Cursed ? Color.Red : Color.White));
                             break;
                         }
                     case ItemData.UseType.Drink:
                         {
-                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseSelfAction, !mapItem.Cursed, mapItem.Cursed ? Color.Red : Color.White));
+                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_DRINK"), UseSelfAction, !inReplay && !mapItem.Cursed, inReplay || mapItem.Cursed ? Color.Red : Color.White));
                             break;
                         }
                     case ItemData.UseType.Use:
                     case ItemData.UseType.UseOther:
                         {
-                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !mapItem.Cursed, mapItem.Cursed ? Color.Red : Color.White));
+                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_USE"), UseSelfAction, !inReplay && !mapItem.Cursed, inReplay || mapItem.Cursed ? Color.Red : Color.White));
                             break;
                         }
                     case ItemData.UseType.Learn:
                         {
                             //if the character is teaching to himself, need to disable this choice if not compatible
                             bool canLearn = TeachMenu.CanLearnSkill(DungeonScene.Instance.FocusedCharacter, DungeonScene.Instance.FocusedCharacter, BattleContext.FLOOR_ITEM_SLOT, false);
-                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), UseSelfAction, canLearn && !mapItem.Cursed, (canLearn && !mapItem.Cursed) ? Color.White : Color.Red));
+                            choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_LEARN"), UseSelfAction, !inReplay && canLearn && !mapItem.Cursed, (!inReplay && canLearn && !mapItem.Cursed) ? Color.White : Color.Red));
                             break;
                         }
                 }
@@ -85,15 +86,15 @@ namespace RogueEssence.Menu
                     if (equipEntry.CannotDrop)
                         allowHold = false;
                 }
-                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_HOLD"), HoldAction, allowHold, allowHold ? Color.White : Color.Red));
+                choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_HOLD"), HoldAction, !inReplay && allowHold, !inReplay && allowHold ? Color.White : Color.Red));
 
                 if (entry.UsageType == ItemData.UseType.Throw)
                 {
                     int choiceIndex = choices.Count - 1;
-                    choices.Insert(choiceIndex, new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
+                    choices.Insert(choiceIndex, new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction, !inReplay, !inReplay ? Color.White: Color.Red));
                 }
                 else
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction, !inReplay, !inReplay ? Color.White : Color.Red));
                 if (entry.UsageType == ItemData.UseType.Learn)
                     choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), InfoAction));
             }

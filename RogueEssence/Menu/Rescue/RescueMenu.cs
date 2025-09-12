@@ -18,9 +18,11 @@ namespace RogueEssence.Menu
 
         public bool Verified;
 
-        public RescueMenu()
+        public RescueMenu() : this(MenuLabel.RESCUE_MENU) { }
+        public RescueMenu(string label)
             : base()
         {
+            Label = label;
             SetSOS(DataManager.Instance.Save.Rescue.SOS);
         }
 

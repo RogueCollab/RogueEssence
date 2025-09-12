@@ -59,8 +59,16 @@ namespace RogueEssence.Dungeon
             ZoomChanged();
         }
 
+        protected void dispose()
+        {
+            if (gameScreen != null)
+                gameScreen.Dispose();
+        }
+
         public void ZoomChanged()
         {
+            if (gameScreen != null)
+                gameScreen.Dispose();
             int zoomMult = Math.Min(GraphicsManager.WindowZoom, (int)Math.Max(1, 1 / GraphicsManager.Zoom.GetScale()));
             gameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
                 GraphicsManager.ScreenWidth * zoomMult, GraphicsManager.ScreenHeight * zoomMult,
@@ -315,6 +323,9 @@ namespace RogueEssence.Dungeon
             Loc wrapSize = ZoneManager.Instance.CurrentMap.GroundSize;
             bool seeTrap = CanSeeTraps();
 
+            //draw the background
+            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, ViewRect.Start);
+
             //draw a little more outside the view rect
             for (int yy = viewTileRect.Y - 1; yy < viewTileRect.End.Y + 1; yy++)
             {
@@ -330,6 +341,9 @@ namespace RogueEssence.Dungeon
                         else
                             ZoneManager.Instance.CurrentMap.DrawDefaultTile(spriteBatch, new Loc(xx * GraphicsManager.TileSize, yy * GraphicsManager.TileSize) - ViewRect.Start, new Loc(xx, yy));
                     }
+                    else
+                        GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(xx * GraphicsManager.TileSize - ViewRect.X, yy * GraphicsManager.TileSize - ViewRect.Y), null,
+                                    Color.Black, new Vector2(GraphicsManager.TileSize));
                 }
             }
 
@@ -436,9 +450,6 @@ namespace RogueEssence.Dungeon
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, Matrix.CreateScale(new Vector3(matrixScale, matrixScale, 1)));
 
-            //draw the background
-            ZoneManager.Instance.CurrentMap.Background.Draw(spriteBatch, ViewRect.Start);
-
             spriteBatch.Draw(gameScreen, new Vector2(), Color.White);
 
             spriteBatch.End();
@@ -467,8 +478,8 @@ namespace RogueEssence.Dungeon
             {
                 Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
                 Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 102, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 112, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 112, String.Format("Mouse  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 122, String.Format("M Tile X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
             }
         }
 

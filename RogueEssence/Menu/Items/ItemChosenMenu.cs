@@ -15,8 +15,10 @@ namespace RogueEssence.Menu
         private int slot;
         private bool held;
 
-        public ItemChosenMenu(int slot, bool held)
+        public ItemChosenMenu(int slot, bool held) : this(MenuLabel.ITEM_CHOSEN_MENU ,slot, held) { }
+        public ItemChosenMenu(string label, int slot, bool held)
         {
+            Label = label;
             this.slot = slot;
             this.held = held;
 

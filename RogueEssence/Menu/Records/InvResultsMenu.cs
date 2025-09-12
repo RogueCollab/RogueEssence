@@ -19,8 +19,10 @@ namespace RogueEssence.Menu
         public GameProgress Ending;
         public int Page;
 
-        public InvResultsMenu(GameProgress ending, int page)
+        public InvResultsMenu(GameProgress ending, int page) : this(MenuLabel.RESULTS_MENU_INV, ending, page) { }
+        public InvResultsMenu(string label, GameProgress ending, int page)
         {
+            Label = label;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth / 2 - 140, 16), new Loc(GraphicsManager.ScreenWidth / 2 + 140, 224));
             Ending = ending;
             Page = page;

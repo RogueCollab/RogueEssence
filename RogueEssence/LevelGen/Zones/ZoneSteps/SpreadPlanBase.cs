@@ -91,6 +91,11 @@ namespace RogueEssence.LevelGen
         /// </summary>
         public RandRange FloorSpacing;
 
+        /// <summary>
+        /// Will spawn at the first available floor before rolling for the next floors.
+        /// </summary>
+        public bool BeginStart;
+
         public SpreadPlanSpaced() { }
         public SpreadPlanSpaced(RandRange spacing, IntRange floorRange) : base(floorRange)
         {
@@ -100,12 +105,14 @@ namespace RogueEssence.LevelGen
         protected SpreadPlanSpaced(SpreadPlanSpaced other, ulong seed) : base(other, seed)
         {
             FloorSpacing = other.FloorSpacing;
+            BeginStart = other.BeginStart;
             FloorRange = other.FloorRange;
 
             ReRandom rand = new ReRandom(seed);
 
             int currentFloor = FloorRange.Min;
-            currentFloor += rand.Next(FloorSpacing.Max);
+            if (!BeginStart)
+                currentFloor += rand.Next(FloorSpacing.Max);
 
             while (currentFloor < FloorRange.Max)
             {

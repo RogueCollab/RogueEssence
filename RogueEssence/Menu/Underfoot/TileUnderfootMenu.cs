@@ -3,7 +3,8 @@ using RogueEssence.Content;
 using RogueEssence.Dungeon;
 using Microsoft.Xna.Framework.Graphics;
 using RogueElements;
-using System;
+using Microsoft.Xna.Framework;
+using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -17,18 +18,20 @@ namespace RogueEssence.Menu
             Label = label;
             Data.TileData entry = Data.DataManager.Instance.GetTile(tileIndex);
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
-            
+
+            bool inReplay = DataManager.Instance.CurrentReplay != null;
+
             switch (entry.StepType)
             {
                 case Data.TileData.TriggerType.Site:
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_CHECK"), () => { choose(0); }));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_CHECK"), () => { choose(0); }, !inReplay, !inReplay ? Color.White : Color.Red));
                     break;
                 case Data.TileData.TriggerType.Passage:
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_PROCEED"), () => { choose(0); }));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_PROCEED"), () => { choose(0); }, !inReplay, !inReplay ? Color.White : Color.Red));
                     break;
                 case Data.TileData.TriggerType.Trap:
                 case Data.TileData.TriggerType.Switch:
-                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_TRIGGER"), () => { choose(0); }));
+                    choices.Add(new MenuTextChoice(Text.FormatKey("MENU_GROUND_TRIGGER"), () => { choose(0); }, !inReplay, !inReplay ? Color.White : Color.Red));
                     break;
             }
             

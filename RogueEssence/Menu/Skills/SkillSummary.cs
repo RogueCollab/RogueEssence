@@ -1,5 +1,4 @@
-﻿using System;
-using RogueElements;
+﻿using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dungeon;
@@ -17,8 +16,10 @@ namespace RogueEssence.Menu
         MenuText SkillHitRate;
         MenuText Targets;
 
-        public SkillSummary(Rect bounds) : base(bounds)
+        public SkillSummary(Rect bounds) : this(MenuLabel.SKILL_SUMMARY, bounds) { }
+        public SkillSummary(string label, Rect bounds) : base(bounds)
         {
+            Label = label;
             SkillElement = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(SkillElement);
             SkillCategory = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE));

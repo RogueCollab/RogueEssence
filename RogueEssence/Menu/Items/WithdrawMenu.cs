@@ -20,8 +20,11 @@ namespace RogueEssence.Menu
         OnWithdrawChoice storageChoice;
         bool continueOnChoose;
 
-        public WithdrawMenu(int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice)
+        public WithdrawMenu(int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice) :
+            this(MenuLabel.WITHDRAW_MENU, defaultChoice, continueOnChoose, storageChoice) { }
+        public WithdrawMenu(string label, int defaultChoice, bool continueOnChoose, OnWithdrawChoice storageChoice)
         {
+            Label = label;
             this.continueOnChoose = continueOnChoose;
             this.storageChoice = storageChoice;
             availableItems = new List<WithdrawSlot>();
@@ -45,7 +48,9 @@ namespace RogueEssence.Menu
             {
                 WithdrawSlot slot = new WithdrawSlot(true, "", ii);
                 availableItems.Add(slot);
-                flatChoices.Add(new MenuTextChoice(DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].GetDisplayName(), () => { choose(slot); }));
+                string boxId = DataManager.Instance.Save.ActiveTeam.BoxStorage[ii].ID;
+                ItemEntrySummary summary = (ItemEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Item].Get(boxId);
+                flatChoices.Add(new MenuTextChoice(summary.GetIconName(), () => { choose(slot); }));
             }
 
             defaultChoice = Math.Min(defaultChoice, flatChoices.Count - 1);

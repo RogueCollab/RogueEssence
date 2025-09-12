@@ -14,10 +14,12 @@ namespace RogueEssence.Menu
         public bool BlockPrevious { get; set; }
 
         public List<SummaryMenu> SummaryMenus { get; set; }
+        public List<SummaryMenu> LowerSummaryMenus { get; set; }
 
         public InteractableMenu()
         {
             SummaryMenus = new List<SummaryMenu>();
+            LowerSummaryMenus = new List<SummaryMenu>();
         }
 
         public abstract void Update(InputManager input);
@@ -49,6 +51,9 @@ namespace RogueEssence.Menu
         {
             if (!Visible)
                 return;
+            foreach (SummaryMenu menu in LowerSummaryMenus)
+                menu.Draw(spriteBatch);
+
             base.Draw(spriteBatch);
 
             foreach (SummaryMenu menu in SummaryMenus)
@@ -72,6 +77,12 @@ namespace RogueEssence.Menu
                     return true;
             }
 
+            foreach (SummaryMenu summary in LowerSummaryMenus)
+            {
+                if (summary.GetRelativeMouseLoc(screenLoc, out menu, out relativeLoc))
+                    return true;
+            }
+
             return false;
         }
 
@@ -82,6 +93,10 @@ namespace RogueEssence.Menu
         public virtual Dictionary<string, int> GetSummaryIndicesByLabel(params string[] labels)
         {
             return SearchLabels(labels, SummaryMenus);
+        }
+        public virtual Dictionary<string, int> GetLowerSummaryIndicesByLabel(params string[] labels)
+        {
+            return SearchLabels(labels, LowerSummaryMenus);
         }
     }
 }

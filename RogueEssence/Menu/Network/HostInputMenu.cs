@@ -11,8 +11,10 @@ namespace RogueEssence.Menu
 
         OnChooseText chooseTextAction;
 
-        public HostInputMenu(OnChooseText action, string title, string subtitle)
+        public HostInputMenu(OnChooseText action, string title, string subtitle) : this(MenuLabel.SERVER_ADD_MENU, action, title, subtitle) { }
+        public HostInputMenu(string label, OnChooseText action, string title, string subtitle)
         {
+            Label = label;
             chooseTextAction = action;
             Initialize(title, subtitle, 296);
         }

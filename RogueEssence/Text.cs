@@ -910,6 +910,11 @@ namespace RogueEssence
         {
             return !String.IsNullOrWhiteSpace(Key);
         }
+
+        public static bool HasValue(string key)
+        {
+            return Text.StringsEx.ContainsKey(key);
+        }
     }
 
 

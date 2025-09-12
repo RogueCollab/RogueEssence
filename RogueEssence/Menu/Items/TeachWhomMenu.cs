@@ -36,8 +36,10 @@ namespace RogueEssence.Menu
         List<MenuText> MemberNames;
         List<MenuText> MemberTeachState;
 
-        public TeachWhomMenu(string itemNum, int startPage)
+        public TeachWhomMenu(string itemNum, int startPage) : this(MenuLabel.TEACH_MENU_WHOM, itemNum, startPage) { }
+        public TeachWhomMenu(string label, string itemNum, int startPage)
         {
+            Label = label;
             page = startPage;
             itemId = itemNum;
             Bounds = Rect.FromPoints(new Loc(16, 24), new Loc(GraphicsManager.ScreenWidth - 16, GraphicsManager.ScreenHeight - 72));

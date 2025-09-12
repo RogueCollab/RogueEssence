@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
         private int skillSlot;
 
 
-        public SkillChosenMenu(string parentLabel, int teamIndex, int skillSlot)
+        public SkillChosenMenu(string parentLabel, int teamIndex, int skillSlot) : this(MenuLabel.SKILL_CHOSEN_MENU, parentLabel, teamIndex, skillSlot) { }
+        public SkillChosenMenu(string label, string parentLabel, int teamIndex, int skillSlot)
         {
+            Label = label;
             this.parentLabel = parentLabel;
             this.teamIndex = teamIndex;
             this.skillSlot = skillSlot;

@@ -18,14 +18,20 @@ namespace RogueEssence.LevelGen
         /// </summary>
         public List<ITile> AcceptedTiles;
 
+        /// <summary>
+        /// How deeply in the terrain it should be spawned in.
+        /// </summary>
+        public int Depth;
+
         public PlaceTerrainMobsStep()
         {
             AcceptedTiles = new List<ITile>();
         }
 
-        public PlaceTerrainMobsStep(IMultiTeamSpawner<T> spawn) : base(spawn)
+        public PlaceTerrainMobsStep(IMultiTeamSpawner<T> spawn, int depth) : base(spawn)
         {
             AcceptedTiles = new List<ITile>();
+            Depth = depth;
         }
 
         public override void Apply(T map)
@@ -43,13 +49,23 @@ namespace RogueEssence.LevelGen
             {
                 for (int yy = 0; yy < map.Height; yy++)
                 {
-                    bool allowPlacement = false;
-                    foreach (ITile tile in AcceptedTiles)
+                    // all tiles in the radius must pass the check
+                    bool allPlacement = true;
+                    for (int x2 = -Depth; x2 <= Depth; x2++)
                     {
-                        if (tile.TileEquivalent(map.GetTile(new Loc(xx, yy))))
-                            allowPlacement = true;
+                        for (int y2 = -Depth; y2 <= Depth; y2++)
+                        {
+                            bool allowPlacement = false;
+                            foreach (ITile tile in AcceptedTiles)
+                            {
+                                if (tile.TileEquivalent(map.GetTile(new Loc(xx, yy) + new Loc(x2, y2))))
+                                    allowPlacement = true;
+                            }
+                            if (!allowPlacement)
+                                allPlacement = false;
+                        }
                     }
-                    if (allowPlacement)
+                    if (allPlacement)
                         freeTiles.Add(new Loc(xx, yy));
                 }
             }

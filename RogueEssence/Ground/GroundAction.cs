@@ -446,7 +446,7 @@ namespace RogueEssence.Ground
         public override int FrameMethod(List<CharAnimFrame> frames)
         {
             long totalTick = FrameTick.FrameToTick(AnimTotalTime);
-            return CharSheet.TrueFrame(frames, totalTick - (ActionTime.Ticks % totalTick), true);
+            return CharSheet.TrueFrame(frames, (totalTick - (ActionTime.Ticks % totalTick)) % totalTick, true);
         }
         public override int AnimFrameType { get { return AnimID; } }
         public override bool Complete { get { return ActionTime >= AnimTotalTime; } }

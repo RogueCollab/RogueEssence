@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
         private int origIndex;
         private List<InvSlot> selections;
 
-        public DepositChosenMenu(List<InvSlot> selections, int origIndex)
+        public DepositChosenMenu(List<InvSlot> selections, int origIndex) : this(MenuLabel.DEPOSIT_CHOSEN_MENU, selections, origIndex) { }
+        public DepositChosenMenu(string label, List<InvSlot> selections, int origIndex)
         {
+            Label = label;
             this.origIndex = origIndex;
             this.selections = selections;
 

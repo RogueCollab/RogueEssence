@@ -28,7 +28,10 @@ namespace RogueEssence.Dev
         public static void InitInstance()
         {
             if (instance != null)
+            {
+                instance.dispose();
                 GraphicsManager.ZoomChanged -= instance.ZoomChanged;
+            }
             instance = new GroundEditScene();
             GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
@@ -310,6 +313,8 @@ namespace RogueEssence.Dev
 
             if (ZoneManager.Instance.CurrentGround != null)
             {
+                Loc focusedLoc = FocusedLoc;
+                GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 62, String.Format("Cam X:{0:D3} Y:{1:D3}", focusedLoc.X, focusedLoc.Y), null, DirV.Up, DirH.Right, Color.White);
                 if (EditMode == EditorMode.Decoration)
                 {
                     if (SelectedDecoration != null)

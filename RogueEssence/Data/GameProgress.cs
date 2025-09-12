@@ -104,6 +104,8 @@ namespace RogueEssence.Data
 
         [JsonConverter(typeof(MonsterUnlockConverter))]
         public Dictionary<string, UnlockState> Dex;
+        [JsonConverter(typeof(FormUnlockDictConverter))]
+        public Dictionary<MonsterID, UnlockState> FormDex;
         [JsonConverter(typeof(MonsterBoolDictConverter))]
         public Dictionary<string, bool> RogueStarters;
 
@@ -169,6 +171,7 @@ namespace RogueEssence.Data
             Mods = new List<ModHeader>();
 
             Dex = new Dictionary<string, UnlockState>();
+            FormDex = new Dictionary<MonsterID, UnlockState>();
             RogueStarters = new Dictionary<string, bool>();
             DungeonUnlocks = new Dictionary<string, UnlockState>();
 
@@ -232,6 +235,13 @@ namespace RogueEssence.Data
 
             return display;
         }
+
+        //TODO: make this apply only to player characters
+        /// <summary>
+        /// Used for learning new skills.  Determines whether the newly learned skill should be switched on or off.
+        /// </summary>
+        /// <param name="moveIndex"></param>
+        /// <returns></returns>
         public bool GetDefaultEnable(string moveIndex)
         {
             if (String.IsNullOrEmpty(moveIndex))
@@ -285,13 +295,45 @@ namespace RogueEssence.Data
             Dex.TryGetValue(index, out state);
             return state;
         }
+        public UnlockState GetMonsterFormUnlock(MonsterID form)
+        {
+            return GetMonsterFormUnlock(form.Species, form.Form);
+        }
+        public UnlockState GetMonsterFormUnlock(string species, int form)
+        {
+            MonsterID index = new MonsterID(species, form, "", Gender.Unknown);
+            UnlockState state = UnlockState.None;
+            FormDex.TryGetValue(index, out state);
+            return state;
+        }
 
         public int GetTotalMonsterUnlock(UnlockState state)
         {
             int total = 0;
-            foreach(string key in Dex.Keys)
+            foreach (string key in Dex.Keys)
             {
                 if (Dex[key] == state)
+                    total++;
+            }
+            return total;
+        }
+        public int GetTotalFormUnlock(UnlockState state)
+        {
+            int total = 0;
+            foreach (MonsterID key in FormDex.Keys)
+            {
+                if (FormDex[key] == state)
+                    total++;
+            }
+            return total;
+        }
+        public int GetTotalFormUnlock(string species, UnlockState state)
+        {
+            int total = 0;
+            MonsterEntrySummary summary = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(species);
+            for (int ii = 0; ii < summary.Forms.Count; ii++)
+            {
+                if (GetMonsterFormUnlock(species, ii) == state)
                     total++;
             }
             return total;
@@ -299,13 +341,38 @@ namespace RogueEssence.Data
 
         public virtual void RegisterMonster(string index)
         {
-            Dex[index] = UnlockState.Completed;
+            DiagManager.Instance.LogInfo("WARNING: RegisterMonster(string) only registers form 0. Please use RegisterMonster(string, int) or RegisterMonster(MonsterID) instead.");
+            RegisterMonster(index, 0);
+        }
+        public virtual void RegisterMonster(MonsterID index)
+        {
+            RegisterMonster(index.Species, index.Form);
+        }
+        public virtual void RegisterMonster(string species, int form)
+        {
+            Dex[species] = UnlockState.Completed;
+
+            MonsterID index = new MonsterID(species, form, "", Gender.Unknown);
+            FormDex[index] = UnlockState.Completed;
         }
 
         public virtual void SeenMonster(string index)
         {
-            if (GetMonsterUnlock(index) == UnlockState.None)
-                Dex[index] = UnlockState.Discovered;
+            DiagManager.Instance.LogInfo("WARNING: SeenMonster(string) only registers form 0. Please use SeenMonster(string, int) or SeenMonster(MonsterID) instead.");
+            SeenMonster(index, 0);
+        }
+        public virtual void SeenMonster(MonsterID index)
+        {
+            SeenMonster(index.Species, index.Form);
+        }
+        public virtual void SeenMonster(string species, int form)
+        {
+            if (GetMonsterUnlock(species) == UnlockState.None)
+                Dex[species] = UnlockState.Discovered;
+
+            MonsterID index = new MonsterID(species, form, "", Gender.Unknown);
+            if (GetMonsterFormUnlock(species, form) == UnlockState.None)
+                FormDex[index] = UnlockState.Discovered;
         }
 
         public virtual void RogueUnlockMonster(string index)
@@ -575,34 +642,36 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// 
+        /// Restricts the entire team's level
         /// </summary>
-        /// <param name="zone"></param>
-        /// <param name="capOnly">Will force lower level to specified level if false.</param>
+        /// <param name="level"></param>
+        /// <param name="capOnly">Teammates below the capped level will not be leveled up if set to true.</param>
         /// <param name="permanent"></param>
         /// <param name="silent"></param>
+        /// <param name="keepSkills"></param>
         /// <returns></returns>
         public IEnumerator<YieldInstruction> RestrictLevel(int level, bool capOnly, bool permanent, bool silent, bool keepSkills)
         {
             StartLevel = level;
+            ActiveTeam.BackupList.Clear();
             try
             {
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills);
                     if (!permanent)
-                        ActiveTeam.Players[ii].BackRef = new TempCharBackRef(false, ii);
+                        ActiveTeam.MakeBackup(false, ii);
+                    RestrictCharLevel(ActiveTeam.Players[ii], level, capOnly, keepSkills, true);
                 }
                 for (int ii = 0; ii < ActiveTeam.Guests.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills);
+                    RestrictCharLevel(ActiveTeam.Guests[ii], level, capOnly, keepSkills, true);
                     //no backref for guests
                 }
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
                 {
-                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills);
                     if (!permanent)
-                        ActiveTeam.Assembly[ii].BackRef = new TempCharBackRef(true, ii);
+                        ActiveTeam.MakeBackup(true, ii);
+                    RestrictCharLevel(ActiveTeam.Assembly[ii], level, capOnly, keepSkills, false);
                 }
             }
             catch (Exception ex)
@@ -620,7 +689,9 @@ namespace RogueEssence.Data
         /// <param name="character"></param>
         /// <param name="level"></param>
         /// <param name="capOnly">Will force lower level to specified level if false.</param>
-        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills)
+        /// <param name="keepSkills">Turn off to wipe skills to that of the target level.</param>
+        /// <param name="inTeam">On if it's part of the team, off if it's part of the assembly.  Used for refresh purposes.</param>
+        public void RestrictCharLevel(Character character, int level, bool capOnly, bool keepSkills, bool inTeam)
         {
             //set level
             if (capOnly)
@@ -645,12 +716,13 @@ namespace RogueEssence.Data
             BaseMonsterForm form = DataManager.Instance.GetMonster(character.BaseForm.Species)
                 .Forms[character.BaseForm.Form];
 
-            if (!keepSkills) {
+            if (!keepSkills)
+            {
                 while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0);
+                    character.DeleteSkill(0, inTeam);
                 List<string> final_skills = form.RollLatestSkills(character.Level, new List<string>());
                 foreach (string skill in final_skills)
-                    character.LearnSkill(skill, GetDefaultEnable(skill));
+                    character.LearnSkill(skill, GetDefaultEnable(skill), inTeam);
             }
 
             character.Relearnables = new Dictionary<string, bool>();
@@ -660,21 +732,12 @@ namespace RogueEssence.Data
         {
             if (StartLevel > -1)
             {
-                GameState state = DataManager.Instance.LoadMainGameState(false);
-                //the current save file has the level-restricted characters
-                //the other save file has the original characters
                 for (int ii = 0; ii < ActiveTeam.Players.Count; ii++)
-                {
-                    TempCharBackRef backRef = ActiveTeam.Players[ii].BackRef;
-                    if (backRef.Index > -1)
-                        restoreCharLevel(ActiveTeam.Players[ii], backRef.Assembly ? state.Save.ActiveTeam.Assembly[backRef.Index] : state.Save.ActiveTeam.Players[backRef.Index], StartLevel);
-                }
+                    restoreCharLevel(ActiveTeam.Players[ii], StartLevel);
+
                 for (int ii = 0; ii < ActiveTeam.Assembly.Count; ii++)
-                {
-                    TempCharBackRef backRef = ActiveTeam.Assembly[ii].BackRef;
-                    if (ActiveTeam.Assembly[ii].BackRef.Index > -1)
-                        restoreCharLevel(ActiveTeam.Assembly[ii], backRef.Assembly ? state.Save.ActiveTeam.Assembly[backRef.Index] : state.Save.ActiveTeam.Players[backRef.Index], StartLevel);
-                }
+                    restoreCharLevel(ActiveTeam.Assembly[ii], StartLevel);
+
                 StartLevel = -1;
             }
             //also, restore default hunger values
@@ -692,98 +755,104 @@ namespace RogueEssence.Data
             }
         }
 
-        private void restoreCharLevel(Character character, Character charFrom, int level)
+        private void restoreCharLevel(Character character, int level)
         {
-            //compute the amount of experience removed from the original character
-            MonsterData monsterData = DataManager.Instance.GetMonster(charFrom.BaseForm.Species);
-            BaseMonsterForm monsterForm = monsterData.Forms[charFrom.BaseForm.Form];
             try
             {
-                int removedEXP = 0;
-                string growth = monsterData.EXPTable;
-                GrowthData growthData = DataManager.Instance.GetGrowth(growth);
-                if (level <= charFrom.Level)
+                TempCharBackRef backRef = character.BackRef;
+                if (backRef.Index > -1)
                 {
-                    removedEXP += charFrom.EXP;
-                    int origLevel = charFrom.Level;
-                    while (origLevel > level)
-                    {
-                        removedEXP += growthData.GetExpToNext(origLevel - 1);
-                        origLevel--;
-                    }
-                }
-                //add the EXP to the character
-                if (character.Level < DataManager.Instance.Start.MaxLevel)
-                {
-                    character.EXP += removedEXP;
+                    CharData charFrom = ActiveTeam.BackupList[character.BackRef.Index];
 
-                    while (character.EXP >= growthData.GetExpToNext(character.Level))
+                    //compute the amount of experience removed from the original character
+                    MonsterData monsterData = DataManager.Instance.GetMonster(charFrom.BaseForm.Species);
+                    BaseMonsterForm monsterForm = monsterData.Forms[charFrom.BaseForm.Form];
+                    try
                     {
-                        character.EXP -= growthData.GetExpToNext(character.Level);
-                        character.Level++;
-
-                        if (character.Level >= DataManager.Instance.Start.MaxLevel)
+                        int removedEXP = 0;
+                        string growth = monsterData.EXPTable;
+                        GrowthData growthData = DataManager.Instance.GetGrowth(growth);
+                        if (level <= charFrom.Level)
                         {
-                            character.EXP = 0;
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            try
-            {
-                //add stat boosts
-                character.MaxHPBonus = Math.Min(character.MaxHPBonus + charFrom.MaxHPBonus, monsterForm.GetMaxStatBonus(Stat.HP));
-                character.AtkBonus = Math.Min(character.AtkBonus + charFrom.AtkBonus, monsterForm.GetMaxStatBonus(Stat.Attack));
-                character.DefBonus = Math.Min(character.DefBonus + charFrom.DefBonus, monsterForm.GetMaxStatBonus(Stat.Defense));
-                character.MAtkBonus = Math.Min(character.MAtkBonus + charFrom.MAtkBonus, monsterForm.GetMaxStatBonus(Stat.MAtk));
-                character.MDefBonus = Math.Min(character.MDefBonus + charFrom.MDefBonus, monsterForm.GetMaxStatBonus(Stat.MDef));
-                character.SpeedBonus = Math.Min(character.SpeedBonus + charFrom.SpeedBonus, monsterForm.GetMaxStatBonus(Stat.Speed));
-                character.HP = character.MaxHP;
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex);
-            }
-
-            try
-            {
-                //restore skills
-                while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
-                    character.DeleteSkill(0);
-                for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
-                {
-                    if (!String.IsNullOrEmpty(charFrom.BaseSkills[ii].SkillNum))
-                    {
-                        bool enabled = false;
-                        foreach (BackReference<Skill> skill in charFrom.Skills)
-                        {
-                            if (skill.BackRef == ii)
+                            removedEXP += charFrom.EXP;
+                            int origLevel = charFrom.Level;
+                            while (origLevel > level)
                             {
-                                enabled = skill.Element.Enabled;
-                                break;
+                                removedEXP += growthData.GetExpToNext(origLevel - 1);
+                                origLevel--;
                             }
                         }
-                        character.LearnSkill(charFrom.BaseSkills[ii].SkillNum, enabled);
+                        //add the EXP to the character
+                        if (character.Level < DataManager.Instance.Start.MaxLevel)
+                        {
+                            character.EXP += removedEXP;
+
+                            while (character.EXP >= growthData.GetExpToNext(character.Level))
+                            {
+                                character.EXP -= growthData.GetExpToNext(character.Level);
+                                character.Level++;
+
+                                if (character.Level >= DataManager.Instance.Start.MaxLevel)
+                                {
+                                    character.EXP = 0;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
+
+                    try
+                    {
+                        //add stat boosts
+                        character.MaxHPBonus = Math.Min(character.MaxHPBonus + charFrom.MaxHPBonus, monsterForm.GetMaxStatBonus(Stat.HP));
+                        character.AtkBonus = Math.Min(character.AtkBonus + charFrom.AtkBonus, monsterForm.GetMaxStatBonus(Stat.Attack));
+                        character.DefBonus = Math.Min(character.DefBonus + charFrom.DefBonus, monsterForm.GetMaxStatBonus(Stat.Defense));
+                        character.MAtkBonus = Math.Min(character.MAtkBonus + charFrom.MAtkBonus, monsterForm.GetMaxStatBonus(Stat.MAtk));
+                        character.MDefBonus = Math.Min(character.MDefBonus + charFrom.MDefBonus, monsterForm.GetMaxStatBonus(Stat.MDef));
+                        character.SpeedBonus = Math.Min(character.SpeedBonus + charFrom.SpeedBonus, monsterForm.GetMaxStatBonus(Stat.Speed));
+                        character.HP = character.MaxHP;
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
+                    }
+
+                    try
+                    {
+                        //restore skills
+                        while (!String.IsNullOrEmpty(character.BaseSkills[0].SkillNum))
+                            character.DeleteSkill(0, false);
+                        for (int ii = 0; ii < charFrom.BaseSkills.Count; ii++)
+                        {
+                            string moveIndex = charFrom.BaseSkills[ii].SkillNum;
+                            if (!String.IsNullOrEmpty(moveIndex))
+                            {
+                                bool enabled = GetDefaultEnable(moveIndex);
+                                character.LearnSkill(moveIndex, enabled, false);
+                            }
+                        }
+
+                        //restore remembered skills
+                        foreach (string key in charFrom.Relearnables.Keys)
+                            character.Relearnables[key] = charFrom.Relearnables[key];
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex);
                     }
                 }
-
-                //restore remembered skills
-                foreach (string key in charFrom.Relearnables.Keys)
-                    character.Relearnables[key] = charFrom.Relearnables[key];
             }
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex);
             }
 
-            //restoreCharLevel the backref
-            character.BackRef = new TempCharBackRef(false, -1);
+            //restore the backref
+            character.BackRef = new TempCharBackRef(-1);
         }
 
         /// <summary>
@@ -866,7 +935,11 @@ namespace RogueEssence.Data
             // A boolean for "in team" was set, because the more precise solution (checking if the character was actually part of the team) is more expensive
             // But this might be seen in other places in the future...
             foreach (Character character in ActiveTeam.Assembly)
-                character.FullRestore(false);
+            {
+                // if a character was absentee, it wasn't touched this ENTIRE adventure.  no need to restore anything.
+                if (!character.Absentee)
+                    character.FullRestore(false);
+            }
             MidAdventure = false;
             ClearDungeonItems();
             //clear rescue status
@@ -877,17 +950,21 @@ namespace RogueEssence.Data
         {
             //monster encounters
             List<string> newRecruits = new List<string>();
-            foreach(string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
+            foreach (string key in DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetOrderedKeys(true))
             {
-                if (GetMonsterUnlock(key) == UnlockState.Completed && destProgress.GetMonsterUnlock(key) != UnlockState.Completed)
+                MonsterEntrySummary entry = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(key);
+                for (int ii = 0; ii < entry.Forms.Count; ii++)
                 {
-                    if (completion)
-                        destProgress.RegisterMonster(key);
-                }
-                if (GetMonsterUnlock(key) == UnlockState.Discovered && destProgress.GetMonsterUnlock(key) == UnlockState.None)
-                {
-                    if (completion)
-                        destProgress.SeenMonster(key);
+                    if (GetMonsterFormUnlock(key, ii) == UnlockState.Completed && destProgress.GetMonsterFormUnlock(key, ii) != UnlockState.Completed)
+                    {
+                        if (completion)
+                            destProgress.RegisterMonster(key, ii);
+                    }
+                    if (GetMonsterFormUnlock(key, ii) == UnlockState.Discovered && destProgress.GetMonsterFormUnlock(key, ii) == UnlockState.None)
+                    {
+                        if (completion)
+                            destProgress.SeenMonster(key, ii);
+                    }
                 }
                 if (GetRogueUnlock(key) && !destProgress.GetRogueUnlock(key))
                 {
@@ -914,7 +991,7 @@ namespace RogueEssence.Data
         public List<ModDiff> GetModDiffs()
         {
             List<ModVersion> oldVersion = GetModVersion();
-            List<ModVersion> newVersion = PathMod.GetModVersion();
+            List<ModVersion> newVersion = PathMod.GetModVersionList();
 
             return PathMod.DiffModVersions(oldVersion, newVersion);
         }
@@ -963,6 +1040,20 @@ namespace RogueEssence.Data
             return false;
         }
 
+        public Version GetVersion(Guid uuid)
+        {
+            if (uuid == Guid.Empty)
+                return GameVersion;
+            if (Quest.IsValid() && Quest.UUID == uuid)
+                return Quest.Version;
+            foreach (ModHeader mod in Mods)
+            {
+                if (mod.UUID == uuid)
+                    return mod.Version;
+            }
+
+            return new Version();
+        }
 
         public void UpdateVersion()
         {
@@ -986,6 +1077,29 @@ namespace RogueEssence.Data
             //TODO: v1.1 delete this
             if (Mods == null)
                 Mods = new List<ModHeader>();
+            //TODO: v1.1 delete this
+            if (FormDex.Count == 0 && Dex.Count > 0)
+            {
+                PopulateFormDex();
+            }
+        }
+        
+        private void PopulateFormDex() {
+            foreach (Character chara in ActiveTeam.Players)
+            {
+                MonsterID index = new MonsterID(chara.BaseForm.Species, chara.BaseForm.Form, "", Gender.Unknown);
+                FormDex[index] = UnlockState.Completed;
+            }
+            foreach (Character chara in ActiveTeam.Assembly)
+            {
+                MonsterID index = new MonsterID(chara.BaseForm.Species, chara.BaseForm.Form, "", Gender.Unknown);
+                FormDex[index] = UnlockState.Completed;
+            }
+            foreach (KeyValuePair<string, UnlockState> entry in Dex)
+            {
+                MonsterID index = new MonsterID(entry.Key, 0, "", Gender.Unknown);
+                FormDex.TryAdd(index, entry.Value);
+            }
         }
     }
 

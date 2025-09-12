@@ -5,8 +5,10 @@ namespace RogueEssence.Menu
 {
     public class RogueInfoMenu : SingleStripMenu
     {
-        public RogueInfoMenu()
+        public RogueInfoMenu() : this(MenuLabel.ROGUE_INFO_MENU) { }
+        public RogueInfoMenu(string label)
         {
+            Label = label;
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ROGUE_BASIC_INFO"), GiveInfo));
             choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ROGUE_SPECIAL_INFO"), GiveSpecialInfo));

@@ -21,8 +21,10 @@ namespace RogueEssence.Menu
         private OnChooseSlots action;
 
 
-        public AppraiseMenu(int defaultChoice, OnChooseSlots chooseSlots)
+        public AppraiseMenu(int defaultChoice, OnChooseSlots chooseSlots) : this(MenuLabel.APPRAISE_MENU, defaultChoice, chooseSlots) { }
+        public AppraiseMenu(string label, int defaultChoice, OnChooseSlots chooseSlots)
         {
+            Label = label;
             action = chooseSlots;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

@@ -9,8 +9,10 @@ namespace RogueEssence.Menu
         public override bool CanMenu { get { return false; } }
         public override bool CanCancel { get { return false; } }
 
-        public LanguageMenu()
+        public LanguageMenu() : this(MenuLabel.LANGUAGE_MENU) { }
+        public LanguageMenu(string label)
         {
+            Label = label;
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
 
             for (int ii = 0; ii < Text.SupportedLangs.Length; ii++)

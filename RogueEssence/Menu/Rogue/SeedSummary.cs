@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
 using RogueEssence.Content;
-using RogueEssence.Data;
 
 namespace RogueEssence.Menu
 {
@@ -10,8 +9,10 @@ namespace RogueEssence.Menu
         MenuText Details;
         MenuDivider MenuDiv;
 
-        public SeedSummary(Rect bounds) : base(bounds)
+        public SeedSummary(Rect bounds) : this(MenuLabel.SEED_SUMMARY, bounds) { }
+        public SeedSummary(string label, Rect bounds) : base(bounds)
         {
+            Label = label;
             Details = new MenuText(Text.FormatKey("MENU_SEED_CUSTOMIZE", DiagManager.Instance.GetControlString(FrameInput.InputType.SortItems)), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Details);
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),

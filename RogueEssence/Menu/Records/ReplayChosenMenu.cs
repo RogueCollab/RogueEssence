@@ -16,10 +16,11 @@ namespace RogueEssence.Menu
 
         private string recordDir;
 
-        public ReplayChosenMenu(string dir)
+        public ReplayChosenMenu(string dir) : this(MenuLabel.REPLAY_CHOSEN_MENU, dir) { }
+        public ReplayChosenMenu(string label, string dir)
         {
+            Label = label;
             this.recordDir = dir;
-
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();
             

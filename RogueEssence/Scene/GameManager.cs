@@ -110,6 +110,8 @@ namespace RogueEssence
 
         public void ZoomChanged()
         {
+            if (GameScreen != null)
+                GameScreen.Dispose();
             GameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
                 GraphicsManager.WindowWidth, GraphicsManager.WindowHeight,
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24Stencil8);
@@ -516,6 +518,8 @@ namespace RogueEssence
             cleanup();
             reInit();
             MoveToScene(new TitleScene(false));
+
+            fadeFront.SetFade(false, false);
             yield return CoroutineManager.Instance.StartCoroutine(FadeIn());
         }
 
@@ -556,10 +560,12 @@ namespace RogueEssence
         {
             DataManager.Instance.SetProgress(null);
             ZoneManager.Instance.Cleanup();
+            SoundManager.StopAllLoopedSE();
         }
         private void reInit()
         {
             //remove all state variables
+            MenuManager.InitInstance();
             DungeonScene.InitInstance();
             GroundScene.InitInstance();
             LuaEngine.Instance.Reset();
@@ -721,6 +727,9 @@ namespace RogueEssence
             }
 
             int mapId = ZoneManager.Instance.CurrentZone.GroundMaps.FindIndex((str) => (str == mapname));
+            if (mapId == -1)
+                throw new Exception(String.Format("Cannot find ground map of name {0} in zone {1}.", mapname, ZoneManager.Instance.CurrentZone.ID));
+
             SegLoc destSegLoc = new SegLoc(-1, mapId);
 
             if (newSegment)
@@ -1166,6 +1175,14 @@ namespace RogueEssence
                     else
                         SceneOutcome = DebugWarp(new ZoneLoc(DataManager.Instance.DefaultZone, new SegLoc(-1, 0), 0), 0);
                 }
+                if (MetaInputManager[FrameInput.InputType.Cancel] && MetaInputManager[FrameInput.InputType.Ctrl])
+                {
+                    if (MenuManager.Instance.MenuCount > 0)
+                    {
+                        SE("Menu/Cancel");
+                        MenuManager.Instance.ClearMenus();
+                    }
+                }
             }
 
             if (MetaInputManager.JustPressed(FrameInput.InputType.MuteMusic))
@@ -1393,8 +1410,20 @@ namespace RogueEssence
                 MenuManager.Instance.GetMenuCoord(MetaInputManager.MouseLoc, out menu, out menuLoc);
                 if (menu != null)
                 {
-                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("MENU: {0}", menu.Label), null, DirV.Up, DirH.Left, Color.White);
+                    string type = "";
+                    if (menu.HasLabel())
+                    {
+                        type = menu is MultiPageMenu ? "(MultiPage)" :
+                            menu is ChoiceMenu ? "(Choice)" :
+                            menu is InteractableMenu ? "(Interactable)" : "";
+                    }
+                    GraphicsManager.SysFont.DrawText(spriteBatch, 2, 72, String.Format("MENU: {0} {1}", menu.Label, type), null, DirV.Up, DirH.Left, Color.White);
                     GraphicsManager.SysFont.DrawText(spriteBatch, 2, 82, String.Format("MOUSE MENU X:{0:D3} Y:{1:D3}", menuLoc.Value.X, menuLoc.Value.Y), null, DirV.Up, DirH.Left, Color.White);
+                    if(menu is ChoiceMenu cMenu)
+                    {
+                        IChoosable hover = cMenu.Hovered;
+                        GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, String.Format("HOVER OPTION: {0}", hover is null ? "" : hover.Label), null, DirV.Up, DirH.Left, Color.White);
+                    }
                 }
             }
 

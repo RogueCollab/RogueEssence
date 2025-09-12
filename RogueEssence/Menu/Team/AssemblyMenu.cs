@@ -31,8 +31,11 @@ namespace RogueEssence.Menu
         private List<int> assemblyView;
         private AssemblySortMode sortMode;
 
-        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
+        public AssemblyMenu(int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent) :
+            this(MenuLabel.ASSEMBLY_MENU, defaultChoice, teamChanged, sort) { }
+        public AssemblyMenu(string label, int defaultChoice, Action teamChanged, AssemblySortMode sort = AssemblySortMode.Recent)
         {
+            Label = label;
             int menuWidth = 160;
             this.teamChanged = teamChanged;
             sortMode = sort;
@@ -149,8 +152,16 @@ namespace RogueEssence.Menu
         /// <returns></returns>
         public bool CanChooseAssembly(int choice)
         {
-            Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
-            return !character.Dead && (DataManager.Instance.Save.ActiveTeam.Players.Count < ExplorerTeam.MAX_TEAM_SLOTS);
+            if (DataManager.Instance.Save.ActiveTeam.Players.Count >= ExplorerTeam.MAX_TEAM_SLOTS)
+                return false;
+
+            if (DataManager.Instance.Save.MidAdventure)
+            {
+                Character character = DataManager.Instance.Save.ActiveTeam.Assembly[choice];
+                if (character.Dead)
+                    return false;
+            }
+            return true;
         }
 
         public void ChooseLeader(int choice)

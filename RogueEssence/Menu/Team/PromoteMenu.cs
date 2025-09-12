@@ -17,7 +17,8 @@ namespace RogueEssence.Menu
 
         TeamMiniSummary summaryMenu;
 
-        public PromoteMenu(int teamSlot, OnChooseSlot action, Action refuseAction)
+        public PromoteMenu(int teamSlot, OnChooseSlot action, Action refuseAction) : this(MenuLabel.PROMOTE_MENU, teamSlot, action, refuseAction) { }
+        public PromoteMenu(string label, int teamSlot, OnChooseSlot action, Action refuseAction)
         {
             this.chooseSlotAction = action;
             this.refuseAction = refuseAction;

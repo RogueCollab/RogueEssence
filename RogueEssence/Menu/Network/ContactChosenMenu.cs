@@ -17,8 +17,11 @@ namespace RogueEssence.Menu
         private ContactsMenu.OnChooseActivity action;
         private Action deleteAction;
 
-        public ContactChosenMenu(ContactInfo info, ServerInfo serverInfo, bool canTrade, bool hasSwappable, bool rescueMode, ContactsMenu.OnChooseActivity action, Action deleteAction)
+        public ContactChosenMenu(ContactInfo info, ServerInfo serverInfo, bool canTrade, bool hasSwappable, bool rescueMode, ContactsMenu.OnChooseActivity action, Action deleteAction) :
+            this(MenuLabel.CONTACT_CHOSEN_MENU, info, serverInfo, canTrade, hasSwappable, rescueMode, action, deleteAction) { }
+        public ContactChosenMenu(string label, ContactInfo info, ServerInfo serverInfo, bool canTrade, bool hasSwappable, bool rescueMode, ContactsMenu.OnChooseActivity action, Action deleteAction)
         {
+            Label = label;
             this.targetContact = info;
             this.targetServer = serverInfo;
             this.rescueMode = rescueMode;

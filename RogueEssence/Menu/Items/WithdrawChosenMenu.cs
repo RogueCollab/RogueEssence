@@ -16,8 +16,11 @@ namespace RogueEssence.Menu
         WithdrawMenu.OnWithdrawChoice storageChoice;
         bool continueOnChoose;
 
-        public WithdrawChosenMenu(List<WithdrawSlot> selections, int origIndex, bool continueOnChoose, WithdrawMenu.OnWithdrawChoice storageChoice)
+        public WithdrawChosenMenu(List<WithdrawSlot> selections, int origIndex, bool continueOnChoose, WithdrawMenu.OnWithdrawChoice storageChoice) :
+            this(MenuLabel.WITHDRAW_CHOSEN_MENU, selections, origIndex, continueOnChoose, storageChoice) { }
+        public WithdrawChosenMenu(string label, List<WithdrawSlot> selections, int origIndex, bool continueOnChoose, WithdrawMenu.OnWithdrawChoice storageChoice)
         {
+            Label = label;
             this.origIndex = origIndex;
             this.selections = selections;
             this.continueOnChoose = continueOnChoose;

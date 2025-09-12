@@ -378,6 +378,17 @@ namespace RogueEssence.Ground
             groundChar.Map = this;
             grid.Add(groundChar, EdgeView == BaseMap.ScrollEdge.Wrap);
         }
+
+        public GroundObject FindObject(string entname)
+        {
+            foreach (GroundObject obj in Entities[0].GroundObjects)
+            {
+                if (obj.EntName == entname)
+                    return obj;
+            }
+            return null;
+        }
+
         public void AddObject(GroundObject groundObj)
         {
             Entities[0].GroundObjects.Add(groundObj);
@@ -409,6 +420,16 @@ namespace RogueEssence.Ground
         {
             Entities[0].TemporaryChars.Remove(ch);
             grid.Remove(ch, EdgeView == BaseMap.ScrollEdge.Wrap);
+        }
+
+        public GroundObject FindTempObject(string entname)
+        {
+            foreach (GroundObject obj in Entities[0].TemporaryObjects)
+            {
+                if (obj.EntName == entname)
+                    return obj;
+            }
+            return null;
         }
 
         public void AddTempObject(GroundObject groundObj)
@@ -532,6 +553,25 @@ namespace RogueEssence.Ground
         {
             return Loc.Wrap(loc, GroundSize);
         }
+
+
+        /// <summary>
+        /// Checks to see if the loc is in map's ground bounds.
+        /// If it's not wrapped, expect normal results.
+        /// If it's normally out of bounds but wrapped, the loc will be changed and the result will be true.
+        /// </summary>
+        /// <param name="loc">The location to test.  Will be wrapped if the map is wrapped.</param>
+        /// <returns></returns>
+        public bool GetLocInGroundBounds(ref Loc loc)
+        {
+            if (EdgeView == Map.ScrollEdge.Wrap)
+            {
+                loc = WrapLoc(loc);
+                return true;
+            }
+            return RogueElements.Collision.InBounds(GroundWidth, GroundHeight, loc);
+        }
+
         public bool InMapBounds(Loc loc)
         {
             if (EdgeView == Map.ScrollEdge.Wrap)

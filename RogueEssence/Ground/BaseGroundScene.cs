@@ -49,8 +49,16 @@ namespace RogueEssence.Ground
             ZoomChanged();
         }
 
+        protected void dispose()
+        {
+            if (gameScreen != null)
+                gameScreen.Dispose();
+        }
+
         public void ZoomChanged()
         {
+            if (gameScreen != null)
+                gameScreen.Dispose();
             int zoomMult = Math.Min(GraphicsManager.WindowZoom, (int)Math.Max(1, 1 / GraphicsManager.Zoom.GetScale()));
             gameScreen = new RenderTarget2D(GraphicsManager.GraphicsDevice,
                 GraphicsManager.ScreenWidth * zoomMult, GraphicsManager.ScreenHeight * zoomMult,
@@ -336,9 +344,9 @@ namespace RogueEssence.Ground
                 Loc loc = ScreenCoordsToGroundCoords(MouseLoc);
                 Loc blockLoc = ScreenCoordsToBlockCoords(MouseLoc);
                 Loc tileLoc = ScreenCoordsToMapCoords(MouseLoc);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 102, String.Format("MOUSE  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 112, String.Format("M WALL X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Left, Color.White);
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 122, String.Format("M TILE X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 112, String.Format("MOUSE  X:{0:D3} Y:{1:D3}", loc.X, loc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 122, String.Format("M WALL X:{0:D3} Y:{1:D3}", blockLoc.X, blockLoc.Y), null, DirV.Up, DirH.Left, Color.White);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 132, String.Format("M TILE X:{0:D3} Y:{1:D3}", tileLoc.X, tileLoc.Y), null, DirV.Up, DirH.Left, Color.White);
             }
         }
 

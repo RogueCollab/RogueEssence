@@ -28,8 +28,10 @@ namespace RogueEssence.Menu
         private List<string> startChars;
         private RogueConfig config;
 
-        public CharaChoiceMenu(RogueConfig config)
+        public CharaChoiceMenu(RogueConfig config) : this(MenuLabel.ROGUE_CHAR_MENU, config) { }
+        public CharaChoiceMenu(string label, RogueConfig config)
         {
+            Label = label;
             this.config = config;
             GenderSetting = Gender.Unknown;
             SkinSetting = DataManager.Instance.DefaultSkin;

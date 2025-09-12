@@ -12,8 +12,11 @@ namespace RogueEssence.Menu
         private MailMenu.OnChoosePath action;
         private Action deleteAction;
 
-        public MailChosenMenu(bool canRescue, bool offVersion, string fileName, MailMenu.OnChoosePath action, Action deleteAction)
+        public MailChosenMenu(bool canRescue, bool offVersion, string fileName, MailMenu.OnChoosePath action, Action deleteAction) :
+            this(MenuLabel.MAIL_CHOSEN_MENU, canRescue, offVersion, fileName, action, deleteAction) { }
+        public MailChosenMenu(string label, bool canRescue, bool offVersion, string fileName, MailMenu.OnChoosePath action, Action deleteAction)
         {
+            Label = label;
             this.action = action;
             this.deleteAction = deleteAction;
 
@@ -33,7 +36,7 @@ namespace RogueEssence.Menu
         private void ViewVersionDiff(string fileName)
         {
             SOSMail mail = DataManager.LoadRescueMail(fileName) as SOSMail;
-            List<ModVersion> curVersions = PathMod.GetModVersion();
+            List<ModVersion> curVersions = PathMod.GetModVersionList();
             List<ModDiff> versionDiff = PathMod.DiffModVersions(mail.DefeatedVersion, curVersions);
             MenuManager.Instance.AddMenu(new VersionDiffMenu(versionDiff, 0), false);
         }

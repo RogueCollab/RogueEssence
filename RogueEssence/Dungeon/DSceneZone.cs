@@ -43,7 +43,11 @@ namespace RogueEssence.Dungeon
 
                 //remove statuses
                 foreach (Character character in ZoneManager.Instance.CurrentMap.ActiveTeam.EnumerateChars())
+                {
                     character.OnRemove();
+                    // character may have been displaced when removing, remove them from displacement.
+                    ZoneManager.Instance.CurrentMap.DisplacedChars.Remove(character);
+                }
 
                 ZoneManager.Instance.CurrentMap.ActiveTeam = null;
 
@@ -135,7 +139,7 @@ namespace RogueEssence.Dungeon
 
             LogMsg(Text.DIVIDER_STR);
 
-            yield return CoroutineManager.Instance.StartCoroutine(CheckMobilityViolations());
+            yield return CoroutineManager.Instance.StartCoroutine(CheckAllMobilityViolations());
         }
 
 
@@ -223,7 +227,6 @@ namespace RogueEssence.Dungeon
                 }
             }
 
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
             ResetRound();
             RegenerateTurnMap();
 
@@ -301,7 +304,7 @@ namespace RogueEssence.Dungeon
 
             yield return CoroutineManager.Instance.StartCoroutine(ZoneManager.Instance.CurrentZone.OnRescued(name, mail));
 
-            yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
+            yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart());
 
         }
 
@@ -568,7 +571,6 @@ namespace RogueEssence.Dungeon
         public void OnCharAdd(Character newChar)
         {
             newChar.TurnWait = 0;
-            newChar.TiersUsed = 0;
             newChar.TurnUsed = false;
         }
 
@@ -866,7 +868,6 @@ namespace RogueEssence.Dungeon
         public IEnumerator<YieldInstruction> MoveToUsableTurn(bool action, bool walked)
         {
             CurrentCharacter.TurnWait = (walked ? -CurrentCharacter.MovementSpeed : 0) + 1;
-            CurrentCharacter.TiersUsed++;
             CurrentCharacter.TurnUsed = action;
 
             if (!IsGameOver())
@@ -874,28 +875,38 @@ namespace RogueEssence.Dungeon
 
                 ReorderDeadLeaders();
 
+                TurnState currentTurnState = ZoneManager.Instance.CurrentMap.CurrentTurnMap;
                 do
                 {
                     //move to next turn
-                    ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex++;
+                    currentTurnState.CurrentOrder.TurnIndex++;
 
                     //if we're over he index of the current faction list, it means we must move to the next faction
-                    while (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex >= ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Count)
+                    while (currentTurnState.CurrentOrder.TurnIndex >= currentTurnState.TurnToChar.Count)
                     {
-                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction = (Faction)(((int)ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction + 1) % 3);
-                        ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnIndex = 0;
+                        // clear the turntochar mapping as soon as we're done with it
+                        currentTurnState.TurnToChar.Clear();
+
+                        currentTurnState.CurrentOrder.Faction = (Faction)(((int)currentTurnState.CurrentOrder.Faction + 1) % 3);
+                        currentTurnState.CurrentOrder.TurnIndex = 0;
 
                         //if we looped back to the player faction, it means we must move on to the next turn tier
-                        if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.Faction == Faction.Player)
+                        if (currentTurnState.CurrentOrder.Faction == Faction.Player)
                         {
-                            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier++;
+                            currentTurnState.CurrentOrder.TurnTier++;
 
                             //if we're on the last turn tier, we loop back to the first one
-                            if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier >= 6)
+                            if (currentTurnState.CurrentOrder.TurnTier > TurnOrder.TURN_TIER_3_4)
                             {
                                 ResetRound();
 
                                 yield return CoroutineManager.Instance.StartCoroutine(ProcessMapTurnEnd());
+
+                                //reorder again in case something happened to deaths.
+                                ReorderDeadLeaders();
+
+                                RemoveDeadTeams();
+
                             }
                         }
 
@@ -904,28 +915,15 @@ namespace RogueEssence.Dungeon
                         //if we've switched to the other side, order the turns again
                         RegenerateTurnMap();
 
-                        //if turn starts were to happen in a group, they would all occur in character-index sequence here
-                        //check each character in the sequence to ensure they are acting in this turn
-                        //what about sped-up characters?
-                        //should they not be allowed to take their turn? (do not add them to list)
 
-                        //what about revived characters?
-                        //should they not be allowed to take their turn? (do not add them to list)
-
+                        yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart());
                     }
 
                 }
                 while (!ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(CurrentCharacter));
 
-                //reorder again in case something happened to deaths.
-                ReorderDeadLeaders();
-
-                RemoveDeadTeams();
-
                 if (!IsPlayerTurn())
                     OrganizeAIMovement(0);
-
-                yield return CoroutineManager.Instance.StartCoroutine(ProcessTurnStart(CurrentCharacter));
             }
         }
 
@@ -934,8 +932,6 @@ namespace RogueEssence.Dungeon
             //silently set team mode to false
             DataManager.Instance.Save.TeamMode = false;
             ResetRound();
-            //silently reset turn map
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap = new TurnState();
             RegenerateTurnMap();
             ReloadFocusedPlayer();
         }
@@ -978,15 +974,22 @@ namespace RogueEssence.Dungeon
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], false);
         }
 
+        /// <summary>
+        /// Resets the current turn state to blank.
+        /// Turn order is set to player 0
+        /// TurnChars are cleared.
+        /// </summary>
         public void ResetRound()
         {
-            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder.TurnTier = 0;
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.CurrentOrder = new TurnOrder(0, Faction.Player, 0);
 
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.ActiveTeam, true);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.AllyTeams.Count; ii++)
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.AllyTeams[ii], true);
             for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.MapTeams.Count; ii++)
                 ZoneManager.Instance.CurrentMap.CurrentTurnMap.SetTeamRound(ZoneManager.Instance.CurrentMap.MapTeams[ii], true);
+
+            ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Clear();
         }
 
         private void OrganizeAIMovement(int depth)
@@ -1075,16 +1078,30 @@ namespace RogueEssence.Dungeon
             //DataManager.Instance.Save.LogMsg(Text.FormatKey("MENU_TIME_OF_DAY", DataManager.Instance.Save.Time));
         }
 
-
-        private IEnumerator<YieldInstruction> ProcessTurnStart(Character character)
+        /// <summary>
+        /// Processes the turn start of a faction.
+        /// Turn starts are given all at once to a whole faction before they move.
+        /// This is to prevent leaderswap inconsistencies in the turn system.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator<YieldInstruction> ProcessTurnStart()
         {
-            if (!character.Dead)
+            //if turn starts were to happen in a group, they would all occur in character-index sequence here
+            //check each character in the sequence to ensure they are acting in this turn
+            for (int ii = 0; ii < ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar.Count; ii++)
             {
-                SingleCharContext context = new SingleCharContext(character);
-                //process turn start (assume live characters)
-                yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart(context));
-            }
+                CharIndex charIndex = ZoneManager.Instance.CurrentMap.CurrentTurnMap.TurnToChar[ii];
+                Character character = ZoneManager.Instance.CurrentMap.LookupCharIndex(charIndex);
 
+                //note: this will skip sped-up characters and characters that aren't around to take a turn, but may take a turn later.
+
+                if (ZoneManager.Instance.CurrentMap.CurrentTurnMap.IsEligibleToMove(character))
+                {
+                    SingleCharContext context = new SingleCharContext(character);
+                    //process turn start (assume live characters)
+                    yield return CoroutineManager.Instance.StartCoroutine(character.OnTurnStart(context));
+                }
+            }
         }
 
     }

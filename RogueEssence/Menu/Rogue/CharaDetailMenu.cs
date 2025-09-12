@@ -18,9 +18,11 @@ namespace RogueEssence.Menu
         private List<string> legalSkins;
         private List<Gender> legalGenders;
         private List<int> legalIntrinsics;
-        
-        public CharaDetailMenu(string species, CharaChoiceMenu baseMenu)
+
+        public CharaDetailMenu(string species, CharaChoiceMenu baseMenu) : this(MenuLabel.ROGUE_CHAR_MENU_DETAILS, species, baseMenu) { }
+        public CharaDetailMenu(string label, string species, CharaChoiceMenu baseMenu)
         {
+            Label = label;
             this.species = species;
             this.baseMenu = baseMenu;
             origFormSetting = baseMenu.FormSetting;

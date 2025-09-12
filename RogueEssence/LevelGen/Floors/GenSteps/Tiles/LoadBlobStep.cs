@@ -9,15 +9,14 @@ using RogueEssence.Ground;
 namespace RogueEssence.LevelGen
 {
     /// <summary>
-    /// Turns the tiles at the edge of the map into the Unbreakable terrain.
-    /// Thickness can be customized.
+    /// Paints blobs of a chosen terrain onto the map, based on maps loaded from files.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public class LoadBlobStep<T> : GenStep<T> where T : BaseMapGenContext
     {
         /// <summary>
-        /// Map filea to load.
+        /// Map files to load.
         /// </summary>
         [Dev.DataFolder(1, "Map/")]
         public SpawnList<string> Maps;
@@ -29,6 +28,9 @@ namespace RogueEssence.LevelGen
         /// </summary>
         public IBlobStencil<T> TerrainStencil { get; set; }
 
+        /// <summary>
+        /// Number of blobs to place.
+        /// </summary>
         public RandRange Amount { get; set; }
 
         public LoadBlobStep()

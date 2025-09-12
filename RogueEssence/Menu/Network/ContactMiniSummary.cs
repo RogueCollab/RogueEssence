@@ -13,9 +13,11 @@ namespace RogueEssence.Menu
         MenuText ID;
         SpeakerPortrait[] Portraits;
 
-        public ContactMiniSummary(Rect bounds)
+        public ContactMiniSummary(Rect bounds) : this(MenuLabel.CONTACT_MINI_SUMMARY, bounds) { }
+        public ContactMiniSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
             Stats = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE + 2));

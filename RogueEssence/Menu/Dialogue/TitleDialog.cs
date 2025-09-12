@@ -64,10 +64,6 @@ namespace RogueEssence.Menu
         public Rect Bounds;
         public int MaxLines;
 
-        DepthStencilState s1;
-        DepthStencilState s2;
-        AlphaTestEffect alphaTest;
-
         public bool HasLabel()
         {
             return !string.IsNullOrEmpty(Label);
@@ -81,24 +77,6 @@ namespace RogueEssence.Menu
         public TitleDialog(string label, string msg, bool fadeIn, int holdTime, Rect bounds, object[] scripts, Action action)
         {
             Label = label;
-            s1 = new DepthStencilState
-            {
-                StencilEnable = true,
-                StencilFunction = CompareFunction.Always,
-                StencilPass = StencilOperation.Replace,
-                ReferenceStencil = 1,
-                DepthBufferEnable = false,
-            };
-
-            s2 = new DepthStencilState
-            {
-                StencilEnable = true,
-                StencilFunction = CompareFunction.LessEqual,
-                StencilPass = StencilOperation.Keep,
-                ReferenceStencil = 1,
-                DepthBufferEnable = false,
-            };
-            alphaTest = new AlphaTestEffect(GraphicsManager.GraphicsDevice);
 
             Visible = true;
             this.action = action;
@@ -422,19 +400,14 @@ namespace RogueEssence.Menu
             spriteBatch.End();
             float scale = GraphicsManager.WindowZoom;
             Matrix zoomMatrix = Matrix.CreateScale(new Vector3(scale, scale, 1));
-            Matrix orthMatrix = zoomMatrix * Matrix.CreateOrthographicOffCenter(
-                0, GraphicsManager.WindowWidth, GraphicsManager.WindowHeight, 0,
-                0, 1);
-
-            alphaTest.Projection = orthMatrix;
             BlendState blend = new BlendState();
             blend.ColorWriteChannels = ColorWriteChannels.None;
-            spriteBatch.Begin(SpriteSortMode.Deferred, blend, SamplerState.PointWrap, s1, null, alphaTest);
+            spriteBatch.Begin(SpriteSortMode.Deferred, blend, SamplerState.PointWrap, GraphicsManager.MenuPreStencil, null, GraphicsManager.MenuAlpha);
 
             GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(Bounds.X, Bounds.Y, Bounds.Width, Bounds.Height), null, Color.White);
 
             spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, s2, null, null, zoomMatrix);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap, GraphicsManager.MenuPostStencil, null, null, zoomMatrix);
 
             //actual draw call
             {

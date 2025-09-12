@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
 
         ItemSummary summaryMenu;
 
-        public DepositMenu(int defaultChoice)
+        public DepositMenu(int defaultChoice) : this(MenuLabel.DEPOSIT_MENU, defaultChoice) { }
+        public DepositMenu(string label, int defaultChoice)
         {
+            Label = label;
             List<MenuChoice> flatChoices = new List<MenuChoice>();
             for (int ii = 0; ii < DataManager.Instance.Save.ActiveTeam.Players.Count; ii++)
             {

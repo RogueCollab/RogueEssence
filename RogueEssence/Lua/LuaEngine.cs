@@ -354,14 +354,19 @@ namespace RogueEssence.Script
         public const string SCRIPT_VARS_NAME = "SV"; //Name of the table of script variables that gets loaded and saved with the game
         public const string EVENT_SINGLE_NAME = "SINGLE_CHAR_SCRIPT";
         public const string EVENT_BATTLE_NAME = "BATTLE_SCRIPT";
+        public const string EVENT_CONDITION_NAME = "CONDITION_SCRIPT";
         public const string EVENT_STATUS_NAME = "STATUS_SCRIPT";
         public const string EVENT_MAPSTATUS_NAME = "MAP_STATUS_SCRIPT";
         public const string EVENT_ITEM_NAME = "ITEM_SCRIPT";
         public const string EVENT_GROUNDITEM_NAME = "GROUND_ITEM_EVENT_SCRIPT";
         public const string EVENT_REFRESH_NAME = "REFRESH_SCRIPT";
         public const string EVENT_SKILLCHANGE_NAME = "SKILL_CHANGE_SCRIPT";
+        public const string EVENT_SPAWN_NAME = "SPAWN_SCRIPT";
         public const string EVENT_FLOORGEN_NAME = "FLOOR_GEN_SCRIPT";
         public const string EVENT_ZONEGEN_NAME = "ZONE_GEN_SCRIPT";
+        public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
+        public const string EVENT_AI_SWITCH_NAME = "AI_SWITCH_SCRIPT";
+        public const string EVENT_AI_THINK_NAME = "AI_THINK_SCRIPT";
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -711,8 +716,10 @@ namespace RogueEssence.Script
             RunString(DungeonMapCurrentScriptSym + " = nil");
 
             //Make the callbacks table
+            LuaState.NewTable(EVENT_SPAWN_NAME);
             LuaState.NewTable(EVENT_SINGLE_NAME);
             LuaState.NewTable(EVENT_BATTLE_NAME);
+            LuaState.NewTable(EVENT_CONDITION_NAME);
             LuaState.NewTable(EVENT_STATUS_NAME);
             LuaState.NewTable(EVENT_MAPSTATUS_NAME);
             LuaState.NewTable(EVENT_ITEM_NAME);
@@ -721,6 +728,9 @@ namespace RogueEssence.Script
             LuaState.NewTable(EVENT_SKILLCHANGE_NAME);
             LuaState.NewTable(EVENT_FLOORGEN_NAME);
             LuaState.NewTable(EVENT_ZONEGEN_NAME);
+            LuaState.NewTable(EVENT_AI_INIT_NAME);
+            LuaState.NewTable(EVENT_AI_SWITCH_NAME);
+            LuaState.NewTable(EVENT_AI_THINK_NAME);
 
             //Make empty script variable table
             LuaState.NewTable(SCRIPT_VARS_NAME);
@@ -826,7 +836,7 @@ namespace RogueEssence.Script
                 SPWN = function(spawnername)
                     local curlvl = __GetLevel()
                     if curlvl then
-                      return curlvl:GetSpanwer(spawnername)
+                      return curlvl:GetSpawner(spawnername)
                     end
                     return nil
                 end
@@ -897,13 +907,12 @@ namespace RogueEssence.Script
                 @"return function(fun, params)
                     local size = params.Length
                     local transittbl = {}
-                    print('Length == ' .. tostring(params.Length))
                     local i = 0
                     while i < size do
-                        table.insert(transittbl, params[i])
+                        transittbl[i+1] = params[i]
                         i = i + 1
                     end
-                    return fun(table.unpack(transittbl))
+                    return fun(table.unpack(transittbl, 1, size))
                 end",
                 "UnpackParamsAndRun").First() as LuaFunction;
         }
@@ -971,9 +980,9 @@ namespace RogueEssence.Script
             if (loaded != null)
             {
                 loaded.ActiveTeam.LoadLua();
+                //Tell the script we've just resumed a save!
+                m_scrsvc.Publish(EServiceEvents.LoadSavedData.ToString());
             }
-            //Tell the script we've just resumed a save!
-            m_scrsvc.Publish(EServiceEvents.LoadSavedData.ToString());
         }
 
         /// <summary>
@@ -1705,19 +1714,28 @@ namespace RogueEssence.Script
         /// Makes a .net Action to be used in lua
         /// </summary>
         /// <param name="fun"></param>
+        /// <param name="param"></param>
         /// <returns></returns>
         public Action MakeLuaAction( LuaFunction fun, params object[] param )
         {
             return new Action( ()=>{ fun.Call(param); } );
         }
 
+        /// <summary>
+        /// Creates a dotnet array based on the lua table for use by lua.
+        /// It coerces types to fit for the array, which can be helpful for initializing an int array.
+        /// However, this is also slower, so it is recommended to use luanet.make_array for all other cases.
+        /// </summary>
+        /// <param name="class_type"></param>
+        /// <param name="table"></param>
+        /// <returns></returns>
         public Array MakeLuaArray(ProxyType class_type, LuaTable table)
         {
             Array arr = Array.CreateInstance(class_type.UnderlyingSystemType, table.Values.Count);
             int idx = 0;
             foreach (object val in table.Values)
             {
-                arr.SetValue(val, idx);
+                arr.SetValue(Convert.ChangeType(val, class_type.UnderlyingSystemType), idx);
                 idx++;
             }
             return arr;
@@ -1932,12 +1950,6 @@ namespace RogueEssence.Script
         /// </summary>
         public void OnAddMenu(IInteractable menu)
         {
-            if (menu is InteractableMenu interactable && ((ILabeled)interactable).HasLabel())
-            {
-                DiagManager.Instance.LogInfo("Opening labeled menu...");
-                string type = interactable is MultiPageMenu ? "MultiPageMenu" : interactable is ChoiceMenu ? "ChoiceMenu" : "InteractableMenu";
-                DiagManager.Instance.LogInfo($"Menu Type: {type}. Label: {interactable.Label}");
-            }
             m_scrsvc.Publish(EServiceEvents.AddMenu.ToString(), menu);
         }
 

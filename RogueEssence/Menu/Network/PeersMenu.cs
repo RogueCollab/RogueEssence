@@ -22,8 +22,10 @@ namespace RogueEssence.Menu
 
         //TODO: this class may not be needed since peer to peer communication can
         //be done by just setting the server to the target IP
-        public PeersMenu(ContactsMenu.OnChooseActivity action)
+        public PeersMenu(ContactsMenu.OnChooseActivity action) : this(MenuLabel.PEERS_MENU, action) { }
+        public PeersMenu(string label, ContactsMenu.OnChooseActivity action)
         {
+            Label = label;
             this.action = action;
 
             canTrade = DataManager.Instance.Save.ActiveTeam.Assembly.Count > 0;

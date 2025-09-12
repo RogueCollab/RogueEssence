@@ -14,8 +14,10 @@ namespace RogueEssence.Menu
 
         private string recordDir;
 
-        public QuicksaveChosenMenu(string dir)
+        public QuicksaveChosenMenu(string dir) : this(MenuLabel.ROGUE_QUICKSAVE_CHOSEN_MENU, dir) { }
+        public QuicksaveChosenMenu(string label, string dir)
         {
+            Label = label;
             this.recordDir = dir;
 
             List<MenuTextChoice> choices = new List<MenuTextChoice>();

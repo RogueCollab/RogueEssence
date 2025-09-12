@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RogueElements;
 using System;
+using RogueEssence.Data;
 using RogueEssence.Content;
 using Microsoft.Xna.Framework;
 
@@ -12,8 +13,10 @@ namespace RogueEssence.Menu
         private int teamSlot;
         OnChooseSlot chooseSlotAction;
 
-        public FacilityTeamChosenMenu(int teamSlot, OnChooseSlot action)
+        public FacilityTeamChosenMenu(int teamSlot, OnChooseSlot action) : this(MenuLabel.TEAM_CHOSEN_MENU_FACILITY, teamSlot, action) { }
+        public FacilityTeamChosenMenu(string label, int teamSlot, OnChooseSlot action)
         {
+            Label = label;
             this.teamSlot = teamSlot;
             this.chooseSlotAction = action;
 
@@ -29,7 +32,7 @@ namespace RogueEssence.Menu
 
         private void SummaryAction()
         {
-            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(teamSlot, false, false), false);
+            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(DataManager.Instance.Save.ActiveTeam, teamSlot, false, false, false), false);
         }
 
         private void RememberAction()

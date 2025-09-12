@@ -18,8 +18,11 @@ namespace RogueEssence.Menu
 
         SkillSummary summaryMenu;
 
-        public SkillReplaceMenu(Character player, string skillNum, OnChooseSlot learnAction, Action refuseAction)
+        public SkillReplaceMenu(Character player, string skillNum, OnChooseSlot learnAction, Action refuseAction) :
+            this(MenuLabel.SKILL_REPLACE_MENU, player, skillNum, learnAction, refuseAction) { }
+        public SkillReplaceMenu(string label, Character player, string skillNum, OnChooseSlot learnAction, Action refuseAction)
         {
+            Label = label;
             int menuWidth = 152;
             this.player = player;
             this.skillNum = skillNum;

@@ -14,9 +14,11 @@ namespace RogueEssence.Menu
         MenuText Version;
         MenuText Filename;
 
-        public ReplayMiniSummary(Rect bounds)
+        public ReplayMiniSummary(Rect bounds) : this(MenuLabel.REPLAY_MINI_SUMMARY, bounds) { }
+        public ReplayMiniSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             Name = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth + 2, GraphicsManager.MenuBG.TileHeight + 2));
             Elements.Add(Name);
 

@@ -271,6 +271,13 @@ namespace RogueEssence.Data
             Maps = new List<HashSet<int>>();
         }
 
+        public int GetFloorCount(int segidx)
+        {
+            if (Maps[segidx] == null)
+                return -1;
+            return Maps[segidx].Count;
+        }
+
         public bool SegLocValid(SegLoc segLoc)
         {
             if (segLoc.Segment == -1)

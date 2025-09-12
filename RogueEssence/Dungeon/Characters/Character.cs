@@ -36,7 +36,10 @@ namespace RogueEssence.Dungeon
                     if (!String.IsNullOrEmpty(Nickname))
                         return Nickname;
                     else
-                        return DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                    {
+                        EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                        return idx.Get(BaseForm.Species).Name.ToLocal();
+                    }
                 }
                 else
                 {
@@ -63,7 +66,10 @@ namespace RogueEssence.Dungeon
                     if (!String.IsNullOrEmpty(Nickname))
                         name = Nickname;
                     else
-                        name = DataManager.Instance.GetMonster(BaseForm.Species).Name.ToLocal();
+                    {
+                        EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Monster];
+                        name = idx.Get(BaseForm.Species).Name.ToLocal();
+                    }
                 }
                 else
                 {
@@ -283,11 +289,6 @@ namespace RogueEssence.Dungeon
         public int TurnWait { get; set; }
 
         /// <summary>
-        /// The number of turn tiers that this character has moved OR acted on.
-        /// </summary>
-        public int TiersUsed { get; set; }
-
-        /// <summary>
         /// Whether the character has made an action during this map turn.  Only one action per map turn permitted.
         /// </summary>
         public bool TurnUsed { get; set; }
@@ -408,7 +409,7 @@ namespace RogueEssence.Dungeon
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
-            BackRef = new TempCharBackRef(false, -1);
+            BackRef = new TempCharBackRef(-1);
         }
 
         public Character(CharData baseChar)
@@ -429,7 +430,11 @@ namespace RogueEssence.Dungeon
             {
                 Skill newState = null;
                 if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
-                    newState = new Skill(BaseSkills[ii].SkillNum, DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges);
+                {
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(BaseSkills[ii].SkillNum);
+                    newState = new Skill(BaseSkills[ii].SkillNum, summary.BaseCharges);
+                }
                 else
                     newState = new Skill();
                 Skills.Add(new BackReference<Skill>(newState, ii));
@@ -463,7 +468,7 @@ namespace RogueEssence.Dungeon
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
 
-            BackRef = new TempCharBackRef(false, -1);
+            BackRef = new TempCharBackRef(-1);
 
             UpdateFrame();
         }
@@ -573,7 +578,9 @@ namespace RogueEssence.Dungeon
                 Skill newState = null;
                 if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
-                    int baseCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(BaseSkills[ii].SkillNum);
+                    int baseCharges = summary.BaseCharges + ChargeBoost;
                     BaseSkills[ii].Charges = baseCharges;
                     newState = new Skill(BaseSkills[ii].SkillNum, baseCharges, turnOn[ii]);
                 }
@@ -603,8 +610,8 @@ namespace RogueEssence.Dungeon
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="inTeam">True if the character is in the team, false if they're in the asembly.</param>
-        public void FullRestore(bool inTeam = true)
+        /// <param name="fullRefresh">True if you want to carry out a refresh, false otherwise</param>
+        public void FullRestore(bool fullRefresh = true)
         {
             if (Dead)
             {
@@ -614,10 +621,10 @@ namespace RogueEssence.Dungeon
 
             List<int> skillIndices = baseRestore();
 
-            if (inTeam)
+            if (fullRefresh)
                 OnSkillsChanged(skillIndices.ToArray());
 
-            RefreshTraits(inTeam);
+            RefreshTraits(fullRefresh);
         }
 
         public bool HasElement(string element)
@@ -731,54 +738,6 @@ namespace RogueEssence.Dungeon
             OnSkillsChanged(skillIndices.ToArray());
 
             RefreshTraits();
-        }
-
-        public IEnumerator<YieldInstruction> UpdateFullness(bool combat)
-        {
-            int recovery = (combat ? 0 : 12);
-
-            int residual = 0;
-            if (MemberTeam == DungeonScene.Instance.ActiveTeam && MemberTeam.Leader == this)
-            {
-                residual = 80;
-            }
-
-            int prevFullness = Fullness;
-            Fullness -= (residual + FullnessRemainder) / 1000;
-            FullnessRemainder = (residual + FullnessRemainder) % 1000;
-
-            if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-            {
-                if (Fullness <= 0 && prevFullness > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY", GetDisplayName(true)));
-                else if (Fullness <= 10 && prevFullness > 10)
-                {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_CRITICAL", GetDisplayName(true)));
-                    GameManager.Instance.SE(GraphicsManager.HungerSE);
-                }
-                else if (Fullness <= 20 && prevFullness > 20)
-                {
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_LOW", GetDisplayName(true)));
-                    GameManager.Instance.SE(GraphicsManager.HungerSE);
-                }
-            }
-            else
-            {
-                if (Fullness <= 0 && prevFullness > 0)
-                    DungeonScene.Instance.LogMsg(Text.FormatKey("MSG_HUNGER_EMPTY_FOE", GetDisplayName(false)));
-            }
-
-            if (Fullness <= 0)
-            {
-                Fullness = 0;
-                FullnessRemainder = 0;
-
-                if (MemberTeam == DungeonScene.Instance.ActiveTeam)
-                    GameManager.Instance.SE(GraphicsManager.HungerSE);
-                recovery = -60;
-            }
-
-            yield return CoroutineManager.Instance.StartCoroutine(ModifyHP(MaxHP * recovery));
         }
 
         public IEnumerator<YieldInstruction> ModifyHP(int residualHP)
@@ -1204,7 +1163,13 @@ namespace RogueEssence.Dungeon
             RefreshTraits();
         }
 
-        public void LearnIntrinsic(string intrinsicNum, int slot = -1)
+        /// <summary>
+        /// Gives the character a new base intrinsic, updating all current intrinsic backreferences.
+        /// </summary>
+        /// <param name="intrinsicNum">The intrinsic to learn</param>
+        /// <param name="slot">The slot to replace the new intrinsic into.  -1 to add it to the earliest available slot.</param>
+        /// <exception cref="Exception"></exception>
+        public void LearnIntrinsic(string intrinsicNum, int slot = -1, bool refresh = true)
         {
             if (slot == -1)
             {
@@ -1228,18 +1193,19 @@ namespace RogueEssence.Dungeon
                     Intrinsics[ii].Element = new Intrinsic(BaseIntrinsics[slot]);
             }
 
-            RefreshTraits();
+            if (refresh)
+                RefreshTraits();
         }
 
 
-        public void ChangeSkill(int slot, string skillNum, int charges)
+        public void ChangeSkill(int slot, string skillNum, int charges, bool enabled)
         {
             if (!String.IsNullOrEmpty(skillNum))
             {
                 int maxCharges = DataManager.Instance.GetSkill(skillNum).BaseCharges + ChargeBoost;
                 if (charges < 0)
                     charges = maxCharges;
-                Skills[slot] = new BackReference<Skill>(new Skill(skillNum, Math.Min(charges, maxCharges)), -1);
+                Skills[slot] = new BackReference<Skill>(new Skill(skillNum, Math.Min(charges, maxCharges), enabled), -1);
             }
             else
                 Skills[slot] = new BackReference<Skill>(new Skill(), -1);
@@ -1252,7 +1218,7 @@ namespace RogueEssence.Dungeon
             BaseSkills[slot].CanForget = !lck;
         }
 
-        public void DeleteSkill(int slot, bool refresh=true)
+        public void DeleteSkill(int slot, bool fullRefresh = true)
         {
             BaseSkills.RemoveAt(slot);
             BaseSkills.Add(new SlotSkill());
@@ -1278,12 +1244,20 @@ namespace RogueEssence.Dungeon
                 skillIndices.RemoveAt(slot);
                 skillIndices.Insert(slot, -1);
 
-                OnSkillsChanged(skillIndices.ToArray());
+                if (fullRefresh)
+                    OnSkillsChanged(skillIndices.ToArray());
             }
-            if (refresh)
-                RefreshTraits();
+            RefreshTraits(fullRefresh);
         }
 
+
+
+        /// <summary>
+        /// Gives the characetr a new skill, placing it in the earliest available slot.
+        /// </summary>
+        /// <param name="skillNum"></param>
+        /// <param name="enabled"></param>
+        /// <param name="refresh"></param>
         public void LearnSkill(string skillNum, bool enabled, bool refresh = true)
         {
             int newSlot = 0;
@@ -1295,6 +1269,8 @@ namespace RogueEssence.Dungeon
             if (newSlot < MAX_SKILL_SLOTS)
                 ReplaceSkill(skillNum, newSlot, enabled, refresh);
         }
+
+
         public void ReplaceSkill(string skillNum, int newSlot, bool enabled, bool refresh = true)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
@@ -1640,13 +1616,13 @@ namespace RogueEssence.Dungeon
         }
 
         //should work in dungeon and ground modes (ground modes will have certain passives disabled, such as map effects/positional effects
-        public void RefreshTraits(bool inTeam = true)
+        public void RefreshTraits(bool fullRefresh = true)
         {
             TerrainData.Mobility oldMobility = Mobility;
 
             baseRefresh();
 
-            if (inTeam)
+            if (fullRefresh)
             {
                 refreshProximity();
 
@@ -1665,7 +1641,9 @@ namespace RogueEssence.Dungeon
             {
                 if (!String.IsNullOrEmpty(Skills[ii].Element.SkillNum))
                 {
-                    int maxCharges = DataManager.Instance.GetSkill(Skills[ii].Element.SkillNum).BaseCharges + ChargeBoost;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(Skills[ii].Element.SkillNum);
+                    int maxCharges = summary.BaseCharges + ChargeBoost;
                     //bring charges up to maximum if maximum is enforced
                     if (DataManager.Instance.Save != null && !DataManager.Instance.Save.MidAdventure)
                         SetSkillCharges(ii, maxCharges);
@@ -1679,7 +1657,9 @@ namespace RogueEssence.Dungeon
             {
                 if (!String.IsNullOrEmpty(BaseSkills[ii].SkillNum))
                 {
-                    int maxCharges = DataManager.Instance.GetSkill(BaseSkills[ii].SkillNum).BaseCharges + ChargeBoost;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Skill];
+                    SkillDataSummary summary = (SkillDataSummary)idx.Get(BaseSkills[ii].SkillNum);
+                    int maxCharges = summary.BaseCharges + ChargeBoost;
 
                     //cap off over-maximum values
                     if (BaseSkills[ii].Charges > maxCharges)
@@ -1724,10 +1704,13 @@ namespace RogueEssence.Dungeon
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
-                    if (itemData.BagEffect)
+                    string itemId = MemberTeam.GetInv(ii).ID;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                    ItemEntrySummary summary = (ItemEntrySummary)idx.Get(itemId);
+
+                    if (summary.BagEffect)
                     {
-                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                        if (!activeItems.ContainsKey(itemId))
                             activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
                     }
                 }
@@ -1817,11 +1800,18 @@ namespace RogueEssence.Dungeon
             {
                 for (int ii = 0; ii < MemberTeam.GetInvCount(); ii++)
                 {
-                    ItemData itemData = DataManager.Instance.GetItem(MemberTeam.GetInv(ii).ID);
-                    if (itemData.BagEffect && itemData.ProximityEvent.Radius > -1)
+                    string itemId = MemberTeam.GetInv(ii).ID;
+                    EntryDataIndex idx = DataManager.Instance.DataIndices[DataManager.DataType.Item];
+                    ItemEntrySummary summary = (ItemEntrySummary)idx.Get(itemId);
+
+                    if (summary.BagEffect)
                     {
-                        if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
-                            activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
+                        ItemData itemData = DataManager.Instance.GetItem(itemId);
+                        if (itemData.ProximityEvent.Radius > -1)
+                        {
+                            if (!activeItems.ContainsKey(MemberTeam.GetInv(ii).ID))
+                                activeItems.Add(MemberTeam.GetInv(ii).ID, ii);
+                        }
                     }
                 }
 

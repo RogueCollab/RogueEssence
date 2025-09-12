@@ -254,7 +254,7 @@ namespace RogueEssence.Menu
                 GameManager.Instance.MoveToScene(Ground.GroundScene.Instance);
 
             if (DataManager.Instance.Save.NextDest.IsValid())
-                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest));
+                yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
             else
             {
                 if (ZoneManager.Instance.CurrentMapID.Segment > -1)

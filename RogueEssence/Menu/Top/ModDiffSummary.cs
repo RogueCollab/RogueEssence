@@ -13,8 +13,10 @@ namespace RogueEssence.Menu
         MenuDivider MenuDiv;
         public MenuText[] Diffs;
 
-        public ModDiffSummary(string title) : base(new Rect(new Loc(16, 16), new Loc(16, 16)))
+        public ModDiffSummary(string title) : this(MenuLabel.MOD_DIFF_SUMMARY, title) { }
+        public ModDiffSummary(string label, string title) : base(new Rect(new Loc(16, 16), new Loc(16, 16)))
         {
+            Label = label;
             Title = new MenuText(title, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(Title);
             MenuDiv = new MenuDivider(new Loc(GraphicsManager.MenuBG.TileWidth, GraphicsManager.MenuBG.TileHeight + LINE_HEIGHT),

@@ -402,7 +402,8 @@ namespace RogueEssence.Dev.ViewModels
                     if (dataType == DataManager.DataType.Zone)
                     {
                         string str = LuaEngine.MakeZoneScriptPath(assetName, "");
-                        Directory.Delete(str, true);
+                        if (Directory.Exists(str))
+                            Directory.Delete(str, true);
                     }
                 }
             };

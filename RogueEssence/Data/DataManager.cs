@@ -1140,8 +1140,11 @@ namespace RogueEssence.Data
             GroundMap mapData = null;
             try
             {
+                //TODO: v1.1.: remove this
+                DiagManager.Instance.LogInfo(String.Format("Loading rsground file: {0}", name));
                 mapData = LoadEntryData<GroundMap>(name, GROUND_FOLDER, ".rsground");
                 mapData.AssetName = name;
+                DiagManager.Instance.LogInfo(String.Format("Completed file load."));
                 return mapData;
             }
             catch (Exception ex)
@@ -2284,7 +2287,7 @@ namespace RogueEssence.Data
                                 ModVersion diff = new ModVersion(name, uuid, version);
                                 versions.Add(diff);
                             }
-                            List<ModVersion> curVersions = PathMod.GetModVersion();
+                            List<ModVersion> curVersions = PathMod.GetModVersionList();
                             List<ModDiff> versionDiff = PathMod.DiffModVersions(versions, curVersions);
                             if (versionDiff.Count > 0)
                                 continue;

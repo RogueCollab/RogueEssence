@@ -21,8 +21,10 @@ namespace RogueEssence.Menu
         private OnChooseSlots action;
 
 
-        public SellMenu(int defaultChoice, OnChooseSlots chooseSlots)
+        public SellMenu(int defaultChoice, OnChooseSlots chooseSlots) : this(MenuLabel.SELL_MENU, defaultChoice, chooseSlots) { }
+        public SellMenu(string label, int defaultChoice, OnChooseSlots chooseSlots)
         {
+            Label = label;
             action = chooseSlots;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

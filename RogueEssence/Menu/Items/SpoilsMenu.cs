@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
         ItemSummary summaryMenu;
         public List<Tuple<InvItem, InvItem>> Goods;
 
-        public SpoilsMenu(List<Tuple<InvItem, InvItem>> goods)
+        public SpoilsMenu(List<Tuple<InvItem, InvItem>> goods) : this(MenuLabel.APPRAISE_MENU_SPOILS, goods) { }
+        public SpoilsMenu(string label, List<Tuple<InvItem, InvItem>> goods)
         {
+            Label = label;
             Goods = goods;
 
             List<MenuChoice> flatChoices = new List<MenuChoice>();

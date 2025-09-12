@@ -18,7 +18,10 @@ namespace RogueEssence.Ground
         public static void InitInstance()
         {
             if (instance != null)
+            {
+                instance.dispose();
                 GraphicsManager.ZoomChanged -= instance.ZoomChanged;
+            }
             instance = new GroundScene();
             GraphicsManager.ZoomChanged += instance.ZoomChanged;
         }
@@ -129,7 +132,7 @@ namespace RogueEssence.Ground
             {
                 Loc coords = ScreenCoordsToGroundCoords(input.MouseLoc);
                 //DataManager.Instance.Save.ViewCenter = coords * GraphicsManager.TILE_SIZE;
-                if (Collision.InBounds(ZoneManager.Instance.CurrentGround.GroundWidth, ZoneManager.Instance.CurrentGround.GroundHeight, coords))
+                if (ZoneManager.Instance.CurrentGround.GetLocInGroundBounds(ref coords))
                 {
                     FocusedCharacter.SetMapLoc(coords);
                     FocusedCharacter.UpdateFrame();
@@ -396,7 +399,7 @@ namespace RogueEssence.Ground
             GraphicsManager.SysFont.DrawText(spriteBatch, GraphicsManager.WindowWidth - 2, 32, String.Format("Z:{0:D3} S:{1:D3} M:{2:D3}", ZoneManager.Instance.CurrentZoneID, ZoneManager.Instance.CurrentMapID.Segment, ZoneManager.Instance.CurrentMapID.ID), null, DirV.Up, DirH.Right, Color.White);
 
             if (FreeCamCenter.HasValue)
-                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 92, "Free Cam", null, DirV.Up, DirH.Left, Color.LightYellow);
+                GraphicsManager.SysFont.DrawText(spriteBatch, 2, 102, "Free Cam", null, DirV.Up, DirH.Left, Color.LightYellow);
 
             if (FocusedCharacter != null)
             {

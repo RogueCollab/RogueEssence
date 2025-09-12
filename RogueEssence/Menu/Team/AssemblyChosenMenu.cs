@@ -16,8 +16,10 @@ namespace RogueEssence.Menu
 
         private AssemblyMenu baseMenu;
 
-        public AssemblyChosenMenu(int teamSlot, bool assembly, AssemblyMenu baseMenu)
+        public AssemblyChosenMenu(int teamSlot, bool assembly, AssemblyMenu baseMenu) : this(MenuLabel.ASSEMBLY_CHOSEN_MENU, teamSlot, assembly, baseMenu) { }
+        public AssemblyChosenMenu(string label, int teamSlot, bool assembly, AssemblyMenu baseMenu)
         {
+            Label = label;
             this.teamSlot = teamSlot;
             this.assembly = assembly;
             this.baseMenu = baseMenu;
@@ -85,7 +87,7 @@ namespace RogueEssence.Menu
 
         private void SummaryAction()
         {
-            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(teamSlot, assembly, DataManager.Instance.Save.ActiveTeam.Assembly.Count > 0), false);
+            MenuManager.Instance.AddMenu(new MemberFeaturesMenu(DataManager.Instance.Save.ActiveTeam, teamSlot, assembly, DataManager.Instance.Save.ActiveTeam.Assembly.Count > 0, false), false);
         }
 
         private void JoinAction()

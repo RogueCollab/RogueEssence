@@ -17,10 +17,12 @@ namespace RogueEssence.Menu
         MenuText Fullness;
         MenuText EXP;
         MenuText Intrinsics;
-        
-        public TeamMiniSummary(Rect bounds)
+
+        public TeamMiniSummary(Rect bounds) : this(MenuLabel.TEAM_MINI_SUMMARY, bounds) { }
+        public TeamMiniSummary(string label, Rect bounds)
             : base(bounds)
         {
+            Label = label;
             FullName = new MenuText("", new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight));
             Elements.Add(FullName);
             LevelLabel = new MenuText("", new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 6, GraphicsManager.MenuBG.TileHeight));

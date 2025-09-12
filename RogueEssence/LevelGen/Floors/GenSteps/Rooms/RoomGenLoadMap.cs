@@ -152,6 +152,9 @@ namespace RogueEssence.LevelGen
         [Dev.DataFolder(0, "Map/")]
         public string MapID;
 
+        /// <summary>
+        /// Prevents later steps from changing the tiles or items specified by this room.
+        /// </summary>
         public PostProcType PreventChanges { get; set; }
 
         [NonSerialized]
@@ -175,17 +178,8 @@ namespace RogueEssence.LevelGen
             return new Loc(this.roomMap.Width, this.roomMap.Height);
         }
 
-
-        public override void DrawOnMap(T map)
+        protected void DrawTiles(T map)
         {
-            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
-            {
-                this.DrawMapDefault(map);
-                return;
-            }
-
-            //no copying is needed here since the map is disposed of after use
-
             //add needed layers
             Dictionary<int, int> layerMap = new Dictionary<int, int>();
             Dictionary<Content.DrawLayer, int> drawOrderDict = new Dictionary<Content.DrawLayer, int>();
@@ -237,7 +231,10 @@ namespace RogueEssence.LevelGen
                     }
                 }
             }
+        }
 
+        protected void DrawDecorations(T map)
+        {
             //place decorations
             foreach (AnimLayer layer in this.roomMap.Decorations)
             {
@@ -248,7 +245,10 @@ namespace RogueEssence.LevelGen
                     anim.MapLoc = anim.MapLoc + this.Draw.Start * GraphicsManager.TileSize;
                 map.Map.Decorations.Add(layer);
             }
+        }
 
+        protected void DrawItems(T map)
+        {
             //place items
             foreach (MapItem item in this.roomMap.Items)
             {
@@ -259,7 +259,10 @@ namespace RogueEssence.LevelGen
                     throw new IndexOutOfRangeException("Attempted to draw custom room item out of range!");
                 map.Items.Add(item);
             }
+        }
 
+        protected void DrawMobs(T map)
+        {
             //place mobs
             foreach (Team team in this.roomMap.MapTeams)
             {
@@ -273,7 +276,10 @@ namespace RogueEssence.LevelGen
                 }
                 map.MapTeams.Add(team);
             }
+        }
 
+        protected void DrawEntrances(T map)
+        {
             //place map entrances
             foreach (LocRay8 entrance in this.roomMap.EntryPoints)
             {
@@ -283,6 +289,27 @@ namespace RogueEssence.LevelGen
                 else
                     throw new IndexOutOfRangeException("Attempted to draw custom room entrance out of range!");
             }
+        }
+
+        public override void DrawOnMap(T map)
+        {
+            if (this.Draw.Width != this.roomMap.Width || this.Draw.Height != this.roomMap.Height)
+            {
+                this.DrawMapDefault(map);
+                return;
+            }
+
+            //no copying is needed here since the map is disposed of after use
+
+            DrawTiles(map);
+
+            DrawDecorations(map);
+
+            DrawItems(map);
+
+            DrawMobs(map);
+
+            DrawEntrances(map);
 
             //this.FulfillRoomBorders(map, this.FulfillAll);
             this.SetRoomBorders(map);

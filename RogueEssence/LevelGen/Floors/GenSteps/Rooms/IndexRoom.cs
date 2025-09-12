@@ -5,9 +5,15 @@ using System.Text;
 
 namespace RogueEssence.LevelGen
 {
+    /// <summary>
+    /// A component that marks a room with a numeric value that can be referenced later.
+    /// </summary>
     [Serializable]
     public class IndexRoom : RoomComponent
     {
+        /// <summary>
+        /// The index to mark the room with.
+        /// </summary>
         public int Index;
         public IndexRoom() { }
         public IndexRoom(int index) { Index = index; }
