@@ -71,39 +71,47 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
-                return;
-
-
-            MapRetileWindow window = new MapRetileWindow();
-            MapRetileViewModel viewModel = new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
-            window.DataContext = viewModel;
-
-            bool sizeResult = await window.ShowDialog<bool>(parent);
-            int size = viewModel.TileSize;
-
-            if (!sizeResult || size == 0)
-                return;
-
-            DevForm.SetConfig("TilesetDir", folder);
-            CachedPath = folder + "/";
-            cachedSize = size;
-
-            try
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                MassImport(CachedPath, cachedSize);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, false);
-                await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                return;
-            }
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select tileset folder to mass import",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
+                
+                MapRetileWindow window = new MapRetileWindow();
+                MapRetileViewModel viewModel = new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
+                window.DataContext = viewModel;
+
+                bool sizeResult = await window.ShowDialog<bool>(parent);
+                int size = viewModel.TileSize;
+
+                if (!sizeResult || size == 0)
+                    return;
+
+                DevForm.SetConfig("TilesetDir", folder);
+                CachedPath = folder + "/";
+                cachedSize = size;
+
+                try
+                {
+                    MassImport(CachedPath, cachedSize);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            });
         }
 
 
@@ -112,21 +120,30 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
+   
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig("TilesetDir", folder);
                 CachedPath = folder + "/";
 
                 bool success = MassExport(CachedPath);
                 if (!success)
                     await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
-            }
+            });
         }
 
         public async void mnuReIndex_Click()

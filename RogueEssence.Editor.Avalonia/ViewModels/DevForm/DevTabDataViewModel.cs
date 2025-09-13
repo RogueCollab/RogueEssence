@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -12,6 +13,8 @@ using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Script;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -86,13 +89,22 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(listForm);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await listForm.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await listForm.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select DTEF folder",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+                
+                string folder = results.First().Path.LocalPath;
+                
                 string animName = Path.GetFileNameWithoutExtension(folder);
 
                 bool conflict = false;
@@ -125,7 +137,8 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(listForm, "Error importing from\n" + folder + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+            });
+            
         }
 
         private void tryImportDtef(DataListFormViewModel choices, string folder, string animName)
@@ -159,18 +172,25 @@ namespace RogueEssence.Dev.ViewModels
                 //remember addresses in registry
                 string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
-                //open window to choose directory
-                OpenFolderDialog openFileDialog = new OpenFolderDialog();
-                openFileDialog.Directory = folderName;
-
-                string folder = await openFileDialog.ShowAsync(listForm);
-
-                if (!String.IsNullOrEmpty(folder))
+                IStorageFolder directory = await listForm.StorageProvider.TryGetFolderFromPathAsync(folderName);
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
+                    IReadOnlyList<IStorageFolder> results = await listForm.StorageProvider.OpenFolderPickerAsync(
+                        new FolderPickerOpenOptions
+                        {
+                            Title = "Select folder to export the DTEF to",
+                            SuggestedStartLocation = directory,
+                            AllowMultiple = false,
+                        });
+
+                    if (results.Count <= 0)
+                        return;
+
+                    string folder = results.First().Path.LocalPath;
                     DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
 
                     DevForm.ExecuteOrPend(() => { tryExportDtef(entryIndex, folder); });
-                }
+                });
             }
         }
         private void tryExportDtef(int entryIndex, string folder)
