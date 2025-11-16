@@ -1,0 +1,268 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels"
+             xmlns:c="using:RogueEssence.Dev.Converters"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+             xmlns:controls="clr-namespace:Tabalonia.Controls;assembly=Tabalonia"
+             xmlns:local="clr-namespace:RogueEssence.Dev.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="30"
+             x:Class="RogueEssence.Dev.Views.TabBarView"
+             x:DataType="vm:MainWindowViewModel"
+             x:Name="MainTabBar">
+
+    <UserControl.Resources>
+        <local:ObjectToColorKeyConverter x:Key="ObjectToColorKeyConverter" />
+        <ControlTheme x:Key="DragTabItemThumb" TargetType="controls:LeftPressedThumb">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="IsHitTestVisible" Value="True" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </ControlTheme>
+    </UserControl.Resources>
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <Style Selector="Button#CloseTabButton">
+            <Setter Property="Opacity" Value="0"></Setter>
+        </Style>
+
+
+        <Style Selector="controls|DragTabItem">
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
+
+        <Style Selector="controls|DragTabItem">
+            <Setter Property="Margin" Value="0,0, 8, 0"></Setter>
+            <Style Selector="^:selected">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
+                            <Binding Path="((vm:MainWindowViewModel)DataContext).TemporaryTab"
+                                     RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
+                            <Binding Source="SelectedTabItemBackgroundBrush" />
+                            <Binding Source="" />
+                            <Binding Path="RequestedThemeVariant" Source="{x:Static Application.Current}" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+
+                <Setter Property="Foreground">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
+                            <Binding Path="((vm:MainWindowViewModel)DataContext).TemporaryTab"
+                                     RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
+                            <!-- highlight color -->
+                            <Binding Source="TabItemHeaderForegroundSelected" />
+                            <!-- deselect color -->
+                            <Binding Source="TabItemHeaderForegroundUnselected" />
+                            <Binding Path="RequestedThemeVariant"
+                                     Source="{x:Static Application.Current}" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style Selector="^:selected:pointerover">
+                <Setter Property="Background">
+                    <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
+                        <Binding Path="((vm:MainWindowViewModel)DataContext).TemporaryTab"
+                                 RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
+                        <Binding Source="SelectedTabItemBackgroundBrush" />
+                        <Binding Source="TabItemHeaderBackgroundUnselectedPointerOver" />
+                        <Binding Path="RequestedThemeVariant"
+                                 Source="{x:Static Application.Current}" />
+                    </MultiBinding>
+                </Setter>
+            </Style>
+        </Style>
+
+        <Style Selector="Button#CloseTabButton:pointerover">
+            <Setter Property="Opacity" Value="1"></Setter>
+        </Style>
+
+        <Style Selector="Button#CloseTabButton:pointerover /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="1"></Setter>
+        </Style>
+
+        <Style Selector="Grid#CloseButtonContainer:pointerover > Ellipse#NeedToSaveEllipse">
+            <Setter Property="Opacity" Value="0"></Setter>
+        </Style>
+
+        <Style Selector="Grid#CloseButtonContainer:pointerover > Button#CloseTabButton">
+            <Setter Property="Opacity" Value="1"></Setter>
+        </Style>
+
+        <Style Selector="controls|DragTabItem">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Border
+                            Name="PART_LayoutRoot"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <ContentPresenter Name="PART_ContentPresenter"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Content="{TemplateBinding Header}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  FontFamily="{TemplateBinding FontFamily}"
+                                                  FontSize="{TemplateBinding FontSize}"
+                                                  FontWeight="{TemplateBinding FontWeight}" />
+
+                                <controls:LeftPressedThumb Name="PART_Thumb"
+                                                           HorizontalAlignment="Stretch"
+                                                           VerticalAlignment="Stretch"
+                                                           IsHitTestVisible="True"
+                                                           Theme="{StaticResource DragTabItemThumb}"
+                                                           Margin="0,0,32,0" />
+
+                                <Border Name="PART_SelectedPipe"
+                                        Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                                        CornerRadius="{DynamicResource ControlCornerRadius}"
+                                        IsVisible="False" />
+                            </Grid>
+
+                        </Border>
+                        <!-- Selection indicator -->
+                        <Border x:Name="Indicator"
+                                Height="4"
+                                CornerRadius="20"
+                                Background="Transparent"
+                                VerticalAlignment="Bottom"
+                                HorizontalAlignment="Center"
+                                Width="166" />
+                    </Grid>
+                </ControlTemplate>
+
+            </Setter>
+
+
+        </Style>
+        <Style Selector="controls|DragTabItem:selected /template/ Border#Indicator">
+            <Setter Property="Background" Value="{DynamicResource Brush.Accent}" />
+            <Setter Property="IsVisible"
+                    Value="{Binding ((vm:MainWindowViewModel)DataContext).TemporaryTab, RelativeSource={RelativeSource AncestorType=controls:TabsControl}, Converter={x:Static ObjectConverters.IsNull}}" />
+
+        </Style>
+
+
+        <Style Selector="controls|TabsControl">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Background="{TemplateBinding Background}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                        <Grid ColumnDefinitions="Auto, *, Auto">
+                            <Thumb Grid.Column="0" Name="PART_LeftDragWindowThumb"
+                                   MinWidth="{TemplateBinding LeftThumbWidth}" />
+                            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Disabled">
+                                <ItemsPresenter Name="PART_ItemsPresenter"
+                                                ItemsPanel="{TemplateBinding ItemsPanel}" Margin="0, 0, 0, 0" />
+                            </ScrollViewer>
+                            <Thumb Grid.Column="2" Name="PART_RightDragWindowThumb"
+                                   MinWidth="{TemplateBinding RightThumbWidth}" />
+                            
+                            <ContentPresenter Grid.Column="2" Name="PART_RightContent"
+                                              Content="{TemplateBinding RightContent}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+    <Grid ColumnDefinitions="*,Auto,Auto">
+        <Grid ColumnDefinitions="*">
+            <controls:TabsControl SelectedItem="{Binding ActivePage}"
+                                  ShowDefaultCloseButton="False"
+                                  ShowDefaultAddButton="False"
+                                  TabItemWidth="175"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                  Padding="0"
+                                  RightThumbWidth="0"
+                                  LeftThumbWidth="0"
+                                  ItemsSource="{Binding Pages}">
+
+                <controls:TabsControl.RightContent>
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- Tab Switcher Button -->
+                        <Button Background="Transparent" Grid.Column="1" Classes="icon_button"
+                                VerticalAlignment="Bottom"
+                                Margin="0, 0, 0, 0"
+                                Name="TabSwitcherFlyoutButton">
+                            <Path Width="13" Height="13" Margin="0,2,0,0" Data="{StaticResource Icons.Tabs}" />
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight" Opened="TabSwitcherFlyout_OnOpened" Closed="TabSwitcherFlyout_OnClosed">
+                                    <StackPanel Orientation="Vertical" Background="{DynamicResource Brush.Popup}">
+                                        <ContentControl Content="{Binding TabSwitcher}" Margin="0" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+                </controls:TabsControl.RightContent>
+                
+                <controls:TabsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:EditorPageViewModel}">
+                        <!-- TODO: The tooltip doesn't show up when hovered over text-->
+                        <Grid Background="Transparent" Height="30"
+                              Width="175"
+                              ToolTip.Tip="{Binding Title}"
+                              IsHitTestVisible="True"
+                              HorizontalAlignment="Left">
+                            <Border IsHitTestVisible="True" ToolTip.Tip="{Binding Title}" Padding="8, 0, 16, 0"
+                                    Background="Transparent" BorderBrush="{DynamicResource Color.Window}"
+                                    BorderThickness="0 0 0 1"
+                                    Margin="0, 0, 0, -3">
+                                <!-- <Grid Width="{Binding Source={x:Static vm:Preferences.Instance}, Path=UseFixedTabWidth, Converter={x:Static c:BoolConverters.ToPageTabWidth}}" Height="30" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center"> -->
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <v:IconText Text="{Binding Title}" Icon="{Binding Icon}" IconSize="12" />
+                                    <Grid Grid.Column="1" x:Name="CloseButtonContainer"
+                                          ZIndex="100">
+                                        <Ellipse x:Name="NeedToSaveEllipse"
+                                                 IsVisible="{Binding Modified}"
+                                                 Width="8" Height="8"
+                                                 Margin="0,0,0,0"
+                                                 VerticalAlignment="Center"
+                                                 Fill="Gray" />
+                                        <Button Classes="icon_button"
+                                                x:Name="CloseTabButton"
+                                                Width="16" Height="16" Margin="8, 0, 0. 0"
+                                                Click="OnCloseTab"
+                                                ZIndex="100">
+                                            <Path x:Name="CloseTabPath" Width="9" Height="9"
+                                                  Data="{StaticResource Icons.Close}" />
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </controls:TabsControl.ItemTemplate>
+             
+            </controls:TabsControl>
+        </Grid>
+    </Grid>
+</UserControl>

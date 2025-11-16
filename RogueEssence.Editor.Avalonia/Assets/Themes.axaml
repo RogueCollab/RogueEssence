@@ -1,0 +1,79 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="Color.Window">#FFF7F8FA</Color>
+      <Color x:Key="Color.WindowBorder">#00000000</Color>
+      <Color x:Key="Color.PageBackground">#FFFAFAFA</Color>
+      <Color x:Key="Color.TitleBar">#FFEBECF0</Color>
+      <Color x:Key="Color.ToolBar">#FFF0F5F9</Color>
+      <Color x:Key="Color.Popup">#FFF8F8F8</Color>
+      <Color x:Key="Color.Contents">#FFFAFAFA</Color>
+      <Color x:Key="Color.Badge">#FFB0CEE8</Color>
+      <Color x:Key="Color.BadgeFG">#FF1F1F1F</Color>
+      <Color x:Key="Color.Conflict">#FF836C2E</Color>
+      <Color x:Key="Color.ConflictForeground">#FFFFFFFF</Color>
+      <Color x:Key="Color.Border0">#FFCFCFCF</Color>
+      <Color x:Key="Color.Border1">#FF898989</Color>
+      <Color x:Key="Color.Border2">#FFCFCFCF</Color>
+      <Color x:Key="Color.Border3">#FFAFAFAF</Color>
+      <Color x:Key="Color.FlatButton.Background">#FFF8F8F8</Color>
+      <Color x:Key="Color.FlatButton.Background2">#FFF8F8F8</Color>
+      <Color x:Key="Color.FlatButton.BackgroundHovered">White</Color>
+      <Color x:Key="Color.TabHeader.BackgroundHovered">#FFDFDFDF</Color>
+      <Color x:Key="Color.FG1">#FF1F1F1F</Color>
+      <Color x:Key="Color.FG2">#FF6F6F6F</Color>
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="Color.Window">#FF252525</Color>
+      <Color x:Key="Color.WindowBorder">#FF444444</Color>
+      <Color x:Key="Color.PageBackground">#FF2A2A2A</Color>
+      <Color x:Key="Color.TitleBar">#FF1F1F1F</Color>
+      <Color x:Key="Color.ToolBar">#FF2C2C2C</Color>
+      <Color x:Key="Color.Popup">#FF2B2B2B</Color>
+      <Color x:Key="Color.Contents">#FF1C1C1C</Color>
+      <Color x:Key="Color.Badge">#FF8F8F8F</Color>
+      <Color x:Key="Color.BadgeFG">#FFDDDDDD</Color>
+      <Color x:Key="Color.Conflict">#FFFAFAD2</Color>
+      <Color x:Key="Color.ConflictForeground">#FF252525</Color>
+      <Color x:Key="Color.Border0">#FF181818</Color>
+      <Color x:Key="Color.Border1">#FF7C7C7C</Color>
+      <Color x:Key="Color.Border2">#FF404040</Color>
+      <Color x:Key="Color.Border3">#FF404040</Color>
+      <Color x:Key="Color.FlatButton.Background">#FF303030</Color>
+      <Color x:Key="Color.FlatButton.BackgroundHovered">#FF333333</Color>
+      <Color x:Key="Color.TabHeader.BackgroundHovered">#FF404040</Color>
+      <Color x:Key="Color.FG1">#FFDDDDDD</Color>
+      <Color x:Key="Color.FG2">#60F1F1F1</Color>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <SolidColorBrush x:Key="Brush.Window" Color="{DynamicResource Color.Window}"/>
+  <SolidColorBrush x:Key="Brush.WindowBorder" Color="{DynamicResource Color.WindowBorder}"/>
+  <SolidColorBrush x:Key="Brush.PageBackground" Color="{DynamicResource Color.PageBackground}"/>
+  <SolidColorBrush x:Key="Brush.TitleBar" Color="{DynamicResource Color.TitleBar}"/>
+  <SolidColorBrush x:Key="Brush.ToolBar" Color="{DynamicResource Color.ToolBar}"/>
+  <SolidColorBrush x:Key="Brush.Popup" Color="{DynamicResource Color.Popup}"/>
+  <SolidColorBrush x:Key="Brush.Contents" Color="{DynamicResource Color.Contents}"/>
+  <SolidColorBrush x:Key="Brush.Badge" Color="{DynamicResource Color.Badge}"/>
+  <SolidColorBrush x:Key="Brush.BadgeFG" Color="{DynamicResource Color.BadgeFG}"/>
+  <SolidColorBrush x:Key="Brush.Conflict" Color="{DynamicResource Color.Conflict}"/>
+  <SolidColorBrush x:Key="Brush.ConflictForeground" Color="{DynamicResource Color.ConflictForeground}"/>
+  <SolidColorBrush x:Key="Brush.Border0" Color="{DynamicResource Color.Border0}"/>
+  <SolidColorBrush x:Key="Brush.Border1" Color="{DynamicResource Color.Border1}"/>
+  <SolidColorBrush x:Key="Brush.Border2" Color="{DynamicResource Color.Border2}"/>
+  <SolidColorBrush x:Key="Brush.Border3" Color="{DynamicResource Color.Border3}"/>
+  <SolidColorBrush x:Key="Brush.FlatButton.Background" Color="{DynamicResource Color.FlatButton.Background}"/>
+  <SolidColorBrush x:Key="Brush.FlatButton.Background2" Color="{DynamicResource Color.FlatButton.Background2}"/>
+  <SolidColorBrush x:Key="Brush.FlatButton.BackgroundHovered" Color="{DynamicResource Color.FlatButton.BackgroundHovered}"/>
+  <SolidColorBrush x:Key="Brush.TabHeader.BackgroundHovered" Color="{DynamicResource Color.TabHeader.BackgroundHovered}"/>
+  <SolidColorBrush x:Key="Brush.FG1" Color="{DynamicResource Color.FG1}"/>
+  <SolidColorBrush x:Key="Brush.FG2" Color="{DynamicResource Color.FG2}"/>
+  <SolidColorBrush x:Key="Brush.Accent" Color="{DynamicResource SystemAccentColor}"/>
+  <SolidColorBrush x:Key="Brush.AccentHovered" Color="{DynamicResource SystemListLowColor}"/>
+
+  <!-- <FontFamily x:Key="Fonts.Default">fonts:Inter#Inter</FontFamily> -->
+  <!-- <FontFamily x:Key="Fonts.Monospace">fonts:SourceGit#JetBrains Mono</FontFamily> -->
+  <!-- <FontFamily x:Key="Fonts.Primary">fonts:SourceGit#JetBrains Mono</FontFamily> -->
+</ResourceDictionary>

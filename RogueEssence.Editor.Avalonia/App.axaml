@@ -1,30 +1,50 @@
 ﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:RogueEssence.Dev"
-             RequestedThemeVariant="Light"
-             x:Class="RogueEssence.Dev.App">
+             x:Class="RogueEssence.Dev.App"
+             xmlns:local="using:RogueEssence.Dev"
+             xmlns:fluent="clr-namespace:Tabalonia.Themes.Custom;assembly=Tabalonia"
+             RequestedThemeVariant="Dark">
+
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
+  
 
-    <Application.Styles>
-        <SimpleTheme/>
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
-        <Style Selector="TabItem">
-            <Setter Property="Foreground" Value="Black" />
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
-      <Style Selector="DataGridRow">
-        <Setter Property="Background" Value="#FFFFFF"/>
-      </Style>
-        <Style Selector="Button:pressed  /template/ ContentPresenter#PART_ContentPresenter">
-            <!-- <Setter Property="Background" Value="" /> -->
-            <!-- <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" /> -->
-            <Setter Property="TextBlock.Foreground" Value="#454545" />
-        </Style>
-      <Style Selector="DataGridTextColumn">
-        <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
-      </Style>
-    </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Assets/Icons.axaml"/>
+                <ResourceInclude Source="/Assets/Themes.axaml"/>
+                <ResourceInclude Source="/Assets/NodeTemplates.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="TabControlWindowActiveBackgroundBrush" Color="#FFF6F6F6" />
+                    <SolidColorBrush x:Key="TabControlWindowInactiveBackgroundBrush" Color="#FFF6F6F6" />
+                    <SolidColorBrush x:Key="TabItemBackgroundBrush" Color="#FFF6F6F6" />
+                    <SolidColorBrush x:Key="TabItemBackgroundBrushWindowInactive" Color="#FFF6F6F6" />
+                    <SolidColorBrush x:Key="SelectedTabItemBackgroundBrush" Color="#FFFDFDFD" />
+                    <SolidColorBrush x:Key="TabItemHeaderBackgroundUnselectedPointerOver" Color="#FFDFDFDF" />
+                    
+                </ResourceDictionary>
+                
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="TabControlWindowActiveBackgroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="TabControlWindowInactiveBackgroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="TabItemBackgroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="TabItemBackgroundBrushWindowInactive" Color="#202020" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+        
+    </Application.Resources>
+     
+     <Application.Styles>
+         <FluentTheme />
+         <fluent:CustomTheme/>
+         <StyleInclude Source="/Assets/Styles.axaml"/>
 
+         <StyleInclude Source="/Assets/TreeStyles.axaml"/>
+     </Application.Styles>
+             
 </Application>

@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:m="using:RogueEssence.Dev.Models"
+             x:DataType="vm:ModSwitcherViewModel"
+             x:Class="RogueEssence.Dev.Views.ModSwitcherView">
+    <Grid RowDefinitions="Auto, Auto, *">
+        
+        <TextBlock Classes="table_header" FontSize="16">Mods</TextBlock>
+        
+        <Border Grid.Row="1" Height="1"
+                Background="{DynamicResource Brush.Border1}"
+                Padding="0, 0"
+                HorizontalAlignment="Stretch" />
+        <!-- <Separator Grid.Row="1" HorizontalAlignment="Stretch" /> -->
+        <!-- KeyDown="PagesListBox_KeyDown" -->
+        <ListBox Grid.Row="2"
+                 x:Name="ModsListBox"
+                 Width="400"
+                 MaxHeight="600"
+                 BorderThickness="0"
+                 SelectionMode="Single"
+                 KeyDown="ModsListBox_OnKeyDown"
+                 Background="Transparent"
+                 Focusable="True"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ItemsSource="{Binding Mods, Mode=OneWay}"
+                 SelectedItem="{Binding SelectedMod, Mode=TwoWay}">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <!-- <Setter Property="Padding" Value="8, 8, 0, 8" /> -->
+                    <Setter Property="FontSize" Value="14" />
+                    <Setter Property="MinHeight" Value="20" />
+                </Style>
+                
+
+                <Style Selector="ListBox">
+                    <Setter Property="FocusAdorner">
+                        <FocusAdornerTemplate>
+                            <Grid />
+                        </FocusAdornerTemplate>
+                    </Setter>
+                </Style>
+            </ListBox.Styles>
+
+            
+
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="m:ModHeader">
+                    <!-- Tapped="OnItemTapped" -->
+                    <Grid RowDefinitions="Auto, Auto" Background="Transparent" Tapped="OnItemTapped" >
+                        <TextBlock FontSize="14" Classes="primary"  Text="{Binding Name}" ></TextBlock>
+                        <TextBlock Grid.Row="1"  Classes="primary" Foreground="{DynamicResource Brush.FG2}" Text="{Binding Key}" />
+                        <!-- <v:IconText Text="{Binding Name}" Icon="{Binding Icon}" IconSize="12" /> -->
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

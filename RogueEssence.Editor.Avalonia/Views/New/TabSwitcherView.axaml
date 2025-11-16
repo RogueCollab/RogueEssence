@@ -1,0 +1,165 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev.Converters"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:c="using:RogueEssence.Dev.Converters"
+             xmlns:v="using:RogueEssence.Dev.Views"
+             x:Name="ThisControl"
+             x:DataType="vm:TabSwitcherViewModel"
+             mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="200"
+             x:Class="RogueEssence.Dev.Views.TabSwitcherView">
+    <Design.DataContext>
+        <vm:TabSwitcherViewModel />
+    </Design.DataContext>
+
+    <UserControl.Resources>
+    </UserControl.Resources>
+    <Grid RowDefinitions="Auto, Auto">
+        <!-- <Grid Grid.Row="0" ColumnDefinitions="*, Auto" HorizontalAlignment="Stretch"> -->
+        <TextBox Grid.Row="0"
+                 Height="24"
+                 x:Name="TabSwitcherTextBox"
+                 HorizontalAlignment="Stretch"
+                 MaxWidth="400"
+                 Margin="0"
+                 BorderThickness="1"
+                 CornerRadius="0"
+                 Watermark="Search for tabs.."
+                 KeyDown="TabSwitcherTextBox_KeyDown"
+                 Text="{Binding SearchFilter, Mode=TwoWay}"
+                 BorderBrush="{DynamicResource Brush.Border2}"
+                 VerticalContentAlignment="Center">
+            <TextBox.InnerLeftContent>
+                <Path
+                    Fill="{DynamicResource Brush.FG2}"
+                    Width="14" Height="14"
+                    Margin="6,1,0,0"
+                    Data="{StaticResource Icons.MagnifyingGlassFill}" />
+            </TextBox.InnerLeftContent>
+
+            <TextBox.InnerRightContent>
+                <StackPanel Orientation="Horizontal">
+                    <Button Classes="icon_button"
+                            Width="16"
+                            x:Name="ClearFilterButton"
+                            Margin="6, 0"
+                            
+                            Click="ClearFilterButton_OnClick"
+                            IsVisible="{Binding SearchFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <Path
+                            Fill="{DynamicResource Brush.FG1}"
+                            Width="12" Height="12"
+                            Margin="0,1,0,0"
+                            Data="{StaticResource Icons.XCircleFill}" />
+                    </Button>
+                    <Border Width="1"
+                            Height="16"
+                            Background="{DynamicResource Brush.Border1}"
+                            Margin="0,0" />
+                    <Button Classes="icon_button"
+                            Width="24"
+                            Margin="3, 0"
+                            IsVisible="{Binding IsTreeView}"
+                            Padding="0, 0, 0, 0"
+                            Click="ToggleButtonOnClick"
+                            ToolTip.Placement="Right"
+                            ToolTip.Tip="Switch to tab list view (ordered by tab order in tab bar)">
+                        <Path
+                            Fill="{DynamicResource Brush.FG1}"
+                            Width="12" Height="12"
+                            Margin="0,0,0,0"
+                            Data="{StaticResource Icons.RowsFill}" />
+                    </Button>
+
+                    <Button Classes="icon_button"
+                            Width="24"
+                            Margin="3, 0"
+                            Padding="0, 0, 0, 0"
+                            IsVisible="{Binding !IsTreeView}"
+                            Click="ToggleButtonOnClick"
+                            ToolTip.Placement="Pointer"
+                            ToolTip.Tip="Switch to tab tree view (ordered by which tabs added first)"
+                            HorizontalAlignment="Right">
+                        <Path
+                            Fill="{DynamicResource Brush.FG1}"
+                            Width="12" Height="12"
+                            Margin="0,0,0,0"
+                            Data="{StaticResource Icons.TreeStructureFill}" />
+                    </Button>
+                </StackPanel>
+            </TextBox.InnerRightContent>
+        </TextBox>
+        <TreeView Grid.Row="1" Margin="0"
+                  Width="400"
+                  MaxHeight="300"
+                  IsVisible="{Binding IsTreeView}"
+                  x:Name="TreeViewTabSwitcher"
+                  ItemsSource="{Binding TopLevelPages}"
+                  SelectionMode="Single"
+                  PointerPressed="TreeViewTabSwitcher_OnPointerPressed"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <TreeView.Styles>
+                <Style Selector="TreeViewItem" x:DataType="vm:NodeBase">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+                    <Setter Property="Padding" Value="0 4" />
+                    <Setter Property="FontSize" Value="14" />
+                    <Setter Property="MinHeight" Value="20" />
+                    <Setter Property="Focusable" Value="True"/>
+                </Style>
+            </TreeView.Styles>
+            <TreeView.DataTemplates>
+                <StaticResource ResourceKey="PageNodeTemplate"/>
+            </TreeView.DataTemplates>
+        </TreeView>
+
+        <ListBox Grid.Row="1"
+                 x:Name="PagesListBox"
+                 Width="400"
+                 MaxHeight="300"
+                 IsVisible="{Binding !IsTreeView}"
+                 BorderThickness="0"
+                 SelectionMode="Single"
+                 KeyDown="PagesListBox_KeyDown"
+                 Background="Transparent"
+                 Focusable="True"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ItemsSource="{Binding VisiblePages, Mode=OneWay}"
+                 SelectedItem="{Binding SelectedPage, Mode=TwoWay}">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="37, 5, 8, 5" />
+                    <Setter Property="FontSize" Value="14" />
+                    <Setter Property="MinHeight" Value="20" />
+                </Style>
+                
+
+                <Style Selector="ListBox">
+                    <Setter Property="FocusAdorner">
+                        <FocusAdornerTemplate>
+                            <Grid />
+                        </FocusAdornerTemplate>
+                    </Setter>
+                </Style>
+            </ListBox.Styles>
+
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="vm:EditorPageViewModel">
+                    <Grid ColumnDefinitions="Auto,6,*" Background="Transparent" Tapped="OnItemTapped">
+                        <v:IconText Text="{Binding Title}" Icon="{Binding Icon}" IconSize="12" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
