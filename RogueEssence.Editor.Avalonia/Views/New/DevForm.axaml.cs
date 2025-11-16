@@ -73,7 +73,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                 if (dataType == DataManager.DataType.All)
                     DevDataManager.ClearCaches();
 
-                ViewModels.MainWindowViewModel devViewModel = (ViewModels.MainWindowViewModel)this.DataContext;
+                ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
                 if (dataType == DataManager.DataType.All)
                 {
@@ -145,7 +145,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         {
             lock (GameBase.lockObj)
             {
-                ViewModels.MainWindowViewModel devViewModel = (ViewModels.MainWindowViewModel)this.DataContext;
+                ViewModels.DevFormViewModel devViewModel = (ViewModels.DevFormViewModel)this.DataContext;
 
                 devViewModel.Player.UpdateLevel();
                 if (GameManager.Instance.IsInGame())
@@ -495,7 +495,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        if (DataContext is MainWindowViewModel vm)
+        if (DataContext is DevFormViewModel vm)
         {
             // vm.ModSwitcherClosed += () => ModSwitcherFlyoutButton.Flyout?.Hide();;
         }
@@ -503,7 +503,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     
     private void ModSwitcherFlyout_OnOpened(object? sender, EventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm)
+        if (DataContext is DevFormViewModel vm)
         {
             vm.OnModSwitcherOpened();
         }
@@ -511,7 +511,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     
     private void ModSwitcherFlyout_OnClosed(object? sender, EventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm)
+        if (DataContext is DevFormViewModel vm)
         {
             vm.OnModSwitcherClosed();
             // ModSwitcherFlyoutButton.Flyout?.Hide();
@@ -522,7 +522,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     {
         base.OnClosing(e);
 
-        if (!Design.IsDesignMode && DataContext is ViewModels.MainWindowViewModel)
+        if (!Design.IsDesignMode && DataContext is ViewModels.DevFormViewModel)
         {
             PreferencesWindowViewModel.Instance.Save();
         }
@@ -532,7 +532,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
  
     private void MasterTreeView_OnDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm && sender is TreeView { SelectedItem: not null } treeView)
+        if (DataContext is DevFormViewModel vm && sender is TreeView { SelectedItem: not null } treeView)
         {
             var selectedItem = (OpenEditorNode)treeView.SelectedItem;
             vm.AddPageFromPageNode(selectedItem);

@@ -801,6 +801,7 @@
             <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="{DynamicResource SystemAccentColor}" />
         </Style.Resources>
 
+        <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
 
         <Setter Property="MinHeight" Value="20" />
         <Setter Property="VerticalAlignment" Value="Center" />

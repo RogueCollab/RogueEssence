@@ -22,7 +22,7 @@ public class TabSwitcherViewModel: ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedPage, value);
     }
 
-    private readonly MainWindowViewModel _mainWindow;
+    private readonly DevFormViewModel _mainWindow;
 
     private string _searchFilter = string.Empty;
 
@@ -33,7 +33,7 @@ public class TabSwitcherViewModel: ViewModelBase
     }
 
     
-    public TabSwitcherViewModel(MainWindowViewModel mainWindow)
+    public TabSwitcherViewModel(DevFormViewModel mainWindow)
     {
         _mainWindow = mainWindow;
         UpdateVisiblePages(_searchFilter);
@@ -43,7 +43,7 @@ public class TabSwitcherViewModel: ViewModelBase
         this.WhenAnyValue(x => x.SearchFilter).Subscribe(UpdateVisiblePages);
     }
 
-    public TabSwitcherViewModel() : this(new MainWindowViewModel()) {}
+    // public TabSwitcherViewModel() : this(new DevFormViewModel()) {}
     
     public void ClearFilter()
     {

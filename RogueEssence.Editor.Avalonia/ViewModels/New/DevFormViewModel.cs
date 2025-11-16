@@ -13,7 +13,7 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public class DevFormViewModel : ViewModelBase
 {
     public DevTabGameViewModel Game { get; set; }
     public DevTabPlayerViewModel Player { get; set; }
@@ -267,23 +267,28 @@ public class MainWindowViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
     public ObservableCollection<NodeBase> Nodes { get; set; }
 
-    public MainWindowViewModel() : this(new PageFactory(new DesignServiceProvider()),
-        new NodeFactory(new DesignServiceProvider()), new DialogService(),
-        new TabEvents(new PageFactory(new DesignServiceProvider())))
-    {
-    }
+    // public DevFormViewModel() : this(new PageFactory(new DesignServiceProvider()),
+    //     new NodeFactory(new DesignServiceProvider()), new DialogService(),
+    //     new TabEvents(new PageFactory(new DesignServiceProvider())), new DevTabGameViewModel(), new DevTabPlayerViewModel())
+    // {
+    // }
 
-    public MainWindowViewModel(PageFactory pageFactory, NodeFactory nodeFactory, IDialogService dialogService,
-        TabEvents tabEvents)
+    public DevFormViewModel(PageFactory pageFactory, NodeFactory nodeFactory, IDialogService dialogService,
+        TabEvents tabEvents, DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabDataViewModel data, 
+        DevTabTravelViewModel travel, DevTabSpritesViewModel sprites, DevTabScriptViewModel script, 
+        DevTabModsViewModel mods, 
+        DevTabConstantsViewModel constants)
     {
-        Game = new DevTabGameViewModel();
-        Player = new DevTabPlayerViewModel();
-        Data = new DevTabDataViewModel();
-        Travel = new DevTabTravelViewModel();
-        Sprites = new DevTabSpritesViewModel();
-        Script = new DevTabScriptViewModel();
-        Mods = new DevTabModsViewModel();
-        Constants = new DevTabConstantsViewModel();
+        
+        // NOTE: These should all be private readonly
+        Game = game;
+        Player = player;
+        Data = data;
+        Travel = travel;
+        Sprites = sprites;
+        Script = script;
+        Mods = mods;
+        Constants = constants;
         _pageFactory = pageFactory;
         _tabEvents = tabEvents;
         _nodeFactory = nodeFactory;

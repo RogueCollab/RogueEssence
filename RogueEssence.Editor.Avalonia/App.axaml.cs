@@ -26,12 +26,14 @@ namespace RogueEssence.Dev
             collection.AddSingleton<TabEvents>();
             collection.AddSingleton<PageFactory>();
             collection.AddSingleton<NodeFactory>();
-            collection.AddSingleton<MainWindowViewModel>();
+            collection.AddSingleton<DevFormViewModel>();
 
-
+       
+            AddDevTabViewModels(collection);
+            
             collection.AddTransient<TabSwitcherViewModel>(sp =>
             {
-                var mainVm = sp.GetRequiredService<MainWindowViewModel>();
+                var mainVm = sp.GetRequiredService<DevFormViewModel>();
                 return new TabSwitcherViewModel(mainVm);
             });
 
@@ -64,6 +66,18 @@ namespace RogueEssence.Dev
             collection.AddTransient<RandomInfoPageViewModel>();
             collection.AddTransient<SpritePageViewModel>();
             collection.AddTransient<ModInfoEditorViewModel>();
+        }
+        
+        private static void AddDevTabViewModels(this IServiceCollection services)
+        {
+            services.AddSingleton<DevTabGameViewModel>();
+            services.AddSingleton<DevTabPlayerViewModel>();
+            services.AddSingleton<DevTabDataViewModel>();
+            services.AddSingleton<DevTabTravelViewModel>();
+            services.AddSingleton<DevTabSpritesViewModel>();
+            services.AddSingleton<DevTabScriptViewModel>();
+            services.AddSingleton<DevTabModsViewModel>();
+            services.AddSingleton<DevTabConstantsViewModel>();
         }
 
         public static void RegisterPages(this IServiceProvider provider)
@@ -127,7 +141,7 @@ namespace RogueEssence.Dev
             services.RegisterPages();
 
 
-            var vm = services.GetRequiredService<MainWindowViewModel>();
+            var vm = services.GetRequiredService<DevFormViewModel>();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {

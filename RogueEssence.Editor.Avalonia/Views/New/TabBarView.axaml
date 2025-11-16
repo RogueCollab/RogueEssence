@@ -9,7 +9,7 @@
              xmlns:local="clr-namespace:RogueEssence.Dev.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="30"
              x:Class="RogueEssence.Dev.Views.TabBarView"
-             x:DataType="vm:MainWindowViewModel"
+             x:DataType="vm:DevFormViewModel"
              x:Name="MainTabBar">
 
     <UserControl.Resources>
@@ -31,7 +31,7 @@
         </ControlTheme>
     </UserControl.Resources>
     <Design.DataContext>
-        <vm:MainWindowViewModel />
+        <vm:DevFormViewModel />
     </Design.DataContext>
 
     <UserControl.Styles>
@@ -51,7 +51,7 @@
                 <Setter Property="Background">
                     <Setter.Value>
                         <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
-                            <Binding Path="((vm:MainWindowViewModel)DataContext).TemporaryTab"
+                            <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
                                      RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
                             <Binding Source="SelectedTabItemBackgroundBrush" />
                             <Binding Source="" />
@@ -63,7 +63,7 @@
                 <Setter Property="Foreground">
                     <Setter.Value>
                         <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
-                            <Binding Path="((vm:MainWindowViewModel)DataContext).TemporaryTab"
+                            <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
                                      RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
                             <!-- highlight color -->
                             <Binding Source="TabItemHeaderForegroundSelected" />
@@ -79,7 +79,7 @@
             <Style Selector="^:selected:pointerover">
                 <Setter Property="Background">
                     <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
-                        <Binding Path="((vm:MainWindowViewModel)DataContext).TemporaryTab"
+                        <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
                                  RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
                         <Binding Source="SelectedTabItemBackgroundBrush" />
                         <Binding Source="TabItemHeaderBackgroundUnselectedPointerOver" />
@@ -159,7 +159,7 @@
         <Style Selector="controls|DragTabItem:selected /template/ Border#Indicator">
             <Setter Property="Background" Value="{DynamicResource Brush.Accent}" />
             <Setter Property="IsVisible"
-                    Value="{Binding ((vm:MainWindowViewModel)DataContext).TemporaryTab, RelativeSource={RelativeSource AncestorType=controls:TabsControl}, Converter={x:Static ObjectConverters.IsNull}}" />
+                    Value="{Binding ((vm:DevFormViewModel)DataContext).TemporaryTab, RelativeSource={RelativeSource AncestorType=controls:TabsControl}, Converter={x:Static ObjectConverters.IsNull}}" />
 
         </Style>
 

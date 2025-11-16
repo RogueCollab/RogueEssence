@@ -15,7 +15,7 @@ namespace RogueEssence.Dev.Views
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
-            if (DataContext is MainWindowViewModel vm)
+            if (DataContext is DevFormViewModel vm)
             {
                 vm.TabSwitcherClosed += () => TabSwitcherFlyoutButton.Flyout?.Hide();;
             }
@@ -23,7 +23,7 @@ namespace RogueEssence.Dev.Views
 
         private async void OnCloseTab(object? sender, RoutedEventArgs e)
         {
-            if (DataContext is not MainWindowViewModel vm) return;
+            if (DataContext is not DevFormViewModel vm) return;
             if (sender is not Button { DataContext: EditorPageViewModel page }) return;
             
             bool closed = await vm.TryCloseTabAsync(page);
@@ -34,7 +34,7 @@ namespace RogueEssence.Dev.Views
         
         private void TabSwitcherFlyout_OnOpened(object? sender, EventArgs e)
         {
-            if (DataContext is MainWindowViewModel vm)
+            if (DataContext is DevFormViewModel vm)
             {
                 vm.OpenTabSwitcher();
             }
@@ -42,7 +42,7 @@ namespace RogueEssence.Dev.Views
 
         private void TabSwitcherFlyout_OnClosed(object? sender, EventArgs e)
         {
-            if (DataContext is MainWindowViewModel vm)
+            if (DataContext is DevFormViewModel vm)
             {
                 vm.CloseTabSwitcher();
             }

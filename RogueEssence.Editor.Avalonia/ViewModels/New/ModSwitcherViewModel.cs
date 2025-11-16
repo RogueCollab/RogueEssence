@@ -12,7 +12,7 @@ public class ModSwitcherViewModel : ViewModelBase
 {
 
     private readonly IDialogService _dialogService;
-    private readonly MainWindowViewModel _mainWindow;
+    private readonly DevFormViewModel _mainWindow;
     private ModHeader _selectedMod;
 
     public ModHeader SelectedMod
@@ -22,7 +22,7 @@ public class ModSwitcherViewModel : ViewModelBase
     }
     
     public ObservableCollection<Models.ModHeader> Mods { get; }
-    public ModSwitcherViewModel(MainWindowViewModel mainWindowViewModel, IDialogService dialogService)
+    public ModSwitcherViewModel(DevFormViewModel mainWindowViewModel, IDialogService dialogService)
     {
         _mainWindow = mainWindowViewModel;
         _dialogService = dialogService;
