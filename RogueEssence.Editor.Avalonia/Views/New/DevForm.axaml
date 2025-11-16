@@ -14,6 +14,13 @@
                     Opened="Window_Loaded" Closed="Window_Closed"
                     Title="Avalonia PMD Editor">
 
+    <Design.DataContext>
+
+
+        <vm:DevFormViewModel />
+
+
+    </Design.DataContext>
   <!-- <v:ChromelessWindow.DataContext> -->
   <!--   <vm:MainWindowViewModel /> -->
   <!-- </v:ChromelessWindow.DataContext> -->

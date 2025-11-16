@@ -58,6 +58,29 @@ namespace RogueEssence.Data
             }
             throw new ArgumentOutOfRangeException(nameof(dataType), dataType, null);
         }
+        
+        public static string GetIcon(this DataManager.DataType dataType) => dataType switch
+        {
+            DataManager.DataType.Monster => "Icons.GhostFill",
+            DataManager.DataType.Skill => "Icons.SwordFill",
+            DataManager.DataType.Item => "Icons.JarLabelFill",
+            DataManager.DataType.Intrinsic => "Icons.SwordFill",
+            DataManager.DataType.Status => "Icons.HeartFill",
+            DataManager.DataType.MapStatus => "Icons.HeartFill",
+            DataManager.DataType.Terrain => "Icons.MountainsFill",
+            DataManager.DataType.Tile => "Icons.SquaresFourFill",
+            DataManager.DataType.Zone => "Icons.StairsFill",
+            DataManager.DataType.Emote => "Icons.StarFill",
+            DataManager.DataType.AutoTile => "Icons.SquaresFourFill",
+            DataManager.DataType.Element => "Icons.LightningFill",
+            DataManager.DataType.GrowthGroup => "Icons.TrendUpFill",
+            DataManager.DataType.SkillGroup => "Icons.ListFill",
+            DataManager.DataType.AI => "Icons.BrainFill",
+            DataManager.DataType.Rank => "Icons.BinaryFill",
+            DataManager.DataType.Skin => "Icons.SparkleFill",
+            _ => "Icons.ListFill"
+        };
+    
     }
     
     //Manages data such as items, intrinsics, etc.  Also holds save data

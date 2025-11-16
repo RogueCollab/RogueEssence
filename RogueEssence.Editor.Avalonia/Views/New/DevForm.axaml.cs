@@ -117,7 +117,10 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                 if (dataType == DataManager.DataType.All)
                     devViewModel.Mods.UpdateMod();
 
+                devViewModel.ClearNodes();
+                devViewModel.UpdateTree();
                 LoadComplete = true;
+                
             }
         }
 

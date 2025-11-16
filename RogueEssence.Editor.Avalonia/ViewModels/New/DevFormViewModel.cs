@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using RogueEssence.Dev.Models;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
+using RogueEssence.Data;
 using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.Views;
 
@@ -265,8 +266,15 @@ public class DevFormViewModel : ViewModelBase
     private readonly PageFactory _pageFactory;
     private readonly TabEvents _tabEvents;
     private readonly IDialogService _dialogService;
-    public ObservableCollection<NodeBase> Nodes { get; set; }
-
+    
+    
+    private ObservableCollection<NodeBase> _nodes = new();
+    
+    public ObservableCollection<NodeBase> Nodes 
+    { 
+        get => _nodes;
+        set => this.RaiseAndSetIfChanged(ref _nodes, value);
+    }
     // public DevFormViewModel() : this(new PageFactory(new DesignServiceProvider()),
     //     new NodeFactory(new DesignServiceProvider()), new DialogService(),
     //     new TabEvents(new PageFactory(new DesignServiceProvider())), new DevTabGameViewModel(), new DevTabPlayerViewModel())
@@ -317,7 +325,50 @@ public class DevFormViewModel : ViewModelBase
         var tab = _pageFactory.CreatePage("DevControl");
         tab.Icon = "Icons.GameControllerFill";
         AddTopLevelPage(tab);
-        this.WhenAnyValue(x => x.Filter).Subscribe(ApplyFilter);
+        this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
+    }
+
+
+    public void ClearNodes()
+    {
+        Nodes.Clear();
+    }
+    public void UpdateTree()
+    {
+        CreateDataNode();
+
+     
+    }
+
+    private void CreateDataNode()
+    {
+        var dataNode = _nodeFactory.CreateOpenEditorNode("Data", "Icons.FloppyDiskFill", "");
+        foreach (var type in Enum.GetValues<DataManager.DataType>())
+        {
+            if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+                continue;
+            
+               
+            var dataItemRootNode = _nodeFactory.CreateDataRootNode(
+                type.ToString(),
+                "TODO",
+                type.ToString(),
+                type.GetIcon());
+            dataNode.SubNodes.Add(dataItemRootNode);
+            var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
+
+            foreach (string key in entries.Keys)
+            {
+                var itemNode = _nodeFactory.CreateDataItemNode(
+                    key,
+                    "TODO",
+                    $"{key}: {entries[key]}",
+                    type.GetIcon());
+            
+                dataItemRootNode.SubNodes.Add(itemNode);
+            }
+        }
+        Nodes.Add(dataNode);
     }
     
     private void InitializeTabEvents()
