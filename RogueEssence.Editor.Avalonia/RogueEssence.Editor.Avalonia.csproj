@@ -17,6 +17,7 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
+    <PackageReference Include="Tabalonia" Version="0.10.7" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="DataEditor\DataEditRootForm.axaml.cs">
@@ -183,6 +184,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ViewModels\New\New\.DS_Store" />
+    <Folder Include="Models\" />
   </ItemGroup>
 </Project>
