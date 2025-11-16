@@ -36,7 +36,7 @@ namespace WaypointServer
             Errors++;
 
             StringBuilder errorMsg = new StringBuilder();
-            errorMsg.Append(String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), exception.Message));
+            errorMsg.Append(String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.fff}", DateTime.Now), exception.Message));
             errorMsg.Append("\n");
             Exception innerException = exception;
             int depth = 0;
@@ -70,7 +70,7 @@ namespace WaypointServer
 
         public void LogInfo(string diagInfo)
         {
-            string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.FFF}", DateTime.Now), diagInfo);
+            string fullMsg = String.Format("[{0}] {1}", String.Format("{0:yyyy/MM/dd HH:mm:ss.fff}", DateTime.Now), diagInfo);
 
             try
             {
