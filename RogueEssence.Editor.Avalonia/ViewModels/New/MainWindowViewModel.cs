@@ -15,6 +15,17 @@ namespace RogueEssence.Dev.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    public DevTabGameViewModel Game { get; set; }
+    public DevTabPlayerViewModel Player { get; set; }
+    public DevTabDataViewModel Data { get; set; }
+    public DevTabTravelViewModel Travel { get; set; }
+    public DevTabSpritesViewModel Sprites { get; set; }
+    public DevTabScriptViewModel Script { get; set; }
+    public DevTabModsViewModel Mods { get; set; }
+    public DevTabConstantsViewModel Constants { get; set; }
+
+
+    
     private readonly NodeFactory _nodeFactory;
 
 
@@ -265,6 +276,14 @@ public class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(PageFactory pageFactory, NodeFactory nodeFactory, IDialogService dialogService,
         TabEvents tabEvents)
     {
+        Game = new DevTabGameViewModel();
+        Player = new DevTabPlayerViewModel();
+        Data = new DevTabDataViewModel();
+        Travel = new DevTabTravelViewModel();
+        Sprites = new DevTabSpritesViewModel();
+        Script = new DevTabScriptViewModel();
+        Mods = new DevTabModsViewModel();
+        Constants = new DevTabConstantsViewModel();
         _pageFactory = pageFactory;
         _tabEvents = tabEvents;
         _nodeFactory = nodeFactory;

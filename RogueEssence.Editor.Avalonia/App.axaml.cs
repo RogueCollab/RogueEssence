@@ -131,14 +131,14 @@ namespace RogueEssence.Dev
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
+                desktop.MainWindow = new DevForm
                 {
                     DataContext = vm
                 };
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
-                singleViewPlatform.MainView = new MainWindow
+                singleViewPlatform.MainView = new DevForm
                 {
                     DataContext = vm
                 };
