@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using RogueEssence.Data;
 using RogueEssence.Dev.Services;
 using RogueEssence.Dev.ViewModels;
 
@@ -25,7 +26,7 @@ namespace RogueEssence.Dev
         public OpenEditorNode CreateOpenEditorNode(string title, string? icon = null, string editorKey = "")
             => Create<OpenEditorNode>(title, icon, editorKey);
 
-        public DataRootNode CreateDataRootNode(string dataType, string editorKey, string title, string? icon = null)
+        public DataRootNode CreateDataRootNode(DataManager.DataType dataType, string editorKey, string title, string? icon = null)
         {
             return Create<DataRootNode>(dataType, editorKey, title, icon);
         }

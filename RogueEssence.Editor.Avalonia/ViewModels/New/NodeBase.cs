@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
+using RogueEssence.Data;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels;
@@ -98,7 +99,7 @@ public abstract class ItemRootNode : OpenEditorNode
 
 public class DataRootNode : ItemRootNode
 {
-    protected readonly string _dataType;
+    public DataManager.DataType DataType { get; }
     
     private readonly NodeFactory _nodeFactory;
     
@@ -115,12 +116,12 @@ public class DataRootNode : ItemRootNode
     public ReactiveCommand<DataItemNode, Unit> ResaveAsFile { get; }
     public ReactiveCommand<DataItemNode, Unit> ResaveAsPatch { get; }
 
-    public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, string dataType, string editorKey, string title, string? icon = null)
+    public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType, string editorKey, string title, string? icon = null)
         : base(title, icon ?? "", editorKey)
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
-        _dataType = dataType;
+        DataType = dataType;
         
         AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
         DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
@@ -135,13 +136,13 @@ public class DataRootNode : ItemRootNode
     private async Task AddItemAsync()
     {
         var vm = new RenameWindowViewModel();
-        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {_dataType}");
+        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
 
         if (!result)
             return;
 
         SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
-        Console.WriteLine($"Added {_dataType} item: {vm.Name}");
+        Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
 
     private async Task DeleteItemAsync(DataItemNode? node)
@@ -161,24 +162,24 @@ public class DataRootNode : ItemRootNode
             return;
 
         SubNodes.Remove(node);
-        Console.WriteLine($"Deleted {node.Title} of type {_dataType}");
+        Console.WriteLine($"Deleted {node.Title} of type {DataType}");
     }
 
     private async Task ReIndexAsync()
     {
-        Console.WriteLine($"Reindexing {_dataType}...");
+        Console.WriteLine($"Reindexing {DataType}...");
         await Task.Delay(100);
     }
 
     private async Task ResaveAllAsFileAsync()
     {
-        Console.WriteLine($"Resaving all {_dataType} as file...");
+        Console.WriteLine($"Resaving all {DataType} as file...");
         await Task.Delay(100);
     }
 
     private async Task ResaveAllAsDiffAsync()
     {
-        Console.WriteLine($"Resaving all {_dataType} as diff...");
+        Console.WriteLine($"Resaving all {DataType} as diff...");
         await Task.Delay(100);
     }
 

@@ -21,11 +21,13 @@ namespace RogueEssence.Dev.ViewModels;
 public class DevFormViewModel : ViewModelBase
 {
     private HierarchicalTreeDataGridSource<NodeBase> _nodeSource;
-    public HierarchicalTreeDataGridSource<NodeBase> NodeSource 
-    { 
+
+    public HierarchicalTreeDataGridSource<NodeBase> NodeSource
+    {
         get => _nodeSource;
         set => this.RaiseAndSetIfChanged(ref _nodeSource, value);
     }
+
     public DevTabGameViewModel Game { get; set; }
     public DevTabPlayerViewModel Player { get; set; }
     public DevTabDataViewModel Data { get; set; }
@@ -36,7 +38,6 @@ public class DevFormViewModel : ViewModelBase
     public DevTabConstantsViewModel Constants { get; set; }
 
 
-    
     private readonly NodeFactory _nodeFactory;
 
 
@@ -49,7 +50,7 @@ public class DevFormViewModel : ViewModelBase
     }
 
 
-    private Models.ModHeader _currentMod = new  Models.ModHeader("Halcyon", "halcyon");
+    private Models.ModHeader _currentMod = new Models.ModHeader("Halcyon", "halcyon");
 
     public Models.ModHeader CurrentMod
     {
@@ -61,7 +62,9 @@ public class DevFormViewModel : ViewModelBase
     {
         TabSwitcher = _pageFactory.GetRequiredService<TabSwitcherViewModel>();
     }
+
     public event Action? TabSwitcherClosed;
+
     public void CloseTabSwitcher()
     {
         TabSwitcher = null;
@@ -76,8 +79,9 @@ public class DevFormViewModel : ViewModelBase
         }
     }
 
-    
+
     public event Action? ModSwitcherClosed;
+
     public void OnModSwitcherClosed()
     {
         if (ModSwitcher != null)
@@ -90,8 +94,9 @@ public class DevFormViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> OpenPreferencesWindow { get; }
 
     public ReactiveCommand<Unit, Unit> ClearFilterCommand { get; }
-    
+
     private string _filter = "";
+
     public string Filter
     {
         get { return _filter; }
@@ -111,26 +116,27 @@ public class DevFormViewModel : ViewModelBase
             RefreshTreeDataGrid();
         });
     }
+
     private void RefreshTreeDataGrid()
     {
         NodeSource = new HierarchicalTreeDataGridSource<NodeBase>(Nodes)
-                  {
-                      Columns =
-                      {
-                          new HierarchicalExpanderColumn<NodeBase>(
-                              new TemplateColumn<NodeBase>(
-                                  null,
-                                  "TreeDataGridNodeBaseTemplate",
-                                  null,
-                                  new GridLength(1, GridUnitType.Star)),
-                              x => x.SubNodes.Where(n => n.IsVisible),
-                              null,                        // hasChildrenSelector (optional)
-                              x => x.IsExpanded)           // isExpandedSelector
-                      },
-                  };
+        {
+            Columns =
+            {
+                new HierarchicalExpanderColumn<NodeBase>(
+                    new TemplateColumn<NodeBase>(
+                        null,
+                        "TreeDataGridNodeBaseTemplate",
+                        null,
+                        new GridLength(1, GridUnitType.Star)),
+                    x => x.SubNodes.Where(n => n.IsVisible),
+                    x => x.SubNodes.Count > 0,
+                    x => x.IsExpanded)
+            },
+        };
     }
-    
-    
+
+
     private ObservableCollection<EditorPageViewModel> _pages;
 
     public ObservableCollection<EditorPageViewModel> Pages
@@ -172,14 +178,14 @@ public class DevFormViewModel : ViewModelBase
         // Console.WriteLine($"Adding top level page {page}");
         var navigated = TryNavigateToExistingPage(page);
         if (navigated) return;
-        
+
         if (!page.AddNewTab)
         {
             TemporaryTab = page;
             return;
         }
-        
-        
+
+
         Pages.Add(page);
         var node = _nodeFactory.CreatePageNode(page, null);
         TopLevelPages.Add(node);
@@ -187,13 +193,13 @@ public class DevFormViewModel : ViewModelBase
         ActivePage = page;
     }
 
-    
+
     public void AddChildPage(EditorPageViewModel parentPage, EditorPageViewModel childPage)
     {
         var navigated = TryNavigateToExistingPage(childPage);
         if (navigated) return;
-        
-        
+
+
         // Otherwise... add to the list of tabs
         if (_pageToNodeMap.TryGetValue(parentPage, out var parentNode))
         {
@@ -231,7 +237,7 @@ public class DevFormViewModel : ViewModelBase
 
         return false;
     }
-        
+
     public bool PageHasChildren(EditorPageViewModel page)
     {
         if (!_pageToNodeMap.TryGetValue(page, out var node))
@@ -244,12 +250,12 @@ public class DevFormViewModel : ViewModelBase
     {
         if (!_pageToNodeMap.TryGetValue(page, out var node))
             return;
-        
+
         int removeIdx = Pages.IndexOf(page);
 
         ClosePageAndChildren(node);
-        
-        
+
+
         // We want to prioritize setting the left tab to be the active tab since our editors open stuff to the right first
         // Maybe we want to set the active page to be the parent if it exists?
         if (Pages.Count == 0)
@@ -271,7 +277,6 @@ public class DevFormViewModel : ViewModelBase
                 ActivePage = Pages[0];
             }
         }
-        
     }
 
     private void ClosePageAndChildren(PageNode node)
@@ -300,12 +305,12 @@ public class DevFormViewModel : ViewModelBase
     private readonly PageFactory _pageFactory;
     private readonly TabEvents _tabEvents;
     private readonly IDialogService _dialogService;
-    
-    
+
+
     private ObservableCollection<NodeBase> _nodes = new();
-    
-    public ObservableCollection<NodeBase> Nodes 
-    { 
+
+    public ObservableCollection<NodeBase> Nodes
+    {
         get => _nodes;
         set => this.RaiseAndSetIfChanged(ref _nodes, value);
     }
@@ -316,12 +321,11 @@ public class DevFormViewModel : ViewModelBase
     // }
 
     public DevFormViewModel(PageFactory pageFactory, NodeFactory nodeFactory, IDialogService dialogService,
-        TabEvents tabEvents, DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabDataViewModel data, 
-        DevTabTravelViewModel travel, DevTabSpritesViewModel sprites, DevTabScriptViewModel script, 
-        DevTabModsViewModel mods, 
+        TabEvents tabEvents, DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabDataViewModel data,
+        DevTabTravelViewModel travel, DevTabSpritesViewModel sprites, DevTabScriptViewModel script,
+        DevTabModsViewModel mods,
         DevTabConstantsViewModel constants)
     {
-        
         // NOTE: These should all be private readonly
         Game = game;
         Player = player;
@@ -349,7 +353,7 @@ public class DevFormViewModel : ViewModelBase
 
         // TODO: move this own view
         ClearFilterCommand = ReactiveCommand.Create(() => { Filter = string.Empty; });
-        
+
         OpenPreferencesWindow = ReactiveCommand.CreateFromTask(async () =>
         {
             await _dialogService.ShowDialogAsync<PreferencesWindowViewModel, bool>(
@@ -360,13 +364,13 @@ public class DevFormViewModel : ViewModelBase
         tab.Icon = "Icons.GameControllerFill";
         AddTopLevelPage(tab);
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
-
-        
     }
+
     public void ClearNodes()
     {
         Nodes.Clear();
     }
+
     public void UpdateTree()
     {
         CreateDataNode();
@@ -379,10 +383,10 @@ public class DevFormViewModel : ViewModelBase
         {
             if (type == DataManager.DataType.All || type == DataManager.DataType.None)
                 continue;
-            
-               
+
+
             var dataItemRootNode = _nodeFactory.CreateDataRootNode(
-                type.ToString(),
+                type,
                 "TODO",
                 type.ToString(),
                 type.GetIcon());
@@ -393,16 +397,17 @@ public class DevFormViewModel : ViewModelBase
             {
                 var itemNode = _nodeFactory.CreateDataItemNode(
                     key,
-                    "TODO",
+                    "DevEditEditor",
                     $"{key}: {entries[key]}",
                     type.GetIcon());
-            
+
                 dataItemRootNode.SubNodes.Add(itemNode);
             }
         }
+
         Nodes.Add(dataNode);
     }
-    
+
     private void InitializeTabEvents()
     {
         _tabEvents.AddChildTabEvent += (parent, child) =>
@@ -411,17 +416,11 @@ public class DevFormViewModel : ViewModelBase
             ActivePage = child;
         };
 
-        _tabEvents.AddTopLevelTabEvent += (tab) =>
-        {
-            AddTopLevelPage(tab);
-        };
-        
+        _tabEvents.AddTopLevelTabEvent += (tab) => { AddTopLevelPage(tab); };
+
         _tabEvents.RemoveTabEvent += (tab) => { RemoveTab(tab); };
-        
-        _tabEvents.NavigateToTabEvent += (tab) =>
-        {
-            ActivePage = tab;
-        };
+
+        _tabEvents.NavigateToTabEvent += (tab) => { ActivePage = tab; };
     }
 
     private void BuildNodes()
@@ -438,7 +437,7 @@ public class DevFormViewModel : ViewModelBase
 
         halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill"));
 
-        var monstersRoot = _nodeFactory.CreateDataRootNode("Monsters", "Monsters", "Monsters", "Icons.GhostFill");
+        // var monstersRoot = _nodeFactory.CreateDataRootNode("Monsters", "Monsters", "Monsters", "Icons.GhostFill");
 
 
         //             new OpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"),
@@ -447,10 +446,10 @@ public class DevFormViewModel : ViewModelBase
         //             new OpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"),
 
 
-        monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("eevee", "MonsterEditor", "eevee: Eevee",
-            "Icons.GhostFill"));
-        monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("seviper", "MonsterEditor", "seviper: Seviper",
-            "Icons.GhostFill"));
+        // monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("eevee", "MonsterEditor", "eevee: Eevee",
+        //     "Icons.GhostFill"));
+        // monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("seviper", "MonsterEditor", "seviper: Seviper",
+        //     "Icons.GhostFill"));
 
         var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
         particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
@@ -493,14 +492,13 @@ public class DevFormViewModel : ViewModelBase
         //             }
         //         }
 
-        halcyonNode.SubNodes.Add(monstersRoot);
+        // halcyonNode.SubNodes.Add(monstersRoot);
         Nodes = new ObservableCollection<NodeBase> { halcyonNode };
 
         halcyonNode.IsExpanded = true;
-        monstersRoot.IsExpanded = true;
+        // monstersRoot.IsExpanded = true;
     }
 
- 
 
     private TabSwitcherViewModel? _tabSwitcher;
 
@@ -518,7 +516,7 @@ public class DevFormViewModel : ViewModelBase
         get => _modSwitcher;
         set => this.RaiseAndSetIfChanged(ref _modSwitcher, value);
     }
-    
+
 
     // Navigate to a page from tab switcher
     public void NavigateToPage(PageNode node)
@@ -527,10 +525,10 @@ public class DevFormViewModel : ViewModelBase
         Console.WriteLine("yay");
         ActivePage = node.Page;
     }
-    
+
     public void AddPageFromPageNode(OpenEditorNode node)
     {
-        var editor = _pageFactory.CreatePage(node.EditorKey);
+        var editor = _pageFactory.CreatePage(node.EditorKey, node);
 
         if (editor != null)
         {
@@ -538,7 +536,7 @@ public class DevFormViewModel : ViewModelBase
             AddTopLevelPage(editor);
         }
     }
-    
+
     public async Task<bool> TryCloseTabAsync(EditorPageViewModel page)
     {
         if (PageHasChildren(page))
@@ -557,7 +555,7 @@ public class DevFormViewModel : ViewModelBase
         RemoveTab(page);
         return true;
     }
-    
+
 
     // public TreeSearchViewModel TreeSearch { get; } = new TreeSearchViewModel();
 }

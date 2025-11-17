@@ -62,6 +62,22 @@ namespace RogueEssence.Dev
             return null;
         }
     
+        public EditorPageViewModel? CreatePage(string key, NodeBase? node = null)
+        {
+            if (_map.TryGetValue(key, out var type))
+            {
+                if (node != null)
+                {
+                    return (EditorPageViewModel)
+                        ActivatorUtilities.CreateInstance(_provider, type, node);
+                }
+                
+                return (EditorPageViewModel)_provider.GetRequiredService(type);
+            }
+
+            return null;
+        }
+        
         // TODO: see if create page or the one above is better...
         public T CreatePage<T>() where T : EditorPageViewModel
         {

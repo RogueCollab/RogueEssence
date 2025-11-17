@@ -66,6 +66,7 @@ namespace RogueEssence.Dev
             collection.AddTransient<RandomInfoPageViewModel>();
             collection.AddTransient<SpritePageViewModel>();
             collection.AddTransient<ModInfoEditorViewModel>();
+            collection.AddTransient<DevEditPageViewModel>();
         }
         
         private static void AddDevTabViewModels(this IServiceCollection services)
@@ -90,6 +91,7 @@ namespace RogueEssence.Dev
             pageFactory.Register<RandomInfoPageViewModel>("RandomInfo");
             pageFactory.Register<SpritePageViewModel>("SpritePage");
             pageFactory.Register<ModInfoEditorViewModel>("ModInfoEditor");
+            pageFactory.Register<DevEditPageViewModel>("DevEditEditor");
         }
     }
 

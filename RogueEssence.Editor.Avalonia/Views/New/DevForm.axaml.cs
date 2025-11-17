@@ -674,12 +674,5 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
     private async void LeftTreeDataGrid_OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (sender is TreeDataGrid treeDataGrid)
-        {
-            await Task.Delay(10); // Small delay to let layout complete
-            treeDataGrid.InvalidateMeasure();
-            treeDataGrid.InvalidateArrange();
-            treeDataGrid.UpdateLayout(); // Force immediate layout pass
-        }
     }
 }
