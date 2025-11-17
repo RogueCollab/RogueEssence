@@ -135,30 +135,90 @@
                             Height="1"
                             Background="{DynamicResource Brush.Border2}"
                             HorizontalAlignment="Stretch" />
+                    <TreeDataGrid Grid.Row="2"
+                                  MinHeight="200" MinWidth="200"
+                                  x:Name="LeftTreeDataGrid"
+                                  Loaded="LeftTreeDataGrid_OnLoaded"
+                                  DoubleTapped="LeftTreeDataGrid_OnDoubleTapped"
+                                  ContextRequested="LeftTreeDataGrid_OnContextRequested"
+                                  SelectionChanging="LeftTreeDataGrid_OnSelectionChanging"
+                                  ShowColumnHeaders="False"
+                                  Source="{Binding NodeSource}">
+                        
+                        <TreeDataGrid.Resources>
+                            <!-- <DataTemplate x:Key="TreeDataGridNodeBaseTemplate"> -->
+                            <!--     <TreeDataGridExpander -->
+                            <!--         IsExpanded="{Binding IsExpanded, Mode=TwoWay}"> -->
+                            <!--         <TextBlock Text="{Binding Title}" /> -->
+                            <!--     </TreeDataGridExpander> -->
+                            <!-- </DataTemplate> -->
+                            <DataTemplate x:Key="TreeDataGridNodeBaseTemplate" DataType="vm:NodeBase">
+                                <ContentControl Content="{Binding}">
+                                    <ContentControl.DataTemplates>
+                                        <DataTemplate DataType="vm:ItemRootNode">
+                                            <Grid ColumnDefinitions="*, 32" Height="16" Margin="8, 0, 0, 0">
+                                                <v:IconText Grid.Column="0" Grid.ColumnSpan="2"
+                                                            Text="{Binding Title}"
+                                                            Icon="{Binding Icon}"
+                                                            IconSize="12" />
 
-                    <TreeView Grid.Row="2" Margin="0"
-                              x:Name="MasterTreeView"
-                              SelectionMode="Toggle"
-                              ItemsSource="{Binding Nodes}"
-                              DoubleTapped="MasterTreeView_OnDoubleTapped"
-                              ContextRequested="MasterTreeView_OnContextRequested"
-                              SelectionChanged="MasterTreeView_OnSelectionChanged"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <TreeView.Styles>
-                            <Style Selector="TreeViewItem" x:DataType="vm:NodeBase">
-                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                                <Setter Property="IsVisible" Value="{Binding IsVisible}" />
-                            </Style>
-                        </TreeView.Styles>
-                        <TreeView.DataTemplates>
-                            <!-- Note the DataRoot and SpriteRoot follow the ItemRootTemplate -->
-                            <StaticResource ResourceKey="ItemRootTemplate" />
-                            <StaticResource ResourceKey="DataItemTemplate" />
-                            <StaticResource ResourceKey="OpenEditorTemplate" />
-                            <StaticResource ResourceKey="NodeBaseTemplate" />
-                        </TreeView.DataTemplates>
-                    </TreeView>
+                                                <Button Grid.Column="1" HorizontalAlignment="Left" Classes="icon_button"
+                                                        Padding="4, 0, 0, 0"
+                                                        Width="18" Height="18"
+                                                        IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
+
+                                                        Command="{Binding AddCommand}">
+                                                    <Path Stretch="Fill"
+                                                          Fill="{DynamicResource Brush.FG1}"
+                                                          Width="12" Height="12"
+                                                          Data="{StaticResource Icons.Plus}" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                        
+                                        <DataTemplate DataType="vm:DataItemNode" >
+                                            <Grid ColumnDefinitions="*,32" Height="16" Margin="8, 0, 0, 0">
+                                                <v:IconText Text="{Binding Title}"
+                                                            Icon="{Binding Icon}"
+                                                            IconSize="12" />
+
+                                                <Button Grid.Column="1"
+                                                        Padding="4, 0, 0, 0"
+                                                        HorizontalAlignment="Left"
+                                                        Command="{Binding ((vm:ItemRootNode)Parent).DeleteCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
+                                                        Classes="icon_button"
+                                                        Width="18" Height="18"
+                                                        VerticalAlignment="Center">
+                                                    <Path Stretch="Fill"
+                                                          Fill="{DynamicResource Brush.FG1}"
+                                                          Width="12" Height="12"
+                                                          Data="{StaticResource Icons.TrashFill}" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+
+                                 
+                                        <DataTemplate DataType="vm:OpenEditorNode">
+                                            <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
+                                                        Icon="{Binding Icon}"
+                                                        IconSize="12" />
+                                        </DataTemplate>
+
+                                      
+                                        
+                                        <DataTemplate DataType="vm:NodeBase">
+                                            <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
+                                                        Icon="{Binding Icon}"
+                                                        IconSize="12" />
+                                        </DataTemplate>
+
+                                    </ContentControl.DataTemplates>
+                                </ContentControl>
+                            </DataTemplate>
+                        </TreeDataGrid.Resources>
+                    </TreeDataGrid>
                 </Grid>
             </Border>
 

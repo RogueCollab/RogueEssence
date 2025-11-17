@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Reactive;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -19,7 +20,7 @@ public class NodeBase : ViewModelBase
 {
     public ObservableCollection<NodeBase> SubNodes { get; set; }
 
-    // public NodeBase? Parent { get; internal set; } 
+    public NodeBase? Parent { get; internal set; } 
     
     private string _title = "";
 
@@ -43,7 +44,7 @@ public class NodeBase : ViewModelBase
         _icon = icon ?? "";
         SubNodes = new ObservableCollection<NodeBase>();
         IsExpanded = false;
-        // SubNodes.CollectionChanged += OnSubNodesChanged;
+        SubNodes.CollectionChanged += OnSubNodesChanged;
     }
     
     private bool _isExpanded = false;
@@ -60,12 +61,12 @@ public class NodeBase : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isVisible, value);
     }
     
-    // private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e) {
-    //     if (e.NewItems != null)
-    //         foreach(NodeBase child in e.NewItems) child.Parent = this;
-    //     if (e.OldItems != null)
-    //         foreach(NodeBase child in e.OldItems) child.Parent = null;
-    // }
+    private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e) {
+        if (e.NewItems != null)
+            foreach(NodeBase child in e.NewItems) child.Parent = this;
+        if (e.OldItems != null)
+            foreach(NodeBase child in e.OldItems) child.Parent = null;
+    }
 
 
 }

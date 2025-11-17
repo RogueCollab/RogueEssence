@@ -178,7 +178,7 @@ namespace RogueEssence.Dev
 
         public static Avalonia.Controls.Shapes.Path CreateMenuIcon(string key)
         {
-            Console.WriteLine($"Icon???");
+  
             var icon = new Avalonia.Controls.Shapes.Path();
             icon.Width = 12;
             icon.Height = 12;

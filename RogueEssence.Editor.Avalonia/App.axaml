@@ -43,7 +43,7 @@
          <FluentTheme />
          <fluent:CustomTheme/>
          <StyleInclude Source="/Assets/Styles.axaml"/>
-
+         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
          <StyleInclude Source="/Assets/TreeStyles.axaml"/>
      </Application.Styles>
              

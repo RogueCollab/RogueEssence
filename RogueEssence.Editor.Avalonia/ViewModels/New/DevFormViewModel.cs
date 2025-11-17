@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Threading;
 using RogueEssence.Dev.Models;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
@@ -16,6 +20,12 @@ namespace RogueEssence.Dev.ViewModels;
 
 public class DevFormViewModel : ViewModelBase
 {
+    private HierarchicalTreeDataGridSource<NodeBase> _nodeSource;
+    public HierarchicalTreeDataGridSource<NodeBase> NodeSource 
+    { 
+        get => _nodeSource;
+        set => this.RaiseAndSetIfChanged(ref _nodeSource, value);
+    }
     public DevTabGameViewModel Game { get; set; }
     public DevTabPlayerViewModel Player { get; set; }
     public DevTabDataViewModel Data { get; set; }
@@ -91,11 +101,35 @@ public class DevFormViewModel : ViewModelBase
 
     private void ApplyFilter(string filter)
     {
-        foreach (var node in Nodes)
+        Dispatcher.UIThread.Post(() =>
         {
-            NodeHelper.FilterRecursive(node, filter, new BeginningTitleFilterStrategy());
-        }
+            foreach (var node in Nodes)
+            {
+                NodeHelper.FilterRecursive(node, filter, new BeginningTitleFilterStrategy());
+            }
+
+            RefreshTreeDataGrid();
+        });
     }
+    private void RefreshTreeDataGrid()
+    {
+        NodeSource = new HierarchicalTreeDataGridSource<NodeBase>(Nodes)
+                  {
+                      Columns =
+                      {
+                          new HierarchicalExpanderColumn<NodeBase>(
+                              new TemplateColumn<NodeBase>(
+                                  null,
+                                  "TreeDataGridNodeBaseTemplate",
+                                  null,
+                                  new GridLength(1, GridUnitType.Star)),
+                              x => x.SubNodes.Where(n => n.IsVisible),
+                              null,                        // hasChildrenSelector (optional)
+                              x => x.IsExpanded)           // isExpandedSelector
+                      },
+                  };
+    }
+    
     
     private ObservableCollection<EditorPageViewModel> _pages;
 
@@ -326,9 +360,9 @@ public class DevFormViewModel : ViewModelBase
         tab.Icon = "Icons.GameControllerFill";
         AddTopLevelPage(tab);
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
+
+        
     }
-
-
     public void ClearNodes()
     {
         Nodes.Clear();
@@ -336,8 +370,6 @@ public class DevFormViewModel : ViewModelBase
     public void UpdateTree()
     {
         CreateDataNode();
-
-     
     }
 
     private void CreateDataNode()

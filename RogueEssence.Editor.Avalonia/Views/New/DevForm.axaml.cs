@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -530,64 +533,8 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             PreferencesWindowViewModel.Instance.Save();
         }
     }
-
-  
- 
-    private void MasterTreeView_OnDoubleTapped(object? sender, TappedEventArgs e)
-    {
-        if (DataContext is DevFormViewModel vm && sender is TreeView { SelectedItem: not null } treeView)
-        {
-            var selectedItem = (OpenEditorNode)treeView.SelectedItem;
-            vm.AddPageFromPageNode(selectedItem);
-        }
-    }
     
-    private void MasterTreeView_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        // Deselect the item after MasterTreeView_OnDoubleTapped
-        Dispatcher.UIThread.Post(() =>
-        {
-            if (sender is TreeView tree)
-            {
-                tree.SelectedItem = null;
-            }
-        });
-    }
-    
-    private void MasterTreeView_OnContextRequested(object? sender, ContextRequestedEventArgs e)
-    {
-        if (e.Source is not Visual visual)
-            return;
-
-        var current = visual.GetSelfAndVisualAncestors().OfType<TreeViewItem>().FirstOrDefault();
-        var parent = visual.GetSelfAndVisualAncestors().OfType<TreeViewItem>().Skip(1).FirstOrDefault();
-
-        if (current == null)
-            return;
-
-        if (current.DataContext is DataItemNode itemNode &&
-            parent?.DataContext is DataRootNode parentRoot)
-        {
-            ShowDataItemNodeMenu(current, itemNode, parentRoot, e);
-        }
-        
-        else if (current.DataContext is DataItemNode itemNode2 &&
-            parent?.DataContext is SpriteRootNode spriteRootMode)
-        {
-            ShowSpriteItemNodeMenu(current, itemNode2, spriteRootMode, e);
-        }
-        else if (current.DataContext is DataRootNode rootNode)
-        {
-            ShowRootNodeMenu(current, rootNode, e);
-        } 
-        else if (current.DataContext is SpriteRootNode spriteRoot)
-        {
-            ShowSpriteRootNodeMenu(current, spriteRoot, e);
-            
-        }
-    }
-
-    private void ShowDataItemNodeMenu(TreeViewItem current, DataItemNode node, DataRootNode parentNode,
+    private void ShowDataItemNodeMenu(TreeDataGridRow current, DataItemNode node, DataRootNode parentNode,
         ContextRequestedEventArgs e)
     {
         var menu = new ContextMenu
@@ -606,7 +553,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         AttachAndOpenMenu(current, menu, e);
     }
 
-    private void ShowSpriteItemNodeMenu(TreeViewItem current, DataItemNode node, SpriteRootNode parentNode,
+    private void ShowSpriteItemNodeMenu(TreeDataGridRow current, DataItemNode node, SpriteRootNode parentNode,
         ContextRequestedEventArgs e)
     {
         var menu = new ContextMenu
@@ -624,7 +571,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         AttachAndOpenMenu(current, menu, e);
     }
 
-    private void ShowRootNodeMenu(TreeViewItem current, DataRootNode root, ContextRequestedEventArgs e)
+    private void ShowRootNodeMenu(TreeDataGridRow current, DataRootNode root, ContextRequestedEventArgs e)
     {
         var menu = new ContextMenu
         {
@@ -641,7 +588,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         AttachAndOpenMenu(current, menu, e);
     }
     
-    private void ShowSpriteRootNodeMenu(TreeViewItem current, SpriteRootNode root, ContextRequestedEventArgs e)
+    private void ShowSpriteRootNodeMenu(TreeDataGridRow current, SpriteRootNode root, ContextRequestedEventArgs e)
     {
         var menu = new ContextMenu
         {
@@ -657,11 +604,82 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         AttachAndOpenMenu(current, menu, e);
     }
 
-    private static void AttachAndOpenMenu(TreeViewItem current, ContextMenu menu, ContextRequestedEventArgs e)
+    private static void AttachAndOpenMenu(TreeDataGridRow current, ContextMenu menu, ContextRequestedEventArgs e)
     {
         menu.Closed += (_, _) => current.ContextMenu = null;
         current.ContextMenu = menu;
         menu.Open(current);
         e.Handled = true;
+    }
+    
+    private void LeftTreeDataGrid_OnDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
+        {
+            var selectedItem = (OpenEditorNode)treeView.RowSelection.SelectedItem;
+            vm.AddPageFromPageNode(selectedItem);
+        }
+    }
+
+    private void LeftTreeDataGrid_OnSelectionChanging(object? sender, CancelEventArgs e)
+    {
+        if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+
+            });
+
+        }
+
+    }
+    
+    private void LeftTreeDataGrid_OnContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (e.Source is not Visual visual)
+            return;
+    
+        var row = visual.GetSelfAndVisualAncestors()
+            .OfType<TreeDataGridRow>()
+            .FirstOrDefault();
+    
+        if (row == null)
+            return;
+        
+        if (row.DataContext is not NodeBase node)
+            return;
+        
+        var parent = node.Parent;
+   
+    
+        switch (node)
+        {
+            case DataItemNode itemNode when parent is DataRootNode root:
+                ShowDataItemNodeMenu(row, itemNode, root, e);
+                break;
+    
+            case DataItemNode itemNode when parent is SpriteRootNode spriteRoot:
+                ShowSpriteItemNodeMenu(row, itemNode, spriteRoot, e);
+                break;
+    
+            case DataRootNode rootNode:
+                ShowRootNodeMenu(row, rootNode, e);
+                break;
+    
+            case SpriteRootNode spriteRoot:
+                ShowSpriteRootNodeMenu(row, spriteRoot, e);
+                break;
+        }
+    }
+
+    private async void LeftTreeDataGrid_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is TreeDataGrid treeDataGrid)
+        {
+            await Task.Delay(10); // Small delay to let layout complete
+            treeDataGrid.InvalidateMeasure();
+            treeDataGrid.InvalidateArrange();
+            treeDataGrid.UpdateLayout(); // Force immediate layout pass
+        }
     }
 }
