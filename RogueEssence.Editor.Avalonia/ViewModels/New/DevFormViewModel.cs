@@ -364,6 +364,22 @@ public class DevFormViewModel : ViewModelBase
         tab.Icon = "Icons.GameControllerFill";
         AddTopLevelPage(tab);
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
+
+        NodeSource = new HierarchicalTreeDataGridSource<NodeBase>(Nodes)
+        {
+            Columns =
+            {
+                new HierarchicalExpanderColumn<NodeBase>(
+                    new TemplateColumn<NodeBase>(
+                        null,
+                        "TreeDataGridNodeBaseTemplate",
+                        null,
+                        new GridLength(1, GridUnitType.Star)),
+                    x => x.SubNodes.Where(n => n.IsVisible),
+                    x => x.SubNodes.Count > 0,
+                    x => x.IsExpanded)
+            },
+        };
     }
 
     public void ClearNodes()
@@ -406,6 +422,10 @@ public class DevFormViewModel : ViewModelBase
         }
 
         Nodes.Add(dataNode);
+
+
+        foreach (var root in Nodes)
+            AttachEventsRecursive(root);
     }
 
     private void InitializeTabEvents()
@@ -499,6 +519,13 @@ public class DevFormViewModel : ViewModelBase
         // monstersRoot.IsExpanded = true;
     }
 
+    private void AttachEventsRecursive(NodeBase node)
+    {
+        node.SubNodesChanged += () => RefreshTreeDataGrid();
+
+        foreach (var child in node.SubNodes)
+            AttachEventsRecursive(child);
+    }
 
     private TabSwitcherViewModel? _tabSwitcher;
 

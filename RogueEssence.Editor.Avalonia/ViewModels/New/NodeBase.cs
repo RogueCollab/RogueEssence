@@ -40,6 +40,8 @@ public class NodeBase : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _icon, value);
     }
 
+    public event Action? SubNodesChanged;
+    
 
     public NodeBase(string title = "", string? icon = null)
     {
@@ -47,6 +49,7 @@ public class NodeBase : ViewModelBase
         _icon = icon ?? "";
         SubNodes = new ObservableCollection<NodeBase>();
         IsExpanded = false;
+        IsVisible = true;
         SubNodes.CollectionChanged += OnSubNodesChanged;
         this.WhenAnyValue(x => x.IsExpanded)
             .Where(expanded => !expanded)
@@ -72,11 +75,24 @@ public class NodeBase : ViewModelBase
     private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e)
     {
         if (e.NewItems != null)
+        {
             foreach (NodeBase child in e.NewItems)
+            {
                 child.Parent = this;
+                child.SubNodesChanged += SubNodesChanged;
+            }
+        }
+
         if (e.OldItems != null)
+        {
             foreach (NodeBase child in e.OldItems)
+            {
                 child.Parent = null;
+                child.SubNodesChanged -= SubNodesChanged;
+            }
+        }
+
+        SubNodesChanged?.Invoke();
     }
 
 
@@ -167,6 +183,7 @@ public class DataRootNode : ItemRootNode
             return;
 
         SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
+        IsExpanded = true;
         Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
 
@@ -313,6 +330,7 @@ public class SpriteRootNode : ItemRootNode
 
         var node = _nodeFactory.CreateDataItemNode(vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
         SubNodes.Add(node);
+        IsExpanded = true;
 
         Console.WriteLine($"[SpriteRootNode] Added sprite: {vm.Name}");
     }
