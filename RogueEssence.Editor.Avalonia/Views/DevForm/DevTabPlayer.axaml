@@ -11,16 +11,17 @@
   </Design.DataContext>
   <Grid RowDefinitions="30, Auto, 30, Auto, 30, Auto, 30, Auto, 30, Auto, Auto, Auto" ColumnDefinitions="*, *" ColumnSpacing="8">
     <Grid.Styles>
-      <Style Selector="TextBlock">
-        <Setter Property="VerticalAlignment" Value="Bottom" />
-      </Style>
+      <!-- <Style Selector="TextBlock"> -->
+      <!--   <Setter Property="VerticalAlignment" Value="Bottom" /> -->
+      <!-- </Style> -->
       <Style Selector="NumericUpDown">
         <Setter Property="MinHeight" Value="40"  />
         <Setter Property="Height" Value="40"  />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
       </Style>
     </Grid.Styles>
     <TextBlock  Margin="4,0" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Lv.</TextBlock>
-    <NumericUpDown  Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Grid.Row="1" Grid.Column="0"/>
+    <NumericUpDown  Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Increment="1" Grid.Row="1" Grid.Column="0"/>
     <Button Classes="flat" Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
     <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
