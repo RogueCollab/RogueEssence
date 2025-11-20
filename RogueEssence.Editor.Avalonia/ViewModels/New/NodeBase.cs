@@ -22,8 +22,8 @@ public class NodeBase : ViewModelBase
 {
     public ObservableCollection<NodeBase> SubNodes { get; set; }
 
-    public NodeBase? Parent { get; internal set; } 
-    
+    public NodeBase? Parent { get; internal set; }
+
     private string _title = "";
 
     public virtual string Title
@@ -33,13 +33,14 @@ public class NodeBase : ViewModelBase
     }
 
     public string _icon = "";
+
     public string Icon
     {
         get => _icon;
         set => this.RaiseAndSetIfChanged(ref _icon, value);
     }
 
-    
+
     public NodeBase(string title = "", string? icon = null)
     {
         Title = title;
@@ -51,32 +52,37 @@ public class NodeBase : ViewModelBase
             .Where(expanded => !expanded)
             .Subscribe(_ => CollapseChildren());
     }
-    
+
     private bool _isExpanded = false;
+
     public bool IsExpanded
     {
         get => _isExpanded;
         set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
     }
-    
+
     private bool _isVisible = true;
+
     public bool IsVisible
     {
         get => _isVisible;
         set => this.RaiseAndSetIfChanged(ref _isVisible, value);
     }
-    
-    private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e) {
+
+    private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e)
+    {
         if (e.NewItems != null)
-            foreach(NodeBase child in e.NewItems) child.Parent = this;
+            foreach (NodeBase child in e.NewItems)
+                child.Parent = this;
         if (e.OldItems != null)
-            foreach(NodeBase child in e.OldItems) child.Parent = null;
+            foreach (NodeBase child in e.OldItems)
+                child.Parent = null;
     }
 
-    
+
     public void CollapseChildren()
     {
-        if (SubNodes == null) 
+        if (SubNodes == null)
             return;
 
         foreach (var child in SubNodes)
@@ -85,14 +91,13 @@ public class NodeBase : ViewModelBase
             child.CollapseChildren();
         }
     }
-
 }
 
 public class OpenEditorNode : NodeBase
 {
     public string EditorKey { get; }
-    
-    public OpenEditorNode(string title, string? icon = null, string editorKey = "") 
+
+    public OpenEditorNode(string title, string? icon = null, string editorKey = "")
         : base(title, icon ?? "")
     {
         EditorKey = editorKey;
@@ -102,25 +107,24 @@ public class OpenEditorNode : NodeBase
 public abstract class ItemRootNode : OpenEditorNode
 {
     protected readonly IDialogService _dialogService;
-    
+
     public abstract ReactiveCommand<Unit, Unit> AddCommand { get; }
     public abstract ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
 
     protected ItemRootNode(string title, string icon, string editorKey)
         : base(title, icon, editorKey)
     {
-
     }
 }
 
 public class DataRootNode : ItemRootNode
 {
     public DataManager.DataType DataType { get; }
-    
+
     private readonly NodeFactory _nodeFactory;
-    
-    private readonly IDialogService _dialogService ;
-    
+
+    private readonly IDialogService _dialogService;
+
 
     public override ReactiveCommand<Unit, Unit> AddCommand { get; }
     public override ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
@@ -132,21 +136,18 @@ public class DataRootNode : ItemRootNode
     public ReactiveCommand<DataItemNode, Unit> ResaveAsFile { get; }
     public ReactiveCommand<DataItemNode, Unit> ResaveAsPatch { get; }
 
-    public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType, string editorKey, string title, string? icon = null)
+    public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
+        string editorKey, string title, string? icon = null)
         : base(title, icon ?? "", editorKey)
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
         DataType = dataType;
-        
-        AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
-        
-        AddCommand.ThrownExceptions.Subscribe(ex =>
-            Console.WriteLine("[AddCommand] ThrownExceptions: " + ex));
 
-        AddCommand.IsExecuting.Subscribe(isExec =>
-            Console.WriteLine("[AddCommand] IsExecuting = " + isExec));
-        
+        AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
+        AddCommand.CanExecute.Subscribe(canExecute =>
+            Console.WriteLine($"Add Command - CanExecute: {canExecute}"));
+
         DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
 
         ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
@@ -156,37 +157,17 @@ public class DataRootNode : ItemRootNode
         ResaveAsFile = ReactiveCommand.CreateFromTask<DataItemNode>(ResaveItemAsFileAsync);
         ResaveAsPatch = ReactiveCommand.CreateFromTask<DataItemNode>(ResaveItemAsPatchAsync);
     }
+
     private async Task AddItemAsync()
     {
-        try
-        {
-            var vm = new RenameWindowViewModel();
+        var vm = new RenameWindowViewModel();
+        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
 
-            Console.WriteLine("[AddItem] Opening dialog…");
+        if (!result)
+            return;
 
-            bool result = await _dialogService
-                .ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
-
-            Console.WriteLine("[AddItem] Dialog closed. Result = " + result);
-
-            if (!result)
-                return;
-
-            var node = _nodeFactory.CreateDataItemNode(
-                vm.Name,
-                "MonsterEditor",
-                $"{vm.Name}:",
-                "Icons.GhostFill"
-            );
-
-            SubNodes.Add(node);
-
-            Console.WriteLine($"[AddItem] Added {DataType} item: {vm.Name}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[AddItem] ERROR: " + ex);
-        }
+        SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
+        Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
 
     private async Task DeleteItemAsync(DataItemNode? node)
@@ -227,8 +208,7 @@ public class DataRootNode : ItemRootNode
         await Task.Delay(100);
     }
 
-    
-    
+
     private async Task ResaveItemAsFileAsync(DataItemNode node)
     {
         // GetEntry entryOp, CreateEntry createOp
@@ -258,27 +238,26 @@ public class DataRootNode : ItemRootNode
     }
 }
 
-
-
 public class DataItemNode : OpenEditorNode
 {
     public string ItemKey { get; }
-    
+
     private string _value = "";
-    public string Value 
+
+    public string Value
     {
         get => _value;
         set => this.RaiseAndSetIfChanged(ref _value, value);
     }
-    
+
     // private bool _editorKey = false;
     // public bool EditorKey
     // {
     //     get => _editorKey;
     //     set => this.RaiseAndSetIfChanged(ref _editorKey, value);
     // }
-    
-    public DataItemNode(string itemKey, string editorKey, string? title, string? icon = null) 
+
+    public DataItemNode(string itemKey, string editorKey, string? title, string? icon = null)
         : base(title ?? "", icon ?? "", editorKey)
     {
         ItemKey = itemKey;
@@ -323,25 +302,19 @@ public class SpriteRootNode : ItemRootNode
         ImportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ImportSpriteAsync);
         ReImportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ReImportSpriteAsync);
     }
+
     private async Task AddSpriteAsync()
     {
-        try
-        {
-            var vm = new RenameWindowViewModel();
-            bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, "Add sprite ID");
+        var vm = new RenameWindowViewModel();
+        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, "Add sprite ID");
 
-            if (!result)
-                return;
+        if (!result)
+            return;
 
-            var node = _nodeFactory.CreateDataItemNode(vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
-            SubNodes.Add(node);
+        var node = _nodeFactory.CreateDataItemNode(vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
+        SubNodes.Add(node);
 
-            Console.WriteLine($"[SpriteRootNode] Added sprite: {vm.Name}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("ERROR in AddSpriteAsync: " + ex);
-        }
+        Console.WriteLine($"[SpriteRootNode] Added sprite: {vm.Name}");
     }
 
     private async Task DeleteSpriteAsync(DataItemNode node)
@@ -361,7 +334,7 @@ public class SpriteRootNode : ItemRootNode
 
     private async Task MassExportAsync()
     {
-        var x = await _dialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions( )
+        var x = await _dialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions()
         {
             AllowMultiple = true,
             Title = "Select a folder to mass export to"
@@ -395,18 +368,17 @@ public class SpriteRootNode : ItemRootNode
     }
 }
 
-
 // Used by TabSwitcher
 public class PageNode : NodeBase
 {
-    
     private readonly NodeFactory _nodeFactory;
     private readonly IDialogService _dialogService;
     public EditorPageViewModel Page { get; }
     public PageNode? Parent { get; set; }
     public bool IsTopLevel => Parent == null;
-    
-    public PageNode(IDialogService dialogService, NodeFactory nodeFactory, EditorPageViewModel page, PageNode? parent = null)
+
+    public PageNode(IDialogService dialogService, NodeFactory nodeFactory, EditorPageViewModel page,
+        PageNode? parent = null)
         : base(page.Title, page.Icon)
     {
         _dialogService = dialogService;
@@ -414,16 +386,16 @@ public class PageNode : NodeBase
         Page = page;
         Parent = parent;
     }
-    
+
     public override string Title => Page.Title;
-    
+
     public PageNode AddChild(EditorPageViewModel childPage)
     {
         var childNode = _nodeFactory.CreatePageNode(childPage, this);
         SubNodes.Add(childNode);
         return childNode;
     }
-    
+
     public void RemoveChild(PageNode childNode)
     {
         SubNodes.Remove(childNode);
