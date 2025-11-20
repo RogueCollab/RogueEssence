@@ -41,6 +41,10 @@ public class TabSwitcherViewModel: ViewModelBase
         VisiblePages = new ObservableCollection<EditorPageViewModel>(_mainWindow.Pages);
         SelectedPage = _mainWindow.ActivePage;
         this.WhenAnyValue(x => x.SearchFilter).Subscribe(UpdateVisiblePages);
+        
+        _isTreeView = mainWindow
+            .WhenAnyValue(x => x.IsTreeView)
+            .ToProperty(this, x => x.IsTreeView);
     }
 
     // public TabSwitcherViewModel() : this(new DevFormViewModel()) {}
@@ -51,14 +55,14 @@ public class TabSwitcherViewModel: ViewModelBase
     }
 
     
+    private readonly ObservableAsPropertyHelper<bool> _isTreeView;
+    public bool IsTreeView => _isTreeView.Value;
+    
     public void ToggleSearchMode()
     {
         _mainWindow.IsTreeView = !_mainWindow.IsTreeView;
     }
     
-    
-    public bool IsTreeView => _mainWindow.IsTreeView;
-
     public void Switch()
     {
         _mainWindow.ActivePage = _selectedPage;

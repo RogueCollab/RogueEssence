@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
@@ -46,6 +47,9 @@ public class NodeBase : ViewModelBase
         SubNodes = new ObservableCollection<NodeBase>();
         IsExpanded = false;
         SubNodes.CollectionChanged += OnSubNodesChanged;
+        this.WhenAnyValue(x => x.IsExpanded)
+            .Where(expanded => !expanded)
+            .Subscribe(_ => CollapseChildren());
     }
     
     private bool _isExpanded = false;
@@ -69,6 +73,18 @@ public class NodeBase : ViewModelBase
             foreach(NodeBase child in e.OldItems) child.Parent = null;
     }
 
+    
+    public void CollapseChildren()
+    {
+        if (SubNodes == null) 
+            return;
+
+        foreach (var child in SubNodes)
+        {
+            child.IsExpanded = false;
+            child.CollapseChildren();
+        }
+    }
 
 }
 
@@ -124,6 +140,13 @@ public class DataRootNode : ItemRootNode
         DataType = dataType;
         
         AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
+        
+        AddCommand.ThrownExceptions.Subscribe(ex =>
+            Console.WriteLine("[AddCommand] ThrownExceptions: " + ex));
+
+        AddCommand.IsExecuting.Subscribe(isExec =>
+            Console.WriteLine("[AddCommand] IsExecuting = " + isExec));
+        
         DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
 
         ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
@@ -135,14 +158,35 @@ public class DataRootNode : ItemRootNode
     }
     private async Task AddItemAsync()
     {
-        var vm = new RenameWindowViewModel();
-        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
+        try
+        {
+            var vm = new RenameWindowViewModel();
 
-        if (!result)
-            return;
+            Console.WriteLine("[AddItem] Opening dialog…");
 
-        SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
-        Console.WriteLine($"Added {DataType} item: {vm.Name}");
+            bool result = await _dialogService
+                .ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
+
+            Console.WriteLine("[AddItem] Dialog closed. Result = " + result);
+
+            if (!result)
+                return;
+
+            var node = _nodeFactory.CreateDataItemNode(
+                vm.Name,
+                "MonsterEditor",
+                $"{vm.Name}:",
+                "Icons.GhostFill"
+            );
+
+            SubNodes.Add(node);
+
+            Console.WriteLine($"[AddItem] Added {DataType} item: {vm.Name}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("[AddItem] ERROR: " + ex);
+        }
     }
 
     private async Task DeleteItemAsync(DataItemNode? node)
@@ -183,10 +227,28 @@ public class DataRootNode : ItemRootNode
         await Task.Delay(100);
     }
 
+    
+    
     private async Task ResaveItemAsFileAsync(DataItemNode node)
     {
-        Console.WriteLine($"Resaving {node.Title} as file...");
-        await Task.Delay(100);
+        // GetEntry entryOp, CreateEntry createOp
+        // string entryNum = choices.ChosenAsset;
+        // if (DataManager.GetEntryDataModStatus(entryNum, dataType.ToString()) == DataManager.ModStatus.Base)
+        // {
+        //     await MessageBox.Show(form, String.Format("{0} must have saved edits first!", entryNum), "Error", MessageBox.MessageBoxButtons.Ok);
+        //     return;
+        // }
+        //
+        // lock (GameBase.lockObj)
+        // {
+        //     IEntryData data = entryOp(entryNum);
+        //     DataManager.Instance.ContentResaved(dataType, entryNum, data, false);
+        //
+        //     string newName = DataManager.Instance.DataIndices[dataType].Get(entryNum).GetLocalString(true);
+        //     choices.ModifyEntry(entryNum, newName);
+        // }
+        //
+        // await MessageBox.Show(form, String.Format("{0} is now saved as a file.", entryNum), "Complete", MessageBox.MessageBoxButtons.Ok);
     }
 
     private async Task ResaveItemAsPatchAsync(DataItemNode node)
@@ -263,16 +325,23 @@ public class SpriteRootNode : ItemRootNode
     }
     private async Task AddSpriteAsync()
     {
-        var vm = new RenameWindowViewModel();
-        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, "Add sprite ID");
+        try
+        {
+            var vm = new RenameWindowViewModel();
+            bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, "Add sprite ID");
 
-        if (!result)
-            return;
+            if (!result)
+                return;
 
-        var node = _nodeFactory.CreateDataItemNode(vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
-        SubNodes.Add(node);
+            var node = _nodeFactory.CreateDataItemNode(vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
+            SubNodes.Add(node);
 
-        Console.WriteLine($"[SpriteRootNode] Added sprite: {vm.Name}");
+            Console.WriteLine($"[SpriteRootNode] Added sprite: {vm.Name}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR in AddSpriteAsync: " + ex);
+        }
     }
 
     private async Task DeleteSpriteAsync(DataItemNode node)
