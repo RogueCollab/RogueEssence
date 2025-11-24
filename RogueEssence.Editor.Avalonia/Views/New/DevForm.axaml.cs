@@ -561,8 +561,6 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         {
             Items =
             {
-                new MenuItem { Header = "Import", Command = parentNode.ImportCommand, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.DownloadSimpleFill") },
-                new MenuItem { Header = "Re-Import", Command = parentNode.ReImportCommand, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.RepeatFill") },
                 new MenuItem { Header = "Export", Command = parentNode.ExportCommand, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.ExportFill") },
                 new Separator(),
                 new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node, Icon =  App.CreateMenuIcon("Icons.TrashFill") }
@@ -597,8 +595,12 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             {
                 new MenuItem { Header = "Mass Import", Command = root.MassImportCommand, Icon = App.CreateMenuIcon("Icons.DownloadSimpleFill") },
                 new MenuItem { Header = "Mass Export", Command = root.MassExportCommand, Icon = App.CreateMenuIcon("Icons.ExportFill") },
+                
+                
                 new Separator(),
-                new MenuItem { Header = "Add", Command = root.AddCommand,  Icon = App.CreateMenuIcon("Icons.Plus") }
+                new MenuItem { Header = "Import", Command = root.ImportCommand, Icon = App.CreateMenuIcon("Icons.Plus") },
+                new MenuItem { Header = "Re-Import", Command = root.ReImportCommand, Icon = App.CreateMenuIcon("Icons.RepeatFill") },
+                // new MenuItem { Header = "Add", Command = root.AddCommand,  Icon = App.CreateMenuIcon("Icons.Plus") }
             }
         };
 

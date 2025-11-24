@@ -312,7 +312,7 @@ public class SpriteRootNode : ItemRootNode
     public ReactiveCommand<Unit, Unit> MassExportCommand { get; }
     public ReactiveCommand<Unit, Unit> MassImportCommand { get; }
     public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
-    public ReactiveCommand<DataItemNode, Unit> ImportCommand { get; }
+    public ReactiveCommand<Unit, Unit> ImportCommand { get; }
     public ReactiveCommand<Unit, Unit> ReImportCommand { get; }
 
     private string _cachedPath;
@@ -351,19 +351,13 @@ public class SpriteRootNode : ItemRootNode
         MassExportCommand = ReactiveCommand.CreateFromTask(MassExportAsync);
         MassImportCommand = ReactiveCommand.CreateFromTask(MassImportAsync);
         ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
-        ImportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ImportSpriteAsync);
+        ImportCommand = ReactiveCommand.CreateFromTask(ImportSpriteAsync);
         ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
     }
 
     private async Task AddSpriteAsync()
     {
-        var node = await _strategy.AddAsync();
-        if (node != null)
-        {
-            SubNodes.Add(node);
-            IsExpanded = true;
-        }
-
+        await _strategy.ImportAsync();
     }
 
     private async Task DeleteSpriteAsync(DataItemNode node)
@@ -386,9 +380,9 @@ public class SpriteRootNode : ItemRootNode
         await _strategy.ExportAsync(node);
     }
 
-    private async Task ImportSpriteAsync(DataItemNode node)
+    private async Task ImportSpriteAsync()
     {
-        await _strategy.ImportAsync(node);
+        await _strategy.ImportAsync();
     }
 
     private async Task ReImportSpriteAsync()

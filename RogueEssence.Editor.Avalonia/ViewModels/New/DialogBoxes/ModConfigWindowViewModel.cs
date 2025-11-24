@@ -11,9 +11,9 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class ModConfigViewModel : ViewModelBase
+    public class ModConfigWindowViewModel : ViewModelBase
     {
-        public ModConfigViewModel(ModHeader header)
+        public ModConfigWindowViewModel(ModHeader header)
         {
             Name = header.Name;
             Namespace = header.Namespace;

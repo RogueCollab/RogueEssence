@@ -188,7 +188,7 @@ public class SpriteTileStrategy : ISpriteOperationStrategy
         }
     }
 
-    public async Task ImportAsync(DataItemNode node)
+    public async Task ImportAsync()
     {
         //remember addresses in registry
         string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());

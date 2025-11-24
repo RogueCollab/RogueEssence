@@ -4,9 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:vm="using:RogueEssence.Dev.ViewModels"
-             xmlns:m="using:RogueEssence.Dev.Models"
              x:DataType="vm:ModSwitcherViewModel"
              x:Class="RogueEssence.Dev.Views.ModSwitcherView">
+    
+    <Design.DataContext>
+        <vm:ModSwitcherViewModel />
+    </Design.DataContext>
+
+    
     <Grid RowDefinitions="Auto, Auto, *">
         
         <TextBlock Classes="table_header" FontSize="16">Mods</TextBlock>
@@ -50,11 +55,11 @@
             
 
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="m:ModHeader">
+                <DataTemplate DataType="vm:ModsNodeViewModel">
                     <!-- Tapped="OnItemTapped" -->
                     <Grid RowDefinitions="Auto, Auto" Background="Transparent" Tapped="OnItemTapped" >
                         <TextBlock FontSize="14" Classes="primary"  Text="{Binding Name}" ></TextBlock>
-                        <TextBlock Grid.Row="1"  Classes="primary" Foreground="{DynamicResource Brush.FG2}" Text="{Binding Key}" />
+                        <TextBlock Grid.Row="1"  Classes="primary" Foreground="{DynamicResource Brush.FG2}" Text="{Binding Namespace}" />
                         <!-- <v:IconText Text="{Binding Name}" Icon="{Binding Icon}" IconSize="12" /> -->
                     </Grid>
                 </DataTemplate>

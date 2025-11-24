@@ -305,7 +305,7 @@ public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
 
     }
 
-    public async Task ImportAsync(DataItemNode _)
+    public async Task ImportAsync()
     {
         string name = _spriteRootNode.AssetType.ToString();
         string folderName = DevForm.GetConfig(name + "Dir", Directory.GetCurrentDirectory());

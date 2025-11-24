@@ -7,6 +7,8 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using RogueEssence.Dev.Models;
 using RogueEssence.Dev.ViewModels;
+using RogueEssence.Menu;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dev.Views;
 
@@ -32,7 +34,7 @@ public partial class ModSwitcherView : UserControl
         if (e.Key != Key.Enter || DataContext is not ViewModels.ModSwitcherViewModel switcher)
             return;
 
-        var selected = ModsListBox.SelectedItem as  Models.ModHeader;
+        var selected = ModsListBox.SelectedItem as ModsNodeViewModel;
         if (selected is null)
             return;
         
@@ -47,12 +49,29 @@ public partial class ModSwitcherView : UserControl
         if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
             return;
         
-        switcher.CurrentMod = selected;
+        // switcher.CurrentMod = selected;
         switcher.CloseSwitcher();
 
+        DevForm.ExecuteOrPend(() => _doSwitch(selected));
         e.Handled = true;
     }
 
+    private void _doSwitch(ModsNodeViewModel mod)
+    {
+        //modify and reload
+        lock (GameBase.lockObj)
+        {
+            LuaEngine.Instance.BreakScripts();
+            MenuManager.Instance.ClearMenus();
+            if (!String.IsNullOrEmpty(mod.Path))
+                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(mod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
+            else
+                GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
+
+            DiagManager.Instance.PrintModSettings();
+            DiagManager.Instance.SaveModSettings();
+        }
+    }
 
     private void ModsListBox_OnKeyDown(object? sender, KeyEventArgs e)
     {
@@ -78,7 +97,7 @@ public partial class ModSwitcherView : UserControl
         if (DataContext is not ModSwitcherViewModel switcher)
             return;
 
-        var selected = ModsListBox.SelectedItem as Models.ModHeader;
+        var selected = ModsListBox.SelectedItem as ModsNodeViewModel;
         if (selected is null)
             return;
         
@@ -93,7 +112,8 @@ public partial class ModSwitcherView : UserControl
         if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
             return;
         
-        switcher.CurrentMod = selected;
+        // switcher.CurrentMod = selected;
+        DevForm.ExecuteOrPend(() => _doSwitch(selected));
         switcher.CloseSwitcher();
 
         e.Handled = true;

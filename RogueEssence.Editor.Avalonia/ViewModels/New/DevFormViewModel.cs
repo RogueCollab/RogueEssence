@@ -50,16 +50,7 @@ public class DevFormViewModel : ViewModelBase
         get => _isTreeView;
         set { this.RaiseAndSetIfChanged(ref _isTreeView, value); }
     }
-
-
-    private Models.ModHeader _currentMod = new Models.ModHeader("Halcyon", "halcyon");
-
-    public Models.ModHeader CurrentMod
-    {
-        get => _currentMod;
-        set { this.RaiseAndSetIfChanged(ref _currentMod, value); }
-    }
-
+    
     public void OpenTabSwitcher()
     {
         TabSwitcher = _pageFactory.GetRequiredService<TabSwitcherViewModel>();

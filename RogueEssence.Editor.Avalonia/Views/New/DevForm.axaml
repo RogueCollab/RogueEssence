@@ -66,7 +66,7 @@
                         x:Name="ModSwitcherFlyoutButton" Padding="0, 4, 0, 0">
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Padding="0, 0, 6, 0" Text="{Binding CurrentMod.Name}" />
+                        <TextBlock Padding="0, 0, 6, 0" Text="{Binding Mods.CurrentMod}" />
                         <Path HorizontalAlignment="Center" Width="10" Height="10" Margin="0,2,0,0"
                               Data="{StaticResource Icons.CaretDownFill}" />
                     </StackPanel>

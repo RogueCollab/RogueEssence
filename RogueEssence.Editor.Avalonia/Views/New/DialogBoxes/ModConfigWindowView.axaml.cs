@@ -7,9 +7,9 @@ using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public partial class ModConfigWindow : Window
+    public partial class ModConfigWindowView : ChromelessWindow
     {
-        public ModConfigWindow()
+        public ModConfigWindowView()
         {
             this.InitializeComponent();
         }

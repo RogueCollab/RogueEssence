@@ -199,6 +199,10 @@
       <DependentUpon>SpeciesEditPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\New\DialogBoxes\ModConfigWindowView.axaml.cs">
+      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
