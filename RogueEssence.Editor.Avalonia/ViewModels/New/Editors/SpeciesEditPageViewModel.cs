@@ -1,4 +1,8 @@
-﻿using Avalonia.Interactivity;
+using RogueEssence.Content;
+using RogueEssence.Data;
+using RogueEssence.Dev.Views;
+
+using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,17 +18,18 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using RogueElements;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class SpeciesOpContainer2
+    public class SpeciesOpContainer
     {
         public Action CommandAction;
         public CharSheetOp Op;
         public string Name { get { return Op.Name; } }
 
-        public SpeciesOpContainer2(CharSheetOp op, Action command)
+        public SpeciesOpContainer(CharSheetOp op, Action command)
         {
             Op = op;
             CommandAction = command;
@@ -36,7 +41,7 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MonsterNodeViewModel2 : ViewModelBase
+    public class MonsterNodeViewModel : ViewModelBase
     {
 
         private bool filled;
@@ -55,20 +60,24 @@ namespace RogueEssence.Dev.ViewModels
 
         public CharID ID;
 
-        public ObservableCollection<MonsterNodeViewModel2> Nodes { get; }
+        public ObservableCollection<MonsterNodeViewModel> Nodes { get; }
 
-        public MonsterNodeViewModel2(string name, CharID id, bool filled)
+        public MonsterNodeViewModel(string name, CharID id, bool filled)
         {
             this.name = name;
             this.ID = id;
             this.filled = filled;
-            Nodes = new ObservableCollection<MonsterNodeViewModel2>();
+            Nodes = new ObservableCollection<MonsterNodeViewModel>();
         }
 
     }
 
-    public class SpeciesEditViewModel2 : ViewModelBase
+    public class SpeciesEditPageViewModel : EditorPageViewModel
     {
+        
+        public override string Title => "Species Editor";
+        public override string? UniqueId => "";
+        
 
         private bool checkSprites;
         private bool notifiedImport;
@@ -85,12 +94,12 @@ namespace RogueEssence.Dev.ViewModels
         private List<string> monsterKeys;
         private List<string> skinKeys;
 
-        public ObservableCollection<MonsterNodeViewModel2> Monsters { get; }
-        public ObservableCollection<SpeciesOpContainer2> OpList { get; }
+        public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
+        public ObservableCollection<SpeciesOpContainer> OpList { get; }
 
 
-        private MonsterNodeViewModel2 chosenMonster;
-        public MonsterNodeViewModel2 ChosenMonster
+        private MonsterNodeViewModel chosenMonster;
+        public MonsterNodeViewModel ChosenMonster
         {
             get => chosenMonster;
             set
@@ -110,10 +119,12 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public SpeciesEditViewModel2()
+        public SpeciesEditPageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService, OpenEditorNodeWithParams node) : base(pageFactory, tabEvents, dialogService)
         {
-            Monsters = new ObservableCollection<MonsterNodeViewModel2>();
-            OpList = new ObservableCollection<SpeciesOpContainer2>();
+            Monsters = new ObservableCollection<MonsterNodeViewModel>();
+            OpList = new ObservableCollection<SpeciesOpContainer>();
+            checkSprites = (bool)node.ExtraParams[0];
+            LoadFormDataEntries(checkSprites);
         }
 
 
@@ -178,15 +189,14 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        public void LoadFormDataEntries(bool sprites, Window parent)
+        public void LoadFormDataEntries(bool sprites)
         {
             checkSprites = sprites;
-            this.parent = parent;
-            OpList.Add(new SpeciesOpContainer2(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
+            OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
             if (sprites)
             {
                 foreach (CharSheetOp op in DevDataManager.CharSheetOps)
-                    OpList.Add(new SpeciesOpContainer2(op, () => applyOpToCharSheet(op)));
+                    OpList.Add(new SpeciesOpContainer(op, () => applyOpToCharSheet(op)));
             }
 
             monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetMappedKeys();
@@ -456,22 +466,22 @@ namespace RogueEssence.Dev.ViewModels
                     MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                     CharID dexID = new CharID(ii, -1, -1, -1);
-                    MonsterNodeViewModel2 node = new MonsterNodeViewModel2("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
+                    MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
                     for (int jj = 0; jj < dex.Forms.Count; jj++)
                     {
                         CharID formID = new CharID(ii, jj, -1, -1);
-                        MonsterNodeViewModel2 formNode = new MonsterNodeViewModel2("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
+                        MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
                         for (int kk = 0; kk < skinKeys.Count; kk++)
                         {
                             SkinData skinData = DataManager.Instance.GetSkin(skinKeys[kk]);
                             if (!skinData.Challenge)
                             {
                                 CharID skinID = new CharID(ii, jj, kk, -1);
-                                MonsterNodeViewModel2 skinNode = new MonsterNodeViewModel2(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
+                                MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
                                 for (int mm = 0; mm < 3; mm++)
                                 {
                                     CharID genderID = new CharID(ii, jj, kk, mm);
-                                    MonsterNodeViewModel2 genderNode = new MonsterNodeViewModel2(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
+                                    MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
                                     skinNode.Nodes.Add(genderNode);
                                 }
 

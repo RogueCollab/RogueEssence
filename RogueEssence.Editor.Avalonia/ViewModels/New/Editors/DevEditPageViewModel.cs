@@ -73,10 +73,7 @@ public class DevEditPageViewModel : EditorPageViewModel
     {
         var n = node as DataItemNode;
         var nn = node.Parent as DataRootNode;
-        // Console.WriteLine(nn.DataType);
-        // Console.WriteLine(n.ItemKey);
-        // Console.WriteLine(n.Parent.);
-        // Console.WriteLine(node.);
+        var dt = nn.DataType;
     }
 
     public DevEditPageViewModel() : base(new PageFactory(new DesignServiceProvider()),

@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class AnimEditViewModel : ViewModelBase
     {
-        private GraphicsManager.AssetType assetType;
+        private GraphicsManager.AssetType   assetType;
         private Window parent;
 
 
@@ -220,6 +220,43 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        // public async void btnExport_Click()
+        // {
+        //     //get current sprite
+        //     string animData = anims[Anims.InternalIndex];
+        //
+        //     //remember addresses in registry
+        //     string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
+        //
+        //     SaveFileDialog saveFileDialog = new SaveFileDialog();
+        //     saveFileDialog.Directory = folderName;
+        //
+        //     FileDialogFilter filter = new FileDialogFilter();
+        //     filter.Name = "PNG Files";
+        //     filter.Extensions.Add("png");
+        //     saveFileDialog.Filters.Add(filter);
+        //
+        //     string folder = await saveFileDialog.ShowAsync(parent);
+        //
+        //     if (!String.IsNullOrEmpty(folder))
+        //     {
+        //         DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
+        //         //CachedPath = folder;
+        //
+        //         try
+        //         {
+        //             DevForm.ExecuteOrPend(() => { Export(folder, animData); });
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             DiagManager.Instance.LogError(ex, false);
+        //             await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+        //             return;
+        //         }
+        //     }
+        // }
+
+        
         public async void btnExport_Click()
         {
             //get current sprite
@@ -228,34 +265,45 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Directory = folderName;
-
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "PNG Files";
-            filter.Extensions.Add("png");
-            saveFileDialog.Filters.Add(filter);
-
-            string folder = await saveFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            var options = new FilePickerSaveOptions
             {
-                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
-                //CachedPath = folder;
+                Title = "Export PNG",
+                SuggestedStartLocation = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName),
+                DefaultExtension = "png",
+                SuggestedFileName = "export.png",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("PNG Files")
+                    {
+                        Patterns = new[] { "*.png" }
+                    }
+                ]
+            };
+            
+            var saveFile = await parent.StorageProvider.SaveFilePickerAsync(options);
+
+            if (saveFile != null)
+            {
+                string filePath = saveFile.Path.LocalPath;
+                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(filePath));
 
                 try
                 {
-                    DevForm.ExecuteOrPend(() => { Export(folder, animData); });
+                    DevForm.ExecuteOrPend(() => { Export(filePath, animData); });
                 }
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+            
+                    
+                    await MessageBox.Show(parent,
+                        "Export Failed",
+                        $"Error exporting to\n{filePath}\n\n{ex.Message}",
+                        MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
             }
         }
-
         public async void btnDelete_Click()
         {
             //get current sprite

@@ -21,15 +21,15 @@
 
 
     </Design.DataContext>
-  <!-- <v:ChromelessWindow.DataContext> -->
-  <!--   <vm:MainWindowViewModel /> -->
-  <!-- </v:ChromelessWindow.DataContext> -->
+    <!-- <v:ChromelessWindow.DataContext> -->
+    <!--   <vm:MainWindowViewModel /> -->
+    <!-- </v:ChromelessWindow.DataContext> -->
 
     <!-- x:DataType="vm:MainWindowViewModel" -->
     <!-- Icon="/Assets/avalonia-logo.ico" -->
     <!-- x:DataType="vm:MainWindowViewModel" -->
     <!-- <Design.DataContext> -->
-        <!-- <vm:MainWindowViewModel /> -->
+    <!-- <vm:MainWindowViewModel /> -->
     <!-- </Design.DataContext> -->
     <Window.Resources>
         <c:WindowStateToColumnConverter x:Key="WindowStateToColumnConverter" />
@@ -141,10 +141,10 @@
                                   Loaded="LeftTreeDataGrid_OnLoaded"
                                   DoubleTapped="LeftTreeDataGrid_OnDoubleTapped"
                                   ContextRequested="LeftTreeDataGrid_OnContextRequested"
-                                  SelectionChanging="LeftTreeDataGrid_OnSelectionChanging"
+                                  PointerPressed="LeftTreeDataGrid_OnPointerPressed"
+                                  LostFocus="LeftTreeDataGrid_OnLostFocus"
                                   ShowColumnHeaders="False"
                                   Source="{Binding NodeSource}">
-                        
                         <TreeDataGrid.Resources>
                             <!-- <DataTemplate x:Key="TreeDataGridNodeBaseTemplate"> -->
                             <!--     <TreeDataGridExpander -->
@@ -162,7 +162,8 @@
                                                             Icon="{Binding Icon}"
                                                             IconSize="12" />
 
-                                                <Button Grid.Column="1" HorizontalAlignment="Left" Classes="icon_button"
+                                                <Button Grid.Column="1" HorizontalAlignment="Left"
+                                                        Classes="icon_button"
                                                         Padding="4, 0, 0, 0"
                                                         Width="18" Height="18"
                                                         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
@@ -175,8 +176,8 @@
                                                 </Button>
                                             </Grid>
                                         </DataTemplate>
-                                        
-                                        <DataTemplate DataType="vm:DataItemNode" >
+
+                                        <DataTemplate DataType="vm:DataItemNode">
                                             <Grid ColumnDefinitions="*,32" Height="16" Margin="8, 0, 0, 0">
                                                 <v:IconText Text="{Binding Title}"
                                                             Icon="{Binding Icon}"
@@ -199,15 +200,14 @@
                                             </Grid>
                                         </DataTemplate>
 
-                                 
+
                                         <DataTemplate DataType="vm:OpenEditorNode">
                                             <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
                                                         Icon="{Binding Icon}"
                                                         IconSize="12" />
                                         </DataTemplate>
 
-                                      
-                                        
+
                                         <DataTemplate DataType="vm:NodeBase">
                                             <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
                                                         Icon="{Binding Icon}"

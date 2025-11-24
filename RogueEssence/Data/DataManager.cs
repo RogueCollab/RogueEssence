@@ -15,8 +15,64 @@ using Newtonsoft.Json;
 
 namespace RogueEssence.Data
 {
+    public static class DataRegistry
+    {
+        public static readonly Dictionary<DataManager.DataType, RegistryEntry> Map
+            = new Dictionary<DataManager.DataType, RegistryEntry>();
+        
+        public struct RegistryEntry
+        {
+            public Type ClassType;
+            public Func<string, IEntryData> GetEntry;
+            public Func<IEntryData> CreateEntry;
+        }
+        
+        static DataRegistry()
+        {
+            // Register(DataManager.DataType.Monster,
+            //     typeof(MonsterData),
+            //     entryNum => new MonsterData { EntryNum = entryNum },
+            //     () => new MonsterData());
+            //
+            // Register(DataManager.DataType.Skill,
+            //     typeof(SkillData),
+            //     entryNum => new SkillData { EntryNum = entryNum },
+            //     () => new SkillData());
+            //
+            // Register(DataManager.DataType.Item,
+            //     typeof(ItemData),
+            //     entryNum => new ItemData { EntryNum = entryNum },
+            //     () => new ItemData());
+        }
+
+        private static void Register(
+            DataManager.DataType type,
+            Type classType,
+            Func<string, IEntryData> getEntry,
+            Func<IEntryData> createEntry)
+        {
+            Map[type] = new RegistryEntry
+            {
+                ClassType = classType,
+                GetEntry = getEntry,
+                CreateEntry = createEntry
+            };
+        }
+    }
     public static class DataTypeExtensions
     {
+        public delegate IEntryData GetEntry(string id);
+        public delegate IEntryData CreateEntry();
+        
+        
+        // public static Type GetClassType(this DataManager.DataType type)
+        //     => DataRegistry.Map[type].ClassType;
+        //
+        // public static GetEntry GetGetter(this DataManager.DataType type)
+        //     => DataRegistry.Map[type].GetEntry;
+        //
+        // public static CreateEntry GetCreator(this DataManager.DataType type)
+        //     => DataRegistry.Map[type].CreateEntry;
         public static Type GetClassType(this DataManager.DataType dataType)
         {
             switch (dataType)

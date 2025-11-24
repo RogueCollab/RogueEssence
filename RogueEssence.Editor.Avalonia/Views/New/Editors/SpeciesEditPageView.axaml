@@ -1,20 +1,18 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
-        xmlns:views="clr-namespace:RogueEssence.Dev.Views"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
-        x:Class="RogueEssence.Dev.Views.SpeciesEditForm"
-        Title="{Binding Name}" Height="280" Width="300">
-  <!--Icon="/Assets/app-logo.ico"-->
-    <Design.DataContext>
-      <vm:SpeciesEditViewModel2/>
-    </Design.DataContext>
-  <Window.Resources>
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SpeciesEditPageViewModel"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             x:Class="RogueEssence.Dev.Views.SpeciesEditPageView">
+    <!-- <UserControl.DataContext> -->
+    <!--     <vm:SpeciesEditPageViewModel/> -->
+    <!-- </UserControl.DataContext> -->
+  <UserControl.Resources>
     <converters:OXConverter x:Key="OXConverter"/>
-  </Window.Resources>
+  </UserControl.Resources>
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="_Edit">
@@ -38,7 +36,7 @@
       </Grid.ColumnDefinitions>
       <TreeView ItemsSource="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
         <TreeView.DataTemplates>
-          <TreeDataTemplate DataType="vm:MonsterNodeViewModel2" ItemsSource="{Binding Nodes}">
+          <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}">
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="24"/>
@@ -66,4 +64,4 @@
       <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button>
     </Grid>
   </DockPanel>
-</Window>
+</UserControl>

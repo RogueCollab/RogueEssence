@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -12,6 +13,7 @@ using Avalonia.Threading;
 using RogueEssence.Dev.Models;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.Views;
@@ -357,7 +359,7 @@ public class DevFormViewModel : ViewModelBase
         OpenPreferencesWindow = ReactiveCommand.CreateFromTask(async () =>
         {
             await _dialogService.ShowDialogAsync<PreferencesWindowViewModel, bool>(
-                PreferencesWindowViewModel.Instance, "Preferences", false);
+                PreferencesWindowViewModel.Instance, "Preferences");
         });
 
         var tab = _pageFactory.CreatePage("DevControl");
@@ -387,12 +389,46 @@ public class DevFormViewModel : ViewModelBase
         Nodes.Clear();
     }
 
-    public void UpdateTree()
+    public void LoadDevTree()
     {
-        CreateDataNode();
+        var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
+        var rootStr = modsViewModel.CurrentMod = string.IsNullOrEmpty(modsViewModel.CurrentMod)
+            ? "[NULL ORIGINS]"
+            : modsViewModel.CurrentMod;
+
+        var root = _nodeFactory.CreateOpenEditorNode(rootStr, "Icons.ScrollFill", "");
+
+
+        root.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"));
+        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Zone Editor", "Icons.StairsFill", "ZoneEditor"));
+        root.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNode("Ground Editor", "Icons.MapTrifoldFill", "GroundEditor"));
+        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
+        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
+
+        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill"));
+
+        // var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
+        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
+        //     "Icons.PaintBrushFill"));
+        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Red", "SpriteEditor", "Acid_Red",
+        //     "Icons.PaintBrushFill"));
+        //
+        // halcyonNode.SubNodes.Add(particlesRoot);
+
+
+        CreateDataNode(root);
+
+        CreateSpriteNode(root);
+
+        CreateModNode(root);
+        Nodes.Add(root);
+
+        AttachEventsRecursive(root);
     }
 
-    private void CreateDataNode()
+    private void CreateDataNode(NodeBase parent)
     {
         var dataNode = _nodeFactory.CreateOpenEditorNode("Data", "Icons.FloppyDiskFill", "");
         foreach (var type in Enum.GetValues<DataManager.DataType>())
@@ -421,11 +457,152 @@ public class DevFormViewModel : ViewModelBase
             }
         }
 
-        Nodes.Add(dataNode);
+        parent.SubNodes.Add(dataNode);
+    }
+
+    private void CreateSpriteNode(NodeBase parent)
+    {
+        var spritesViewModel = _pageFactory.GetRequiredService<DevTabSpritesViewModel>();
+        var spriteNode = _nodeFactory.CreateOpenEditorNode("Sprites", "Icons.PaintBrushFill", "SpeciesSpriteEditor");
+
+        spriteNode.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNodeWithParams("Char Sprites", "Icons.PersonFill", "SpeciesSpriteEditor", true)
+        );
+        spriteNode.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNodeWithParams("Portraits", "Icons.UserRectangleFill", "SpeciesSpriteEditor", false)
+        );
+
+        foreach (var type in Enum.GetValues<GraphicsManager.AssetType>())
+        {
+            if (type == GraphicsManager.AssetType.None || type == GraphicsManager.AssetType.All ||
+                type == GraphicsManager.AssetType.Count || type == GraphicsManager.AssetType.Autotile ||
+                type == GraphicsManager.AssetType.Chara || type == GraphicsManager.AssetType.Portrait ||
+                type == GraphicsManager.AssetType.Font)
+                continue;
+
+            if (type == GraphicsManager.AssetType.Tile)
+            {
+                var tileRootNode = _nodeFactory.CreateSpriteTileRootNode(
+                    "",
+                    type.ToString(),
+                    type.GetIcon());
+                lock (GameBase.lockObj)
+                {
+                    foreach (string name in GraphicsManager.TileIndex.Nodes.Keys.OrderBy(n => n))
+                    {
+                        var itemNode = _nodeFactory.CreateDataItemNode(
+                            name,
+                            "",
+                            name,
+                            type.GetIcon());
+                        tileRootNode.SubNodes.Add(itemNode);
+                    }
+                }
+
+                spriteNode.SubNodes.Add(tileRootNode);
+                continue;
+            }
+
+            string assetPattern = GraphicsManager.GetPattern(type);
+            string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern),
+                String.Format(Path.GetFileName(assetPattern), "*"));
+
+            var spriteRootNode = _nodeFactory.CreateSpriteRootNode(
+                type,
+                "TODO",
+                type.ToString(),
+                type.GetIcon());
+            // dataNode.SubNodes.Add(dataItemRootNode);
+            spriteNode.SubNodes.Add(spriteRootNode);
 
 
-        foreach (var root in Nodes)
-            AttachEventsRecursive(root);
+            lock (GameBase.lockObj)
+            {
+                for (int ii = 0; ii < dirs.Length; ii++)
+                {
+                    string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+                    // anims.Add(filename);
+                    var itemNode = _nodeFactory.CreateDataItemNode(
+                        filename,
+                        "",
+                        filename,
+                        type.GetIcon());
+
+                    spriteRootNode.SubNodes.Add(itemNode);
+                }
+            }
+        }
+
+
+        parent.SubNodes.Add(spriteNode);
+
+        // lock (GameBase.lockObj)
+        // {
+        // anims.Clear();
+        // Anims.Clear();
+        // string assetPattern = GraphicsManager.GetPattern(assetType);
+        // string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
+        // for (int ii = 0; ii < dirs.Length; ii++)
+        // {
+        //     string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+        //     anims.Add(filename);
+        // }
+        // Anims.SetItems(anims);
+        // }
+
+
+        // var dataNode = _nodeFactory.CreateSpriteRootNode("aaaa", "Icons.FloppyDiskFill", "Sprite");
+
+        // foreach (var type in Enum.GetValues<DataManager.DataType>())
+        // {
+        //     if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+        //         continue;
+        //
+        //
+        //     var dataItemRootNode = _nodeFactory.CreateDataRootNode(
+        //         type,
+        //         "TODO",
+        //         type.ToString(),
+        //         type.GetIcon());
+        //     dataNode.SubNodes.Add(dataItemRootNode);
+        //     var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
+        //
+        //     foreach (string key in entries.Keys)
+        //     {
+        //         var itemNode = _nodeFactory.CreateDataItemNode(
+        //             key,
+        //             "DevEditEditor",
+        //             $"{key}: {entries[key]}",
+        //             type.GetIcon());
+        //
+        //         dataItemRootNode.SubNodes.Add(itemNode);
+        //     }
+        // }
+        //
+        // parent.SubNodes.Add(dataNode);
+    }
+
+    private void HandleSprites()
+    {
+    }
+
+    private void CreateModNode(NodeBase parent)
+    {
+        var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
+        var modRoot = _nodeFactory.CreateDataRootNode(DataManager.DataType.AI, "", "Mods", "Icons.ScrollFill");
+
+        foreach (ModsNodeViewModel mod in modsViewModel.Mods)
+        {
+            var itemNode = _nodeFactory.CreateDataItemNode(
+                mod.Namespace,
+                "",
+                $"{mod.Namespace}: {mod.Name}",
+                "Icons.ScrollFill");
+
+            modRoot.SubNodes.Add(itemNode);
+        }
+
+        parent.SubNodes.Add(modRoot);
     }
 
     private void InitializeTabEvents()
@@ -445,17 +622,17 @@ public class DevFormViewModel : ViewModelBase
 
     private void BuildNodes()
     {
-        var halcyonNode = _nodeFactory.CreateOpenEditorNode("Halcyon", "Icons.FloppyDiskBackFill", "ModInfoEditor");
-
-        halcyonNode.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"));
-        halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Zone Editor", "Icons.StairsFill", "ZoneEditor"));
-        halcyonNode.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode("Ground Editor", "Icons.MapTrifoldFill", "GroundEditor"));
-        halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
-        halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
-
-        halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill"));
+        // var halcyonNode = _nodeFactory.CreateOpenEditorNode("Halcyon", "Icons.FloppyDiskBackFill", "ModInfoEditor");
+        //
+        // halcyonNode.SubNodes.Add(
+        //     _nodeFactory.CreateOpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"));
+        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Zone Editor", "Icons.StairsFill", "ZoneEditor"));
+        // halcyonNode.SubNodes.Add(
+        //     _nodeFactory.CreateOpenEditorNode("Ground Editor", "Icons.MapTrifoldFill", "GroundEditor"));
+        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
+        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
+        //
+        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill"));
 
         // var monstersRoot = _nodeFactory.CreateDataRootNode("Monsters", "Monsters", "Monsters", "Icons.GhostFill");
 
@@ -471,13 +648,13 @@ public class DevFormViewModel : ViewModelBase
         // monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("seviper", "MonsterEditor", "seviper: Seviper",
         //     "Icons.GhostFill"));
 
-        var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
-        particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
-            "Icons.PaintBrushFill"));
-        particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Red", "SpriteEditor", "Acid_Red",
-            "Icons.PaintBrushFill"));
-
-        halcyonNode.SubNodes.Add(particlesRoot);
+        // var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
+        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
+        //     "Icons.PaintBrushFill"));
+        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Red", "SpriteEditor", "Acid_Red",
+        //     "Icons.PaintBrushFill"));
+        //
+        // halcyonNode.SubNodes.Add(particlesRoot);
         //             new NodeBase("Sprites", "Icons.PaintBrushFill")
         //             {
         //                 SubNodes = new ObservableCollection<NodeBase>
@@ -513,9 +690,9 @@ public class DevFormViewModel : ViewModelBase
         //         }
 
         // halcyonNode.SubNodes.Add(monstersRoot);
-        Nodes = new ObservableCollection<NodeBase> { halcyonNode };
+        // Nodes = new ObservableCollection<NodeBase> { halcyonNode };
 
-        halcyonNode.IsExpanded = true;
+        // halcyonNode.IsExpanded = true;
         // monstersRoot.IsExpanded = true;
     }
 
@@ -544,16 +721,7 @@ public class DevFormViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _modSwitcher, value);
     }
 
-
-    // Navigate to a page from tab switcher
-    public void NavigateToPage(PageNode node)
-    {
-        Console.WriteLine($"Navigating to page {node.Title}");
-        Console.WriteLine("yay");
-        ActivePage = node.Page;
-    }
-
-    public void AddPageFromPageNode(OpenEditorNode node)
+    public void AddPageFromTreeNode(OpenEditorNode node)
     {
         var editor = _pageFactory.CreatePage(node.EditorKey, node);
 
@@ -568,12 +736,9 @@ public class DevFormViewModel : ViewModelBase
     {
         if (PageHasChildren(page))
         {
-            var result = await MessageBoxWindowView.Show(
-                "Are you sure you want to close all subtabs?  Your changes will not be saved.",
-                "Confirm Close",
-                MessageBoxWindowView.MessageBoxButtons.YesNo,
-                _dialogService
-            );
+            var result = await MessageBoxWindowView.Show(_dialogService,
+                "Are you sure you want to close all subtabs?  Your changes will not be saved.", "Confirm Close",
+                MessageBoxWindowView.MessageBoxButtons.YesNo);
 
             if (result != MessageBoxWindowView.MessageBoxResult.Yes)
                 return false;

@@ -1,0 +1,24 @@
+﻿<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="using:RogueEssence.Dev.ViewModels"
+                    x:Class="RogueEssence.Dev.Views.MapRetileWindow"
+                    x:DataType="vm:MapRetileWindowViewModel"
+                    xmlns:v="using:RogueEssence.Dev.Views"
+                    CanResize="False"
+                    MaxWidth="400"
+                    MinWidth="300"
+                    x:Name="ThisControl"
+                    SizeToContent="WidthAndHeight">
+
+    <Design.DataContext>
+        <vm:MapRetileWindowViewModel/>
+    </Design.DataContext>
+    <Grid Margin="4" RowDefinitions="20, 42, *, 42" ColumnDefinitions="*, *">
+        <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Tile Size (Pixels)</TextBlock>
+        <NumericUpDown Value="{Binding TileSize}" Minimum="1" Maximum="256" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"></NumericUpDown>
+        <TextBlock Margin="4" TextWrapping="Wrap" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Message}"/>
+        <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="0">OK</Button>
+        <Button Click="btnCancel_Click" Margin="4" Grid.Row="3" Grid.Column="1">Cancel</Button>
+    </Grid>
+
+</v:ChromelessWindow>

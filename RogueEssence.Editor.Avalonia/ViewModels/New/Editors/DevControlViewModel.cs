@@ -18,7 +18,7 @@ public class DevControlViewModel : EditorPageViewModel
 
     public DevControlViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
         DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabTravelViewModel travel,
-        DevTabScriptViewModel script) : base(pageFactory, tabEvents, dialogService)
+        DevTabScriptViewModel script, NodeBase node) : base(pageFactory, tabEvents, dialogService)
     {
         Fruits = new TestComboBoxViewModel();
         Game = game;

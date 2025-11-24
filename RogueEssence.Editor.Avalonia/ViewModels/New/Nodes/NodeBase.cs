@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -9,8 +12,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
 
@@ -120,6 +126,22 @@ public class OpenEditorNode : NodeBase
     }
 }
 
+public class OpenEditorNodeWithParams : OpenEditorNode
+{
+    public object[] ExtraParams { get; }
+
+    public OpenEditorNodeWithParams(
+        string title,
+        string? icon = null,
+        string editorKey = "",
+        params object[] extraParams)
+        : base(title, icon ?? "", editorKey)
+    {
+        ExtraParams = extraParams;
+    }
+}
+
+
 public abstract class ItemRootNode : OpenEditorNode
 {
     protected readonly IDialogService _dialogService;
@@ -192,13 +214,8 @@ public class DataRootNode : ItemRootNode
         if (node is null)
             return;
 
-        var res = await MessageBoxWindowView.Show(
-            $"Deleting {node.ItemKey} will reset it back to the base game.",
-            $"Delete {node.ItemKey}",
-            MessageBoxWindowView.MessageBoxButtons.YesNo,
-            _dialogService,
-            true
-        );
+        var res = await MessageBoxWindowView.Show(_dialogService,
+            $"Deleting {node.ItemKey} will reset it back to the base game.", $"Delete {node.ItemKey}", MessageBoxWindowView.MessageBoxButtons.YesNo, true);
 
         if (res != MessageBoxWindowView.MessageBoxResult.Yes)
             return;
@@ -259,13 +276,13 @@ public class DataItemNode : OpenEditorNode
 {
     public string ItemKey { get; }
 
-    private string _value = "";
-
-    public string Value
-    {
-        get => _value;
-        set => this.RaiseAndSetIfChanged(ref _value, value);
-    }
+    // private string _value = "";
+    //
+    // public string Value
+    // {
+    //     get => _value;
+    //     set => this.RaiseAndSetIfChanged(ref _value, value);
+    // }
 
     // private bool _editorKey = false;
     // public bool EditorKey
@@ -283,8 +300,9 @@ public class DataItemNode : OpenEditorNode
 
 public class SpriteRootNode : ItemRootNode
 {
-    private readonly string _dataType;
-    private readonly string _key;
+    private readonly ISpriteOperationStrategy _strategy;
+    
+    public readonly GraphicsManager.AssetType AssetType;
     private readonly NodeFactory _nodeFactory;
     private readonly IDialogService _dialogService;
 
@@ -295,21 +313,38 @@ public class SpriteRootNode : ItemRootNode
     public ReactiveCommand<Unit, Unit> MassImportCommand { get; }
     public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
     public ReactiveCommand<DataItemNode, Unit> ImportCommand { get; }
-    public ReactiveCommand<DataItemNode, Unit> ReImportCommand { get; }
+    public ReactiveCommand<Unit, Unit> ReImportCommand { get; }
 
+    private string _cachedPath;
+    public string CachedPath
+    {
+        get => _cachedPath;
+        set => this.RaiseAndSetIfChanged(ref _cachedPath, value);
+    }
+
+    
     public SpriteRootNode(
         IDialogService dialogService,
         NodeFactory nodeFactory,
-        string dataType,
+        GraphicsManager.AssetType assetType,
         string editorKey,
         string title,
         string? icon = null)
         : base(title, icon ?? "", editorKey)
     {
-        _dataType = dataType;
-        _key = editorKey;
-        _dialogService = dialogService;
-        _nodeFactory = nodeFactory;
+        AssetType = assetType;
+        // _dialogService = dialogService;
+        // _nodeFactory = nodeFactory;
+
+        if (AssetType == GraphicsManager.AssetType.Tile)
+        {
+            _strategy = new SpriteTileStrategy(dialogService, nodeFactory, this);
+        }
+        else
+        {
+            _strategy = new SpriteAssetTypeStrategy(dialogService, nodeFactory, this);
+            
+        }
 
         AddCommand = ReactiveCommand.CreateFromTask(AddSpriteAsync);
         DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteSpriteAsync);
@@ -317,72 +352,110 @@ public class SpriteRootNode : ItemRootNode
         MassImportCommand = ReactiveCommand.CreateFromTask(MassImportAsync);
         ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
         ImportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ImportSpriteAsync);
-        ReImportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ReImportSpriteAsync);
+        ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
     }
 
     private async Task AddSpriteAsync()
     {
-        var vm = new RenameWindowViewModel();
-        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, "Add sprite ID");
+        var node = await _strategy.AddAsync();
+        if (node != null)
+        {
+            SubNodes.Add(node);
+            IsExpanded = true;
+        }
 
-        if (!result)
-            return;
-
-        var node = _nodeFactory.CreateDataItemNode(vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
-        SubNodes.Add(node);
-        IsExpanded = true;
-
-        Console.WriteLine($"[SpriteRootNode] Added sprite: {vm.Name}");
     }
 
     private async Task DeleteSpriteAsync(DataItemNode node)
     {
-        var res = await MessageBoxWindowView.Show(
-            $"Delete sprite '{node.Title}'?",
-            "Deleting Sprite",
-            MessageBoxWindowView.MessageBoxButtons.YesNo,
-            _dialogService, true);
-
-        if (res != MessageBoxWindowView.MessageBoxResult.Yes)
-            return;
-
-        SubNodes.Remove(node);
-        Console.WriteLine($"[SpriteRootNode] Deleted sprite: {node.Title}");
+        await _strategy.DeleteAsync(node);
     }
 
     private async Task MassExportAsync()
     {
-        var x = await _dialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions()
-        {
-            AllowMultiple = true,
-            Title = "Select a folder to mass export to"
-        });
-        Console.WriteLine("[SpriteRootNode] Mass export triggered (TODO: implement export logic).");
-        await Task.CompletedTask;
+        await _strategy.MassExportAsync();
     }
 
     private async Task MassImportAsync()
     {
-        Console.WriteLine("[SpriteRootNode] Mass import triggered (TODO: implement import logic).");
-        await Task.CompletedTask;
+        await _strategy.MassImportAsync();
     }
 
     private async Task ExportSpriteAsync(DataItemNode node)
     {
-        Console.WriteLine($"[SpriteRootNode] Exporting sprite: {node.Title}");
-        await Task.CompletedTask;
+        await _strategy.ExportAsync(node);
     }
 
     private async Task ImportSpriteAsync(DataItemNode node)
     {
-        Console.WriteLine($"[SpriteRootNode] Importing sprite: {node.Title}");
-        await Task.CompletedTask;
+        await _strategy.ImportAsync(node);
     }
 
-    private async Task ReImportSpriteAsync(DataItemNode node)
+    private async Task ReImportSpriteAsync()
     {
-        Console.WriteLine($"[SpriteRootNode] Re-importing sprite: {node.Title}");
-        await Task.CompletedTask;
+        await _strategy.ReImportAsync();
+    }
+}
+
+public class SpriteTileRootNode : SpriteRootNode
+{
+    private readonly NodeFactory _nodeFactory;
+    private readonly IDialogService _dialogService;
+    public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
+
+    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, string editorKey, string title, string? icon = null)
+        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorKey, title, icon)
+    {
+        _nodeFactory = nodeFactory;
+        _dialogService = dialogService;
+        ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
+    }
+    
+    private async Task ReIndexAsync()
+    {
+        try
+        {
+            _reIndex();
+        }
+        catch (Exception ex)
+        {
+            DiagManager.Instance.LogError(ex, false);
+            await MessageBoxWindowView.Show(_dialogService, "Error when reindexing.\n\n" + ex.Message, "Reindex Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+    }
+    
+    private void _reloadFullList()
+    {
+        Console.WriteLine("TODO: Reuse this... This is already identical to SpriteTileStrategy...");
+        lock (GameBase.lockObj)
+        {
+            SubNodes.Clear();
+            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
+            {
+                SubNodes.Add(
+                    _nodeFactory.CreateDataItemNode(name, "", name + ":", this.AssetType.GetIcon())
+                );
+            }
+        }
+    }
+
+    private void _reIndex()
+    {
+        DevForm.ExecuteOrPend(() => { _tryReIndex(); });
+
+        _reloadFullList();
+    }
+
+    private void _tryReIndex()
+    {
+        lock (GameBase.lockObj)
+        {
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+            DiagManager.Instance.LogInfo("All files re-indexed.");
+        }
     }
 }
 

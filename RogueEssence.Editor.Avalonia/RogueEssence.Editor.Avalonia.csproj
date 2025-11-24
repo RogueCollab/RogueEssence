@@ -191,6 +191,14 @@
       <DependentUpon>DevTabGame.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\New\DialogBoxes\MapRetileWindow.axaml.cs">
+      <DependentUpon>MapRetileWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\Editors\SpeciesEditPageView.axaml.cs">
+      <DependentUpon>SpeciesEditPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

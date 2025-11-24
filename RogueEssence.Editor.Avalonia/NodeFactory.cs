@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Services;
 using RogueEssence.Dev.ViewModels;
@@ -25,6 +26,13 @@ namespace RogueEssence.Dev
 
         public OpenEditorNode CreateOpenEditorNode(string title, string? icon = null, string editorKey = "")
             => Create<OpenEditorNode>(title, icon, editorKey);
+        
+        public OpenEditorNodeWithParams CreateOpenEditorNodeWithParams(
+            string title,
+            string? icon = null,
+            string editorKey = "",
+            params object[] extraParams)
+            => Create<OpenEditorNodeWithParams>(title, icon, editorKey, extraParams);
 
         public DataRootNode CreateDataRootNode(DataManager.DataType dataType, string editorKey, string title, string? icon = null)
         {
@@ -42,8 +50,11 @@ namespace RogueEssence.Dev
         // => Create<PageNode>(this, childPage, parentNode);
 
 
-        public SpriteRootNode CreateSpriteRootNode(string dataType, string editorKey, string title, string? icon = null)
-            => Create<SpriteRootNode>(dataType, editorKey, title, icon);
+        public SpriteRootNode CreateSpriteRootNode(GraphicsManager.AssetType assetType, string editorKey, string title, string? icon = null)
+            => Create<SpriteRootNode>(assetType, editorKey, title, icon);
+        
+        public SpriteTileRootNode CreateSpriteTileRootNode(string editorKey, string title, string? icon = null)
+            => Create<SpriteTileRootNode>(editorKey, title, icon);
 
     }
 }

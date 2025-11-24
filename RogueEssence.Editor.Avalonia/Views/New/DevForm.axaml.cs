@@ -20,6 +20,7 @@ using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.ViewModels;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Views;
 
@@ -121,7 +122,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                     devViewModel.Mods.UpdateMod();
 
                 devViewModel.ClearNodes();
-                devViewModel.UpdateTree();
+                devViewModel.LoadDevTree();
                 LoadComplete = true;
                 
             }
@@ -601,14 +602,19 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             }
         };
 
+        if (root is SpriteTileRootNode node)
+        {
+            menu.Items.Insert(0, new MenuItem { Header = "Re-Index", Command = node.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") } );
+        };
+
         AttachAndOpenMenu(current, menu, e);
     }
 
-    private static void AttachAndOpenMenu(TreeDataGridRow current, ContextMenu menu, ContextRequestedEventArgs e)
+    private void AttachAndOpenMenu(TreeDataGridRow current, ContextMenu menu, ContextRequestedEventArgs e)
     {
-        menu.Closed += (_, _) => current.ContextMenu = null;
-        current.ContextMenu = menu;
-        menu.Open(current);
+        menu.Closed += (_, _) => LeftTreeDataGrid.ContextMenu = null;
+        LeftTreeDataGrid.ContextMenu = menu;
+        menu.Open(LeftTreeDataGrid);
         e.Handled = true;
     }
     
@@ -617,21 +623,9 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
         {
             var selectedItem = (OpenEditorNode)treeView.RowSelection.SelectedItem;
-            vm.AddPageFromPageNode(selectedItem);
+            Console.WriteLine(selectedItem.ToString());
+            vm.AddPageFromTreeNode(selectedItem);
         }
-    }
-
-    private void LeftTreeDataGrid_OnSelectionChanging(object? sender, CancelEventArgs e)
-    {
-        if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
-        {
-            Dispatcher.UIThread.Invoke(() =>
-            {
-
-            });
-
-        }
-
     }
     
     private void LeftTreeDataGrid_OnContextRequested(object? sender, ContextRequestedEventArgs e)
@@ -675,4 +669,72 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     private async void LeftTreeDataGrid_OnLoaded(object sender, RoutedEventArgs e)
     {
     }
+
+    private void LeftTreeDataGrid_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not TreeDataGrid treeDataGrid)
+            return;
+        
+        var point = e.GetPosition(treeDataGrid);
+        var visual = treeDataGrid.InputHitTest(point);
+        
+        var element = visual as Control;
+        while (element != null && element is not TreeDataGridRow)
+        {
+            element = element.Parent as Control;
+        }
+    
+        if (DungeonScene.Instance == null)
+            return;
+
+        GraphicsManager.AssetType debugAsset = GraphicsManager.AssetType.None;
+        string? debugAnim = null;
+        
+        if (element is TreeDataGridRow row &&
+            row.DataContext is DataItemNode node &&
+            node.Parent is SpriteRootNode parent &&
+            parent.AssetType.IsAnimEdit())
+        {
+            debugAsset = parent.AssetType;
+            debugAnim = node.ItemKey;
+        }
+
+        lock (GameBase.lockObj)
+        {
+            DungeonScene.Instance.DebugAsset = debugAsset;
+            DungeonScene.Instance.DebugAnim = debugAnim;
+        }
+
+    }
+
+    private void LeftTreeDataGrid_OnLostFocus(object sender, RoutedEventArgs e)
+    {
+        
+        if (!(sender is TreeDataGrid grid))
+            return;
+        
+        
+        if (grid.IsKeyboardFocusWithin)
+            return;
+        
+        if (grid.ContextMenu?.IsOpen == true)
+            return;
+        
+        var window = grid.GetVisualRoot() as Window;
+        if (window is { IsActive: false })
+            return; 
+        // (grid.RowSelection.SelectedItem as DataItemNode)?.Parent?.ResaveAsFile(grid.RowSelection.SelectedItem as DataItemNode)
+        // Not sure why it doesn't clear the grid...
+        grid.RowSelection.Clear();
+        
+        lock (GameBase.lockObj)
+        {
+            if (DungeonScene.Instance != null)
+            {
+                DungeonScene.Instance.DebugAsset = GraphicsManager.AssetType.None;
+                DungeonScene.Instance.DebugAnim = null;
+            }
+        }
+    }
+
 }

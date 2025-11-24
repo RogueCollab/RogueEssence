@@ -6,9 +6,9 @@ using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public partial class MapRetileWindow : Window
+    public partial class MapRetileWindow2 : Window
     {
-        public MapRetileWindow()
+        public MapRetileWindow2()
         {
             this.InitializeComponent();
         }

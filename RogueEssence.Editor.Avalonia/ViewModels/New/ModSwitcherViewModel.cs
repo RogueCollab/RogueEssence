@@ -67,12 +67,7 @@ public class ModSwitcherViewModel : ViewModelBase
     
     public async Task<MessageBoxWindowView.MessageBoxResult> ConfirmModSwitchAsync()
     {
-        return await MessageBoxWindowView.Show(
-            "The game will be reloaded to use content from the new path. Click OK to proceed. Your changes will not be saved.",
-            "Are you sure?",
-            MessageBoxWindowView.MessageBoxButtons.OkCancel,
-            _dialogService
-        );
+        return await MessageBoxWindowView.Show(_dialogService, "The game will be reloaded to use content from the new path. Click OK to proceed. Your changes will not be saved.", "Are you sure?", MessageBoxWindowView.MessageBoxButtons.OkCancel);
     }
     
     public Models.ModHeader CurrentMod

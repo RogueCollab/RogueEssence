@@ -31,10 +31,10 @@ namespace RogueEssence.Dev.Views
         }
 
         public static async Task<MessageBoxResult> Show(
+            IDialogService dialogService,
             string text,
             string title,
             MessageBoxButtons buttons,
-            IDialogService dialogService, 
             bool danger = false)
         {
             var vm = new MessageBoxWindowViewModel(title, text);
