@@ -119,9 +119,9 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                     devViewModel.Travel.ReloadZones();
 
                 if (dataType == DataManager.DataType.All)
-                    devViewModel.Mods.UpdateMod();
-
-                devViewModel.ClearNodes();
+                    devViewModel.UpdateMod();
+                
+                Console.WriteLine("Dev Editor Reloaded!");
                 devViewModel.LoadDevTree();
                 LoadComplete = true;
                 
@@ -504,7 +504,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         base.OnDataContextChanged(e);
         if (DataContext is DevFormViewModel vm)
         {
-            // vm.ModSwitcherClosed += () => ModSwitcherFlyoutButton.Flyout?.Hide();;
+            vm.ModSwitcherClosed += () => ModSwitcherFlyoutButton.Flyout?.Hide();;
         }
     }
     

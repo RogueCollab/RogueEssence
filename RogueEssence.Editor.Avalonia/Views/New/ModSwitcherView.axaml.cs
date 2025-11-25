@@ -45,34 +45,19 @@ public partial class ModSwitcherView : UserControl
             return;
         }
         
-        var result = await switcher.ConfirmModSwitchAsync();
-        if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
-            return;
+        switcher.CloseSwitcher();
+        await switcher.ConfirmModSwitchAsync();
+        // if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
+        //     return;
         
         // switcher.CurrentMod = selected;
-        switcher.CloseSwitcher();
+      
 
-        DevForm.ExecuteOrPend(() => _doSwitch(selected));
+        // DevForm.ExecuteOrPend(() => _doSwitch(selected));
         e.Handled = true;
     }
 
-    private void _doSwitch(ModsNodeViewModel mod)
-    {
-        //modify and reload
-        lock (GameBase.lockObj)
-        {
-            LuaEngine.Instance.BreakScripts();
-            MenuManager.Instance.ClearMenus();
-            if (!String.IsNullOrEmpty(mod.Path))
-                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(mod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
-            else
-                GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
-
-            DiagManager.Instance.PrintModSettings();
-            DiagManager.Instance.SaveModSettings();
-        }
-    }
-
+    
     private void ModsListBox_OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (DataContext is not ModSwitcherViewModel switcher)
@@ -101,20 +86,22 @@ public partial class ModSwitcherView : UserControl
         if (selected is null)
             return;
         
+        Console.WriteLine("Capped");
         if (switcher.IsCurrent(selected))
         {
+            Console.WriteLine("Same");
             switcher.CloseSwitcher();
             e.Handled = true;
             return;
         }
+        Console.WriteLine("Tapped");
         
-        var result = await switcher.ConfirmModSwitchAsync();
-        if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
-            return;
+        switcher.CloseSwitcher();
+        await switcher.ConfirmModSwitchAsync();
         
         // switcher.CurrentMod = selected;
-        DevForm.ExecuteOrPend(() => _doSwitch(selected));
-        switcher.CloseSwitcher();
+        // DevForm.ExecuteOrPend(() => _doSwitch(selected));
+  
 
         e.Handled = true;
     }

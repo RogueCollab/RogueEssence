@@ -61,12 +61,16 @@
                 </Button>
 
                 <!-- Switch Mod Button  -->
-                <Button ToolTip.Tip="{Binding CurrentMod.Key}" Margin="12, 0, 0, 0" Grid.Column="3"
+                <!-- TODO: figure out why tooltips won't work -->
+                <Button Margin="12,0,0,0" Grid.Column="3"
                         Classes="icon_button"
-                        x:Name="ModSwitcherFlyoutButton" Padding="0, 4, 0, 0">
-
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Padding="0, 0, 6, 0" Text="{Binding Mods.CurrentMod}" />
+                        x:Name="ModSwitcherFlyoutButton" Padding="0,4,0,0"
+                        ToolTip.Tip="testing tooltip">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <TextBlock Padding="0,0,6,0" Text="{Binding ChosenMod.Name}"
+                                   MaxWidth="200"
+                                   TextTrimming="CharacterEllipsis" />
                         <Path HorizontalAlignment="Center" Width="10" Height="10" Margin="0,2,0,0"
                               Data="{StaticResource Icons.CaretDownFill}" />
                     </StackPanel>

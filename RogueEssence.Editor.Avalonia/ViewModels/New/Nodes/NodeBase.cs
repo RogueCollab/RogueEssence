@@ -88,7 +88,7 @@ public class NodeBase : ViewModelBase
                 child.SubNodesChanged += SubNodesChanged;
             }
         }
-
+        
         if (e.OldItems != null)
         {
             foreach (NodeBase child in e.OldItems)

@@ -17,6 +17,8 @@ using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.Views;
+using RogueEssence.Menu;
+using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels;
 
@@ -36,13 +38,77 @@ public class DevFormViewModel : ViewModelBase
     public DevTabTravelViewModel Travel { get; set; }
     public DevTabSpritesViewModel Sprites { get; set; }
     public DevTabScriptViewModel Script { get; set; }
-    public DevTabModsViewModel Mods { get; set; }
+    // public DevTabModsViewModel Mods { get; set; }
     public DevTabConstantsViewModel Constants { get; set; }
 
 
     private readonly NodeFactory _nodeFactory;
 
+    public ObservableCollection<ModsNodeViewModel> Mods { get; }
 
+ 
+    private ModsNodeViewModel _chosenMod;
+
+    public ModsNodeViewModel ChosenMod
+    {
+        get => _chosenMod;
+        set { this.RaiseAndSetIfChanged(ref _chosenMod, value); }
+    }
+    
+    private string currentMod;
+    public string CurrentMod
+    {
+        get => currentMod;
+        set => this.SetIfChanged(ref currentMod, value);
+    }
+    
+    public void UpdateMod()
+    {
+        CurrentMod = _getModName(PathMod.Quest);
+    }
+    private void _reloadMods()
+    {
+        Mods.Clear();
+  
+        string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
+        ModsNodeViewModel chosenModel = new ModsNodeViewModel("Origins", PathMod.BaseNamespace, "");
+        Mods.Add(chosenModel);
+        foreach (string modPath in modsPath)
+        {
+            ModHeader header = PathMod.GetModDetails(modPath);
+            Mods.Add(new ModsNodeViewModel(_getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+            if (PathMod.Quest.Path == header.Path)
+            {
+                chosenModel = Mods[Mods.Count - 1];
+            }
+        }
+        ChosenMod = chosenModel;
+    }
+    
+    private void DoSwitch()
+    {
+        //modify and reload
+        lock (GameBase.lockObj)
+        {
+            LuaEngine.Instance.BreakScripts();
+            MenuManager.Instance.ClearMenus();
+            if (!String.IsNullOrEmpty(_chosenMod.Path))
+                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(_chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
+            else
+                GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
+
+            DiagManager.Instance.PrintModSettings();
+            DiagManager.Instance.SaveModSettings();
+        }
+    }
+    
+    private static string _getModName(ModHeader mod)
+    {
+        if (!mod.IsValid())
+            return null;
+        return mod.GetMenuName();
+    }
+    
     private bool _isTreeView;
 
     public bool IsTreeView
@@ -319,6 +385,7 @@ public class DevFormViewModel : ViewModelBase
         DevTabModsViewModel mods,
         DevTabConstantsViewModel constants)
     {
+        Mods = new ObservableCollection<ModsNodeViewModel>();
         // NOTE: These should all be private readonly
         Game = game;
         Player = player;
@@ -326,14 +393,13 @@ public class DevFormViewModel : ViewModelBase
         Travel = travel;
         Sprites = sprites;
         Script = script;
-        Mods = mods;
+        // Mods = mods;
         Constants = constants;
         _pageFactory = pageFactory;
         _tabEvents = tabEvents;
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
-
-        BuildNodes();
+        
         InitializeTabEvents();
 
         this.WhenAnyValue(x => x.ActivePage)
@@ -353,9 +419,7 @@ public class DevFormViewModel : ViewModelBase
                 PreferencesWindowViewModel.Instance, "Preferences");
         });
 
-        var tab = _pageFactory.CreatePage("DevControl");
-        tab.Icon = "Icons.GameControllerFill";
-        AddTopLevelPage(tab);
+      
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
 
         NodeSource = new HierarchicalTreeDataGridSource<NodeBase>(Nodes)
@@ -374,18 +438,30 @@ public class DevFormViewModel : ViewModelBase
             },
         };
     }
-
-    public void ClearNodes()
-    {
-        Nodes.Clear();
-    }
-
+    
     public void LoadDevTree()
     {
-        var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
-        var rootStr = modsViewModel.CurrentMod = string.IsNullOrEmpty(modsViewModel.CurrentMod)
-            ? "[NULL ORIGINS]"
-            : modsViewModel.CurrentMod;
+        Filter = "";
+        _reloadMods();
+
+        ActivePage = null;
+        TopLevelPages.Clear();
+        Pages.Clear();
+        _pageToNodeMap.Clear();
+        
+        var tab = _pageFactory.CreatePage("DevControl");
+        tab.Icon = "Icons.GameControllerFill";
+        AddTopLevelPage(tab);
+
+
+        foreach (var n in Nodes)
+        {
+            DetachEventsRecursive(n);
+        }
+        
+        Nodes.Clear();
+       
+        var rootStr = ChosenMod.Name;
 
         var root = _nodeFactory.CreateOpenEditorNode(rootStr, "Icons.ScrollFill", "");
 
@@ -417,6 +493,7 @@ public class DevFormViewModel : ViewModelBase
         Nodes.Add(root);
 
         AttachEventsRecursive(root);
+        root.IsExpanded = true;
     }
 
     private void CreateDataNode(NodeBase parent)
@@ -611,90 +688,27 @@ public class DevFormViewModel : ViewModelBase
         _tabEvents.NavigateToTabEvent += (tab) => { ActivePage = tab; };
     }
 
-    private void BuildNodes()
-    {
-        // var halcyonNode = _nodeFactory.CreateOpenEditorNode("Halcyon", "Icons.FloppyDiskBackFill", "ModInfoEditor");
-        //
-        // halcyonNode.SubNodes.Add(
-        //     _nodeFactory.CreateOpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"));
-        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Zone Editor", "Icons.StairsFill", "ZoneEditor"));
-        // halcyonNode.SubNodes.Add(
-        //     _nodeFactory.CreateOpenEditorNode("Ground Editor", "Icons.MapTrifoldFill", "GroundEditor"));
-        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
-        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
-        //
-        // halcyonNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill"));
-
-        // var monstersRoot = _nodeFactory.CreateDataRootNode("Monsters", "Monsters", "Monsters", "Icons.GhostFill");
-
-
-        //             new OpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"),
-        //             new OpenEditorNode("Zone Editor", "Icons.StairsFill", "ZoneEditor"),
-        //             new OpenEditorNode("Ground Editor", "Icons.MapTrifoldFill", "GroundEditor"),
-        //             new OpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"),
-
-
-        // monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("eevee", "MonsterEditor", "eevee: Eevee",
-        //     "Icons.GhostFill"));
-        // monstersRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("seviper", "MonsterEditor", "seviper: Seviper",
-        //     "Icons.GhostFill"));
-
-        // var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
-        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
-        //     "Icons.PaintBrushFill"));
-        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Red", "SpriteEditor", "Acid_Red",
-        //     "Icons.PaintBrushFill"));
-        //
-        // halcyonNode.SubNodes.Add(particlesRoot);
-        //             new NodeBase("Sprites", "Icons.PaintBrushFill")
-        //             {
-        //                 SubNodes = new ObservableCollection<NodeBase>
-        //                 {
-        //                     new NodeBase("Char Sprites", "Icons.GhostFill"),
-        //                     new NodeBase("Portraits", "Icons.ImagesSquareFill"),
-        //                     new ActionDataNode("Particles", "Icons.ShootingStarFill")
-        //                     {
-        //                         SubNodes = new ObservableCollection<NodeBase>
-        //                         {
-        //                             new NodeBase("Absorb", "Icons.ShootingStarFill"),
-        //                             new NodeBase("Acid_Blue", "Icons.ShootingStarFill"),
-        //                         }
-        //                     },
-        //                     new ActionDataNode("Beam", "Icons.HeadlightsFill")
-        //                     {
-        //                         SubNodes = new ObservableCollection<NodeBase>
-        //                         {
-        //                             new NodeBase("Beam_2", "Icons.HeadlightsFill"),
-        //                             new NodeBase("Beam_Pink", "Icons.HeadlightsFill"),
-        //                         }
-        //                     },
-        //                 }
-        //             },
-        //             new NodeBase("Mods", "Icons.SwordFill")
-        //             {
-        //                 SubNodes = new ObservableCollection<NodeBase>
-        //                 {
-        //                     new NodeBase("halcyon: Halcyon", "Icons.SwordFill"),
-        //                     new NodeBase("zorea_mystery_dungeon: Zorea Mystery Dungeon", "Icons.SwordFill"),
-        //                 }
-        //             }
-        //         }
-
-        // halcyonNode.SubNodes.Add(monstersRoot);
-        // Nodes = new ObservableCollection<NodeBase> { halcyonNode };
-
-        // halcyonNode.IsExpanded = true;
-        // monstersRoot.IsExpanded = true;
-    }
-
     private void AttachEventsRecursive(NodeBase node)
     {
-        node.SubNodesChanged += () => RefreshTreeDataGrid();
+        node.SubNodesChanged += () => OnSubNodesChanged();
 
         foreach (var child in node.SubNodes)
             AttachEventsRecursive(child);
     }
 
+    private void DetachEventsRecursive(NodeBase node)
+    {
+        node.SubNodesChanged -= OnSubNodesChanged;
+
+        foreach (var child in node.SubNodes)
+            DetachEventsRecursive(child);
+    }
+    
+    private void OnSubNodesChanged()
+    {
+        RefreshTreeDataGrid();
+    }
+    
     private TabSwitcherViewModel? _tabSwitcher;
 
     public TabSwitcherViewModel? TabSwitcher
