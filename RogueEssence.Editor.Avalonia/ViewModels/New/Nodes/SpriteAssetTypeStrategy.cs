@@ -82,8 +82,8 @@ public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
 
         if (!result) return null;
 
-        return _nodeFactory.CreateDataItemNode(
-            vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
+        return _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(
+            vm.Name, vm.Name + ":", "Icons.PaintBrushFill");
     }
 
     public async Task DeleteAsync(DataItemNode node)
@@ -186,7 +186,7 @@ public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
             for (int ii = 0; ii < dirs.Length; ii++)
             {
                 string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                _spriteRootNode.SubNodes.Add(_nodeFactory.CreateDataItemNode(filename, "", filename, "Icons.PaintBrushFill"));
+                _spriteRootNode.SubNodes.Add(_nodeFactory.CreateDataItemNode<DevEditPageViewModel>(filename, filename, "Icons.PaintBrushFill"));
             }
         }
     }

@@ -40,57 +40,102 @@ namespace RogueEssence.Dev
     public class PageFactory
     {
         private readonly IServiceProvider _provider;
-        private readonly Dictionary<string, Type> _map = new();
+        private readonly HashSet<Type> _registeredTypes = new();
 
         public PageFactory(IServiceProvider provider)
         {
             _provider = provider;
         }
 
-        public void Register<TPage>(string key) where TPage : EditorPageViewModel
+        public void Register<TPage>() where TPage : EditorPageViewModel
         {
-            _map[key] = typeof(TPage);
+            _registeredTypes.Add(typeof(TPage));
         }
-    
-        public EditorPageViewModel? CreatePage(string key)
+
+        public TPage? CreatePage<TPage>() where TPage : EditorPageViewModel
         {
-            if (_map.TryGetValue(key, out var type))
+            var type = typeof(TPage);
+        
+            if (!_registeredTypes.Contains(type))
             {
-                return (EditorPageViewModel)_provider.GetRequiredService(type);
-            }
-    
-            return null;
-        }
-    
-        public EditorPageViewModel? CreatePage(string key, NodeBase? node = null)
-        {
-            if (_map.TryGetValue(key, out var type))
-            {
-                if (node != null)
-                {
-                    return (EditorPageViewModel)
-                        ActivatorUtilities.CreateInstance(_provider, type, node);
-                }
-                
-                return (EditorPageViewModel)_provider.GetRequiredService(type);
+                return null;
             }
 
-            return null;
+            return (TPage)_provider.GetRequiredService(type);
         }
         
-        // TODO: see if create page or the one above is better...
-        public T CreatePage<T>() where T : EditorPageViewModel
+        public EditorPageViewModel? CreatePage(Type pageType, NodeBase? node = null)
         {
-            Console.WriteLine("Don't use this...");
-            return _provider.GetRequiredService<T>();
-        }
+            
+            if (!typeof(EditorPageViewModel).IsAssignableFrom(pageType))
+            {
+                throw new ArgumentException(
+                    $"Type {pageType.Name} must derive from EditorPageViewModel", 
+                    nameof(pageType));
+            }
+            
+            if (!_registeredTypes.Contains(pageType))
+            {
+                return null;
+            }
+
+            if (node != null)
+            {
+                return (EditorPageViewModel)ActivatorUtilities.CreateInstance(_provider, pageType, node);
+            }
     
+            return (EditorPageViewModel)_provider.GetRequiredService(pageType);
+        }
+
+        
+        // public EditorPageViewModel? CreatePage(Type pageType)
+        // {
+        //     
+        //     if (!typeof(EditorPageViewModel).IsAssignableFrom(pageType))
+        //     {
+        //         throw new ArgumentException(
+        //             $"Type {pageType.Name} must derive from EditorPageViewModel", 
+        //             nameof(pageType));
+        //     }
+        //     
+        //     if (!_registeredTypes.Contains(pageType))
+        //     {
+        //         return null;
+        //     }
+        //     
+        //     return (EditorPageViewModel)_provider.GetRequiredService(pageType);
+        // }
+        
+        public TPage? CreatePage<TPage>(NodeBase? node) where TPage : EditorPageViewModel
+        {
+            var type = typeof(TPage);
+        
+            if (!_registeredTypes.Contains(type))
+            {
+                return null;
+            }
+
+            if (node != null)
+            {
+                return (TPage)ActivatorUtilities.CreateInstance(_provider, type, node);
+            }
+        
+            return (TPage)_provider.GetRequiredService(type);
+        }
+        
+        // // TODO: see if create page or the one above is better...
+        // public T CreatePage<T>() where T : EditorPageViewModel
+        // {
+        //     Console.WriteLine("Don't use this...");
+        //     return _provider.GetRequiredService<T>();
+        // }
+        //
         public void PrintRegisteredPages()
         {
             Console.WriteLine("Registered pages:");
-            foreach (var entry in _map)
+            foreach (var entry in _registeredTypes)
             {
-                Console.WriteLine($"Key: {entry.Key}, Type: {entry.Value.FullName}");
+                Console.WriteLine($"Type: {entry}");
             }
         }
     

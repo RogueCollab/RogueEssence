@@ -6,6 +6,7 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:v="using:RogueEssence.Dev.Views"
                     mc:Ignorable="d"
+                    x:Name="ThisControl"
                     x:Class="RogueEssence.Dev.Views.ModConfigWindowView"
                     Title="Mod Config" Width="420" Height="480">
     <Design.DataContext>
@@ -25,9 +26,9 @@
                   IsVisible="{OnPlatform True, macOS=False}" />
 
             <TextBlock Classes="bold"
-                       Text="{Binding Title}"
+                       Text="{Binding #ThisControl.Title}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                       IsHitTestVisible="False" />
+                       IsHitTestVisible="False"/>
 
             <v:CaptionButtons HorizontalAlignment="Right"
                               IsCloseButtonOnly="True"
@@ -41,7 +42,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="48" />
-                        <ColumnDefinition Width="72" />
+                        <ColumnDefinition Width="90" />
                     </Grid.ColumnDefinitions>
                     <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" />
                     <TextBlock Margin="4,2" Text="Type:" VerticalAlignment="Center" HorizontalAlignment="Right"
@@ -69,10 +70,13 @@
                 <TextBox Text="{Binding Author}" VerticalAlignment="Center" Margin="4" Grid.Row="2" Grid.Column="1" />
                 <TextBlock Margin="4,2" Text="Description:" VerticalAlignment="Top" HorizontalAlignment="Right"
                            Grid.Row="3" />
-                <TextBox Text="{Binding Description}" AcceptsReturn="True" Margin="4" Grid.Row="3" Grid.Column="1" />
+                <TextBox Text="{Binding Description}" VerticalAlignment="Stretch" VerticalContentAlignment="Top" AcceptsReturn="True" Margin="4" Grid.Row="3" Grid.Column="1" />
             </Grid>
 
-            <Expander Grid.Row="1">
+            <Expander Grid.Row="1"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Top"
+                      HorizontalContentAlignment="Stretch">
                 <Expander.Header>
                     <Label Content="Advanced"></Label>
                 </Expander.Header>
@@ -103,8 +107,8 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Button Click="btnOK_Click" Margin="4" Grid.Column="0">OK</Button>
-                <Button Click="btnCancel_Click" Margin="4" Grid.Column="1">Cancel</Button>
+                <Button Classes="flat" Click="btnOK_Click" Margin="4" Grid.Column="0">OK</Button>
+                <Button Classes="flat" Click="btnCancel_Click" Margin="4" Grid.Column="1">Cancel</Button>
             </Grid>
         </Grid>
     </Grid>

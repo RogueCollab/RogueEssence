@@ -38,8 +38,8 @@ public class SpriteTileStrategy : ISpriteOperationStrategy
 
         if (!result) return null;
 
-        return _nodeFactory.CreateDataItemNode(
-            vm.Name, "SpriteEditor", vm.Name + ":", "Icons.PaintBrushFill");
+        return _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(
+            vm.Name, vm.Name + ":", "Icons.PaintBrushFill");
     }
 
     public async Task DeleteAsync(DataItemNode node)
@@ -274,7 +274,7 @@ public class SpriteTileStrategy : ISpriteOperationStrategy
             foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
             {
                 _spriteRootNode.SubNodes.Add(
-                    _nodeFactory.CreateDataItemNode(name, "", name + ":", _spriteRootNode.AssetType.GetIcon())
+                    _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(name, name + ":", _spriteRootNode.AssetType.GetIcon())
                 );
             }
         }

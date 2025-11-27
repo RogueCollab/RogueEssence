@@ -64,9 +64,8 @@ public class DevEditPageViewModel : EditorPageViewModel
             // dataListForm.Show();
         }
     }
-
-    public override string UniqueId => null;
-    public override string? Title => "Dev Edit";
+    
+    // public override string? Title => "Dev Edit";
 
     public DevEditPageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService, NodeBase node) : base(
         pageFactory, tabEvents, dialogService)
@@ -79,6 +78,6 @@ public class DevEditPageViewModel : EditorPageViewModel
     public DevEditPageViewModel() : base(new PageFactory(new DesignServiceProvider()),
         new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
     {
-        Title = "Dev Edit";
+        // Title = "Dev Edit";
     }
 }

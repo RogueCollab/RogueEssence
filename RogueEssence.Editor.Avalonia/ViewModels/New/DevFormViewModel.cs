@@ -37,7 +37,9 @@ public class DevFormViewModel : ViewModelBase
     public DevTabDataViewModel Data { get; set; }
     public DevTabTravelViewModel Travel { get; set; }
     public DevTabSpritesViewModel Sprites { get; set; }
+
     public DevTabScriptViewModel Script { get; set; }
+
     // public DevTabModsViewModel Mods { get; set; }
     public DevTabConstantsViewModel Constants { get; set; }
 
@@ -46,7 +48,7 @@ public class DevFormViewModel : ViewModelBase
 
     public ObservableCollection<ModsNodeViewModel> Mods { get; }
 
- 
+
     private ModsNodeViewModel _chosenMod;
 
     public ModsNodeViewModel ChosenMod
@@ -54,37 +56,41 @@ public class DevFormViewModel : ViewModelBase
         get => _chosenMod;
         set { this.RaiseAndSetIfChanged(ref _chosenMod, value); }
     }
-    
+
     private string currentMod;
+
     public string CurrentMod
     {
         get => currentMod;
         set => this.SetIfChanged(ref currentMod, value);
     }
-    
+
     public void UpdateMod()
     {
         CurrentMod = _getModName(PathMod.Quest);
     }
+
     private void _reloadMods()
     {
         Mods.Clear();
-  
+
         string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
         ModsNodeViewModel chosenModel = new ModsNodeViewModel("Origins", PathMod.BaseNamespace, "");
         Mods.Add(chosenModel);
         foreach (string modPath in modsPath)
         {
             ModHeader header = PathMod.GetModDetails(modPath);
-            Mods.Add(new ModsNodeViewModel(_getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+            Mods.Add(new ModsNodeViewModel(_getModName(header), header.Namespace,
+                Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
             if (PathMod.Quest.Path == header.Path)
             {
                 chosenModel = Mods[Mods.Count - 1];
             }
         }
+
         ChosenMod = chosenModel;
     }
-    
+
     private void DoSwitch()
     {
         //modify and reload
@@ -93,7 +99,8 @@ public class DevFormViewModel : ViewModelBase
             LuaEngine.Instance.BreakScripts();
             MenuManager.Instance.ClearMenus();
             if (!String.IsNullOrEmpty(_chosenMod.Path))
-                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(_chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
+                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(_chosenMod.Path)),
+                    new ModHeader[0] { }, new List<int>() { -1 });
             else
                 GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
 
@@ -101,14 +108,14 @@ public class DevFormViewModel : ViewModelBase
             DiagManager.Instance.SaveModSettings();
         }
     }
-    
+
     private static string _getModName(ModHeader mod)
     {
         if (!mod.IsValid())
             return null;
         return mod.GetMenuName();
     }
-    
+
     private bool _isTreeView;
 
     public bool IsTreeView
@@ -116,7 +123,7 @@ public class DevFormViewModel : ViewModelBase
         get => _isTreeView;
         set { this.RaiseAndSetIfChanged(ref _isTreeView, value); }
     }
-    
+
     public void OpenTabSwitcher()
     {
         TabSwitcher = _pageFactory.GetRequiredService<TabSwitcherViewModel>();
@@ -234,7 +241,7 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddTopLevelPage(EditorPageViewModel page)
     {
-        // Console.WriteLine($"Adding top level page {page}");
+        Console.WriteLine($"Adding top level page {page}");
         var navigated = TryNavigateToExistingPage(page);
         if (navigated) return;
 
@@ -264,6 +271,8 @@ public class DevFormViewModel : ViewModelBase
         {
             var childNode = parentNode.AddChild(childPage);
             _pageToNodeMap[childPage] = childNode;
+            
+            // Try to insert the child page to the right of the parent
             var parentIndex = Pages.IndexOf(parentPage);
             if (parentIndex == -1)
             {
@@ -283,20 +292,17 @@ public class DevFormViewModel : ViewModelBase
     // Returns whether the navigation was successful
     private bool TryNavigateToExistingPage(EditorPageViewModel page)
     {
-        if (!string.IsNullOrEmpty(page.UniqueId))
+        var existing = Pages.FirstOrDefault(p => p.Equals(page));
+        if (existing != null)
         {
-            var existing = Pages.FirstOrDefault(p => p.UniqueId == page.UniqueId);
-            if (existing != null)
-            {
-                TemporaryTab = null;
-                ActivePage = existing;
-                return true;
-            }
+            TemporaryTab = null;
+            ActivePage = existing;
+            return true;
         }
 
         return false;
     }
-
+    
     public bool PageHasChildren(EditorPageViewModel page)
     {
         if (!_pageToNodeMap.TryGetValue(page, out var node))
@@ -399,7 +405,7 @@ public class DevFormViewModel : ViewModelBase
         _tabEvents = tabEvents;
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
-        
+
         InitializeTabEvents();
 
         this.WhenAnyValue(x => x.ActivePage)
@@ -419,7 +425,7 @@ public class DevFormViewModel : ViewModelBase
                 PreferencesWindowViewModel.Instance, "Preferences");
         });
 
-      
+
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
 
         NodeSource = new HierarchicalTreeDataGridSource<NodeBase>(Nodes)
@@ -438,7 +444,7 @@ public class DevFormViewModel : ViewModelBase
             },
         };
     }
-    
+
     public void LoadDevTree()
     {
         Filter = "";
@@ -448,8 +454,8 @@ public class DevFormViewModel : ViewModelBase
         TopLevelPages.Clear();
         Pages.Clear();
         _pageToNodeMap.Clear();
-        
-        var tab = _pageFactory.CreatePage("DevControl");
+
+        var tab = _pageFactory.CreatePage(typeof(DevControlViewModel));
         tab.Icon = "Icons.GameControllerFill";
         AddTopLevelPage(tab);
 
@@ -458,24 +464,23 @@ public class DevFormViewModel : ViewModelBase
         {
             DetachEventsRecursive(n);
         }
-        
+
         Nodes.Clear();
-       
+
         var rootStr = ChosenMod.Name;
 
-        var root = _nodeFactory.CreateOpenEditorNode(rootStr, "Icons.ScrollFill", "");
+        // TODO: change to Mod Edit Page View Model
+        var root = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>(rootStr, "Icons.ScrollFill");
 
 
-        root.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode("Dev Control", "Icons.GameControllerFill", "DevControl"));
-        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Zone Editor", "Icons.StairsFill", "ZoneEditor"));
-        root.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode("Ground Editor", "Icons.MapTrifoldFill", "GroundEditor"));
-        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
-        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
-
-        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill"));
-
+        // root.SubNodes.Add(
+            // _nodeFactory.CreateOpenEditorNode("Dev Control",  typeof(DevControlViewModel), "Icons.GameControllerFill"));
+        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Zone Editor", "Icons.StairsFill"));
+        // root.SubNodes.Add(
+            // _nodeFactory.CreateOpenEditorNode("Ground Editor", typeof(GroundEditorPageViewModel), "Icons.MapTrifoldFill"));
+        // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
+        // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
+        
         // var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
         // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
         //     "Icons.PaintBrushFill"));
@@ -485,121 +490,285 @@ public class DevFormViewModel : ViewModelBase
         // halcyonNode.SubNodes.Add(particlesRoot);
 
 
-        CreateDataNode(root);
-
+        // CreateConstantsNode(root);
+        // CreateDataNode(root);
+        //
         CreateSpriteNode(root);
 
-        CreateModNode(root);
+        // CreateModNode(root);
         Nodes.Add(root);
 
         AttachEventsRecursive(root);
         root.IsExpanded = true;
     }
 
+
+    private void CreateConstantsNode(NodeBase parent)
+    {
+        // var constantsNode = _nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill", "");
+        //
+        // var startParamsNode = _nodeFactory.CreateOpenEditorNode("Start Params", "Icons.ListFill", "");
+        // var universalEventsNode = _nodeFactory.CreateOpenEditorNode("Universal Events", "Icons.ListFill", "");
+        //
+        // var menuTextNode = _nodeFactory.CreateOpenEditorNode("Menu Text", "Icons.TableFill", "");
+        // var gameplayTextNode = _nodeFactory.CreateOpenEditorNode("Gameplay Text", "Icons.TableFill", "");
+        //
+        //
+        // constantsNode.SubNodes.Add(startParamsNode);
+        // constantsNode.SubNodes.Add(universalEventsNode);
+        // constantsNode.SubNodes.Add(menuTextNode);
+        // constantsNode.SubNodes.Add(gameplayTextNode);
+        //
+        // var effectsNode = _nodeFactory.CreateOpenEditorNode("Effects", "Icons.ListFill", "");
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Heal FX",
+        //     () => DataManager.Instance.HealFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.HealFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Heal", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Restore Charge FX",
+        //     () => DataManager.Instance.RestoreChargeFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.RestoreChargeFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "RestoreCharge", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Lose Charge FX",
+        //     () => DataManager.Instance.LoseChargeFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.LoseChargeFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "LoseCharge", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<EmoteFX>(
+        //     "No Charge FX",
+        //     () => DataManager.Instance.NoChargeFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.NoChargeFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "NoCharge", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Element FX",
+        //     () => DataManager.Instance.ElementFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.ElementFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Element", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Intrinsic FX",
+        //     () => DataManager.Instance.IntrinsicFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.IntrinsicFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Intrinsic", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Send Home FX",
+        //     () => DataManager.Instance.SendHomeFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.SendHomeFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "SendHome", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Item Lost FX",
+        //     () => DataManager.Instance.ItemLostFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.ItemLostFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "ItemLost", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Warp FX",
+        //     () => DataManager.Instance.WarpFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.WarpFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Warp", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Knockback FX",
+        //     () => DataManager.Instance.KnockbackFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.KnockbackFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Knockback", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Jump FX",
+        //     () => DataManager.Instance.JumpFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.JumpFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Jump", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // effectsNode.SubNodes.Add(_nodeFactory.CreateOpenEditorNodeFX<BattleFX>(
+        //     "Throw FX",
+        //     () => DataManager.Instance.ThrowFX,
+        //     (fx) =>
+        //     {
+        //         DataManager.Instance.ThrowFX = fx;
+        //         DataManager.SaveData(fx, DataManager.FX_PATH, "Throw", DataManager.DATA_EXT);
+        //     },
+        //     "Icons.SparkleFill"
+        // ));
+        //
+        // constantsNode.SubNodes.Add(effectsNode);
+        // effectsNode.SubNodes.Add(_nodeFactory.Create<BattleFX>("Damage FX", ...params));
+        // effectsNode.SubNodes.Add(_nodeFactory.Create<BattleFX>("Heal FX", ...params));
+
+
+        // var effectsNode = _nodeFactory.CreateOpenEditorNode("Effec", "Icons.ListFill", "");
+
+
+        // parent.SubNodes.Add(constantsNode);
+    }
+
     private void CreateDataNode(NodeBase parent)
     {
-        var dataNode = _nodeFactory.CreateOpenEditorNode("Data", "Icons.FloppyDiskFill", "");
-        foreach (var type in Enum.GetValues<DataManager.DataType>())
-        {
-            if (type == DataManager.DataType.All || type == DataManager.DataType.None)
-                continue;
-
-
-            var dataItemRootNode = _nodeFactory.CreateDataRootNode(
-                type,
-                "TODO",
-                type.ToString(),
-                type.GetIcon());
-            dataNode.SubNodes.Add(dataItemRootNode);
-            var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
-
-            foreach (string key in entries.Keys)
-            {
-                var itemNode = _nodeFactory.CreateDataItemNode(
-                    key,
-                    "DevEditEditor",
-                    $"{key}: {entries[key]}",
-                    type.GetIcon());
-
-                dataItemRootNode.SubNodes.Add(itemNode);
-            }
-        }
-
-        parent.SubNodes.Add(dataNode);
+        // var dataNode = _nodeFactory.CreateOpenEditorNode("Data", "Icons.FloppyDiskFill", "");
+        // foreach (var type in Enum.GetValues<DataManager.DataType>())
+        // {
+        //     if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+        //         continue;
+        //
+        //
+        //     var dataItemRootNode = _nodeFactory.CreateDataRootNode(
+        //         type,
+        //         "TODO",
+        //         type.ToString(),
+        //         type.GetIcon());
+        //     dataNode.SubNodes.Add(dataItemRootNode);
+        //     var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
+        //
+        //     foreach (string key in entries.Keys)
+        //     {
+        //         var itemNode = _nodeFactory.CreateDataItemNode(
+        //             key,
+        //             "DevEditEditor",
+        //             $"{key}: {entries[key]}",
+        //             type.GetIcon());
+        //
+        //         dataItemRootNode.SubNodes.Add(itemNode);
+        //     }
+        // }
+        //
+        // parent.SubNodes.Add(dataNode);
     }
 
     private void CreateSpriteNode(NodeBase parent)
     {
-        var spritesViewModel = _pageFactory.GetRequiredService<DevTabSpritesViewModel>();
-        var spriteNode = _nodeFactory.CreateOpenEditorNode("Sprites", "Icons.PaintBrushFill", "SpeciesSpriteEditor");
-
+        // var spritesViewModel = _pageFactory.GetRequiredService<DevTabSpritesViewModel>();
+        var spriteNode = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>("Sprites", "Icons.PaintBrushFill");
+        //
         spriteNode.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNodeWithParams("Char Sprites", "Icons.PersonFill", "SpeciesSpriteEditor", true)
+            _nodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Char Sprites", [true], "Icons.PersonFill")
         );
         spriteNode.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNodeWithParams("Portraits", "Icons.UserRectangleFill", "SpeciesSpriteEditor", false)
+            _nodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Portraits", [false], "Icons.PersonFill")
         );
-
-        foreach (var type in Enum.GetValues<GraphicsManager.AssetType>())
-        {
-            if (type == GraphicsManager.AssetType.None || type == GraphicsManager.AssetType.All ||
-                type == GraphicsManager.AssetType.Count || type == GraphicsManager.AssetType.Autotile ||
-                type == GraphicsManager.AssetType.Chara || type == GraphicsManager.AssetType.Portrait ||
-                type == GraphicsManager.AssetType.Font)
-                continue;
-
-            if (type == GraphicsManager.AssetType.Tile)
-            {
-                var tileRootNode = _nodeFactory.CreateSpriteTileRootNode(
-                    "",
-                    type.ToString(),
-                    type.GetIcon());
-                lock (GameBase.lockObj)
-                {
-                    foreach (string name in GraphicsManager.TileIndex.Nodes.Keys.OrderBy(n => n))
-                    {
-                        var itemNode = _nodeFactory.CreateDataItemNode(
-                            name,
-                            "",
-                            name,
-                            type.GetIcon());
-                        tileRootNode.SubNodes.Add(itemNode);
-                    }
-                }
-
-                spriteNode.SubNodes.Add(tileRootNode);
-                continue;
-            }
-
-            string assetPattern = GraphicsManager.GetPattern(type);
-            string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern),
-                String.Format(Path.GetFileName(assetPattern), "*"));
-
-            var spriteRootNode = _nodeFactory.CreateSpriteRootNode(
-                type,
-                "TODO",
-                type.ToString(),
-                type.GetIcon());
-            // dataNode.SubNodes.Add(dataItemRootNode);
-            spriteNode.SubNodes.Add(spriteRootNode);
-
-
-            lock (GameBase.lockObj)
-            {
-                for (int ii = 0; ii < dirs.Length; ii++)
-                {
-                    string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-                    // anims.Add(filename);
-                    var itemNode = _nodeFactory.CreateDataItemNode(
-                        filename,
-                        "",
-                        filename,
-                        type.GetIcon());
-
-                    spriteRootNode.SubNodes.Add(itemNode);
-                }
-            }
-        }
+        // );
+        //
+        // foreach (var type in Enum.GetValues<GraphicsManager.AssetType>())
+        // {
+        //     if (type == GraphicsManager.AssetType.None || type == GraphicsManager.AssetType.All ||
+        //         type == GraphicsManager.AssetType.Count || type == GraphicsManager.AssetType.Autotile ||
+        //         type == GraphicsManager.AssetType.Chara || type == GraphicsManager.AssetType.Portrait ||
+        //         type == GraphicsManager.AssetType.Font)
+        //         continue;
+        //
+        //     if (type == GraphicsManager.AssetType.Tile)
+        //     {
+        //         var tileRootNode = _nodeFactory.CreateSpriteTileRootNode(
+        //             "",
+        //             type.ToString(),
+        //             type.GetIcon());
+        //         lock (GameBase.lockObj)
+        //         {
+        //             foreach (string name in GraphicsManager.TileIndex.Nodes.Keys.OrderBy(n => n))
+        //             {
+        //                 var itemNode = _nodeFactory.CreateDataItemNode(
+        //                     name,
+        //                     "",
+        //                     name,
+        //                     type.GetIcon());
+        //                 tileRootNode.SubNodes.Add(itemNode);
+        //             }
+        //         }
+        //
+        //         spriteNode.SubNodes.Add(tileRootNode);
+        //         continue;
+        //     }
+        //
+        //     string assetPattern = GraphicsManager.GetPattern(type);
+        //     string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern),
+        //         String.Format(Path.GetFileName(assetPattern), "*"));
+        //
+        //     var spriteRootNode = _nodeFactory.CreateSpriteRootNode(
+        //         type,
+        //         "TODO",
+        //         type.ToString(),
+        //         type.GetIcon());
+        //     // dataNode.SubNodes.Add(dataItemRootNode);
+        //     spriteNode.SubNodes.Add(spriteRootNode);
+        //
+        //
+        //     lock (GameBase.lockObj)
+        //     {
+        //         for (int ii = 0; ii < dirs.Length; ii++)
+        //         {
+        //             string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
+        //             // anims.Add(filename);
+        //             var itemNode = _nodeFactory.CreateDataItemNode(
+        //                 filename,
+        //                 "",
+        //                 filename,
+        //                 type.GetIcon());
+        //
+        //             spriteRootNode.SubNodes.Add(itemNode);
+        //         }
+        //     }
+        // }
 
 
         parent.SubNodes.Add(spriteNode);
@@ -656,21 +825,22 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateModNode(NodeBase parent)
     {
-        var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
-        var modRoot = _nodeFactory.CreateDataRootNode(DataManager.DataType.AI, "", "Mods", "Icons.ScrollFill");
-
-        foreach (ModsNodeViewModel mod in modsViewModel.Mods)
-        {
-            var itemNode = _nodeFactory.CreateDataItemNode(
-                mod.Namespace,
-                "",
-                $"{mod.Namespace}: {mod.Name}",
-                "Icons.ScrollFill");
-
-            modRoot.SubNodes.Add(itemNode);
-        }
-
-        parent.SubNodes.Add(modRoot);
+        // var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
+        // var modRoot = _nodeFactory.CreateModRootNode("", "Mods", "Icons.ScrollFill");
+        //
+        // foreach (ModsNodeViewModel mod in modsViewModel.Mods)
+        // {
+        //     var name = mod.Namespace == "origin" ? "Origins" : mod.Name;
+        //     var itemNode = _nodeFactory.CreateDataItemNode(
+        //         mod.Namespace,
+        //         "",
+        //         $"{mod.Namespace}: {name}",
+        //         "Icons.ScrollFill");
+        //
+        //     modRoot.SubNodes.Add(itemNode);
+        // }
+        //
+        // parent.SubNodes.Add(modRoot);
     }
 
     private void InitializeTabEvents()
@@ -703,12 +873,12 @@ public class DevFormViewModel : ViewModelBase
         foreach (var child in node.SubNodes)
             DetachEventsRecursive(child);
     }
-    
+
     private void OnSubNodesChanged()
     {
         RefreshTreeDataGrid();
     }
-    
+
     private TabSwitcherViewModel? _tabSwitcher;
 
     public TabSwitcherViewModel? TabSwitcher
@@ -728,11 +898,12 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddPageFromTreeNode(OpenEditorNode node)
     {
-        var editor = _pageFactory.CreatePage(node.EditorKey, node);
+        var editor = _pageFactory.CreatePage(node.EditorType, node);
 
+        Console.WriteLine("EDitpr" + editor);
         if (editor != null)
         {
-            editor.SetTabInfo(node);
+            editor.SetPageTitleFromNode(node);
             AddTopLevelPage(editor);
         }
     }

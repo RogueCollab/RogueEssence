@@ -11,8 +11,7 @@ public class DevControlViewModel : EditorPageViewModel
 
     public DevTabScriptViewModel Script { get; }
 
-    public override string UniqueId => "DevControl";
-    public override string? Title => "Dev Control";
+    public override string DefaultTitle => "Dev Control";
 
     public TestComboBoxViewModel Fruits { get; }
 
@@ -30,7 +29,7 @@ public class DevControlViewModel : EditorPageViewModel
     public DevControlViewModel() : base(new PageFactory(new DesignServiceProvider()),
         new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
     {
-        Title = "Dev Control";
+        // Title = "Dev Control";
         Fruits = new TestComboBoxViewModel();
     }
 }

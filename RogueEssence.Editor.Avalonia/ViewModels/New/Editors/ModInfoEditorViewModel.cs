@@ -4,8 +4,7 @@ using Dev.Services;
 
 public class ModInfoEditorViewModel : EditorPageViewModel
 {
-    public override string UniqueId => null;
-    public override string? Title => "Mod Info";
+    // public override string? Title => "Mod Info";
     
     // public override bool AddNewTab => true;
 
@@ -19,7 +18,7 @@ public class ModInfoEditorViewModel : EditorPageViewModel
     
     public ModInfoEditorViewModel() : base(new PageFactory(new DesignServiceProvider()), new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
     {
-        Title = "Dev Control";
+        // Title = "Dev Control";
         Fruits = new TestComboBoxViewModel();
     }
     

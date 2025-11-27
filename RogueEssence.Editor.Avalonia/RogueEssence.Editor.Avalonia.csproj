@@ -203,6 +203,10 @@
       <DependentUpon>ModConfigWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\New\Editors\DataListPageView.axaml.cs">
+      <DependentUpon>DataListPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

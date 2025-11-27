@@ -13,14 +13,13 @@ public class SpritePageViewModel : EditorPageViewModel
     public ReactiveCommand<Unit, Unit> TestDialog { get; }
     public ReactiveCommand<Unit, Unit> RemoveSelfTab { get; }
     
-    public override string Title => "Sprite Stuff";
-    public override string? UniqueId => "";
+    // public override string Title => "Sprite Stuff";
 
 
     public SpritePageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService) : base(pageFactory, tabEvents, dialogService)
     {
-        CreateATab = ReactiveCommand.Create(() => tabEvents.AddChildPage(this, pageFactory.CreatePage("SpritePage")));
-        CreateATopTab = ReactiveCommand.Create(() => tabEvents.AddTopLevelTab(pageFactory.CreatePage("ModInfoEditor")));
+        CreateATab = ReactiveCommand.Create(() => tabEvents.AddChildPage(this, pageFactory.CreatePage(typeof(SpritePageViewModel))));
+        CreateATopTab = ReactiveCommand.Create(() => tabEvents.AddTopLevelTab(pageFactory.CreatePage(typeof(ModInfoEditorViewModel))));
         TestDialog = ReactiveCommand.CreateFromTask(async () =>
             {
                 var rename = new RenameWindowViewModel();

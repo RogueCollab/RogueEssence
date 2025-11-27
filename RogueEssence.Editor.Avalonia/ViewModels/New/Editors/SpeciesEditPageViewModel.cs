@@ -74,12 +74,17 @@ namespace RogueEssence.Dev.ViewModels
 
     public class SpeciesEditPageViewModel : EditorPageViewModel
     {
-        
-        public override string Title => "Species Editor";
-        public override string? UniqueId => "";
-        
+        protected override bool IsSamePage(EditorPageViewModel other)
+        {
+            if (other is not SpeciesEditPageViewModel species)
+                return false;
+    
+            return this.CheckSprites == species.CheckSprites;
+        }
+        // public override string Title => "Species Editor";
 
-        private bool checkSprites;
+
+        public bool CheckSprites;
         private bool notifiedImport;
 
         private Window parent;
@@ -87,7 +92,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public string Name
         {
-            get { return checkSprites ? GraphicsManager.AssetType.Chara.ToString() : GraphicsManager.AssetType.Portrait.ToString(); }
+            get { return CheckSprites ? GraphicsManager.AssetType.Chara.ToString() : GraphicsManager.AssetType.Portrait.ToString(); }
             set { }
         }
 
@@ -123,8 +128,8 @@ namespace RogueEssence.Dev.ViewModels
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
             OpList = new ObservableCollection<SpeciesOpContainer>();
-            checkSprites = (bool)node.ExtraParams[0];
-            LoadFormDataEntries(checkSprites);
+            CheckSprites = (bool)node.ExtraParams[0];
+            LoadFormDataEntries(CheckSprites);
         }
 
 
@@ -191,7 +196,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void LoadFormDataEntries(bool sprites)
         {
-            checkSprites = sprites;
+            CheckSprites = sprites;
             OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
             if (sprites)
             {
@@ -512,7 +517,7 @@ namespace RogueEssence.Dev.ViewModels
                 if (!Directory.Exists(Path.GetDirectoryName(assetPattern)))
                     Directory.CreateDirectory(Path.GetDirectoryName(assetPattern));
 
-                if (checkSprites)
+                if (CheckSprites)
                     ImportHelper.ImportAllChars(currentPath, assetPattern);
                 else
                     ImportHelper.ImportAllPortraits(currentPath, assetPattern);
@@ -561,7 +566,7 @@ namespace RogueEssence.Dev.ViewModels
                 Dictionary<CharID, byte[]> data = LoadSpeciesData(currentForm.Species);
 
                 //write sprite data
-                if (checkSprites)
+                if (CheckSprites)
                     ImportHelper.BakeCharSheet(currentPath, data, currentForm);
                 else
                     ImportHelper.BakePortrait(currentPath, data, currentForm);
@@ -659,7 +664,7 @@ namespace RogueEssence.Dev.ViewModels
                 CharID fallback = GraphicsManager.GetFallbackForm(GraphicsManager.CharaIndex, currentForm);
                 if (fallback == currentForm)
                 {
-                    if (checkSprites)
+                    if (CheckSprites)
                     {
                         CharSheet sheet = GraphicsManager.GetChara(currentForm);
                         CharSheet.Export(sheet, currentPath, singleSheet);
@@ -759,7 +764,7 @@ namespace RogueEssence.Dev.ViewModels
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    if (checkSprites)
+                    if (CheckSprites)
                         GraphicsManager.GetChara(formData).Save(writer);
                     else
                         GraphicsManager.GetPortrait(formData).Save(writer);
@@ -783,7 +788,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private CharaIndexNode GetIndexNode()
         {
-            if (checkSprites)
+            if (CheckSprites)
                 return GraphicsManager.CharaIndex;
             else
                 return GraphicsManager.PortraitIndex;
@@ -796,7 +801,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private string GetPattern()
         {
-            if (checkSprites)
+            if (CheckSprites)
                 return GraphicsManager.CHARA_PATTERN;
             else
                 return GraphicsManager.PORTRAIT_PATTERN;
@@ -804,7 +809,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private GraphicsManager.AssetType GetAssetType()
         {
-            if (checkSprites)
+            if (CheckSprites)
                 return GraphicsManager.AssetType.Chara;
             else
                 return GraphicsManager.AssetType.Portrait;

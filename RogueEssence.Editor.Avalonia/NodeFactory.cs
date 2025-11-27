@@ -23,38 +23,47 @@ namespace RogueEssence.Dev
         {
             return (T)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(T), args);
         }
-
-        public OpenEditorNode CreateOpenEditorNode(string title, string? icon = null, string editorKey = "")
-            => Create<OpenEditorNode>(title, icon, editorKey);
         
-        public OpenEditorNodeWithParams CreateOpenEditorNodeWithParams(
+        public OpenEditorNode CreateOpenEditorNode<TEditor>(string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<OpenEditorNode>(title, typeof(TEditor), icon);
+        
+        public OpenEditorNodeWithParams CreateOpenEditorNodeWithParams<TEditor>(
             string title,
-            string? icon = null,
-            string editorKey = "",
-            params object[] extraParams)
-            => Create<OpenEditorNodeWithParams>(title, icon, editorKey, extraParams);
-
-        public DataRootNode CreateDataRootNode(DataManager.DataType dataType, string editorKey, string title, string? icon = null)
-        {
-            return Create<DataRootNode>(dataType, editorKey, title, icon);
-        }
-
-        public DataItemNode CreateDataItemNode(string key, string editorKey, string title, string? icon = null)
-            => Create<DataItemNode>(key, editorKey, title, icon);
-
-        // I cannot for the life of figure out of why none of the create methods work... but I guess this will do
-        public PageNode CreatePageNode(EditorPageViewModel childPage, PageNode? parentNode = null)
-
-            => new PageNode(_serviceProvider.GetService<IDialogService>(), this, childPage, parentNode);
-        // => Create<PageNode>(childPage, parentNode);
-        // => Create<PageNode>(this, childPage, parentNode);
-
-
-        public SpriteRootNode CreateSpriteRootNode(GraphicsManager.AssetType assetType, string editorKey, string title, string? icon = null)
-            => Create<SpriteRootNode>(assetType, editorKey, title, icon);
+            object[] extraParams,
+            string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<OpenEditorNodeWithParams>(title, typeof(TEditor), extraParams, icon);
         
-        public SpriteTileRootNode CreateSpriteTileRootNode(string editorKey, string title, string? icon = null)
-            => Create<SpriteTileRootNode>(editorKey, title, icon);
+        public DataRootNode CreateDataRootNode<TEditor>(DataManager.DataType dataType, string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<DataRootNode>(dataType, typeof(TEditor), title, icon);
+        
+        public ModRootNode CreateModRootNode<TEditor>(string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<ModRootNode>(typeof(TEditor), title, icon);
+        
+        public DataItemNode CreateDataItemNode<TEditor>(string key, string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<DataItemNode>(key, typeof(TEditor), title, icon);
 
+        public PageNode CreatePageNode(EditorPageViewModel childPage, PageNode? parentNode = null)
+            => new PageNode(_serviceProvider.GetService<IDialogService>(), this, childPage, parentNode);
+        
+        public SpriteRootNode CreateSpriteRootNode<TEditor>(GraphicsManager.AssetType assetType, string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<SpriteRootNode>(assetType, typeof(TEditor), title, icon);
+        
+        public SpriteTileRootNode CreateSpriteTileRootNode<TEditor>(string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<SpriteTileRootNode>(typeof(TEditor), title, icon);
+        
+        public OpenEditorNodeFX<T> CreateOpenEditorNodeFX<T, TEditor>(
+            string title, 
+            Func<T> getter, 
+            Action<T> setter,
+            string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<OpenEditorNodeFX<T>>(title, typeof(TEditor), getter, setter, icon);
     }
 }

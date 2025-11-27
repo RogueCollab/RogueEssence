@@ -9,23 +9,34 @@ namespace RogueEssence.Dev.ViewModels;
 
 public class EditorPageViewModel : ViewModelBase
 {
-    public virtual string? UniqueId => null;
+    
+    public virtual string DefaultTitle => "Dev Edit";
+    
+    private string _title = "";
+
+
+    public string Title =>
+        string.IsNullOrEmpty(_title) ? DefaultTitle : _title;
+    
+    public bool Equals(object? obj)
+    {
+        if (obj is not EditorPageViewModel other)
+            return false;
+        
+        return GetType() == other.GetType() && IsSamePage(other);
+    }
+
+    protected virtual bool IsSamePage(EditorPageViewModel other)
+    {
+        return true;
+    }
     
     public virtual bool AddNewTab => true;
     
     
     private string _data = "";
 
-    private string _title = "";
-    public virtual string Title
-    {
-        get { return _title; }
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _title, value);
-        }
-    }
-
+  
     public string Data
     {
         get { return _data; }
@@ -66,9 +77,9 @@ public class EditorPageViewModel : ViewModelBase
         _tabEvents = tabEvents;
     }
 
-    public void SetTabInfo(NodeBase node)
+    public void SetPageTitleFromNode(NodeBase node)
     {
-        _icon = node._icon;
+        _icon = node.Icon;
         _title = node.Title;
     }
     

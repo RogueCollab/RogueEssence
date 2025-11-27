@@ -20,6 +20,7 @@ using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
 
+
 namespace RogueEssence.Dev.ViewModels;
 
 using System.Collections.ObjectModel;
@@ -38,7 +39,7 @@ public class NodeBase : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _title, value);
     }
 
-    public string _icon = "";
+    private string _icon = "";
 
     public string Icon
     {
@@ -117,14 +118,15 @@ public class NodeBase : ViewModelBase
 
 public class OpenEditorNode : NodeBase
 {
-    public string EditorKey { get; }
+    public Type EditorType { get; }
 
-    public OpenEditorNode(string title, string? icon = null, string editorKey = "")
+    public OpenEditorNode(string title, Type? editorType, string? icon = null)
         : base(title, icon ?? "")
     {
-        EditorKey = editorKey;
+        EditorType = editorType;
     }
 }
+
 
 public class OpenEditorNodeWithParams : OpenEditorNode
 {
@@ -132,15 +134,37 @@ public class OpenEditorNodeWithParams : OpenEditorNode
 
     public OpenEditorNodeWithParams(
         string title,
-        string? icon = null,
-        string editorKey = "",
-        params object[] extraParams)
-        : base(title, icon ?? "", editorKey)
+        Type? editorType,
+        object[] extraParams,
+        string? icon = null)
+        : base(title, editorType, icon)
     {
         ExtraParams = extraParams;
     }
 }
 
+public class OpenEditorNodeFX<T> : OpenEditorNode
+{
+    private readonly Func<T> _getter;
+    private readonly Action<T> _setter;
+
+    public OpenEditorNodeFX(
+        string title, 
+        Type? editorType,
+        Func<T> getter, 
+        Action<T> setter,
+        string? icon = null)
+        : base(title, editorType, icon)
+    {
+        _getter = getter;
+        _setter = setter;
+    }
+
+    public async Task OnClickAsync()
+    {
+
+    }
+}
 
 public abstract class ItemRootNode : OpenEditorNode
 {
@@ -149,8 +173,8 @@ public abstract class ItemRootNode : OpenEditorNode
     public abstract ReactiveCommand<Unit, Unit> AddCommand { get; }
     public abstract ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
 
-    protected ItemRootNode(string title, string icon, string editorKey)
-        : base(title, icon, editorKey)
+    protected ItemRootNode(string title, Type? editorKey, string icon = null)
+        : base(title, editorKey, icon)
     {
     }
 }
@@ -175,8 +199,8 @@ public class DataRootNode : ItemRootNode
     public ReactiveCommand<DataItemNode, Unit> ResaveAsPatch { get; }
 
     public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
-        string editorKey, string title, string? icon = null)
-        : base(title, icon ?? "", editorKey)
+        Type? editorType, string title, string? icon = null)
+        : base(title, editorType, icon ?? "")
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
@@ -204,7 +228,7 @@ public class DataRootNode : ItemRootNode
         if (!result)
             return;
 
-        SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
+        SubNodes.Add(_nodeFactory.CreateDataItemNode<DevEditPageViewModel>(vm.Name, $"{vm.Name}:", "Icons.GhostFill"));
         IsExpanded = true;
         Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
@@ -291,8 +315,8 @@ public class DataItemNode : OpenEditorNode
     //     set => this.RaiseAndSetIfChanged(ref _editorKey, value);
     // }
 
-    public DataItemNode(string itemKey, string editorKey, string? title, string? icon = null)
-        : base(title ?? "", icon ?? "", editorKey)
+    public DataItemNode(string itemKey, Type? editorType, string? title, string? icon = null)
+        : base(title ?? "", editorType, icon ?? "")
     {
         ItemKey = itemKey;
     }
@@ -327,10 +351,10 @@ public class SpriteRootNode : ItemRootNode
         IDialogService dialogService,
         NodeFactory nodeFactory,
         GraphicsManager.AssetType assetType,
-        string editorKey,
+        Type? editorType,
         string title,
         string? icon = null)
-        : base(title, icon ?? "", editorKey)
+        : base(title, editorType, icon ?? "")
     {
         AssetType = assetType;
         // _dialogService = dialogService;
@@ -397,8 +421,8 @@ public class SpriteTileRootNode : SpriteRootNode
     private readonly IDialogService _dialogService;
     public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
 
-    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, string editorKey, string title, string? icon = null)
-        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorKey, title, icon)
+    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, Type? editorType, string title, string? icon = null)
+        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorType, title, icon)
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
@@ -428,7 +452,7 @@ public class SpriteTileRootNode : SpriteRootNode
             foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
             {
                 SubNodes.Add(
-                    _nodeFactory.CreateDataItemNode(name, "", name + ":", this.AssetType.GetIcon())
+                    _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(name, name + ":", this.AssetType.GetIcon())
                 );
             }
         }
@@ -450,6 +474,55 @@ public class SpriteTileRootNode : SpriteRootNode
 
             DiagManager.Instance.LogInfo("All files re-indexed.");
         }
+    }
+}
+
+
+public class ModRootNode : ItemRootNode
+{
+    private readonly NodeFactory _nodeFactory;
+
+    private readonly IDialogService _dialogService;
+    public override ReactiveCommand<Unit, Unit> AddCommand { get; }
+    public override ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
+    public ModRootNode(NodeFactory nodeFactory, IDialogService dialogService,
+        Type? editorType, string title, string? icon = null)
+        : base(title, editorType, icon ?? "")
+    {
+        _nodeFactory = nodeFactory;
+        _dialogService = dialogService;
+
+        AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
+        DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
+    }
+
+    private async Task AddItemAsync()
+    {
+        ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
+        var vm = new ModConfigWindowViewModel(header);
+        bool result = await _dialogService.ShowDialogAsync<ModConfigWindowViewModel, bool>(vm, "Mod Config");
+        
+        if (!result)
+            return;
+        
+        // SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
+        // IsExpanded = true;
+        // Console.WriteLine($"Added {DataType} item: {vm.Name}");
+    }
+
+    private async Task DeleteItemAsync(DataItemNode? node)
+    {
+        // if (node is null)
+        //     return;
+        //
+        // var res = await MessageBoxWindowView.Show(_dialogService,
+        //     $"Deleting {node.ItemKey} will reset it back to the base game.", $"Delete {node.ItemKey}", MessageBoxWindowView.MessageBoxButtons.YesNo, true);
+        //
+        // if (res != MessageBoxWindowView.MessageBoxResult.Yes)
+        //     return;
+        //
+        // SubNodes.Remove(node);
+        // Console.WriteLine($"Deleted {node.Title} of type {DataType}");
     }
 }
 
