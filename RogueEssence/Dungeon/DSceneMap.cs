@@ -145,14 +145,14 @@ namespace RogueEssence.Dungeon
 
         public IEnumerator<YieldInstruction> CheckMobilityViolation(Character standChar)
         {
-            if (!standChar.Dead)
+            if (standChar.Dead)
+                yield break;
+
+            HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
+            while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
             {
-                HashSet<Loc> iterWarpHistory = new HashSet<Loc>();
-                while (!iterWarpHistory.Contains(standChar.CharLoc) && ZoneManager.Instance.CurrentMap.TileBlocked(standChar.CharLoc, standChar.Mobility))
-                {
-                    iterWarpHistory.Add(standChar.CharLoc);
-                    yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
-                }
+                iterWarpHistory.Add(standChar.CharLoc);
+                yield return CoroutineManager.Instance.StartCoroutine(WarpNear(standChar, standChar.CharLoc, true));
             }
         }
 

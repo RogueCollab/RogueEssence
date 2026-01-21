@@ -5,6 +5,7 @@ using RogueElements;
 using RogueEssence.Data;
 using RogueEssence.Menu;
 using RogueEssence.Script;
+using System.Linq;
 
 namespace RogueEssence.Dungeon
 {
@@ -553,7 +554,25 @@ namespace RogueEssence.Dungeon
                     break;
             }
 
+            //removing a team would upset the turn map.  correct it.
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateTeamRemoval(faction, teamIndex);
+
+            //removing a team would upset the dead team tracker.  correct it.
+            CharIndex removedTeam = new CharIndex(faction, teamIndex, false, -1);
+            ZoneManager.Instance.CurrentMap.DeadTeams.Remove(removedTeam);
+            List<CharIndex> sortedTeams = new List<CharIndex>();
+            foreach (CharIndex deadTeamIdx in ZoneManager.Instance.CurrentMap.DeadTeams)
+            {
+                if (deadTeamIdx.Faction == faction && deadTeamIdx.Team > teamIndex)
+                    sortedTeams.Add(deadTeamIdx);
+            }
+            foreach (CharIndex deadTeamIdx in sortedTeams)
+                ZoneManager.Instance.CurrentMap.DeadTeams.Remove(deadTeamIdx);
+            foreach (CharIndex deadTeamIdx in sortedTeams)
+            {
+                CharIndex newTeamIdx = new CharIndex(deadTeamIdx.Faction, deadTeamIdx.Team - 1, false, -1);
+                ZoneManager.Instance.CurrentMap.DeadTeams.Add(newTeamIdx);
+            }
         }
 
         public void AddCharToTeam(Faction faction, int teamIndex, bool guest, Character character)
@@ -605,6 +624,7 @@ namespace RogueEssence.Dungeon
                     team.LeaderIndex = 0;
             }
 
+            ZoneManager.Instance.CurrentMap.DisplacedChars.Remove(character);
             ZoneManager.Instance.CurrentMap.CurrentTurnMap.UpdateCharRemoval(charIndex);
 
             if (charIndex.Faction == Faction.Player)
@@ -816,20 +836,19 @@ namespace RogueEssence.Dungeon
 
         private int deadTeamIndexCompare(CharIndex key1, CharIndex key2)
         {
-            int cmp = Math.Sign((int)key2.Faction - (int)key1.Faction);
+            int cmp = Math.Sign((int)key1.Faction - (int)key2.Faction);
             if (cmp != 0)
                 return cmp;
-            return Math.Sign(key2.Team - key1.Team);
+            return Math.Sign(key1.Team - key2.Team);
         }
 
         public void RemoveDeadTeams()
         {
-            List<CharIndex> sortedTeams = new List<CharIndex>();
-            foreach (CharIndex deadTeamIdx in ZoneManager.Instance.CurrentMap.DeadTeams)
-                sortedTeams.Add(deadTeamIdx);
-            sortedTeams.Sort(deadTeamIndexCompare);
-            foreach (CharIndex deadTeamIdx in sortedTeams)
+            //removeChar will automatically remove the team, including the DeadTeams presence
+            //so just remove until deadTeams is empty.
+            while (ZoneManager.Instance.CurrentMap.DeadTeams.Count > 0)
             {
+                CharIndex deadTeamIdx = ZoneManager.Instance.CurrentMap.DeadTeams.First();
                 Team deadTeam = ZoneManager.Instance.CurrentMap.GetTeam(deadTeamIdx.Faction, deadTeamIdx.Team);
                 for (int jj = deadTeam.Guests.Count - 1; jj >= 0; jj--)
                     RemoveChar(new CharIndex(deadTeamIdx.Faction, deadTeamIdx.Team, true, jj));
