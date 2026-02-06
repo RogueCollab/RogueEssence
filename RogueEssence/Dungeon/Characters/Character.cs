@@ -317,6 +317,11 @@ namespace RogueEssence.Dungeon
         public bool StopItemAtHit;
 
         /// <summary>
+        /// Will act as AI even if controlled
+        /// </summary>
+        public bool ForceAI;
+
+        /// <summary>
         /// Will move erratically
         /// </summary>
         public bool MovesScrambled;
@@ -1564,6 +1569,7 @@ namespace RogueEssence.Dungeon
             CanRemoveStuck = false;
             StopItemAtHit = false;
 
+            ForceAI = false;
             MovesScrambled = false;
 
             ChargeSaver = false;
