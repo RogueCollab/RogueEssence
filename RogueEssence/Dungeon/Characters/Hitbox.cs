@@ -63,6 +63,8 @@ namespace RogueEssence.Dungeon
         protected FrameTick time;
         private long leftoverTick;
 
+        private bool isWaitingPriority;
+
         public Hitbox(Character user, Loc mapLoc, FiniteEmitter tileEmitter, int delay)
         {
             User = user;
@@ -254,10 +256,28 @@ namespace RogueEssence.Dungeon
         public abstract void PreCalculateAllTargets();
         public abstract TargetHitType IsValidTileTarget(Loc loc);
 
+        public void SkipHitQueue()
+        {
+            //as a time optimization, we will dequeue ahead of time until we find a valid tile target
+            while (TilesToHit.Count > 0 && !isWaitingPriority)
+            {
+                int priority = TilesToHit.FrontPriority();
+                Loc tile = TilesToHit.Front();
+
+                //filter out the hitboxes that are not wanted
+                TargetHitType type = IsValidTileTarget(tile);
+                if (type != TargetHitType.None)
+                    isWaitingPriority = true;
+                else
+                    TilesToHit.Dequeue();
+            }
+        }
+
         public void UpdateHitQueue(StablePriorityQueue<int, HitboxHit> hitTargets)
         {
             //when updating, the base will update the time elapsed
             //when this method is reached, hits will be delegated accordingly
+
 
             while (TilesToHit.Count > 0 && (Finished || time >= TilesToHit.FrontPriority()))
             {
@@ -270,6 +290,7 @@ namespace RogueEssence.Dungeon
                     hitTargets.Enqueue(priority, new HitboxHit(tile, true));
                 else if (type == TargetHitType.Tile)
                     hitTargets.Enqueue(priority, new HitboxHit(tile, false));
+                isWaitingPriority = false;
             }
         }
 
@@ -406,7 +427,14 @@ namespace RogueEssence.Dungeon
     
     public class CircleSquareHitbox : Hitbox
     {
-        public override bool Finished { get { return (Radius >= (int)Math.Ceiling(MaxRadius * GraphicsManager.TileSize * 1.4142136) && time >= LagBehindTime && Emitter.Finished); } }
+        public override bool Finished
+        {
+            get
+            {
+                int trueMaxRadius = (int)Math.Ceiling(MaxRadius * GraphicsManager.TileSize * 1.4142136);
+                return (Radius >= trueMaxRadius && time >= LagBehindTime && Emitter.Finished);
+            }
+        }
 
         public Loc Origin;//in tiles
         public int Radius;
