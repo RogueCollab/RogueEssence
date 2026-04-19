@@ -625,8 +625,12 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
         {
             var selectedItem = (OpenEditorNode)treeView.RowSelection.SelectedItem;
-            Console.WriteLine(selectedItem.ToString());
-            vm.AddPageFromTreeNode(selectedItem);
+            if (selectedItem != null)
+            {
+                Console.WriteLine(selectedItem.ToString());
+                vm.AddPageFromTreeNode(selectedItem);
+            }
+
         }
     }
     

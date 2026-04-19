@@ -6,32 +6,61 @@
              mc:Ignorable="d"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.CollectionBox">
-  <Design.DataContext>
-    <vm:CollectionBoxViewModel/>
-  </Design.DataContext>
-  <UserControl.Resources>
-  </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition/>
-      <RowDefinition/>
-      <RowDefinition Height="40"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition Width="30"/>
-    </Grid.ColumnDefinitions>
-    <ListBox Name="lbxItems" ItemsSource="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="50">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <TextBlock Text="{Binding Path=DisplayValue}"/>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <Button x:Name="CollectionBoxAddButton" PointerReleased="CollectionBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
-    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
-    <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
-    <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="1" Grid.Column="2">v</Button>
-  </Grid>
+    <Design.DataContext>
+        <vm:CollectionBoxViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+    </UserControl.Resources>
+    <Grid RowDefinitions="*, *, 40" ColumnDefinitions="*, *, 50">
+        <ListBox Name="lbxItems" ItemsSource="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}"
+                 DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4"
+                 Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="100">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Path=DisplayValue}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemContainerTheme>
+                <StaticResource ResourceKey="CompactListBoxItem" />
+            </ListBox.ItemContainerTheme>
+        </ListBox>
+        <!-- <ListBox Name="lbxItems" -->
+        <!--          ItemsSource="{Binding Collection}" -->
+        <!--          SelectedIndex="{Binding SelectedIndex}" -->
+        <!--          DoubleTapped="doubleClickStart" -->
+        <!--          PointerReleased="lbxCollection_DoubleClick" -->
+        <!--          Margin="4" -->
+        <!--          Grid.RowSpan="2" -->
+        <!--          Grid.ColumnSpan="2" -->
+        <!--          MinHeight="170" -->
+        <!--          VerticalAlignment="Stretch"> -->
+        <!--     <ListBox.ItemContainerTheme> -->
+        <!--         <StaticResource ResourceKey="CompactListBoxItem" /> -->
+        <!--     </ListBox.ItemContainerTheme> -->
+        <!--     <ListBox.ItemTemplate> -->
+        <!--         <DataTemplate> -->
+        <!--             <TextBlock Text="{Binding Path=DisplayValue}" /> -->
+        <!--         </DataTemplate> -->
+        <!--     </ListBox.ItemTemplate> -->
+        <!-- </ListBox> -->
+        <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="10, 0, 0, 0">
+            <Button x:Name="CollectionBoxAddButton" PointerReleased="CollectionBoxAddButton_OnPointerReleased"
+                    Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.Plus}" />
+            </Button>
+            <Button Command="{Binding DeleteCommand}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.Minus}" />
+            </Button>
+    
+            <!-- Remove Grid.Row, Grid.RowSpan, Grid.Column here -->
+            <StackPanel Margin="0, 30, 0, 0">
+                <Button Command="{Binding MoveUpCommand}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                    <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.CaretUpFill}" />
+                </Button>
+                <Button Command="{Binding MoveDownCommand}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                    <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.CaretDownFill}" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
 </UserControl>

@@ -491,11 +491,11 @@ public class DevFormViewModel : ViewModelBase
 
 
         // CreateConstantsNode(root);
-        // CreateDataNode(root);
+        CreateDataNode(root);
         //
         CreateSpriteNode(root);
 
-        // CreateModNode(root);
+        CreateModNode(root);
         Nodes.Add(root);
 
         AttachEventsRecursive(root);
@@ -666,34 +666,31 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateDataNode(NodeBase parent)
     {
-        // var dataNode = _nodeFactory.CreateOpenEditorNode("Data", "Icons.FloppyDiskFill", "");
-        // foreach (var type in Enum.GetValues<DataManager.DataType>())
-        // {
-        //     if (type == DataManager.DataType.All || type == DataManager.DataType.None)
-        //         continue;
-        //
-        //
-        //     var dataItemRootNode = _nodeFactory.CreateDataRootNode(
-        //         type,
-        //         "TODO",
-        //         type.ToString(),
-        //         type.GetIcon());
-        //     dataNode.SubNodes.Add(dataItemRootNode);
-        //     var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
-        //
-        //     foreach (string key in entries.Keys)
-        //     {
-        //         var itemNode = _nodeFactory.CreateDataItemNode(
-        //             key,
-        //             "DevEditEditor",
-        //             $"{key}: {entries[key]}",
-        //             type.GetIcon());
-        //
-        //         dataItemRootNode.SubNodes.Add(itemNode);
-        //     }
-        // }
-        //
-        // parent.SubNodes.Add(dataNode);
+        var dataNode = _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Data", "Icons.FloppyDiskFill");
+        foreach (var type in Enum.GetValues<DataManager.DataType>())
+        {
+            if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+                continue;
+        
+        
+            var dataItemRootNode = _nodeFactory.CreateDataRootNode<ZoneEditorPageViewModel>(
+                type,
+                type.ToString(),
+                type.GetIcon());
+            dataNode.SubNodes.Add(dataItemRootNode);
+            var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
+        
+            foreach (string key in entries.Keys)
+            {
+                var itemNode = _nodeFactory.CreateDataItemNode<ZoneEditorPageViewModel>(
+                    key,
+                    $"{key}: {entries[key]}",
+                    type.GetIcon());
+                dataItemRootNode.SubNodes.Add(itemNode);
+            }
+        }
+        
+        parent.SubNodes.Add(dataNode);
     }
 
     private void CreateSpriteNode(NodeBase parent)
@@ -825,22 +822,21 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateModNode(NodeBase parent)
     {
-        // var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
-        // var modRoot = _nodeFactory.CreateModRootNode("", "Mods", "Icons.ScrollFill");
-        //
-        // foreach (ModsNodeViewModel mod in modsViewModel.Mods)
-        // {
-        //     var name = mod.Namespace == "origin" ? "Origins" : mod.Name;
-        //     var itemNode = _nodeFactory.CreateDataItemNode(
-        //         mod.Namespace,
-        //         "",
-        //         $"{mod.Namespace}: {name}",
-        //         "Icons.ScrollFill");
-        //
-        //     modRoot.SubNodes.Add(itemNode);
-        // }
-        //
-        // parent.SubNodes.Add(modRoot);
+        var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
+        var modRoot = _nodeFactory.CreateModRootNode<DevEditPageViewModel>("Mods", "Icons.ScrollFill");
+        
+        foreach (ModsNodeViewModel mod in modsViewModel.Mods)
+        {
+            var name = mod.Namespace == "origin" ? "Origins" : mod.Name;
+            var itemNode = _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(
+                mod.Namespace,
+                $"{mod.Namespace}: {name}",
+                "Icons.ScrollFill");
+        
+            modRoot.SubNodes.Add(itemNode);
+        }
+        
+        parent.SubNodes.Add(modRoot);
     }
 
     private void InitializeTabEvents()

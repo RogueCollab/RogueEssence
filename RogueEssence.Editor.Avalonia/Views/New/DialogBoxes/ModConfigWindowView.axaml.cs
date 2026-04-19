@@ -16,7 +16,7 @@ namespace RogueEssence.Dev.Views
 
         public async void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            ModConfigViewModel2 vm = (ModConfigViewModel2)DataContext;
+            ModConfigWindowViewModel vm = (ModConfigWindowViewModel)DataContext;
             try
             {
                 if (String.IsNullOrWhiteSpace(Text.Sanitize(vm.Name)))

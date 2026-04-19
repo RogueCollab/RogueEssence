@@ -12,10 +12,12 @@
 
     <Application.Resources>
         <ResourceDictionary>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Assets/Icons.axaml"/>
                 <ResourceInclude Source="/Assets/Themes.axaml"/>
                 <ResourceInclude Source="/Assets/NodeTemplates.axaml"/>
+                <ResourceInclude Source="/Assets/MenuItemStyles.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
@@ -25,7 +27,7 @@
                     <SolidColorBrush x:Key="TabItemBackgroundBrushWindowInactive" Color="#FFF6F6F6" />
                     <SolidColorBrush x:Key="SelectedTabItemBackgroundBrush" Color="#FFFDFDFD" />
                     <SolidColorBrush x:Key="TabItemHeaderBackgroundUnselectedPointerOver" Color="#FFDFDFDF" />
-                    
+
                 </ResourceDictionary>
                 
                 <ResourceDictionary x:Key="Dark">
@@ -43,6 +45,7 @@
          <FluentTheme />
          <fluent:CustomTheme/>
          <StyleInclude Source="/Assets/Styles.axaml"/>
+         <StyleInclude Source="/Assets/ListBoxStyles.axaml"/>
          <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
          <StyleInclude Source="/Assets/TreeStyles.axaml"/>
      </Application.Styles>
