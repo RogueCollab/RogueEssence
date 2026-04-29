@@ -17,62 +17,41 @@ namespace RogueEssence.Data
 {
     public static class DataRegistry
     {
-        public static readonly Dictionary<DataManager.DataType, RegistryEntry> Map
-            = new Dictionary<DataManager.DataType, RegistryEntry>();
-        
-        public struct RegistryEntry
-        {
-            public Type ClassType;
-            public Func<string, IEntryData> GetEntry;
-            public Func<IEntryData> CreateEntry;
-        }
-        
+        public static readonly Dictionary<DataManager.DataType, RegistryEntry> Map = new();
+
+        public record RegistryEntry(
+            Type ClassType,
+            Func<string, IEntryData> GetEntry,
+            Func<IEntryData> CreateEntry,
+            string Icon
+        );
+
         static DataRegistry()
         {
-            // Register(DataManager.DataType.Monster,
-            //     typeof(MonsterData),
-            //     entryNum => new MonsterData { EntryNum = entryNum },
-            //     () => new MonsterData());
-            //
-            // Register(DataManager.DataType.Skill,
-            //     typeof(SkillData),
-            //     entryNum => new SkillData { EntryNum = entryNum },
-            //     () => new SkillData());
-            //
-            // Register(DataManager.DataType.Item,
-            //     typeof(ItemData),
-            //     entryNum => new ItemData { EntryNum = entryNum },
-            //     () => new ItemData());
+            Register(DataManager.DataType.Monster, typeof(MonsterData), DataManager.Instance.GetMonster, () => new MonsterData(), "Icons.GhostFill");
+            Register(DataManager.DataType.Skill, typeof(SkillData), DataManager.Instance.GetSkill, () => new SkillData(), "Icons.SwordFill");
+            Register(DataManager.DataType.Item, typeof(ItemData), DataManager.Instance.GetItem, () => new ItemData(), "Icons.JarLabelFill");
+            Register(DataManager.DataType.Intrinsic, typeof(IntrinsicData), DataManager.Instance.GetIntrinsic, () => new IntrinsicData(), "Icons.SwordFill");
+            Register(DataManager.DataType.Status, typeof(StatusData), DataManager.Instance.GetStatus, () => new StatusData(), "Icons.HeartFill");
+            Register(DataManager.DataType.MapStatus, typeof(MapStatusData), DataManager.Instance.GetMapStatus, () => new MapStatusData(), "Icons.HeartFill");
+            Register(DataManager.DataType.Terrain, typeof(TerrainData), DataManager.Instance.GetTerrain, () => new TerrainData(), "Icons.MountainsFill");
+            Register(DataManager.DataType.Tile, typeof(TileData), DataManager.Instance.GetTile, () => new TileData(), "Icons.SquaresFourFill");
+            Register(DataManager.DataType.Zone, typeof(ZoneData), DataManager.Instance.GetZone, () => new ZoneData(), "Icons.StairsFill");
+            Register(DataManager.DataType.Emote, typeof(EmoteData), DataManager.Instance.GetEmote, () => new EmoteData(), "Icons.StarFill");
+            Register(DataManager.DataType.AutoTile, typeof(AutoTileData), DataManager.Instance.GetAutoTile, () => new AutoTileData(), "Icons.SquaresFourFill");
+            Register(DataManager.DataType.Element, typeof(ElementData), DataManager.Instance.GetElement, () => new ElementData(), "Icons.LightningFill");
+            Register(DataManager.DataType.GrowthGroup, typeof(GrowthData), DataManager.Instance.GetGrowth, () => new GrowthData(), "Icons.TrendUpFill");
+            Register(DataManager.DataType.SkillGroup, typeof(SkillGroupData), DataManager.Instance.GetSkillGroup, () => new SkillGroupData(), "Icons.ListFill");
+            Register(DataManager.DataType.AI, typeof(AITactic), DataManager.Instance.GetAITactic, () => new AITactic(), "Icons.BrainFill");
+            Register(DataManager.DataType.Rank, typeof(RankData), DataManager.Instance.GetRank, () => new RankData(), "Icons.BinaryFill");
+            Register(DataManager.DataType.Skin, typeof(SkinData), DataManager.Instance.GetSkin, () => new SkinData(), "Icons.SparkleFill");
         }
 
-        private static void Register(
-            DataManager.DataType type,
-            Type classType,
-            Func<string, IEntryData> getEntry,
-            Func<IEntryData> createEntry)
-        {
-            Map[type] = new RegistryEntry
-            {
-                ClassType = classType,
-                GetEntry = getEntry,
-                CreateEntry = createEntry
-            };
-        }
+        private static void Register(DataManager.DataType type, Type classType, Func<string, IEntryData> getEntry, Func<IEntryData> createEntry, string icon)
+            => Map[type] = new RegistryEntry(classType, getEntry, createEntry, icon); 
     }
     public static class DataTypeExtensions
     {
-        public delegate IEntryData GetEntry(string id);
-        public delegate IEntryData CreateEntry();
-        
-        
-        // public static Type GetClassType(this DataManager.DataType type)
-        //     => DataRegistry.Map[type].ClassType;
-        //
-        // public static GetEntry GetGetter(this DataManager.DataType type)
-        //     => DataRegistry.Map[type].GetEntry;
-        //
-        // public static CreateEntry GetCreator(this DataManager.DataType type)
-        //     => DataRegistry.Map[type].CreateEntry;
         public static Type GetClassType(this DataManager.DataType dataType)
         {
             switch (dataType)

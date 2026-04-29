@@ -15,9 +15,9 @@ public class DevControlViewModel : EditorPageViewModel
 
     public TestComboBoxViewModel Fruits { get; }
 
-    public DevControlViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
+    public DevControlViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
         DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabTravelViewModel travel,
-        DevTabScriptViewModel script, NodeBase node) : base(pageFactory, tabEvents, dialogService)
+        DevTabScriptViewModel script, NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
     {
         Fruits = new TestComboBoxViewModel();
         Game = game;
@@ -26,10 +26,10 @@ public class DevControlViewModel : EditorPageViewModel
         Script = script;
     }
 
-    public DevControlViewModel() : base(new PageFactory(new DesignServiceProvider()),
-        new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
-    {
-        // Title = "Dev Control";
-        Fruits = new TestComboBoxViewModel();
-    }
+    // public DevControlViewModel() : base(new PageFactory(new DesignServiceProvider()),
+    //     new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
+    // {
+    //     // Title = "Dev Control";
+    //     Fruits = new TestComboBoxViewModel();
+    // }
 }

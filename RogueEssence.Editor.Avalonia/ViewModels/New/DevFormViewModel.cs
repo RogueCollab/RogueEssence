@@ -251,6 +251,8 @@ public class DevFormViewModel : ViewModelBase
             return;
         }
 
+        // Only load the data once it is confirmed that the tab doesn't already exist
+        page.LoadData();
 
         Pages.Add(page);
         var node = _nodeFactory.CreatePageNode(page, null);
@@ -271,7 +273,7 @@ public class DevFormViewModel : ViewModelBase
         {
             var childNode = parentNode.AddChild(childPage);
             _pageToNodeMap[childPage] = childNode;
-            
+
             // Try to insert the child page to the right of the parent
             var parentIndex = Pages.IndexOf(parentPage);
             if (parentIndex == -1)
@@ -302,13 +304,21 @@ public class DevFormViewModel : ViewModelBase
 
         return false;
     }
-    
+
     public bool PageHasChildren(EditorPageViewModel page)
     {
         if (!_pageToNodeMap.TryGetValue(page, out var node))
             return false;
 
         return node.SubNodes.Count > 0;
+    }
+
+    private PageNode GetTopLevelNode(PageNode node)
+    {
+        var current = node;
+        while (!current.IsTopLevel)
+            current = current.Parent;
+        return current;
     }
 
     public void RemoveTab(EditorPageViewModel page)
@@ -321,8 +331,10 @@ public class DevFormViewModel : ViewModelBase
         ClosePageAndChildren(node);
 
 
+        // TODO:
         // We want to prioritize setting the left tab to be the active tab since our editors open stuff to the right first
         // Maybe we want to set the active page to be the parent if it exists?
+        // For after deleting Datatype entries, should it go back to the last previously visited tab?
         if (Pages.Count == 0)
         {
             ActivePage = null;
@@ -353,6 +365,7 @@ public class DevFormViewModel : ViewModelBase
         }
 
         Pages.Remove(node.Page);
+
 
         if (node.IsTopLevel)
         {
@@ -425,6 +438,13 @@ public class DevFormViewModel : ViewModelBase
                 PreferencesWindowViewModel.Instance, "Preferences");
         });
 
+        this.WhenAnyValue(x => x.ActivePage)
+            .Buffer(2, 1)
+            .Subscribe(pair =>
+            {
+                if (pair.Count > 1 && pair[0] != null) pair[0].IsActive = false;
+                if (pair.Count > 0 && pair[^1] != null) pair[^1].IsActive = true;
+            });
 
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
 
@@ -474,13 +494,14 @@ public class DevFormViewModel : ViewModelBase
 
 
         // root.SubNodes.Add(
-            // _nodeFactory.CreateOpenEditorNode("Dev Control",  typeof(DevControlViewModel), "Icons.GameControllerFill"));
-        root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Zone Editor", "Icons.StairsFill"));
+        // _nodeFactory.CreateOpenEditorNode("Dev Control",  typeof(DevControlViewModel), "Icons.GameControllerFill"));
+        root.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Zone Editor", "Icons.StairsFill"));
         // root.SubNodes.Add(
-            // _nodeFactory.CreateOpenEditorNode("Ground Editor", typeof(GroundEditorPageViewModel), "Icons.MapTrifoldFill"));
+        // _nodeFactory.CreateOpenEditorNode("Ground Editor", typeof(GroundEditorPageViewModel), "Icons.MapTrifoldFill"));
         // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
         // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
-        
+
         // var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
         // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
         //     "Icons.PaintBrushFill"));
@@ -666,30 +687,31 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateDataNode(NodeBase parent)
     {
-        var dataNode = _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Data", "Icons.FloppyDiskFill");
+        var dataNode = _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Datazz", "Icons.FloppyDiskFill");
         foreach (var type in Enum.GetValues<DataManager.DataType>())
         {
-            if (type == DataManager.DataType.All || type == DataManager.DataType.None)
+            if (type is DataManager.DataType.All or DataManager.DataType.None)
                 continue;
-        
-        
-            var dataItemRootNode = _nodeFactory.CreateDataRootNode<ZoneEditorPageViewModel>(
+
+            var entry = DataRegistry.Map[type];
+
+            var dataItemRootNode = _nodeFactory.CreateDataRootNode<DataListPageViewModel>(
                 type,
                 type.ToString(),
-                type.GetIcon());
+                entry.Icon);
             dataNode.SubNodes.Add(dataItemRootNode);
-            var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
-        
-            foreach (string key in entries.Keys)
-            {
-                var itemNode = _nodeFactory.CreateDataItemNode<ZoneEditorPageViewModel>(
-                    key,
-                    $"{key}: {entries[key]}",
-                    type.GetIcon());
-                dataItemRootNode.SubNodes.Add(itemNode);
-            }
+            // var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
+            //
+            // foreach (string key in entries.Keys)
+            // {
+            //     var itemNode = _nodeFactory.CreateDataItemNode<DataListPageViewModel>(
+            //         key,
+            //         $"{key}: {entries[key]}",
+            //         type.GetIcon());
+            //     dataItemRootNode.SubNodes.Add(itemNode);
+            // }
         }
-        
+
         parent.SubNodes.Add(dataNode);
     }
 
@@ -699,10 +721,12 @@ public class DevFormViewModel : ViewModelBase
         var spriteNode = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>("Sprites", "Icons.PaintBrushFill");
         //
         spriteNode.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Char Sprites", [true], "Icons.PersonFill")
+            _nodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Char Sprites", [true],
+                "Icons.PersonFill")
         );
         spriteNode.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Portraits", [false], "Icons.PersonFill")
+            _nodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Portraits", [false],
+                "Icons.PersonFill")
         );
         // );
         //
@@ -824,7 +848,7 @@ public class DevFormViewModel : ViewModelBase
     {
         var modsViewModel = _pageFactory.GetRequiredService<DevTabModsViewModel>();
         var modRoot = _nodeFactory.CreateModRootNode<DevEditPageViewModel>("Mods", "Icons.ScrollFill");
-        
+
         foreach (ModsNodeViewModel mod in modsViewModel.Mods)
         {
             var name = mod.Namespace == "origin" ? "Origins" : mod.Name;
@@ -832,10 +856,10 @@ public class DevFormViewModel : ViewModelBase
                 mod.Namespace,
                 $"{mod.Namespace}: {name}",
                 "Icons.ScrollFill");
-        
+
             modRoot.SubNodes.Add(itemNode);
         }
-        
+
         parent.SubNodes.Add(modRoot);
     }
 
@@ -852,6 +876,30 @@ public class DevFormViewModel : ViewModelBase
         _tabEvents.RemoveTabEvent += (tab) => { RemoveTab(tab); };
 
         _tabEvents.NavigateToTabEvent += (tab) => { ActivePage = tab; };
+
+        // TODO: Check if this works if the page is a children of a tab. What if it closes the children first before the parent...
+        _tabEvents.CloseTabsForEntry += (key, dataType) =>
+        {
+            var topLevelPagesToClose = Pages
+                .OfType<ReflectedDataPageViewModel>()
+                .Where(p => p.Node is DataItemNode dataItemNode
+                            && dataItemNode.ItemKey == key
+                            && dataItemNode.Parent is DataRootNode rootNode
+                            && rootNode.DataType == dataType)
+                .Cast<EditorPageViewModel>()
+                .Select(page =>
+                {
+                    if (!_pageToNodeMap.TryGetValue(page, out var node)) return null;
+                    if (node is not PageNode pageNode) return null;
+                    return GetTopLevelNode(pageNode).Page;
+                })
+                .Where(p => p != null)
+                .Distinct()
+                .ToList();
+
+            foreach (var page in topLevelPagesToClose)
+                RemoveTab(page);
+        };
     }
 
     private void AttachEventsRecursive(NodeBase node)

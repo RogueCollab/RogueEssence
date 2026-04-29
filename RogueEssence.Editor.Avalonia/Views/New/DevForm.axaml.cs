@@ -19,6 +19,7 @@ using Avalonia.Platform;
 using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.ViewModels;
 using RogueEssence.Dungeon;
 
@@ -119,10 +120,11 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                     devViewModel.Travel.ReloadZones();
 
                 if (dataType == DataManager.DataType.All)
+                {
                     devViewModel.UpdateMod();
-                
-                Console.WriteLine("Dev Editor Reloaded!");
-                devViewModel.LoadDevTree();
+                    devViewModel.LoadDevTree();
+                }
+
                 LoadComplete = true;
                 
             }
@@ -538,53 +540,58 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     private void ShowDataItemNodeMenu(TreeDataGridRow current, DataItemNode node, DataRootNode parentNode,
         ContextRequestedEventArgs e)
     {
-        var menu = new ContextMenu
-        {
-            Items =
-            {
-                new MenuItem { Header = "Resave as File", Command = parentNode.ResaveAsFile, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.FileFill") },
-                new MenuItem
-                    { Header = "Resave as Patch", Command = parentNode.ResaveAsPatch, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.FileTextFill") },
-                new Separator(),
-                new MenuItem { Header = "Edit", Icon = App.CreateMenuIcon("Icons.PencilFill") },
-                new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node,  Icon = App.CreateMenuIcon("Icons.TrashFill") }
-            }
-        };
+        
+        var contextMenu = ContextMenuHelper.CreateDataItemMenu(parentNode, node.ItemKey);
 
-        AttachAndOpenMenu(current, menu, e);
+        // contextMenu.Open(this);
+        
+        // var menu = new ContextMenu
+        // {
+        //     Items =
+        //     {
+        //         new MenuItem { Header = "Resave as File", Command = parentNode.ResaveItemAsFile, CommandParameter = node.ItemKey, Icon = App.CreateMenuIcon("Icons.FileFill") },
+        //         new MenuItem
+        //             { Header = "Resave as Patch", Command = parentNode.ResaveAsPatch, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.FileTextFill") },
+        //         new Separator(),
+        //         new MenuItem { Header = "Edit", Icon = App.CreateMenuIcon("Icons.PencilFill") },
+        //         new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node,  Icon = App.CreateMenuIcon("Icons.TrashFill") }
+        //     }
+        // };
+        
+        AttachAndOpenMenu(current, contextMenu, e);
     }
 
     private void ShowSpriteItemNodeMenu(TreeDataGridRow current, DataItemNode node, SpriteRootNode parentNode,
         ContextRequestedEventArgs e)
     {
-        var menu = new ContextMenu
-        {
-            Items =
-            {
-                new MenuItem { Header = "Export", Command = parentNode.ExportCommand, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.ExportFill") },
-                new Separator(),
-                new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node, Icon =  App.CreateMenuIcon("Icons.TrashFill") }
-            }
-        };
+        // var menu = new ContextMenu
+        // {
+        //     Items =
+        //     {
+        //         new MenuItem { Header = "Export", Command = parentNode.ExportCommand, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.ExportFill") },
+        //         new Separator(),
+        //         new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node, Icon =  App.CreateMenuIcon("Icons.TrashFill") }
+        //     }
+        // };
 
-        AttachAndOpenMenu(current, menu, e);
+        // AttachAndOpenMenu(current, menu, e);
     }
 
     private void ShowRootNodeMenu(TreeDataGridRow current, DataRootNode root, ContextRequestedEventArgs e)
     {
-        var menu = new ContextMenu
-        {
-            Items =
-            {
-                new MenuItem { Header = "Re-Index", Command = root.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") },
-                new MenuItem { Header = "Resave all as File", Command = root.ResaveAllAsFileCommand, Icon = App.CreateMenuIcon("Icons.FileFill") },
-                new MenuItem { Header = "Resave all as Diff", Command = root.ResaveAllAsDiffCommand, Icon = App.CreateMenuIcon("Icons.PlusMinusFill") },
-                new Separator(),
-                new MenuItem { Header = "Add", Command = root.AddCommand, Icon = App.CreateMenuIcon("Icons.Plus") }
-            }
-        };
-
-        AttachAndOpenMenu(current, menu, e);
+        // var menu = new ContextMenu
+        // {
+        //     Items =
+        //     {
+        //         new MenuItem { Header = "Re-Index", Command = root.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") },
+        //         new MenuItem { Header = "Resave all as File", Command = root.ResaveAllAsFileCommand, Icon = App.CreateMenuIcon("Icons.FileFill") },
+        //         new MenuItem { Header = "Resave all as Diff", Command = root.ResaveAllAsDiffCommand, Icon = App.CreateMenuIcon("Icons.PlusMinusFill") },
+        //         new Separator(),
+        //         new MenuItem { Header = "Add", Command = root.AddCommand, Icon = App.CreateMenuIcon("Icons.Plus") }
+        //     }
+        // };
+        //
+        // AttachAndOpenMenu(current, menu, e);
     }
     
     private void ShowSpriteRootNodeMenu(TreeDataGridRow current, SpriteRootNode root, ContextRequestedEventArgs e)
@@ -650,8 +657,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             return;
         
         var parent = node.Parent;
-   
-    
+        
         switch (node)
         {
             case DataItemNode itemNode when parent is DataRootNode root:
@@ -676,6 +682,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     {
     }
 
+    // Show the sprite in-game when the user clicks on the sprite node in the tree
     private void LeftTreeDataGrid_OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not TreeDataGrid treeDataGrid)
@@ -716,7 +723,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     private void LeftTreeDataGrid_OnLostFocus(object sender, RoutedEventArgs e)
     {
         
-        if (!(sender is TreeDataGrid grid))
+        if (sender is not TreeDataGrid grid)
             return;
         
         

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
@@ -19,13 +20,14 @@ using ReactiveUI;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
+using RogueEssence.Script;
 
 
 namespace RogueEssence.Dev.ViewModels;
 
 using System.Collections.ObjectModel;
 
-public class NodeBase : ViewModelBase
+public class NodeBase : ViewModelBase, IEquatable<NodeBase>
 {
     public ObservableCollection<NodeBase> SubNodes { get; set; }
 
@@ -78,6 +80,20 @@ public class NodeBase : ViewModelBase
         get => _isVisible;
         set => this.RaiseAndSetIfChanged(ref _isVisible, value);
     }
+    
+    public bool Equals(NodeBase? other)
+    {
+        if (other is null) return false;
+        if (GetType() != other.GetType()) return false;
+        return EqualsCore(other);
+    }
+
+    public override bool Equals(object? obj) => (obj is NodeBase) && this.Equals((NodeBase) obj);
+    public override int GetHashCode() => GetHashCodeCore();
+
+    protected virtual bool EqualsCore(NodeBase other) => ReferenceEquals(this, other);
+    protected virtual int GetHashCodeCore() => RuntimeHelpers.GetHashCode(this);
+    
 
     private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e)
     {
@@ -114,6 +130,19 @@ public class NodeBase : ViewModelBase
             child.CollapseChildren();
         }
     }
+    public void AddNodeIfNotExists(NodeBase node)
+    {
+        if (!SubNodes.Contains(node))
+            SubNodes.Add(node);
+    }
+    
+    public void RemoveNode(NodeBase node)
+    {
+        Console.WriteLine("hi");
+        Console.WriteLine($"Removing node {node.Title}");
+        SubNodes.Remove(node);
+    }
+    
 }
 
 public class OpenEditorNode : NodeBase
@@ -125,9 +154,21 @@ public class OpenEditorNode : NodeBase
     {
         EditorType = editorType;
     }
+    
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not OpenEditorNode node)
+            return false;
+        return EditorType == node.EditorType;
+    }
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode();
+    }
 }
 
 
+// TODO: Remove
 public class OpenEditorNodeWithParams : OpenEditorNode
 {
     public object[] ExtraParams { get; }
@@ -168,14 +209,19 @@ public class OpenEditorNodeFX<T> : OpenEditorNode
 
 public abstract class ItemRootNode : OpenEditorNode
 {
-    protected readonly IDialogService _dialogService;
+    
+    public ReactiveCommand<NodeBase, Unit> DeleteCommand { get; }
 
-    public abstract ReactiveCommand<Unit, Unit> AddCommand { get; }
-    public abstract ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
+// In constructor:
+
+    public abstract Task AddItem();
+    public abstract Task DeleteItem(string key);
 
     protected ItemRootNode(string title, Type? editorKey, string icon = null)
         : base(title, editorKey, icon)
     {
+        DeleteCommand = ReactiveCommand.Create<NodeBase>(RemoveNode);
+        
     }
 }
 
@@ -184,19 +230,7 @@ public class DataRootNode : ItemRootNode
     public DataManager.DataType DataType { get; }
 
     private readonly NodeFactory _nodeFactory;
-
     private readonly IDialogService _dialogService;
-
-
-    public override ReactiveCommand<Unit, Unit> AddCommand { get; }
-    public override ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
-
-    public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
-    public ReactiveCommand<Unit, Unit> ResaveAllAsFileCommand { get; }
-    public ReactiveCommand<Unit, Unit> ResaveAllAsDiffCommand { get; }
-
-    public ReactiveCommand<DataItemNode, Unit> ResaveAsFile { get; }
-    public ReactiveCommand<DataItemNode, Unit> ResaveAsPatch { get; }
 
     public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
         Type? editorType, string title, string? icon = null)
@@ -205,22 +239,21 @@ public class DataRootNode : ItemRootNode
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
         DataType = dataType;
-
-        AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
-        AddCommand.CanExecute.Subscribe(canExecute =>
-            Console.WriteLine($"Add Command - CanExecute: {canExecute}"));
-
-        DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
-
-        ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
-        ResaveAllAsFileCommand = ReactiveCommand.CreateFromTask(ResaveAllAsFileAsync);
-        ResaveAllAsDiffCommand = ReactiveCommand.CreateFromTask(ResaveAllAsDiffAsync);
-
-        ResaveAsFile = ReactiveCommand.CreateFromTask<DataItemNode>(ResaveItemAsFileAsync);
-        ResaveAsPatch = ReactiveCommand.CreateFromTask<DataItemNode>(ResaveItemAsPatchAsync);
     }
 
-    private async Task AddItemAsync()
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not DataRootNode node)
+            return false;
+        return DataType == node.DataType && EditorType == node.EditorType;
+    }
+
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode() ^ DataType.GetHashCode();
+    }
+
+    public override async Task AddItem()
     {
         var vm = new RenameWindowViewModel();
         bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
@@ -233,68 +266,341 @@ public class DataRootNode : ItemRootNode
         Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
 
-    private async Task DeleteItemAsync(DataItemNode? node)
+    public override async Task DeleteItem(string key)
     {
-        if (node is null)
+        // if (node is null)
+        //     return;
+
+        // var res = await MessageBoxWindowView.Show(_dialogService,
+        //     $"Deleting {key} will reset it back to the base game.", $"Delete {key}", MessageBoxWindowView.MessageBoxButtons.YesNo, true);
+
+        // if (res != MessageBoxWindowView.MessageBoxResult.Yes)
+        //     return;
+
+        // SubNodes.Remove(node);
+        // Console.WriteLine($"Deleted {key} of type {DataType}");
+        
+        var modStatus = DataManager.GetEntryDataModStatus(key, DataType.ToString());
+
+        if (PathMod.Quest.IsValid() && modStatus == DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService,
+                string.Format("The {0} {1} is not a part of the currently edited mod and cannot be deleted.", DataType.ToString(), key),
+                "Delete " + DataType.ToString(), MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        MessageBoxWindowView.MessageBoxResult result;
+        if (modStatus == DataManager.ModStatus.Base || modStatus == DataManager.ModStatus.Added)
+            result = await MessageBoxWindowView.Show(_dialogService,
+                string.Format("Are you sure you want to delete the following {0}:\n{1}", DataType.ToString(), key),
+                "Delete " + DataType.ToString(), MessageBoxWindowView.MessageBoxButtons.YesNo);
+        else
+            result = await MessageBoxWindowView.Show(_dialogService,
+                string.Format("The following {0} will be reset back to the base game:\n{1}", DataType.ToString(), key),
+                "Delete " + DataType.ToString(), MessageBoxWindowView.MessageBoxButtons.YesNo);
+
+        if (result == MessageBoxWindowView.MessageBoxResult.No)
             return;
 
-        var res = await MessageBoxWindowView.Show(_dialogService,
-            $"Deleting {node.ItemKey} will reset it back to the base game.", $"Delete {node.ItemKey}", MessageBoxWindowView.MessageBoxButtons.YesNo, true);
+        lock (GameBase.lockObj)
+        {
+            DataManager.Instance.ContentChanged(DataType, key, null);
+            // choices.DeleteEntry(key);
+        
+            if (DataManager.Instance.DataIndices[DataType].ContainsKey(key))
+            {
+                string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+                // choices.AddEntry(key, newName);
+            }
 
-        if (res != MessageBoxWindowView.MessageBoxResult.Yes)
-            return;
-
-        SubNodes.Remove(node);
-        Console.WriteLine($"Deleted {node.Title} of type {DataType}");
+            if (DataType == DataManager.DataType.Zone)
+            {
+                string str = LuaEngine.MakeZoneScriptPath(key, "");
+                if (Directory.Exists(str))
+                    Directory.Delete(str, true);
+            }
+        }
     }
 
-    private async Task ReIndexAsync()
+    public async Task ReIndex()
     {
         Console.WriteLine($"Reindexing {DataType}...");
         await Task.Delay(100);
     }
 
-    private async Task ResaveAllAsFileAsync()
+    public async Task ResaveAllAsFile()
     {
         Console.WriteLine($"Resaving all {DataType} as file...");
         await Task.Delay(100);
     }
 
-    private async Task ResaveAllAsDiffAsync()
+    public async Task ResaveAllAsDiff()
     {
         Console.WriteLine($"Resaving all {DataType} as diff...");
         await Task.Delay(100);
     }
 
-
-    private async Task ResaveItemAsFileAsync(DataItemNode node)
+    public async Task ResaveItemAsFile(string key)
     {
-        // GetEntry entryOp, CreateEntry createOp
-        // string entryNum = choices.ChosenAsset;
-        // if (DataManager.GetEntryDataModStatus(entryNum, dataType.ToString()) == DataManager.ModStatus.Base)
-        // {
-        //     await MessageBox.Show(form, String.Format("{0} must have saved edits first!", entryNum), "Error", MessageBox.MessageBoxButtons.Ok);
-        //     return;
-        // }
-        //
-        // lock (GameBase.lockObj)
-        // {
-        //     IEntryData data = entryOp(entryNum);
-        //     DataManager.Instance.ContentResaved(dataType, entryNum, data, false);
-        //
-        //     string newName = DataManager.Instance.DataIndices[dataType].Get(entryNum).GetLocalString(true);
-        //     choices.ModifyEntry(entryNum, newName);
-        // }
-        //
-        // await MessageBox.Show(form, String.Format("{0} is now saved as a file.", entryNum), "Complete", MessageBox.MessageBoxButtons.Ok);
+        if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        lock (GameBase.lockObj)
+        {
+            var entry = DataRegistry.Map[DataType];
+            IEntryData data = entry.GetEntry(key);
+            DataManager.Instance.ContentResaved(DataType, key, data, false);
+            string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+        }
+
+        await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a file.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
     }
 
-    private async Task ResaveItemAsPatchAsync(DataItemNode node)
+    public async Task ResaveItemAsPatch(string key)
     {
-        Console.WriteLine($"Resaving {node.Title} as patch...");
-        await Task.Delay(100);
+        var modStatus = DataManager.GetEntryDataModStatus(key, DataType.ToString());
+    
+        if (modStatus == DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+    
+        if (modStatus == DataManager.ModStatus.Added)
+        {
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is newly added in this mod and cannot be saved as patch.", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        lock (GameBase.lockObj)
+        {
+            var entry = DataRegistry.Map[DataType];
+            IEntryData data = entry.GetEntry(key);
+            DataManager.Instance.ContentResaved(DataType, key, data, true);
+        }
+
+        if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+            await MessageBoxWindowView.Show(_dialogService, string.Format("Modded {0} was identical to base. Unneeded patch removed.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+        else
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a patch.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
     }
+    
+    
 }
+
+
+// For Skills, Zones, Monsters, Items, etc.
+// public class DataRootNode : ItemRootNode
+// {
+//     public DataManager.DataType DataType { get; }
+//
+//     private readonly NodeFactory _nodeFactory;
+//
+//     private readonly IDialogService _dialogService;
+//     
+//     public override ReactiveCommand<Unit, Unit> AddCommand { get; }
+//     public override ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
+//
+//     public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
+//     public ReactiveCommand<Unit, Unit> ResaveAllAsFileCommand { get; }
+//     public ReactiveCommand<Unit, Unit> ResaveAllAsDiffCommand { get; }
+//
+//     public ReactiveCommand<string, Unit> ResaveAsFile { get; }
+//     public ReactiveCommand<string, Unit> ResaveAsPatch { get; }
+//
+//     public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
+//         Type? editorType, string title, string? icon = null)
+//         : base(title, editorType, icon ?? "")
+//     {
+//         _nodeFactory = nodeFactory;
+//         _dialogService = dialogService;
+//         DataType = dataType;
+//
+//         AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
+//         AddCommand.CanExecute.Subscribe(canExecute =>
+//             Console.WriteLine($"Add Command - CanExecute: {canExecute}"));
+//
+//         DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
+//
+//         ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
+//         ResaveAllAsFileCommand = ReactiveCommand.CreateFromTask(ResaveAllAsFileAsync);
+//         ResaveAllAsDiffCommand = ReactiveCommand.CreateFromTask(ResaveAllAsDiffAsync);
+//
+//
+//         ResaveAsFile = ReactiveCommand.CreateFromTask<string>(
+//             execute: async (key) => await ResaveItemAsFileAsync(key),
+//             canExecute: Observable.Return(true)
+//         );
+//         ResaveAsFile.ThrownExceptions.Subscribe(ex => Console.WriteLine(ex.Message));
+//         ResaveAsFile.IsExecuting.Subscribe(x => Console.WriteLine($"IsExecuting: {x}"));
+//         ResaveAsPatch = ReactiveCommand.CreateFromTask<string>(ResaveItemAsPatchAsync);
+//     }
+//
+//     protected override bool EqualsCore(NodeBase other)
+//     {
+//         if (other is not DataRootNode node)
+//             return false;
+//         return DataType == node.DataType && EditorType == node.EditorType;
+//     }
+//     protected override int GetHashCodeCore()
+//     {
+//         return EditorType.GetHashCode() ^ DataType.GetHashCode();;
+//     }
+//     
+//     private async Task AddItemAsync()
+//     {
+//         var vm = new RenameWindowViewModel();
+//         bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
+//
+//         if (!result)
+//             return;
+//
+//         SubNodes.Add(_nodeFactory.CreateDataItemNode<DevEditPageViewModel>(vm.Name, $"{vm.Name}:", "Icons.GhostFill"));
+//         IsExpanded = true;
+//         Console.WriteLine($"Added {DataType} item: {vm.Name}");
+//     }
+//
+//     private async Task DeleteItemAsync(DataItemNode? node)
+//     {
+//         if (node is null)
+//             return;
+//
+//         var res = await MessageBoxWindowView.Show(_dialogService,
+//             $"Deleting {node.ItemKey} will reset it back to the base game.", $"Delete {node.ItemKey}", MessageBoxWindowView.MessageBoxButtons.YesNo, true);
+//
+//         if (res != MessageBoxWindowView.MessageBoxResult.Yes)
+//             return;
+//
+//         SubNodes.Remove(node);
+//         Console.WriteLine($"Deleted {node.Title} of type {DataType}");
+//     }
+//
+//     private async Task ReIndexAsync()
+//     {
+//         Console.WriteLine($"Reindexing {DataType}...");
+//         await Task.Delay(100);
+//     }
+//
+//     private async Task ResaveAllAsFileAsync()
+//     {
+//         Console.WriteLine($"Resaving all {DataType} as file...");
+//         await Task.Delay(100);
+//     }
+//
+//     private async Task ResaveAllAsDiffAsync()
+//     {
+//         Console.WriteLine($"Resaving all {DataType} as diff...");
+//         await Task.Delay(100);
+//     }
+//     
+//     public async Task ResaveItemAsFileAsync(string key)
+//     {
+//         await Task.Run(async () =>
+//         {
+//             if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+//             {
+//                 await Dispatcher.UIThread.InvokeAsync(() =>
+//                     MessageBoxWindowView.Show(_dialogService,
+//                         string.Format("{0} must have saved edits first!", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok));
+//                 return;
+//             }
+//
+//             lock (GameBase.lockObj)
+//             {
+//                 var entry = DataRegistry.Map[DataType];
+//                 IEntryData data = entry.GetEntry(key);
+//                 DataManager.Instance.ContentResaved(DataType, key, data, false);
+//                 string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+//             }
+//
+//             await Dispatcher.UIThread.InvokeAsync(() =>
+//                 MessageBoxWindowView.Show(_dialogService,
+//                     string.Format("{0} is now saved as a file.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok));
+//         });
+//     }
+    // private async Task ResaveItemAsFileAsync(string key)
+    // {
+    //     Console.WriteLine("3");
+    //     
+    //     await Task.Yield(); // force off the calling context
+    //
+    //     Console.WriteLine("4");
+    //     await Task.Delay(1000).ConfigureAwait(false);
+    //     Console.WriteLine("5");
+        // if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+        // {
+        //     await MessageBoxWindowView.Show(_dialogService,
+        //         string.Format("{0} must have saved edits first!", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+        // }
+        // else
+        // {
+        //     await Task.Run(() =>
+        //     {
+        //         lock (GameBase.lockObj)
+        //         {
+        //             var entry = DataRegistry.Map[DataType];
+        //             IEntryData data = entry.GetEntry(key);
+        //             DataManager.Instance.ContentResaved(DataType, key, data, false);
+        //             string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+        //         }
+        //     });
+        //
+        //     await MessageBoxWindowView.Show(_dialogService,
+        //         string.Format("{0} is now saved as a file.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+        // }
+    // }
+
+
+    // private async Task ResaveItemAsFileAsync(string key)
+    // {
+    //     if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+    //     {
+    //         
+    //         
+    //        await MessageBoxWindowView.Show(_dialogService,
+    //             String.Format("{0} must have saved edits first!", key), "Errir", MessageBoxWindowView.MessageBoxButtons.Ok);
+    //        
+    //        return;
+    //     }
+    //     
+    //     // Do the locked work synchronously, outside of any await
+    //     await Task.Run(() =>
+    //     {
+    //         lock (GameBase.lockObj)
+    //         {
+    //             var entry = DataRegistry.Map[DataType];
+    //             IEntryData data = entry.GetEntry(key);
+    //             DataManager.Instance.ContentResaved(DataType, key, data, false);
+    //
+    //             string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+    //             // choices.ModifyEntry(entryNum, newName);
+    //         }
+    //     });
+    //
+    //     // lock (GameBase.lockObj)
+    //     // {
+    //     //
+    //     //     var entry = DataRegistry.Map[DataType];
+    //     //     IEntryData data = entry.GetEntry(key);
+    //     //     DataManager.Instance.ContentResaved(DataType, key, data, false);
+    //     //
+    //     //     string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+    //     //
+    //     // }
+    //
+    //                
+    //     await MessageBoxWindowView.Show(_dialogService,
+    //         String.Format("{0} is now saved as a file.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+    // }
+
+
+// }
+
+// Children of the DataRootNode
 
 public class DataItemNode : OpenEditorNode
 {
@@ -320,19 +626,27 @@ public class DataItemNode : OpenEditorNode
     {
         ItemKey = itemKey;
     }
+    
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not DataItemNode node)
+            return false;
+        return ItemKey == node.ItemKey && EditorType == node.EditorType;
+    }
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode() ^ ItemKey.GetHashCode();
+    }
 }
 
+// SpriteRootNode have additional properties like mass exporting
 public class SpriteRootNode : ItemRootNode
 {
     private readonly ISpriteOperationStrategy _strategy;
     
     public readonly GraphicsManager.AssetType AssetType;
-    private readonly NodeFactory _nodeFactory;
-    private readonly IDialogService _dialogService;
 
-    public override ReactiveCommand<Unit, Unit> AddCommand { get; }
-    public override ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
-
+    
     public ReactiveCommand<Unit, Unit> MassExportCommand { get; }
     public ReactiveCommand<Unit, Unit> MassImportCommand { get; }
     public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
@@ -369,9 +683,7 @@ public class SpriteRootNode : ItemRootNode
             _strategy = new SpriteAssetTypeStrategy(dialogService, nodeFactory, this);
             
         }
-
-        AddCommand = ReactiveCommand.CreateFromTask(AddSpriteAsync);
-        DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteSpriteAsync);
+        
         MassExportCommand = ReactiveCommand.CreateFromTask(MassExportAsync);
         MassImportCommand = ReactiveCommand.CreateFromTask(MassImportAsync);
         ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
@@ -379,14 +691,14 @@ public class SpriteRootNode : ItemRootNode
         ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
     }
 
-    private async Task AddSpriteAsync()
+    public override async Task AddItem()
     {
         await _strategy.ImportAsync();
     }
 
-    private async Task DeleteSpriteAsync(DataItemNode node)
+    public override async Task DeleteItem(string key)
     {
-        await _strategy.DeleteAsync(node);
+        // await _strategy.DeleteAsync(node);
     }
 
     private async Task MassExportAsync()
@@ -483,20 +795,16 @@ public class ModRootNode : ItemRootNode
     private readonly NodeFactory _nodeFactory;
 
     private readonly IDialogService _dialogService;
-    public override ReactiveCommand<Unit, Unit> AddCommand { get; }
-    public override ReactiveCommand<DataItemNode, Unit> DeleteCommand { get; }
     public ModRootNode(NodeFactory nodeFactory, IDialogService dialogService,
         Type? editorType, string title, string? icon = null)
         : base(title, editorType, icon ?? "")
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
-
-        AddCommand = ReactiveCommand.CreateFromTask(AddItemAsync);
-        DeleteCommand = ReactiveCommand.CreateFromTask<DataItemNode>(DeleteItemAsync);
+        
     }
 
-    private async Task AddItemAsync()
+    public override async Task AddItem()
     {
         ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
         var vm = new ModConfigWindowViewModel(header);
@@ -510,7 +818,7 @@ public class ModRootNode : ItemRootNode
         // Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
 
-    private async Task DeleteItemAsync(DataItemNode? node)
+    public override async Task DeleteItem(string key)
     {
         // if (node is null)
         //     return;

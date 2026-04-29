@@ -6,5 +6,127 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:DataListPageViewModel"
              x:Class="RogueEssence.Dev.Views.DataListPageView">
-    Welcome to ZoneEditor
+
+    <Design.DataContext>
+        <vm:DataListPageViewModel />
+    </Design.DataContext>
+
+    <!-- // var menu = new ContextMenu -->
+    <!-- // { -->
+    <!-- //     Items = -->
+    <!-- //     { -->
+    <!-- //         new MenuItem { Header = "Re-Index", Command = root.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") }, -->
+    <!-- //         new MenuItem { Header = "Resave all as File", Command = root.ResaveAllAsFileCommand, Icon = App.CreateMenuIcon("Icons.FileFill") }, -->
+    <!-- //         new MenuItem { Header = "Resave all as Diff", Command = root.ResaveAllAsDiffCommand, Icon = App.CreateMenuIcon("Icons.PlusMinusFill") }, -->
+    <!-- //         new Separator(), -->
+    <!-- //         new MenuItem { Header = "Add", Command = root.AddCommand, Icon = App.CreateMenuIcon("Icons.Plus") } -->
+    <!-- //     } -->
+    <!-- // }; -->
+    <!-- // -->
+    <!-- // AttachAndOpenMenu(current, menu, e); -->
+    <Grid RowDefinitions="Auto, 32, Auto, Auto">
+
+
+        <DockPanel Grid.Row="0" VerticalAlignment="Top">
+            <Menu x:Name="DataListPageViewEditMenu" DockPanel.Dock="Left"
+                  ContextRequested="DataListPageViewEditMenu_OnContextRequested">
+                <!-- <Menu.Styles> -->
+                <!--     <Style Selector="MenuItem"> -->
+                <!--         <Setter Property="Theme" Value="{DynamicResource CustomMenuItemTheme}" /> -->
+                <!--     </Style> -->
+                <!-- </Menu.Styles> -->
+
+
+                <Menu DockPanel.Dock="Top">
+
+
+                    <MenuItem Header="Edit" ItemsSource="{Binding EditMenuItems}">
+                        <MenuItem.DataTemplates>
+                            <!-- <Menu.DataTemplates> -->
+                            <DataTemplate x:DataType="vm:DataOpContainer">
+                                <MenuItem Header="{Binding Name}"
+                                          Command="{Binding Command}" />
+                            </DataTemplate>
+
+                            <!-- </Menu.DataTemplates> -->
+                        </MenuItem.DataTemplates>
+
+
+                    </MenuItem>
+
+                    <!-- <Menu DockPanel.Dock="Top" ItemsSource="{Binding OpList}"> -->
+                    <!--     <Menu.Styles> -->
+                    <!--         <Style Selector="MenuItem"> -->
+                    <!--             <Setter Property="Header" Value="{Binding Name}"/> -->
+                    <!--             <Setter Property="Command" Value="{Binding Command}"/> -->
+                    <!--             <Setter Property="ItemsSource" Value="{Binding Items}"/> -->
+                    <!--         </Style> -->
+                    <!--     </Menu.Styles> -->
+                    <!-- </Menu> -->
+                    <!--   -->
+                    <!-- <Menu.Styles> -->
+                    <!--   <Style Selector="MenuItem"> -->
+                    <!--     <Setter Property="Header" Value="{Binding Name}"/> -->
+                    <!--     <Setter Property="Command" Value="{Binding Command}"/> -->
+                    <!--     <Setter Property="ItemsSource" Value="{Binding Items}"/> -->
+                    <!--   </Style> -->
+                    <!-- </Menu.Styles> -->
+                </Menu>
+
+            </Menu>
+        </DockPanel>
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                   Text="{Binding Node.DataType}" />
+
+        <!-- Search Grid -->
+        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8" MinWidth="600">
+
+            <TextBox Grid.Row="0"
+                     Height="24"
+                     x:Name="TabSwitcherTextBox"
+                     HorizontalAlignment="Stretch"
+                     Margin="0"
+                     BorderThickness="1"
+                     CornerRadius="0"
+                     Watermark="Search..."
+                     Text="{Binding SearchFilter, Mode=TwoWay}"
+                     BorderBrush="{DynamicResource Brush.Border2}"
+                     VerticalContentAlignment="Center">
+                <TextBox.InnerLeftContent>
+                    <Path
+                        Fill="{DynamicResource Brush.FG2}"
+                        Width="14" Height="14"
+                        Margin="6,1,0,0"
+                        Data="{StaticResource Icons.MagnifyingGlassFill}" />
+                </TextBox.InnerLeftContent>
+            </TextBox>
+
+            <ListBox Grid.Row="2"
+                     ContextRequested="DataListPageListBox_OnContextRequested"
+                     Background="{DynamicResource Brush.Contents}"
+                     x:Name="DataListPageListBox" SelectedItem="{Binding SelectedItem}"
+                     ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
+                     BorderThickness="1" DoubleTapped="DataListPageListBox_OnDoubleTapped">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Background" Value="{DynamicResource Brush.Contents}" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" Padding="4" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
+                <Button Command="{Binding AddItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                    <Path Width="14" Height="14" Data="{StaticResource Icons.Plus}" />
+                </Button>
+                <Button Command="{Binding DeleteItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                    <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </UserControl>

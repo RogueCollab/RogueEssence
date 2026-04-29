@@ -3,141 +3,161 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:SpeciesEditPageViewModel"
+             
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.SpeciesEditPageView">
-    <!-- <UserControl.DataContext> -->
-    <!--     <vm:SpeciesEditPageViewModel/> -->
-    <!-- </UserControl.DataContext> -->
+    <Design.DataContext>
+        <vm:SpeciesEditPageViewModel/>
+    </Design.DataContext>
     <UserControl.Resources>
         <converters:OXConverter x:Key="OXConverter" />
     </UserControl.Resources>
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_Edit">
-                <MenuItem.Styles>
-                    <Style Selector="MenuItem">
-                        <Setter Property="Template">
-                            <ControlTemplate>
-                                <Panel>
-                                    <Border Name="PART_LayoutRoot"
-                                            Padding="{TemplateBinding Padding}"
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="{TemplateBinding CornerRadius}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"
-                                                                  SharedSizeGroup="ToggleIcon" />
-                                                <ColumnDefinition Width="Auto"
-                                                                  SharedSizeGroup="MenuItemIcon" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto"
-                                                                  SharedSizeGroup="MenuItemIGT" />
-                                            </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto, 32, Auto Auto">
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_Edit">
+                    <MenuItem.Styles>
+                        <Style Selector="MenuItem">
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <Panel>
+                                        <Border Name="PART_LayoutRoot"
+                                                Padding="{TemplateBinding Padding}"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="{TemplateBinding CornerRadius}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"
+                                                                      SharedSizeGroup="ToggleIcon" />
+                                                    <ColumnDefinition Width="Auto"
+                                                                      SharedSizeGroup="MenuItemIcon" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto"
+                                                                      SharedSizeGroup="MenuItemIGT" />
+                                                </Grid.ColumnDefinitions>
 
-                                            <ContentControl Grid.Column="0"
-                                                            x:Name="PART_ToggleIconPresenter"
-                                                            IsVisible="False"
-                                                            Theme="{StaticResource FluentMenuItemIconTheme}"
-                                                            Margin="{DynamicResource MenuIconPresenterMargin}" />
+                                                <ContentControl Grid.Column="0"
+                                                                x:Name="PART_ToggleIconPresenter"
+                                                                IsVisible="False"
+                                                                Theme="{StaticResource FluentMenuItemIconTheme}"
+                                                                Margin="{DynamicResource MenuIconPresenterMargin}" />
 
-                                            <ContentControl Grid.Column="1"
-                                                            x:Name="PART_IconPresenter"
-                                                            IsVisible="False"
-                                                            Theme="{StaticResource FluentMenuItemIconTheme}"
-                                                            Content="{TemplateBinding Icon}"
-                                                            Margin="{DynamicResource MenuIconPresenterMargin}" />
+                                                <ContentControl Grid.Column="1"
+                                                                x:Name="PART_IconPresenter"
+                                                                IsVisible="False"
+                                                                Theme="{StaticResource FluentMenuItemIconTheme}"
+                                                                Content="{TemplateBinding Icon}"
+                                                                Margin="{DynamicResource MenuIconPresenterMargin}" />
 
-                                            <ContentPresenter Name="PART_HeaderPresenter"
-                                                              Content="{TemplateBinding Header}"
-                                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                                              VerticalAlignment="Center"
-                                                              HorizontalAlignment="Stretch"
-                                                              Grid.Column="2" />
-                                            <TextBlock x:Name="PART_InputGestureText"
-                                                       Grid.Column="3"
-                                                       Margin="{DynamicResource MenuInputGestureTextMargin}"
-                                                       Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Center"
-                                                       Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" />
-                                        </Grid>
-                                    </Border>
-                                    <Popup Name="PART_Popup"
-                                           WindowManagerAddShadowHint="False"
-                                           Placement="RightEdgeAlignedTop"
-                                           MaxHeight="400"
-                                           IsLightDismissEnabled="False"
-                                           HorizontalOffset="-4"
-                                           VerticalOffset="-4"
-                                           IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-                                        <Grid>
-                                            <Border Background="{DynamicResource Brush.Popup}" Margin="4"
-                                                    CornerRadius="{DynamicResource OverlayCornerRadius}">
-                                                <Border.Effect>
-                                                    <DropShadowEffect OffsetX="0" OffsetY="0" Color="Black"
-                                                                      BlurRadius="4" Opacity=".6" />
-                                                </Border.Effect>
-                                            </Border>
+                                                <ContentPresenter Name="PART_HeaderPresenter"
+                                                                  Content="{TemplateBinding Header}"
+                                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                                  VerticalAlignment="Center"
+                                                                  HorizontalAlignment="Stretch"
+                                                                  Grid.Column="2" />
+                                                <TextBlock x:Name="PART_InputGestureText"
+                                                           Grid.Column="3"
+                                                           Margin="{DynamicResource MenuInputGestureTextMargin}"
+                                                           Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" />
+                                            </Grid>
+                                        </Border>
+                                        <Popup Name="PART_Popup"
+                                               WindowManagerAddShadowHint="False"
+                                               Placement="RightEdgeAlignedTop"
+                                               MaxHeight="400"
+                                               IsLightDismissEnabled="False"
+                                               HorizontalOffset="-4"
+                                               VerticalOffset="-4"
+                                               IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
+                                            <Grid>
+                                                <Border Background="{DynamicResource Brush.Popup}" Margin="4"
+                                                        CornerRadius="{DynamicResource OverlayCornerRadius}">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect OffsetX="0" OffsetY="0" Color="Black"
+                                                                          BlurRadius="4" Opacity=".6" />
+                                                    </Border.Effect>
+                                                </Border>
 
-                                            <Border BorderThickness="0" Margin="8,4" MaxHeight="400">
-                                                <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
-                                                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                                                    Margin="{DynamicResource MenuFlyoutScrollerMargin}"
-                                                                    Grid.IsSharedSizeScope="True">
-                                                        <ItemsPresenter.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <VirtualizingStackPanel Orientation="Vertical" />
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsPresenter.ItemsPanel>
-                                                    </ItemsPresenter>
-                                                </ScrollViewer>
-                                            </Border>
-                                        </Grid>
-                                    </Popup>
-                                </Panel>
-                            </ControlTemplate>
-                        </Setter>
+                                                <Border BorderThickness="0" Margin="8,4" MaxHeight="400">
+                                                    <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
+                                                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                                                        Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+                                                                        Grid.IsSharedSizeScope="True">
+                                                            <ItemsPresenter.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <VirtualizingStackPanel Orientation="Vertical" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsPresenter.ItemsPanel>
+                                                        </ItemsPresenter>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </Grid>
+                                        </Popup>
+                                    </Panel>
+                                </ControlTemplate>
+                            </Setter>
+                        </Style>
+
+                    </MenuItem.Styles>
+                    <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
+                    <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}" />
+                    <Separator />
+                    <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
+                    <MenuItem Header="Mass Export Multi Sheet" Command="{Binding mnuMassExportMulti_Click}" />
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16" Text="{Binding HeaderText}"/>
+        
+        <!-- Text="{Binding SearchFilter, Mode=TwoWay}" -->
+        <!-- Search Grid -->
+        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 32, Auto" Margin="64, 8" MinWidth="600">
+            
+            <TextBox Grid.Row="0"
+                     Height="24"
+                     x:Name="TabSwitcherTextBox"
+                     HorizontalAlignment="Stretch"
+                     Margin="0"
+                     BorderThickness="1"
+                     CornerRadius="0"
+                     Watermark="Search..."
+                     Text="{Binding Filter, Mode=TwoWay}"
+
+                     BorderBrush="{DynamicResource Brush.Border2}"
+                     VerticalContentAlignment="Center">
+                <TextBox.InnerLeftContent>
+                    <Path
+                        Fill="{DynamicResource Brush.FG2}"
+                        Width="14" Height="14"
+                        Margin="6,1,0,0"
+                        Data="{StaticResource Icons.MagnifyingGlassFill}" />
+                </TextBox.InnerLeftContent>
+            </TextBox>
+            
+            <TreeDataGrid x:Name="SpeciesEditTreeDataGrid" Background="{DynamicResource Brush.Contents}" SelectionChanging="SpeciesEditTreeDataGrid_OnSelectionChanging" ShowColumnHeaders="False" Grid.Row="2" Source="{Binding NodeSource}" Grid.ColumnSpan="4" Height="400" BorderBrush="{DynamicResource Brush.Border2}" BorderThickness="1">
+                <TreeDataGrid.Styles>
+                    <Style Selector="TreeDataGridRow">
+                        <Setter Property="Background" Value="{DynamicResource Brush.Contents}"/>
                     </Style>
-
-                </MenuItem.Styles>
-                <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
-                <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}" />
-                <Separator />
-                <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
-                <MenuItem Header="Mass Export Multi Sheet" Command="{Binding mnuMassExportMulti_Click}" />
-            </MenuItem>
-        </Menu>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="34" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <TreeView ItemsSource="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}"
-                      SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
-                <TreeView.DataTemplates>
-                    <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}" Stretch="None"
-                                   Grid.Column="0" />
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="1" />
+                </TreeDataGrid.Styles>
+                <TreeDataGrid.Resources>
+                    <DataTemplate x:Key="MonsterNodeTemplate" DataType="vm:MonsterNodeViewModel">
+                        <Grid ColumnDefinitions="24, *">
+                            <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}"
+                                   Stretch="None" Grid.Column="0" />
+                            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Grid.Column="1" />
                         </Grid>
-                    </TreeDataTemplate>
-                </TreeView.DataTemplates>
-                <TreeView.ContextMenu>
+                    </DataTemplate>
+                </TreeDataGrid.Resources>
+                <TreeDataGrid.ContextMenu>
                     <ContextMenu ItemsSource="{Binding OpList}">
                         <ContextMenu.Styles>
                             <Style Selector="MenuItem">
@@ -146,24 +166,158 @@
                             </Style>
                         </ContextMenu.Styles>
                     </ContextMenu>
-                </TreeView.ContextMenu>
-            </TreeView>
-            <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0"
-                    IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
-                Import
-            </Button>
-            <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1"
-                    IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                Re-Import
-            </Button>
-            <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2"
-                    IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
-                Export
-            </Button>
-            <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3"
-                    IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
-                Delete
-            </Button>
+                </TreeDataGrid.ContextMenu>
+            </TreeDataGrid>
+            
+            <Grid Grid.Row="4" ColumnDefinitions="Auto, *">
+                <UniformGrid Rows="1" Columns="3">
+                    <Button Classes="flat" Margin="0,0,10,0" Command="{Binding btnImport_Click}" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Margin="0,0,10,0" Command="{Binding btnReImport_Click}" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Command="{Binding btnExport_Click}" IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
+                    </Button>
+                </UniformGrid>
+                <Button Grid.Column="1" HorizontalAlignment="Right" Command="{Binding btnDelete_Click}" Classes="secondary" Padding="4,3,4,3"  IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" />
+                </Button>
+            </Grid>
+            
+            <!--     <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" -->
+            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+            <!--         Import -->
+            <!--     </Button> -->
+            <!--     <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" -->
+            <!--             IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"> -->
+            <!--         Re-Import -->
+            <!--     </Button> -->
+            <!--     <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" -->
+            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+            <!--         Export -->
+            <!--     </Button> -->
+            <!--     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" -->
+            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+            <!--         Delete -->
+            <!--     </Button> -->
+                  
+            <!-- <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0" Spacing="4"> -->
+            <!--     <Button Command="{Binding }" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
+            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Plus}" /> -->
+            <!--     </Button> -->
+            <!--     <Button Command="{Binding }" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
+            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" /> -->
+            <!--     </Button> -->
+            <!-- </StackPanel> -->
+            
+        <!--     ~1~ <TreeView ItemsSource="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" @1@ -->
+        <!--     ~1~           SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4"> @1@ -->
+        <!--     ~1~     <TreeView.DataTemplates> @1@ -->
+        <!--     ~1~         <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}"> @1@ -->
+        <!--     ~1~             <Grid> @1@ -->
+        <!--     ~1~                 <Grid.ColumnDefinitions> @1@ -->
+        <!--     ~1~                     <ColumnDefinition Width="24" /> @1@ -->
+        <!--     ~1~                     <ColumnDefinition /> @1@ -->
+        <!--     ~1~                 </Grid.ColumnDefinitions> @1@ -->
+        <!--     ~1~                 <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}" Stretch="None" @1@ -->
+        <!--     ~1~                        Grid.Column="0" /> @1@ -->
+        <!--     ~1~                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="1" /> @1@ -->
+        <!--     ~1~             </Grid> @1@ -->
+        <!--     ~1~         </TreeDataTemplate> @1@ -->
+        <!--     ~1~     </TreeView.DataTemplates> @1@ -->
+        <!--     ~1~     <TreeView.ContextMenu> @1@ -->
+        <!--     ~1~         <ContextMenu ItemsSource="{Binding OpList}"> @1@ -->
+        <!--     ~1~             <ContextMenu.Styles> @1@ -->
+        <!--     ~1~                 <Style Selector="MenuItem"> @1@ -->
+        <!--     ~1~                     <Setter Property="Header" Value="{Binding Name}" /> @1@ -->
+        <!--     ~1~                     <Setter Property="Command" Value="{Binding Command}" /> @1@ -->
+        <!--     ~1~                 </Style> @1@ -->
+        <!--     ~1~             </ContextMenu.Styles> @1@ -->
+        <!--     ~1~         </ContextMenu> @1@ -->
+        <!--     ~1~     </TreeView.ContextMenu> @1@ -->
+        <!--     ~1~ </TreeView> @1@ -->
+
         </Grid>
-    </DockPanel>
+    <Grid/>
+    
+    
+        <!-- -->
+        <!-- -->
+        <!-- <Grid> -->
+        <!--     <Grid.RowDefinitions> -->
+        <!--         <RowDefinition Height="*" /> -->
+        <!--         <RowDefinition Height="34" /> -->
+        <!--     </Grid.RowDefinitions> -->
+        <!--     <Grid.ColumnDefinitions> -->
+        <!--         <ColumnDefinition /> -->
+        <!--         <ColumnDefinition /> -->
+        <!--         <ColumnDefinition /> -->
+        <!--         <ColumnDefinition /> -->
+        <!--     </Grid.ColumnDefinitions> -->
+        <!--     <TreeDataGrid Source="{Binding MonsterSource}" Margin="4" Grid.ColumnSpan="4"> -->
+        <!--         <TreeDataGrid.Resources> -->
+        <!--             <DataTemplate x:Key="MonsterNodeTemplate" DataType="vm:MonsterNodeViewModel"> -->
+        <!--                 <Grid ColumnDefinitions="24, *"> -->
+        <!--                     <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}"  -->
+        <!--                            Stretch="None" Grid.Column="0" /> -->
+        <!--                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="1" /> -->
+        <!--                 </Grid> -->
+        <!--             </DataTemplate> -->
+        <!--         </TreeDataGrid.Resources> -->
+        <!--         <TreeDataGrid.ContextMenu> -->
+        <!--             <ContextMenu ItemsSource="{Binding OpList}"> -->
+        <!--                 <ContextMenu.Styles> -->
+        <!--                     <Style Selector="MenuItem"> -->
+        <!--                         <Setter Property="Header" Value="{Binding Name}" /> -->
+        <!--                         <Setter Property="Command" Value="{Binding Command}" /> -->
+        <!--                     </Style> -->
+        <!--                 </ContextMenu.Styles> -->
+        <!--             </ContextMenu> -->
+        <!--         </TreeDataGrid.ContextMenu> -->
+        <!--     </TreeDataGrid> -->
+        <!--     ~1~ <TreeView ItemsSource="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" @1@ -->
+        <!--     ~1~           SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4"> @1@ -->
+        <!--     ~1~     <TreeView.DataTemplates> @1@ -->
+        <!--     ~1~         <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}"> @1@ -->
+        <!--     ~1~             <Grid> @1@ -->
+        <!--     ~1~                 <Grid.ColumnDefinitions> @1@ -->
+        <!--     ~1~                     <ColumnDefinition Width="24" /> @1@ -->
+        <!--     ~1~                     <ColumnDefinition /> @1@ -->
+        <!--     ~1~                 </Grid.ColumnDefinitions> @1@ -->
+        <!--     ~1~                 <Image Source="{Binding Filled, Converter={StaticResource OXConverter}}" Stretch="None" @1@ -->
+        <!--     ~1~                        Grid.Column="0" /> @1@ -->
+        <!--     ~1~                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Grid.Column="1" /> @1@ -->
+        <!--     ~1~             </Grid> @1@ -->
+        <!--     ~1~         </TreeDataTemplate> @1@ -->
+        <!--     ~1~     </TreeView.DataTemplates> @1@ -->
+        <!--     ~1~     <TreeView.ContextMenu> @1@ -->
+        <!--     ~1~         <ContextMenu ItemsSource="{Binding OpList}"> @1@ -->
+        <!--     ~1~             <ContextMenu.Styles> @1@ -->
+        <!--     ~1~                 <Style Selector="MenuItem"> @1@ -->
+        <!--     ~1~                     <Setter Property="Header" Value="{Binding Name}" /> @1@ -->
+        <!--     ~1~                     <Setter Property="Command" Value="{Binding Command}" /> @1@ -->
+        <!--     ~1~                 </Style> @1@ -->
+        <!--     ~1~             </ContextMenu.Styles> @1@ -->
+        <!--     ~1~         </ContextMenu> @1@ -->
+        <!--     ~1~     </TreeView.ContextMenu> @1@ -->
+        <!--     ~1~ </TreeView> @1@ -->
+        <!--     <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" -->
+        <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+        <!--         Import -->
+        <!--     </Button> -->
+        <!--     <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" -->
+        <!--             IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"> -->
+        <!--         Re-Import -->
+        <!--     </Button> -->
+        <!--     <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" -->
+        <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+        <!--         Export -->
+        <!--     </Button> -->
+        <!--     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" -->
+        <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+        <!--         Delete -->
+        <!--     </Button> -->
+        </Grid>
 </UserControl>

@@ -150,12 +150,7 @@
                                   ShowColumnHeaders="False"
                                   Source="{Binding NodeSource}">
                         <TreeDataGrid.Resources>
-                            <!-- <DataTemplate x:Key="TreeDataGridNodeBaseTemplate"> -->
-                            <!--     <TreeDataGridExpander -->
-                            <!--         IsExpanded="{Binding IsExpanded, Mode=TwoWay}"> -->
-                            <!--         <TextBlock Text="{Binding Title}" /> -->
-                            <!--     </TreeDataGridExpander> -->
-                            <!-- </DataTemplate> -->
+                    
                             <DataTemplate x:Key="TreeDataGridNodeBaseTemplate" DataType="vm:NodeBase">
                                 <ContentControl Content="{Binding}">
                                     <ContentControl.DataTemplates>
@@ -199,7 +194,7 @@
                                                     <Path Stretch="Fill"
                                                           Fill="{DynamicResource Brush.FG1}"
                                                           Width="12" Height="12"
-                                                          Data="{StaticResource Icons.TrashFill}" />
+                                                          Data="{StaticResource Icons.Minus}" />
                                                 </Button>
                                             </Grid>
                                         </DataTemplate>
@@ -243,13 +238,29 @@
 
                 </Border>
 
-                <!-- Editor Content -->
-                <Panel Grid.Row="1" Background="{DynamicResource Brush.PageBackground}">
-                    <ContentControl Content="{Binding TemporaryTab}"
-                                    IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                    <ContentControl Content="{Binding ActivePage}"
-                                    IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNull}}" />
-                </Panel>
+      <!-- Editor Content -->
+<Panel Grid.Row="1" Background="{DynamicResource Brush.PageBackground}">
+    
+    <!-- Temporary tab still uses ContentControl since it's transient -->
+    <ContentControl Content="{Binding TemporaryTab}"
+                    IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    
+    <!-- All permanent pages kept alive, just toggling visibility -->
+    <ItemsControl ItemsSource="{Binding Pages}"
+                  IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNull}}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <Panel/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <ContentControl Content="{Binding}" IsVisible="{Binding IsActive}"/>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    
+</Panel>
             </Grid>
         </Grid>
 

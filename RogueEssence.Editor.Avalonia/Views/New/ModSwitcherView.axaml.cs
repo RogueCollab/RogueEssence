@@ -85,8 +85,7 @@ public partial class ModSwitcherView : UserControl
         var selected = ModsListBox.SelectedItem as ModsNodeViewModel;
         if (selected is null)
             return;
-        
-        Console.WriteLine("Capped");
+        ;
         if (switcher.IsCurrent(selected))
         {
             Console.WriteLine("Same");
@@ -94,7 +93,6 @@ public partial class ModSwitcherView : UserControl
             e.Handled = true;
             return;
         }
-        Console.WriteLine("Tapped");
         
         switcher.CloseSwitcher();
         await switcher.ConfirmModSwitchAsync();

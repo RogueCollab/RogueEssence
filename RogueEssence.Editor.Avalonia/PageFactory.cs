@@ -67,12 +67,14 @@ namespace RogueEssence.Dev
         public EditorPageViewModel? CreatePage(Type pageType, NodeBase? node = null)
         {
             
+            // Make sure it's a page
             if (!typeof(EditorPageViewModel).IsAssignableFrom(pageType))
             {
                 throw new ArgumentException(
                     $"Type {pageType.Name} must derive from EditorPageViewModel", 
                     nameof(pageType));
             }
+            
             
             if (!_registeredTypes.Contains(pageType))
             {

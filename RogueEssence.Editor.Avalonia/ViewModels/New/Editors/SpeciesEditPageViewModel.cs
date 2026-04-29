@@ -1,7 +1,6 @@
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
-
 using Avalonia.Interactivity;
 using System;
 using System.Collections.Generic;
@@ -14,11 +13,14 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using RogueElements;
 using RogueEssence.Dev.Services;
+using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -27,7 +29,11 @@ namespace RogueEssence.Dev.ViewModels
     {
         public Action CommandAction;
         public CharSheetOp Op;
-        public string Name { get { return Op.Name; } }
+
+        public string Name
+        {
+            get { return Op.Name; }
+        }
 
         public SpeciesOpContainer(CharSheetOp op, Action command)
         {
@@ -41,44 +47,49 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MonsterNodeViewModel : ViewModelBase
+    public class MonsterNodeViewModel : NodeBase
     {
+        private bool _filled;
 
-        private bool filled;
         public bool Filled
         {
-            get => filled;
-            set => this.SetIfChanged(ref filled, value);
-        }
-
-        private string name;
-        public string Name
-        {
-            get => name;
-            set => this.SetIfChanged(ref name, value);
+            get => _filled;
+            set => this.RaiseAndSetIfChanged(ref _filled, value);
         }
 
         public CharID ID;
 
-        public ObservableCollection<MonsterNodeViewModel> Nodes { get; }
-
         public MonsterNodeViewModel(string name, CharID id, bool filled)
+            : base(name)
         {
-            this.name = name;
-            this.ID = id;
-            this.filled = filled;
-            Nodes = new ObservableCollection<MonsterNodeViewModel>();
+            ID = id;
+            _filled = filled;
         }
 
+        protected override bool EqualsCore(NodeBase other)
+        {
+            var node = (MonsterNodeViewModel)other;
+            return ID == node.ID;
+        }
+
+        protected override int GetHashCodeCore() => ID.GetHashCode();
     }
 
     public class SpeciesEditPageViewModel : EditorPageViewModel
     {
+        private HierarchicalTreeDataGridSource<MonsterNodeViewModel> _nodeSource;
+
+        public HierarchicalTreeDataGridSource<MonsterNodeViewModel> NodeSource
+        {
+            get => _nodeSource;
+            set => this.RaiseAndSetIfChanged(ref _nodeSource, value);
+        }
+
         protected override bool IsSamePage(EditorPageViewModel other)
         {
             if (other is not SpeciesEditPageViewModel species)
                 return false;
-    
+
             return this.CheckSprites == species.CheckSprites;
         }
         // public override string Title => "Species Editor";
@@ -92,7 +103,12 @@ namespace RogueEssence.Dev.ViewModels
 
         public string Name
         {
-            get { return CheckSprites ? GraphicsManager.AssetType.Chara.ToString() : GraphicsManager.AssetType.Portrait.ToString(); }
+            get
+            {
+                return CheckSprites
+                    ? GraphicsManager.AssetType.Chara.ToString()
+                    : GraphicsManager.AssetType.Portrait.ToString();
+            }
             set { }
         }
 
@@ -104,6 +120,7 @@ namespace RogueEssence.Dev.ViewModels
 
 
         private MonsterNodeViewModel chosenMonster;
+
         public MonsterNodeViewModel ChosenMonster
         {
             get => chosenMonster;
@@ -117,19 +134,93 @@ namespace RogueEssence.Dev.ViewModels
         //ReImport enabled if CachedPath is not null
 
         private string cachedPath;
+
         public string CachedPath
         {
             get => cachedPath;
             set => this.SetIfChanged(ref cachedPath, value);
         }
 
+        private string _filter;
 
-        public SpeciesEditPageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService, OpenEditorNodeWithParams node) : base(pageFactory, tabEvents, dialogService)
+        public string Filter
+        {
+            get { return _filter; }
+            set { this.RaiseAndSetIfChanged(ref _filter, value); }
+        }
+
+
+        private void ApplyFilter(string filter)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var node in Monsters)
+                {
+                    // Only expand nodes IF there is a filter, otherwise the nodes should be closed by default
+                    if (string.IsNullOrWhiteSpace(filter))
+                    {
+                        NodeHelper.ExpandAll(node, false);
+                    }
+                    else
+                    {
+                        NodeHelper.ExpandIfMatches(node, filter,
+                            new CombinedTitleFilterStrategy(new BeginningTitleFilterStrategy(),
+                                new IndexTitleFilterStrategy()));
+                    }
+                }
+
+                // Remove the chosen monster if it no longer matches the filter
+                if (ChosenMonster != null && !ChosenMonster.IsVisible)
+                {
+                    ChosenMonster = null;
+                }
+
+
+                RefreshTreeDataGrid();
+            });
+        }
+
+        private void RefreshTreeDataGrid()
+        {
+            var visible = string.IsNullOrWhiteSpace(Filter)
+                ? Monsters
+                : new ObservableCollection<MonsterNodeViewModel>(Monsters.Where(n => n.IsVisible));
+
+            NodeSource = new HierarchicalTreeDataGridSource<MonsterNodeViewModel>(visible)
+            {
+                Columns =
+                {
+                    new HierarchicalExpanderColumn<MonsterNodeViewModel>(
+                        new TemplateColumn<MonsterNodeViewModel>(
+                            null,
+                            "MonsterNodeTemplate",
+                            null,
+                            new GridLength(1, GridUnitType.Star)),
+                        x => new ObservableCollection<MonsterNodeViewModel>(
+                            x.SubNodes.OfType<MonsterNodeViewModel>().Where(n => n.IsVisible)),
+                        x => x.SubNodes.Count > 0,
+                        x => x.IsExpanded)
+                }
+            };
+        }
+
+        public string HeaderText { get; }
+
+        public SpeciesEditPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents,
+            IDialogService dialogService,
+            OpenEditorNodeWithParams node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
             OpList = new ObservableCollection<SpeciesOpContainer>();
             CheckSprites = (bool)node.ExtraParams[0];
+            HeaderText = node.Title;
+        }
+
+        public override void LoadData()
+        {
             LoadFormDataEntries(CheckSprites);
+            this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
+            RefreshTreeDataGrid();
         }
 
 
@@ -148,7 +239,9 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(DialogService,
+                    string.Format("No graphics exist for {0}.", chosenMonster.Title),
+                    "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -213,52 +306,44 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuMassImport_Click()
         {
-            await MessageBox.Show(parent, "Note: Importing a sprite to a slot that is already filled will automatically overwrite the old one.", "Mass Import", MessageBox.MessageBoxButtons.Ok);
-
+            await MessageBoxWindowView.Show(DialogService,
+                "Note: Importing a sprite to a slot that is already filled will automatically overwrite the old one.",
+                "Mass Import", MessageBoxWindowView.MessageBoxButtons.Ok);
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
+            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
-            
-                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
-                    new FolderPickerOpenOptions
-                    {
-                        Title = "Select sprite folder to mass import",
-                        SuggestedStartLocation = directory,
-                        AllowMultiple = false,
-                    });
+                Title = "Select sprite folder to mass import",
+                AllowMultiple = false,
+            }, folderName);
 
-                if (results.Count <= 0)
-                    return;
+            if (string.IsNullOrEmpty(folder))
+                return;
 
-                string folder = results.First().Path.LocalPath;
-                
-                DevForm.SetConfig(Name + "Dir", folder);
-                CachedPath = folder + "/";
+            DevForm.SetConfig(Name + "Dir", folder);
+            CachedPath = folder + "/";
 
-                try
-                {
-                    MassImport(CachedPath);
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-                
-
-
-            });
+            try
+            {
+                MassImport(CachedPath);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                await MessageBoxWindowView.Show(DialogService,
+                    $"Error importing from\n{CachedPath}\n\n{ex.Message}",
+                    "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
+                return;
+            }
         }
 
         public void mnuMassExportMulti_Click()
         {
             MassExportFlow(false);
         }
+
         public void mnuMassExport_Click()
         {
             MassExportFlow(true);
@@ -270,28 +355,22 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
+            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
-                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
-                    new FolderPickerOpenOptions
-                    {
-                        Title = "Select folder to mass export to",
-                        SuggestedStartLocation = directory,
-                        AllowMultiple = false,
-                    });
+                Title = "Select folder to mass export to",
+                AllowMultiple = false,
+            }, folderName);
 
-                if (results.Count <= 0)
-                    return;
+            if (string.IsNullOrEmpty(folder))
+                return;
+            DevForm.SetConfig(Name + "Dir", folder);
+            CachedPath = folder + "/";
 
-                string folder = results.First().Path.LocalPath;
-                DevForm.SetConfig(Name + "Dir", folder);
-                CachedPath = folder + "/";
-
-                bool success = MassExport(CachedPath, singleSheet);
-                if (!success)
-                    await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
-            });
+            bool success = MassExport(CachedPath, singleSheet);
+            if (!success)
+                await MessageBox.Show(parent,
+                    "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed",
+                    MessageBox.MessageBoxButtons.Ok);
         }
 
         public async void mnuReIndex_Click()
@@ -303,7 +382,8 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBox.Show(parent, "Error when reindexing.\n\n" + ex.Message, "Reindex Failed", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(DialogService, "Error when reindexing.\n\n" + ex.Message,
+                    "Reindex Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
         }
@@ -316,17 +396,21 @@ namespace RogueEssence.Dev.ViewModels
 
             if (chosenMonster.Filled)
             {
-                MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to overwrite the existing sheet:\n" + GetFormString(formdata), "Sprite Sheet already exists.",
-                    MessageBox.MessageBoxButtons.YesNo);
-                if (result == MessageBox.MessageBoxResult.No)
+                var res = await MessageBoxWindowView.Show(DialogService,
+                    "Are you sure you want to overwrite the existing sheet:\n" + GetFormString(formdata),
+                    "Sprite Sheet already exists.", MessageBoxWindowView.MessageBoxButtons.OkCancel);
+                if (res == MessageBoxWindowView.MessageBoxResult.No)
+                {
                     return;
+                }
             }
 
             //notify (once) that sprites need to follow a rigid guideline
             if (!notifiedImport)
             {
-                await MessageBox.Show(parent, "When importing sprites, " +
-                    "make sure that all files in each folder adhere to the naming convention.", "Sprite Importing", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(DialogService, "When importing sprites, " +
+                                                               "make sure that all files in each folder adhere to the naming convention.",
+                    "Sprite Importing", MessageBoxWindowView.MessageBoxButtons.Ok);
                 notifiedImport = true;
             }
 
@@ -334,35 +418,30 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
+            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
-                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
-                    new FolderPickerOpenOptions
-                    {
-                        Title = "Select folder to mass export to",
-                        SuggestedStartLocation = directory,
-                        AllowMultiple = false,
-                    });
+                Title = "Select folder to import from",
+                AllowMultiple = false,
+            }, folderName);
 
-                if (results.Count <= 0)
-                    return;
+            if (string.IsNullOrEmpty(folder))
+                return;
 
-                string folder = results.First().Path.LocalPath;
-                DevForm.SetConfig(Name + "Dir", folder);
-                CachedPath = folder + "/";
+            DevForm.SetConfig(Name + "Dir", folder);
+            CachedPath = folder + "/";
 
-                try
-                {
-                    Import(CachedPath, formdata);
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-            });
+            try
+            {
+                Import(CachedPath, formdata);
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                await MessageBoxWindowView.Show(DialogService,
+                    "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed",
+                    MessageBoxWindowView.MessageBoxButtons.Ok);
+                return;
+            }
         }
 
         public async void btnReImport_Click()
@@ -374,7 +453,9 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(DialogService,
+                    "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed",
+                    MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
         }
@@ -396,7 +477,9 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(DialogService,
+                    String.Format("No graphics exist for {0}.", chosenMonster.Title), "Error",
+                    MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -404,58 +487,55 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
+
+            string folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
-                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
-                    new FolderPickerOpenOptions
-                    {
-                        Title = "Select folder to export to",
-                        SuggestedStartLocation = directory,
-                        AllowMultiple = false,
-                    });
+                Title = "Select folder to export to",
+                AllowMultiple = false,
+            }, folderName);
 
-                if (results.Count <= 0)
-                    return;
+            if (String.IsNullOrEmpty(folder))
+                return;
 
-                string folder = results.First().Path.LocalPath;
-                
-                DevForm.SetConfig(Name + "Dir", folder);
-                CachedPath = folder + "/";
+            DevForm.SetConfig(Name + "Dir", folder);
+            CachedPath = folder + "/";
 
-                try
-                {
-                    DevForm.ExecuteOrPend(() => { Export(CachedPath, formdata, singleSheet); });
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-            });
+            try
+            {
+                DevForm.ExecuteOrPend(() => { Export(CachedPath, formdata, singleSheet); });
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                await MessageBoxWindowView.Show(DialogService,
+                    "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed",
+                    MessageBoxWindowView.MessageBoxButtons.Ok);
+                return;
+            }
         }
 
         public async void btnDelete_Click()
         {
             if (!chosenMonster.Filled)
             {
-                await MessageBox.Show(parent, String.Format("No graphics exist for {0}.", chosenMonster.Name), "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(DialogService,
+                    String.Format("No graphics exist for {0}.", chosenMonster.Title), "Error",
+                    MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
 
             //get current sprite
             CharID formdata = chosenMonster.ID;
 
-            MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete the following sheet:\n" + GetFormString(formdata), "Delete Sprite Sheet.",
-                MessageBox.MessageBoxButtons.YesNo);
-            if (result == MessageBox.MessageBoxResult.No)
+            var result = await MessageBoxWindowView.Show(DialogService,
+                "Are you sure you want to delete the following sheet:\n" + GetFormString(formdata),
+                "Delete Sprite Sheet.",
+                MessageBoxWindowView.MessageBoxButtons.YesNo);
+            if (result == MessageBoxWindowView.MessageBoxResult.No)
                 return;
 
             Delete(formdata);
         }
-
-
 
 
         private void reloadFullList()
@@ -468,33 +548,39 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     if (monsterKeys[ii] == null) // in case of non continuous index of Dex numbers
                         continue;
-                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
+                    MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance
+                        .DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                     CharID dexID = new CharID(ii, -1, -1, -1);
-                    MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
+                    MonsterNodeViewModel node = new MonsterNodeViewModel(
+                        "#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
                     for (int jj = 0; jj < dex.Forms.Count; jj++)
                     {
                         CharID formID = new CharID(ii, jj, -1, -1);
-                        MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
+                        MonsterNodeViewModel formNode = new MonsterNodeViewModel(
+                            "Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID,
+                            hasSprite(charaNode, formID));
                         for (int kk = 0; kk < skinKeys.Count; kk++)
                         {
                             SkinData skinData = DataManager.Instance.GetSkin(skinKeys[kk]);
                             if (!skinData.Challenge)
                             {
                                 CharID skinID = new CharID(ii, jj, kk, -1);
-                                MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
+                                MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(),
+                                    skinID, hasSprite(charaNode, skinID));
                                 for (int mm = 0; mm < 3; mm++)
                                 {
                                     CharID genderID = new CharID(ii, jj, kk, mm);
-                                    MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
-                                    skinNode.Nodes.Add(genderNode);
+                                    MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(),
+                                        genderID, hasSprite(charaNode, genderID));
+                                    skinNode.SubNodes.Add(genderNode);
                                 }
 
-                                formNode.Nodes.Add(skinNode);
+                                formNode.SubNodes.Add(skinNode);
                             }
                         }
 
-                        node.Nodes.Add(formNode);
+                        node.SubNodes.Add(formNode);
                     }
 
                     Monsters.Add(node);
@@ -579,8 +665,8 @@ namespace RogueEssence.Dev.ViewModels
 
 
                 DiagManager.Instance.LogInfo("Frames from:\n" +
-                    currentPath +
-                    "\nhave been imported to:" + GetFormString(currentForm));
+                                             currentPath +
+                                             "\nhave been imported to:" + GetFormString(currentForm));
             }
         }
 
@@ -610,7 +696,11 @@ namespace RogueEssence.Dev.ViewModels
 
                     try
                     {
-                        DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID, singleSheet); });
+                        DevForm.ExecuteOrPend(() =>
+                        {
+                            Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/", formID,
+                                singleSheet);
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -625,7 +715,12 @@ namespace RogueEssence.Dev.ViewModels
 
                         try
                         {
-                            DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/", skinID, singleSheet); });
+                            DevForm.ExecuteOrPend(() =>
+                            {
+                                Export(
+                                    currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" +
+                                    kk.ToString("D4") + "/", skinID, singleSheet);
+                            });
                         }
                         catch (Exception ex)
                         {
@@ -640,7 +735,12 @@ namespace RogueEssence.Dev.ViewModels
 
                             try
                             {
-                                DevForm.ExecuteOrPend(() => { Export(currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" + kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet); });
+                                DevForm.ExecuteOrPend(() =>
+                                {
+                                    Export(
+                                        currentPath + ii.ToString("D4") + "/" + jj.ToString("D4") + "/" +
+                                        kk.ToString("D4") + "/" + mm.ToString("D4") + "/", genderID, singleSheet);
+                                });
                             }
                             catch (Exception ex)
                             {
@@ -651,6 +751,7 @@ namespace RogueEssence.Dev.ViewModels
                     }
                 }
             }
+
             return success;
         }
 
@@ -676,8 +777,8 @@ namespace RogueEssence.Dev.ViewModels
                     }
 
                     DiagManager.Instance.LogInfo("Frames from:\n" +
-                        GetFormString(currentForm) +
-                        "\nhave been exported to:" + currentPath);
+                                                 GetFormString(currentForm) +
+                                                 "\nhave been exported to:" + currentPath);
                 }
             }
         }
@@ -769,6 +870,7 @@ namespace RogueEssence.Dev.ViewModels
                     else
                         GraphicsManager.GetPortrait(formData).Save(writer);
                 }
+
                 byte[] writingBytes = stream.ToArray();
                 data[formData] = writingBytes;
             }
@@ -776,11 +878,14 @@ namespace RogueEssence.Dev.ViewModels
 
         private string GetFormString(CharID formdata)
         {
-            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[formdata.Species]).Name.ToLocal();
+            string name = DataManager.Instance.DataIndices[DataManager.DataType.Monster]
+                .Get(monsterKeys[formdata.Species]).Name.ToLocal();
             if (formdata.Form > -1)
-                name += ", " + DataManager.Instance.GetMonster(monsterKeys[formdata.Species]).Forms[formdata.Form].FormName.ToLocal() + " form";
+                name += ", " + DataManager.Instance.GetMonster(monsterKeys[formdata.Species]).Forms[formdata.Form]
+                    .FormName.ToLocal() + " form";
             if (formdata.Skin > -1)
-                name += ", " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(skinKeys[formdata.Skin]).Name.ToLocal() + " skin";
+                name += ", " + DataManager.Instance.DataIndices[DataManager.DataType.Skin].Get(skinKeys[formdata.Skin])
+                    .Name.ToLocal() + " skin";
             if (formdata.Gender > -1)
                 name += ", " + (Gender)formdata.Gender + " gender";
             return name;

@@ -16,7 +16,8 @@ public class SpritePageViewModel : EditorPageViewModel
     // public override string Title => "Sprite Stuff";
 
 
-    public SpritePageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService) : base(pageFactory, tabEvents, dialogService)
+    public SpritePageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
+        NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
     {
         CreateATab = ReactiveCommand.Create(() => tabEvents.AddChildPage(this, pageFactory.CreatePage(typeof(SpritePageViewModel))));
         CreateATopTab = ReactiveCommand.Create(() => tabEvents.AddTopLevelTab(pageFactory.CreatePage(typeof(ModInfoEditorViewModel))));

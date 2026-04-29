@@ -1,4 +1,5 @@
 using System;
+using RogueEssence.Data;
 using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
@@ -11,6 +12,14 @@ namespace RogueEssence.Dev
         public event Action<EditorPageViewModel>? AddTopLevelTabEvent;
         public event Action<EditorPageViewModel>? RemoveTabEvent;
         public event Action<EditorPageViewModel>? NavigateToTabEvent;
+        
+        // Used for closing tabs when a data entry is deleted
+        public event Action<string, DataManager.DataType>? CloseTabsForEntry;
+
+        public void RequestCloseTabsForEntry(string key, DataManager.DataType dataType)
+        {
+            CloseTabsForEntry?.Invoke(key, dataType);
+        }
 
         // Navigate tab to ID
 

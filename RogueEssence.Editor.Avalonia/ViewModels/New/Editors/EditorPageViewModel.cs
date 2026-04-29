@@ -2,13 +2,41 @@ using ReactiveUI;
 
 using System;
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using RogueEssence.Dev.Services;
 
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class EditorPageViewModel : ViewModelBase
+public abstract class EditorPageViewModel<TNode> : EditorPageViewModel
+    where TNode : NodeBase
 {
+    
+    // The node that opened this page
+    public TNode Node { get; }
+
+    protected EditorPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, 
+        IDialogService dialogService, NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
+    {
+        if (node is not TNode typedNode)
+            throw new ArgumentException($"Expected {typeof(TNode).Name} but got {node.GetType().Name}");
+        
+        Node = typedNode;
+    }
+    
+    protected override bool IsSamePage(EditorPageViewModel other)
+    {
+        var otherTyped = (EditorPageViewModel<TNode>)other;
+        return Node.Equals(otherTyped.Node);
+    }
+
+    protected override int GetHashCodeCore() => Node.GetHashCode();
+}
+
+
+public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel>
+{
+    public double ScrollOffset { get; set; } = 0;
     
     public virtual string DefaultTitle => "Dev Edit";
     
@@ -18,36 +46,49 @@ public class EditorPageViewModel : ViewModelBase
     public string Title =>
         string.IsNullOrEmpty(_title) ? DefaultTitle : _title;
     
-    public bool Equals(object? obj)
-    {
-        if (obj is not EditorPageViewModel other)
-            return false;
-        
-        return GetType() == other.GetType() && IsSamePage(other);
-    }
-
-    protected virtual bool IsSamePage(EditorPageViewModel other)
-    {
-        return true;
-    }
     
+
+    
+    // Whether to add a new tab when this page is selected
     public virtual bool AddNewTab => true;
     
+        
+    // Only load data when there is no duplicate pages
+    public virtual void LoadData() { }
     
-    private string _data = "";
-
-  
-    public string Data
+    public bool Equals(EditorPageViewModel? other)
     {
-        get { return _data; }
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _data, value);
-        }
+        if (other is null) return false;
+        if (GetType() != other.GetType()) return false;
+        return IsSamePage(other);
     }
+
+    public override bool Equals(object? obj) => obj is EditorPageViewModel other && Equals(other);
+    public override int GetHashCode() => GetHashCodeCore();
     
+    protected virtual bool IsSamePage(EditorPageViewModel other) => true;
+    protected virtual int GetHashCodeCore() => RuntimeHelpers.GetHashCode(this);
+    //
+    // private string _data = "";
+    //
+    //
+    // public string Data
+    // {
+    //     get { return _data; }
+    //     set
+    //     {
+    //         this.RaiseAndSetIfChanged(ref _data, value);
+    //     }
+    // }
+    //
  
 
+    private bool _isActive;
+    public bool IsActive
+    {
+        get => _isActive;
+        set => this.RaiseAndSetIfChanged(ref _isActive, value);
+    }
     
     private string? _icon = "";
     public string Icon
@@ -69,13 +110,21 @@ public class EditorPageViewModel : ViewModelBase
                 this.RaiseAndSetIfChanged(ref _modified, value);
             }
         }
-    private readonly TabEvents _tabEvents;
+        
+    public readonly NodeFactory NodeFactory;
+    public readonly TabEvents TabEvents;
+    public readonly IDialogService DialogService;
+    public readonly PageFactory PageFactory;
     
-    public EditorPageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService)
+    public EditorPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService)
     {
-        // Children = new ObservableCollection<EditorPageViewModel>();
-        _tabEvents = tabEvents;
+        this.TabEvents = tabEvents;
+        this.DialogService = dialogService;
+        this.PageFactory = pageFactory;
+        this.NodeFactory = nodeFactory;
     }
+    
+    
 
     public void SetPageTitleFromNode(NodeBase node)
     {

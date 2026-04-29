@@ -282,7 +282,6 @@ public partial class TabSwitcherView : UserControl
     {
         if (DataContext is ViewModels.TabSwitcherViewModel switcher)
         {
-            // Handle expander
             var toggleButton = (e.Source as Control)?.FindAncestorOfType<ToggleButton>();
             if (toggleButton != null)
             {

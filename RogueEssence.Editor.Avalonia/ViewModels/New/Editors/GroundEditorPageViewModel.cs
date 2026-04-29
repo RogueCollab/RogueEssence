@@ -6,6 +6,6 @@ public class GroundEditorPageViewModel : EditorPageViewModel
 {
     // public override string Title => "Ground Editor Long Name";
     
-    public GroundEditorPageViewModel (PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService) : base(pageFactory, tabEvents, dialogService)
+    public GroundEditorPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService) : base(nodeFactory, pageFactory, tabEvents, dialogService)
     { }
 }

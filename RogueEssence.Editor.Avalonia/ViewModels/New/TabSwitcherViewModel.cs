@@ -72,7 +72,6 @@ public class TabSwitcherViewModel: ViewModelBase
     public ObservableCollection<PageNode> TopLevelPages 
         => _mainWindow.TopLevelPages;
     
-    // Do it for both the tab list and the tab tree view!
     private void UpdateVisiblePages(string filter)
     {
         var strategy = new BeginningTitleFilterStrategy();

@@ -10,9 +10,9 @@
              x:Class="RogueEssence.Dev.Views.DevControlView">
     
     
-    <UserControl.DataContext>
+    <Design.DataContext>
         <vm:DevControlViewModel/>
-    </UserControl.DataContext>
+    </Design.DataContext>
     <!-- The Game/Player/Travel/Script Tabs will be moved inside here... -->
 
     

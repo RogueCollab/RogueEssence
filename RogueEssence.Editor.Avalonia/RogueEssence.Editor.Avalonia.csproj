@@ -210,5 +210,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="ViewModels\New\UserControls\" />
   </ItemGroup>
 </Project>

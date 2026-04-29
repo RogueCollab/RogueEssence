@@ -67,17 +67,17 @@ public class DevEditPageViewModel : EditorPageViewModel
     
     // public override string? Title => "Dev Edit";
 
-    public DevEditPageViewModel(PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService, NodeBase node) : base(
-        pageFactory, tabEvents, dialogService)
+    public DevEditPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
+        NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
     {
         var n = node as DataItemNode;
         var nn = node.Parent as DataRootNode;
         var dt = nn.DataType;
     }
 
-    public DevEditPageViewModel() : base(new PageFactory(new DesignServiceProvider()),
-        new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
-    {
-        // Title = "Dev Edit";
-    }
+    // public DevEditPageViewModel() : base(new PageFactory(new DesignServiceProvider()),
+    //     new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
+    // {
+    //     // Title = "Dev Edit";
+    // }
 }
