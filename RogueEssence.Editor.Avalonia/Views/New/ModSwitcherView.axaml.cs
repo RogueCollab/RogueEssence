@@ -85,10 +85,9 @@ public partial class ModSwitcherView : UserControl
         var selected = ModsListBox.SelectedItem as ModsNodeViewModel;
         if (selected is null)
             return;
-        ;
+        
         if (switcher.IsCurrent(selected))
         {
-            Console.WriteLine("Same");
             switcher.CloseSwitcher();
             e.Handled = true;
             return;

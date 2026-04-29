@@ -267,20 +267,10 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         UpdateVisibleItems(SearchFilter);
 
 
+        // TODO: Determine whether to add the new item to the tree
         // SubNodes.Add(_nodeFactory.CreateDataItemNode<DevEditPageViewModel>(assetName, $"{assetName}:", "Icons.GhostFill"));
         // IsExpanded = true;
-        //
-
-        // var vm = new RenameWindowViewModel();
-        // bool result = await DialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {Node.DataType}");
-
-        // if (!result)
-        //     return;
-        //
-        // SubNodes.Add(_nodeFactory.CreateDataItemNode<DevEditPageViewModel>(vm.Name, $"{vm.Name}:", "Icons.GhostFill"));
-        // IsExpanded = true;
         // Console.WriteLine($"Added {DataType} item: {vm.Name}");
-        //
     }
 
     private async Task ReIndexAsync()
