@@ -9,19 +9,22 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using RogueElements;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class SpeciesOpContainer
+    public class SpeciesOpContainer2
     {
         public Action CommandAction;
         public CharSheetOp Op;
         public string Name { get { return Op.Name; } }
 
-        public SpeciesOpContainer(CharSheetOp op, Action command)
+        public SpeciesOpContainer2(CharSheetOp op, Action command)
         {
             Op = op;
             CommandAction = command;
@@ -33,7 +36,7 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
-    public class MonsterNodeViewModel : ViewModelBase
+    public class MonsterNodeViewModel2 : ViewModelBase
     {
 
         private bool filled;
@@ -52,19 +55,19 @@ namespace RogueEssence.Dev.ViewModels
 
         public CharID ID;
 
-        public ObservableCollection<MonsterNodeViewModel> Nodes { get; }
+        public ObservableCollection<MonsterNodeViewModel2> Nodes { get; }
 
-        public MonsterNodeViewModel(string name, CharID id, bool filled)
+        public MonsterNodeViewModel2(string name, CharID id, bool filled)
         {
             this.name = name;
             this.ID = id;
             this.filled = filled;
-            Nodes = new ObservableCollection<MonsterNodeViewModel>();
+            Nodes = new ObservableCollection<MonsterNodeViewModel2>();
         }
 
     }
 
-    public class SpeciesEditViewModel : ViewModelBase
+    public class SpeciesEditViewModel2 : ViewModelBase
     {
 
         private bool checkSprites;
@@ -82,12 +85,12 @@ namespace RogueEssence.Dev.ViewModels
         private List<string> monsterKeys;
         private List<string> skinKeys;
 
-        public ObservableCollection<MonsterNodeViewModel> Monsters { get; }
-        public ObservableCollection<SpeciesOpContainer> OpList { get; }
+        public ObservableCollection<MonsterNodeViewModel2> Monsters { get; }
+        public ObservableCollection<SpeciesOpContainer2> OpList { get; }
 
 
-        private MonsterNodeViewModel chosenMonster;
-        public MonsterNodeViewModel ChosenMonster
+        private MonsterNodeViewModel2 chosenMonster;
+        public MonsterNodeViewModel2 ChosenMonster
         {
             get => chosenMonster;
             set
@@ -107,10 +110,10 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public SpeciesEditViewModel()
+        public SpeciesEditViewModel2()
         {
-            Monsters = new ObservableCollection<MonsterNodeViewModel>();
-            OpList = new ObservableCollection<SpeciesOpContainer>();
+            Monsters = new ObservableCollection<MonsterNodeViewModel2>();
+            OpList = new ObservableCollection<SpeciesOpContainer2>();
         }
 
 
@@ -179,11 +182,11 @@ namespace RogueEssence.Dev.ViewModels
         {
             checkSprites = sprites;
             this.parent = parent;
-            OpList.Add(new SpeciesOpContainer(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
+            OpList.Add(new SpeciesOpContainer2(new CharSheetDummyOp("Export as Multi Sheet"), ExportMultiSheet));
             if (sprites)
             {
                 foreach (CharSheetOp op in DevDataManager.CharSheetOps)
-                    OpList.Add(new SpeciesOpContainer(op, () => applyOpToCharSheet(op)));
+                    OpList.Add(new SpeciesOpContainer2(op, () => applyOpToCharSheet(op)));
             }
 
             monsterKeys = DataManager.Instance.DataIndices[DataManager.DataType.Monster].GetMappedKeys();
@@ -201,21 +204,23 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+            
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select sprite folder to mass import",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
 
-            string folder = "";
-            try
-            {
-                folder = await openFileDialog.ShowAsync(parent);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, true);
-            }
+                if (results.Count <= 0)
+                    return;
 
-            if (!String.IsNullOrEmpty(folder))
-            {
+                string folder = results.First().Path.LocalPath;
+                
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
@@ -229,7 +234,10 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+                
+
+
+            });
         }
 
         public void mnuMassExportMulti_Click()
@@ -247,28 +255,28 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
 
-            string folder = "";
-            try
-            {
-                folder = await openFileDialog.ShowAsync(parent);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, true);
-            }
+                if (results.Count <= 0)
+                    return;
 
-            if (!String.IsNullOrEmpty(folder))
-            {
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
                 bool success = MassExport(CachedPath, singleSheet);
                 if (!success)
                     await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
-            }
+            });
         }
 
         public async void mnuReIndex_Click()
@@ -311,21 +319,21 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
 
-            string folder = "";
-            try
-            {
-                folder = await openFileDialog.ShowAsync(parent);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, true);
-            }
+                if (results.Count <= 0)
+                    return;
 
-            if (!String.IsNullOrEmpty(folder))
-            {
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
@@ -339,7 +347,7 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+            });
         }
 
         public async void btnReImport_Click()
@@ -381,21 +389,22 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
 
-            string folder = "";
-            try
-            {
-                folder = await openFileDialog.ShowAsync(parent);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, true);
-            }
+                if (results.Count <= 0)
+                    return;
 
-            if (!String.IsNullOrEmpty(folder))
-            {
+                string folder = results.First().Path.LocalPath;
+                
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
@@ -409,7 +418,7 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+            });
         }
 
         public async void btnDelete_Click()
@@ -447,22 +456,22 @@ namespace RogueEssence.Dev.ViewModels
                     MonsterEntrySummary dex = (MonsterEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Monster].Get(monsterKeys[ii]);
 
                     CharID dexID = new CharID(ii, -1, -1, -1);
-                    MonsterNodeViewModel node = new MonsterNodeViewModel("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
+                    MonsterNodeViewModel2 node = new MonsterNodeViewModel2("#" + ii.ToString() + ": " + dex.Name.ToLocal(), dexID, hasSprite(charaNode, dexID));
                     for (int jj = 0; jj < dex.Forms.Count; jj++)
                     {
                         CharID formID = new CharID(ii, jj, -1, -1);
-                        MonsterNodeViewModel formNode = new MonsterNodeViewModel("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
+                        MonsterNodeViewModel2 formNode = new MonsterNodeViewModel2("Form" + jj.ToString() + ": " + dex.Forms[jj].Name.ToLocal(), formID, hasSprite(charaNode, formID));
                         for (int kk = 0; kk < skinKeys.Count; kk++)
                         {
                             SkinData skinData = DataManager.Instance.GetSkin(skinKeys[kk]);
                             if (!skinData.Challenge)
                             {
                                 CharID skinID = new CharID(ii, jj, kk, -1);
-                                MonsterNodeViewModel skinNode = new MonsterNodeViewModel(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
+                                MonsterNodeViewModel2 skinNode = new MonsterNodeViewModel2(skinData.Name.ToLocal(), skinID, hasSprite(charaNode, skinID));
                                 for (int mm = 0; mm < 3; mm++)
                                 {
                                     CharID genderID = new CharID(ii, jj, kk, mm);
-                                    MonsterNodeViewModel genderNode = new MonsterNodeViewModel(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
+                                    MonsterNodeViewModel2 genderNode = new MonsterNodeViewModel2(((Gender)mm).ToString(), genderID, hasSprite(charaNode, genderID));
                                     skinNode.Nodes.Add(genderNode);
                                 }
 

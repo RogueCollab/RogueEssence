@@ -1,0 +1,138 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             FontSize="12"
+             x:DataType="vm:DevControlViewModel"
+             x:Class="RogueEssence.Dev.Views.DevControlView">
+    
+    
+    <Design.DataContext>
+        <vm:DevControlViewModel/>
+    </Design.DataContext>
+    <!-- The Game/Player/Travel/Script Tabs will be moved inside here... -->
+
+    
+    <!-- <Style Selector="Button.flat"> -->
+    <!--     <Setter Property="BorderThickness" Value="1" /> -->
+    <!--     <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border2}" /> -->
+    <!--     <Setter Property="TextBlock.TextAlignment" Value="Center" /> -->
+    <!--     <Setter Property="Foreground" Value="{DynamicResource Brush.FG1}" /> -->
+    <!--     <Setter Property="Background" Value="{DynamicResource Brush.FlatButton.Background}" /> -->
+    <!--     <Setter Property="VerticalContentAlignment" Value="Center" /> -->
+    <!--     <Setter Property="Template"> -->
+    <!--         <ControlTemplate> -->
+    <!--             <Grid> -->
+    <!--                 <Border x:Name="PART_Border" -->
+    <!--                         Background="{TemplateBinding Background}" -->
+    <!--                         BorderBrush="{TemplateBinding BorderBrush}" -->
+    <!--                         BorderThickness="{TemplateBinding BorderThickness}" -->
+    <!--                         CornerRadius="{TemplateBinding CornerRadius}" /> -->
+    <!-- -->
+    <!--                 <ContentPresenter x:Name="PART_ContentPresenter" -->
+    <!--                                   Background="Transparent" -->
+    <!--                                   Padding="{TemplateBinding Padding}" -->
+    <!--                                   Content="{TemplateBinding Content}" -->
+    <!--                                   ContentTemplate="{TemplateBinding ContentTemplate}" -->
+    <!--                                   HorizontalContentAlignment="Center" -->
+    <!--                                   VerticalContentAlignment="Center" /> -->
+    <!--                  -->
+                    
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="10"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Padding" Value="8"></Setter>
+            <!-- <Setter Property="Foreground" Value="Red" />  -->
+            <!-- <Setter Property="Background" Value="Red" /> -->
+        </Style>
+        
+        <!-- -->
+        <!-- <Style Selector="TabControl /template/ ContentPresenter#PART_SelectedContentHost"> -->
+        <!--     <Setter Property="Margin" Value="2"/> -->
+        <!-- </Style> -->
+    </UserControl.Styles>
+
+ 
+    <Border>
+        
+        <TabControl>
+            <TabItem Header="Game">
+                <views:DevTabGame DataContext="{Binding Game}"/>
+            </TabItem>
+            <TabItem Header="Player">
+                <views:DevTabPlayer DataContext="{Binding Player}"/>
+                <!-- <Grid RowDefinitions="30, Auto, 30, Auto, 30, Auto, 30, Auto, 30, Auto, Auto, Auto" ColumnDefinitions="*, *" ColumnSpacing="8"> -->
+                <!--     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Lv.</TextBlock> -->
+                <!--     <NumericUpDown MinHeight="40" Name="nudLevel" Value="20" Minimum="1" Increment="1" Maximum="100" Grid.Row="1" Grid.Column="0"/> -->
+                <!--     <Button Classes="flat"  Name="btnRollSkill" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button> -->
+                <!--     ~1~ <Button Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Margin="4" Grid.Row="1" Grid.Column="1">Reroll Skills</Button> @1@ -->
+                <!--     <TextBlock VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock> -->
+                <!--     <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*, Auto" ColumnSpacing="4"> -->
+                <!--   -->
+                <!--           -->
+                <!--           -->
+                <!--           -->
+                <!--     ~1~ <views:SearchComboBox Name="cbDexNum" Items="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" VirtualizationMode="Simple" Margin="4"/> @1@ -->
+                <!--     <ComboBox ItemsSource="{Binding Fruits}" HorizontalAlignment="Stretch"/> -->
+                <!--        -->
+                <!--     <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Classes="icon_button" Height="20" Width="20" Name="btnChangeOrder" Grid.Column="1" ToolTip.Tip="Switch Ordering"> -->
+                <!--          ~1~ <Panel> @1@ -->
+                <!--          ~1~   <Image Source="/Assets/AssetOrder.png" Width="26" @1@ -->
+                <!--          ~1~                   Height="26" VerticalAlignment="Center" HorizontalAlignment="Center" /> @1@ -->
+                <!--          ~1~ </Panel> @1@ -->
+                <!--          <Path -->
+                <!--              Width="20" Height="20" -->
+                <!--              Margin="0,1,0,0" -->
+                <!--              Data="{StaticResource Icons.ListNumbersFill}" /> -->
+                <!--     </Button> -->
+                <!-- -->
+                <!--     </Grid> -->
+                <!--      -->
+                <!--     <TextBlock VerticalAlignment="Bottom" Grid.Row="4">Form</TextBlock> -->
+                <!--     <ComboBox ItemsSource="{Binding Fruits}" HorizontalAlignment="Stretch" Grid.Row="5" Grid.ColumnSpan="2"/> -->
+                <!--          -->
+                <!--     <TextBlock  VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="0">Skin</TextBlock> -->
+                <!--     <TextBlock  VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="1">Gender</TextBlock> -->
+                <!--     <ComboBox  ItemsSource="{Binding Fruits}" HorizontalAlignment="Stretch" Grid.Row="7" Grid.Column="0"/> -->
+                <!--         -->
+                <!--     <ComboBox ItemsSource="{Binding Fruits}" HorizontalAlignment="Stretch" Grid.Row="7" Grid.Column="1"/> -->
+                <!--        -->
+                <!--      -->
+                <!--     <TextBlock VerticalAlignment="Bottom" Grid.Row="8" Grid.Column="0">Animation</TextBlock> -->
+                <!--      -->
+                <!--     <ComboBox ItemsSource="{Binding Fruits}" HorizontalAlignment="Stretch" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"/> -->
+                <!--          -->
+                <!--      -->
+                <!--     <CheckBox Name="chkJustMe" VerticalAlignment="Center" Grid.Row="10" Grid.Column="0">Just Me</CheckBox> -->
+                <!--     <CheckBox Name="chkJustOnce" VerticalAlignment="Center" Grid.Row="10" Grid.Column="1">Just Once</CheckBox> -->
+                <!--     <Button Classes="flat"  Name="btnResetAnim" Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2">Restart All Anims</Button> -->
+                <!--     -->
+                <!--     </Grid> -->
+            </TabItem>
+            <TabItem Header="Travel">
+                <views:DevTabTravel DataContext="{Binding Travel}"/>
+            </TabItem>
+            <TabItem Header="Script">
+                <views:DevTabScript DataContext="{Binding Script}"/>
+              
+                <!-- <Grid RowDefinitions="34, 26, Auto, 40" ColumnDefinitions="*, *" ColumnSpacing="8" RowSpacing="8"> -->
+                    <!-- -->
+                    <!--     <Button Classes="flat" Name="btnReloadScripts"  Grid.Row="0" Grid.Column="0" >Reload Scripts</Button> -->
+                    <!--     <Button  Classes="flat" Name="btnTextTest"  Grid.Row="0" Grid.Column="1" >Text Test</Button> -->
+                    <!--     <TextBlock VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0">Lua Console:</TextBlock> -->
+                    <!--     <TextBox Name="txtScriptOutput" Height="300"  IsReadOnly="True" Grid.Row="2" Grid.ColumnSpan="2"/> -->
+                    <!--     <TextBox Name="txtScriptInput" Grid.Row="3" Grid.ColumnSpan="2"></TextBox> -->
+                    <!-- </Grid> -->
+                    <!-- -->
+            </TabItem>
+
+        </TabControl>
+    </Border>
+</UserControl>

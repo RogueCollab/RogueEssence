@@ -17,22 +17,13 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class TileEditForm : Window
+    public partial class TileEditForm : Window
     {
 
         public TileEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
 
-
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

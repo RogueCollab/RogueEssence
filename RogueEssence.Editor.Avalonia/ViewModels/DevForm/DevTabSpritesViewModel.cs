@@ -10,7 +10,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnEditSprites_Click()
         {
-            SpeciesEditViewModel mv = new SpeciesEditViewModel();
+            SpeciesEditViewModel2 mv = new SpeciesEditViewModel2();
             Views.SpeciesEditForm editForm = new Views.SpeciesEditForm();
             mv.LoadFormDataEntries(true, editForm);
             editForm.DataContext = mv;
@@ -19,7 +19,7 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnEditPortraits_Click()
         {
-            SpeciesEditViewModel mv = new SpeciesEditViewModel();
+            SpeciesEditViewModel2 mv = new SpeciesEditViewModel2();
             Views.SpeciesEditForm editForm = new Views.SpeciesEditForm();
             mv.LoadFormDataEntries(false, editForm);
             editForm.DataContext = mv;

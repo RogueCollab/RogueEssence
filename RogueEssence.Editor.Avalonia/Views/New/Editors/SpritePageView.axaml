@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="using:RogueEssence.Dev.Views"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SpritePageViewModel"
+             x:Class="RogueEssence.Dev.Views.SpritePageView">
+    <!-- <UserControl.DataContext> -->
+    <!--     <vm:SpritePageViewModel/> -->
+    <!-- </UserControl.DataContext> -->
+    <StackPanel>
+        <Button Command="{Binding CreateATab}" Content="Add a child tab to this one!"/>
+        <Button Command="{Binding CreateATopTab}" Content="Add a top level tab!"/>
+        <Button Command="{Binding  TestDialog}" Content="Test out a dialogue!"/>
+
+        <Button Command="{Binding  RemoveSelfTab}" Content="Close out this tab!"/>
+    </StackPanel>
+ 
+</UserControl>

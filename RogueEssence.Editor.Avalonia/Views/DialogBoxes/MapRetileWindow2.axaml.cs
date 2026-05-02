@@ -6,21 +6,12 @@ using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MapRetileWindow : Window
+    public partial class MapRetileWindow2 : Window
     {
-        public MapRetileWindow()
+        public MapRetileWindow2()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
 
         //TODO: this is a workaround to a bug in text wrapping
         //the window size must be modified in order to invalidate a cached value for width

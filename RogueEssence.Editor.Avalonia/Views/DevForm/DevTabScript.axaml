@@ -5,24 +5,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="RogueEssence.Dev.Views.DevTabScript">
-  <Design.DataContext>
-    <vm:DevTabScriptViewModel/>
-  </Design.DataContext>
-  <Grid Margin="4">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="34"/>
-      <RowDefinition Height="26"/>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="40"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <Button Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Reload Scripts</Button>
-    <Button Name="btnTextTest" Command="{Binding btnTextTest_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Text Test</Button>
-    <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0">Lua Console:</TextBlock>
-    <TextBox Name="txtScriptOutput" Text="{Binding ScriptLog}" CaretIndex="{Binding ScriptCaret}" Margin="4" IsReadOnly="True" Grid.Row="2" Grid.ColumnSpan="2"/>
-    <TextBox Name="txtScriptInput" Text="{Binding ScriptLine}" CaretIndex="{Binding CmdCaret, Mode=TwoWay}" Margin="4" TextWrapping="Wrap" Grid.Row="3" Grid.ColumnSpan="2" KeyDown="txtScriptInput_KeyDown"></TextBox>
-  </Grid>
+    <Design.DataContext>
+        <vm:DevTabScriptViewModel/>
+    </Design.DataContext>
+    <Grid RowDefinitions="40, 26, Auto, 40" ColumnDefinitions="*, *" ColumnSpacing="8" RowSpacing="8">
+                  
+        <Button Classes="flat" Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Reload Scripts</Button>
+        <Button Classes="flat" Name="btnTextTest" Command="{Binding btnTextTest_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Text Test</Button>
+        <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0">Lua Console:</TextBlock>
+        <TextBox Name="txtScriptOutput" Height="300" VerticalAlignment="Stretch" VerticalContentAlignment="Top" Text="{Binding ScriptLog}" CaretIndex="{Binding ScriptCaret}" Margin="4" IsReadOnly="True" Grid.Row="2" Grid.ColumnSpan="2" />
+        <TextBox Name="txtScriptInput" Text="{Binding ScriptLine}" CaretIndex="{Binding CmdCaret, Mode=TwoWay}" Margin="4" TextWrapping="Wrap" Grid.Row="3" Grid.ColumnSpan="2" KeyDown="txtScriptInput_KeyDown"></TextBox>
+    </Grid>
 </UserControl>

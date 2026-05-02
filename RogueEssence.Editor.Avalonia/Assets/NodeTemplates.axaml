@@ -1,0 +1,87 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:RogueEssence.Dev.Converters"
+                    xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+                    xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels">
+    <local:IconKeyToGeometryConverter x:Key="IconKeyConverter" />
+    <local:OXConverter x:Key="OxConverter" />
+ <DataTemplate x:Key="NodeContentTemplate" DataType="vm:NodeBase">
+        <v:IconText Text="{Binding Title}" Icon="{Binding Icon}" IconSize="12" />
+    </DataTemplate>
+
+    <DataTemplate x:Key="ItemRootDataTemplate" DataType="vm:ItemRootNode">
+        <Grid ColumnDefinitions="Auto, *, 16" Height="16">
+            <ContentPresenter Content="{Binding}"
+                              ContentTemplate="{StaticResource NodeContentTemplate}" />
+            <Button x:Name="DataRootAddButton" Grid.Column="2" Classes="icon_button"
+                    IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
+                    Command="{Binding AddCommand}">
+                <Path Stretch="Fill"
+                      Fill="{DynamicResource Brush.FG1}"
+                      Width="10" Height="10"
+                      Data="{StaticResource Icons.Plus}" />
+            </Button>
+        </Grid>
+    </DataTemplate>
+
+    <TreeDataTemplate x:Key="ItemRootTemplate" DataType="vm:ItemRootNode" ItemsSource="{Binding SubNodes}">
+        <ContentPresenter Content="{Binding}"
+                          ContentTemplate="{StaticResource ItemRootDataTemplate}" />
+    </TreeDataTemplate>
+
+    <TreeDataTemplate x:Key="DataItemTemplate" DataType="vm:DataItemNode" ItemsSource="{Binding SubNodes}">
+        <Grid ColumnDefinitions="*,Auto"
+              Background="Transparent"
+              ClipToBounds="False"
+              Height="16">
+            <ContentPresenter Content="{Binding}"
+                              ContentTemplate="{StaticResource NodeContentTemplate}" />
+            <Button Grid.Column="1"
+                    Classes="icon_button"
+                    Width="16" Height="16"
+                    Command="{Binding $parent[TreeViewItem;1].((vm:ItemRootNode)DataContext).DeleteCommand}"
+                    CommandParameter="{Binding}"
+                    IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Background="Transparent"
+                    BorderThickness="0">
+                <Path Stretch="Fill"
+                      Fill="{DynamicResource Brush.FG1}"
+                      Width="10" Height="10"
+                      Data="{StaticResource Icons.TrashFill}" />
+            </Button>
+        </Grid>
+    </TreeDataTemplate>
+
+    <TreeDataTemplate x:Key="DefaultNodeTemplate" DataType="vm:NodeBase" ItemsSource="{Binding SubNodes}">
+        <Grid ColumnDefinitions="*, Auto">
+            <ContentPresenter Content="{Binding}"
+                              ContentTemplate="{StaticResource NodeContentTemplate}" />
+        </Grid>
+    </TreeDataTemplate>
+    
+    
+    <!-- DataRootNode -->
+    <!-- <TreeDataTemplate x:Key="DataRootTemplate" DataType="vm:DataRootNode" ItemsSource="{Binding SubNodes}"> -->
+    <!--     <ContentPresenter Content="{Binding}" -->
+    <!--                       ContentTemplate="{StaticResource ItemRootDataTemplate}" /> -->
+    <!-- </TreeDataTemplate> -->
+
+
+    <!-- SpriteRootNode -->
+    <!-- <TreeDataTemplate x:Key="SpriteRootTemplate" DataType="vm:SpriteRootNode" ItemsSource="{Binding SubNodes}"> -->
+    <!--     <ContentPresenter Content="{Binding}" -->
+    <!--                       ContentTemplate="{StaticResource ItemRootDataTemplate}" /> -->
+    <!-- </TreeDataTemplate> -->
+
+
+    
+    <!-- TAB SWITCHER ONLY -->
+    <TreeDataTemplate x:Key="PageNodeTemplate" DataType="vm:PageNode" ItemsSource="{Binding SubNodes}">
+        <Grid ColumnDefinitions="*, Auto">
+            <ContentPresenter Content="{Binding}"
+                              ContentTemplate="{StaticResource NodeContentTemplate}" />
+        </Grid>
+    </TreeDataTemplate>
+</ResourceDictionary>

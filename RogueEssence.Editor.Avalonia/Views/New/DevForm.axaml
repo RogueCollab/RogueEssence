@@ -1,0 +1,314 @@
+<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels"
+                    xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+                    xmlns:c="clr-namespace:RogueEssence.Dev.Converters"
+                    xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DesignWidth="1024"
+                    d:DesignHeight="450"
+                    x:Class="RogueEssence.Dev.Views.DevForm"
+                    x:Name="WindowMain"
+                    Opened="Window_Loaded" Closed="Window_Closed"
+                    Title="Avalonia PMD Editor">
+
+    <Design.DataContext>
+
+
+        <vm:DevFormViewModel />
+
+
+    </Design.DataContext>
+    <!-- <v:ChromelessWindow.DataContext> -->
+    <!--   <vm:MainWindowViewModel /> -->
+    <!-- </v:ChromelessWindow.DataContext> -->
+
+    <!-- x:DataType="vm:MainWindowViewModel" -->
+    <!-- Icon="/Assets/avalonia-logo.ico" -->
+    <!-- x:DataType="vm:MainWindowViewModel" -->
+    <!-- <Design.DataContext> -->
+    <!-- <vm:MainWindowViewModel /> -->
+    <!-- </Design.DataContext> -->
+    <Window.Resources>
+        <c:WindowStateToColumnConverter x:Key="WindowStateToColumnConverter" />
+
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{Binding #WindowMain.CaptionHeight}" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Top Bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, Auto, *, Auto">
+            <Border Grid.Column="0" Grid.ColumnSpan="4"
+                    DoubleTapped="MaximizeOrRestoreWindow"
+                    PointerPressed="BeginMoveWindow"
+                    Background="{DynamicResource Brush.TitleBar}"
+                    BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}" />
+            <Border Grid.Column="0" Width="72" IsVisible="{Binding #WindowMain.HasLeftCaptionButton}" />
+
+            <StackPanel
+                Grid.Column="{Binding #WindowMain.WindowState, Converter={StaticResource WindowStateToColumnConverter}}"
+                Orientation="Horizontal">
+                <!-- Settings -->
+                <Button Classes="icon_button" Command="{Binding OpenPreferencesWindow}"
+                        Padding="8, 4, 0, 0">
+                    <Path HorizontalAlignment="Center" Width="14" Height="14" Margin="0,2,0,0"
+                          Data="{StaticResource Icons.GearFill}" />
+                </Button>
+
+                <!-- Switch Mod Button  -->
+                <!-- TODO: figure out why tooltips won't work -->
+                <Button Margin="12,0,0,0" Grid.Column="3"
+                        Classes="icon_button"
+                        x:Name="ModSwitcherFlyoutButton" Padding="0,4,0,0"
+                        ToolTip.Tip="testing tooltip">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <TextBlock Padding="0,0,6,0" Text="{Binding ChosenMod.Name}"
+                                   MaxWidth="200"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Path HorizontalAlignment="Center" Width="10" Height="10" Margin="0,2,0,0"
+                              Data="{StaticResource Icons.CaretDownFill}" />
+                    </StackPanel>
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedLeft"
+                                VerticalOffset="8"
+                                Opened="ModSwitcherFlyout_OnOpened"
+                                Closed="ModSwitcherFlyout_OnClosed">
+                            <StackPanel Orientation="Vertical" Background="{DynamicResource Brush.Popup}">
+                                <ContentControl Content="{Binding ModSwitcher}" Margin="8,8,8,8" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+
+            <Border Grid.Column="3" Margin="16,0,0,0" IsVisible="{Binding #WindowMain.HasRightCaptionButton}">
+                <v:CaptionButtons Height="30" VerticalAlignment="Top" />
+            </Border>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" MinWidth="100" MaxWidth="500" />
+                <ColumnDefinition Width="0" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- Left Side -->
+            <Border Grid.Column="0" Margin="0,0,0,0" BorderThickness="1"
+                    BorderBrush="{DynamicResource Brush.ToolBar}" CornerRadius="6">
+                <Grid RowDefinitions="28, 3, *">
+                    <TextBox
+                        Margin="0,0,0,0"
+                        Height="28"
+
+                        BorderThickness="0"
+                        CornerRadius="0"
+                        BorderBrush="{DynamicResource Brush.Border2}"
+                        Watermark="Search..."
+                        Text="{Binding Filter, Mode=TwoWay}"
+                        VerticalContentAlignment="Center">
+                        <TextBox.InnerLeftContent>
+                            <Path
+                                Fill="{DynamicResource Brush.FG2}"
+                                Width="12" Height="12"
+                                Margin="6,0,0,0"
+                                Data="{StaticResource Icons.MagnifyingGlassFill}" />
+
+
+                        </TextBox.InnerLeftContent>
+                        <TextBox.InnerRightContent>
+                            <Button Classes="icon_button"
+                                    Width="16"
+                                    Height="16"
+                                    Margin="0,0,6,0"
+                                    Command="{Binding ClearFilterCommand}"
+                                    IsVisible="{Binding Filter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    HorizontalAlignment="Right">
+                                <Path
+                                    Width="14" Height="14"
+                                    Margin="0,1,0,0"
+                                    Data="{StaticResource Icons.XCircleFill}" />
+                            </Button>
+                        </TextBox.InnerRightContent>
+                    </TextBox>
+                    <Border Grid.Row="1"
+                            Height="1"
+                            Background="{DynamicResource Brush.Border2}"
+                            HorizontalAlignment="Stretch" />
+                    <TreeDataGrid Grid.Row="2"
+                                  MinHeight="200" MinWidth="200"
+                                  x:Name="LeftTreeDataGrid"
+                                  Loaded="LeftTreeDataGrid_OnLoaded"
+                                  DoubleTapped="LeftTreeDataGrid_OnDoubleTapped"
+                                  ContextRequested="LeftTreeDataGrid_OnContextRequested"
+                                  PointerPressed="LeftTreeDataGrid_OnPointerPressed"
+                                  LostFocus="LeftTreeDataGrid_OnLostFocus"
+                                  ShowColumnHeaders="False"
+                                  Source="{Binding NodeSource}">
+                        <TreeDataGrid.Resources>
+                    
+                            <DataTemplate x:Key="TreeDataGridNodeBaseTemplate" DataType="vm:NodeBase">
+                                <ContentControl Content="{Binding}">
+                                    <ContentControl.DataTemplates>
+                                        <DataTemplate DataType="vm:ItemRootNode">
+                                            <Grid ColumnDefinitions="*, 32" Height="16" Margin="8, 0, 0, 0">
+                                                <v:IconText Grid.Column="0" Grid.ColumnSpan="2"
+                                                            Text="{Binding Title}"
+                                                            Icon="{Binding Icon}"
+                                                            IconSize="12" />
+
+                                                <Button Grid.Column="1" HorizontalAlignment="Left"
+                                                        Classes="icon_button"
+                                                        Padding="4, 0, 0, 0"
+                                                        Width="18" Height="18"
+                                                        IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
+
+                                                        Command="{Binding AddCommand}">
+                                                    <Path Stretch="Fill"
+                                                          Fill="{DynamicResource Brush.FG1}"
+                                                          Width="12" Height="12"
+                                                          Data="{StaticResource Icons.Plus}" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+
+                                        <DataTemplate DataType="vm:DataItemNode">
+                                            <Grid ColumnDefinitions="*,32" Height="16" Margin="8, 0, 0, 0">
+                                                <v:IconText Text="{Binding Title}"
+                                                            Icon="{Binding Icon}"
+                                                            IconSize="12" />
+
+                                                <Button Grid.Column="1"
+                                                        Padding="4, 0, 0, 0"
+                                                        HorizontalAlignment="Left"
+                                                        Command="{Binding ((vm:ItemRootNode)Parent).DeleteCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
+                                                        Classes="icon_button"
+                                                        Width="18" Height="18"
+                                                        VerticalAlignment="Center">
+                                                    <Path Stretch="Fill"
+                                                          Fill="{DynamicResource Brush.FG1}"
+                                                          Width="12" Height="12"
+                                                          Data="{StaticResource Icons.Minus}" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+
+
+                                        <DataTemplate DataType="vm:OpenEditorNode">
+                                            <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
+                                                        Icon="{Binding Icon}"
+                                                        IconSize="12" />
+                                        </DataTemplate>
+
+
+                                        <DataTemplate DataType="vm:NodeBase">
+                                            <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
+                                                        Icon="{Binding Icon}"
+                                                        IconSize="12" />
+                                        </DataTemplate>
+
+                                    </ContentControl.DataTemplates>
+                                </ContentControl>
+                            </DataTemplate>
+                        </TreeDataGrid.Resources>
+                    </TreeDataGrid>
+                </Grid>
+            </Border>
+
+            <!--  Splitter -->
+            <GridSplitter Grid.Column="1"
+                          BorderBrush="{DynamicResource Brush.Border0}"
+                          Background="Transparent"
+                          MinWidth="3"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          BorderThickness="0,0,1,0" />
+
+            <!-- Editor Panel -->
+            <Grid Margin="2, 0, 0, 0" Grid.Column="2" RowDefinitions="Auto, *">
+                <Border BorderThickness="0, 0, 0, 1" BorderBrush="{DynamicResource Brush.Border0}"
+                        Background="{DynamicResource TabControlWindowActiveBackgroundBrush}">
+                    <!-- Tab Bar -->
+                    <views:TabBarView Height="30" VerticalAlignment="Bottom" Margin="0,0,0,0" />
+
+                </Border>
+
+      <!-- Editor Content -->
+<Panel Grid.Row="1" Background="{DynamicResource Brush.PageBackground}">
+    
+    <!-- Temporary tab still uses ContentControl since it's transient -->
+    <ContentControl Content="{Binding TemporaryTab}"
+                    IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNotNull}}" />
+    
+    <!-- All permanent pages kept alive, just toggling visibility -->
+    <ItemsControl ItemsSource="{Binding Pages}"
+                  IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNull}}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <Panel/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <ContentControl Content="{Binding}" IsVisible="{Binding IsActive}"/>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    
+</Panel>
+            </Grid>
+        </Grid>
+
+    </Grid>
+
+</v:ChromelessWindow>
+
+
+<!-- <views:ChromelessWindow xmlns="https://github.com/avaloniaui" -->
+<!--         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" -->
+<!--         xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia" -->
+<!--         xmlns:views="clr-namespace:RogueEssence.Dev.Views" -->
+<!--         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" -->
+<!--         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" -->
+<!--         xmlns:v="clr-namespace:RogueEssence.Dev.Views" -->
+<!--         mc:Ignorable="d" -->
+<!--         x:Class="RogueEssence.Dev.Views.MainWindow" -->
+<!--         Title="Dev Controls" Height="480" Width="460" Opened="Window_Loaded" Closed="Window_Closed"> -->
+<!--     ~1~Icon="/Assets/app-logo.ico"@1@ -->
+<!--     <Design.DataContext> -->
+<!--         <vm:DevFormViewModel/> -->
+<!--     </Design.DataContext> -->
+<!--     <Grid> -->
+<!--         <TabControl TabStripPlacement="Top" Margin="2"> -->
+<!--             <TabItem Header="Game" > -->
+<!--                 <views:DevTabGame DataContext="{Binding Game}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Player" > -->
+<!--                 <views:DevTabPlayer DataContext="{Binding Player}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Travel" > -->
+<!--                 <views:DevTabTravel DataContext="{Binding Travel}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Data" > -->
+<!--                 <views:DevTabData DataContext="{Binding Data}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Sprites" > -->
+<!--                 <views:DevTabSprites DataContext="{Binding Sprites}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Script" > -->
+<!--                 <views:DevTabScript DataContext="{Binding Script}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Mods" > -->
+<!--                 <views:DevTabMods DataContext="{Binding Mods}"/> -->
+<!--             </TabItem> -->
+<!--             <TabItem Header="Constants" > -->
+<!--                 <views:DevTabConstants DataContext="{Binding Constants}"/> -->
+<!--             </TabItem> -->
+<!--         </TabControl> -->
+<!--     </Grid> -->
+<!-- </views:ChromelessWindow> -->

@@ -9,10 +9,12 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
 using RogueElements;
 using RogueEssence.Dev.Views;
-using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -69,39 +71,47 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
-                return;
-
-
-            MapRetileWindow window = new MapRetileWindow();
-            MapRetileViewModel viewModel = new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
-            window.DataContext = viewModel;
-
-            bool sizeResult = await window.ShowDialog<bool>(parent);
-            int size = viewModel.TileSize;
-
-            if (!sizeResult || size == 0)
-                return;
-
-            DevForm.SetConfig("TilesetDir", folder);
-            CachedPath = folder + "/";
-            cachedSize = size;
-
-            try
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                MassImport(CachedPath, cachedSize);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, false);
-                await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                return;
-            }
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select tileset folder to mass import",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
+                
+                MapRetileWindow window = new MapRetileWindow();
+                MapRetileViewModel viewModel = new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
+                window.DataContext = viewModel;
+
+                bool sizeResult = await window.ShowDialog<bool>(parent);
+                int size = viewModel.TileSize;
+
+                if (!sizeResult || size == 0)
+                    return;
+
+                DevForm.SetConfig("TilesetDir", folder);
+                CachedPath = folder + "/";
+                cachedSize = size;
+
+                try
+                {
+                    MassImport(CachedPath, cachedSize);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            });
         }
 
 
@@ -110,21 +120,30 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
+   
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig("TilesetDir", folder);
                 CachedPath = folder + "/";
 
                 bool success = MassExport(CachedPath);
                 if (!success)
                     await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
-            }
+            });
         }
 
         public async void mnuReIndex_Click()
@@ -147,55 +166,68 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Directory = folderName;
-
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "PNG Files";
-            filter.Extensions.Add("png");
-            openFileDialog.Filters.Add(filter);
-
-            string[] results = await openFileDialog.ShowAsync(parent);
-
-            if (results == null || results.Length == 0)
-                return;
-            
-            string animName = Path.GetFileNameWithoutExtension(results[0]);
-
-            if (tileIndices.Contains(animName))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Sprite Sheet already exists.",
-                    MessageBox.MessageBoxButtons.YesNo);
-                if (result == MessageBox.MessageBoxResult.No)
+                IReadOnlyList<IStorageFile> results = await parent.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions 
+                    {
+                        Title = "Open .png File",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                        FileTypeFilter =
+                        [
+                            new FilePickerFileType("PNG Files")
+                            {
+                                Patterns = ["*.PNG"]
+                            }
+                        ]
+                    }
+                );
+
+
+
+                if (results.Count <= 0)
                     return;
-            }
 
-            MapRetileWindow window = new MapRetileWindow();
-            MapRetileViewModel viewModel = new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
-            window.DataContext = viewModel;
+                string animName = Path.GetFileNameWithoutExtension(results.First().Path.LocalPath);
 
-            bool sizeResult = await window.ShowDialog<bool>(parent);
-            int size = viewModel.TileSize;
+                if (tileIndices.Contains(animName))
+                {
+                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent,
+                        "Are you sure you want to overwrite the existing sheet:\n" + animName,
+                        "Sprite Sheet already exists.",
+                        MessageBox.MessageBoxButtons.YesNo);
+                    if (result == MessageBox.MessageBoxResult.No)
+                        return;
+                }
 
-            if (!sizeResult || size == 0)
-                return;
+                MapRetileWindow window = new MapRetileWindow();
+                MapRetileViewModel viewModel =
+                    new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
+                window.DataContext = viewModel;
 
-            DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(results[0]));
-            CachedPath = results[0];
-            cachedSize = size;
+                bool sizeResult = await window.ShowDialog<bool>(parent);
+                int size = viewModel.TileSize;
 
+                if (!sizeResult || size == 0)
+                    return;
 
-            try
-            {
-                Import(CachedPath, cachedSize);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, false);
-                await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                return;
-            }
-            
+                DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(results.First().Path.LocalPath));
+                CachedPath = results.First().Path.LocalPath;
+                cachedSize = size;
+                
+                try
+                {
+                    Import(CachedPath, cachedSize);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message,
+                        "Import Failed", MessageBox.MessageBoxButtons.Ok);
+                    return;
+                }
+            });
         }
 
         public async void btnReImport_Click()

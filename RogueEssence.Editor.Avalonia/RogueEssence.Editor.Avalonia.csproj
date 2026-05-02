@@ -10,12 +10,15 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Include="Avalonia" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="11.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.8" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
+    <PackageReference Include="Tabalonia" Version="0.10.7" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="DataEditor\DataEditRootForm.axaml.cs">
@@ -179,6 +182,30 @@
     </Compile>
     <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\New\Editors\DevControl\DevControlView.axaml.cs">
+      <DependentUpon>DevControlView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\Editors\DevControl\DevTabGame.axaml.cs">
+      <DependentUpon>DevTabGame.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\DialogBoxes\MapRetileWindow.axaml.cs">
+      <DependentUpon>MapRetileWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\Editors\SpeciesEditPageView.axaml.cs">
+      <DependentUpon>SpeciesEditPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\DialogBoxes\ModConfigWindowView.axaml.cs">
+      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\Editors\DataListPageView.axaml.cs">
+      <DependentUpon>DataListPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

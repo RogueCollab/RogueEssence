@@ -7,27 +7,16 @@ using System;
 
 namespace RogueEssence.Dev.Views
 {
-    public class ModConfigWindow : Window
+    public partial class ModConfigWindow : ChromelessWindow
     {
         public ModConfigWindow()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
-
 
         public async void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            ModConfigViewModel vm = (ModConfigViewModel)DataContext;
+            ModConfigWindowViewModel vm = (ModConfigWindowViewModel)DataContext;
             try
             {
                 if (String.IsNullOrWhiteSpace(Text.Sanitize(vm.Name)))

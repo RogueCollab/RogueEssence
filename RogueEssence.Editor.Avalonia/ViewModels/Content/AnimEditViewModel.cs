@@ -9,7 +9,10 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using RogueElements;
 using RogueEssence.Dev.Views;
 
@@ -17,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class AnimEditViewModel : ViewModelBase
     {
-        private GraphicsManager.AssetType assetType;
+        private GraphicsManager.AssetType   assetType;
         private Window parent;
 
 
@@ -79,13 +82,22 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Select folder to mass import",
+                    SuggestedStartLocation = directory,
+                    AllowMultiple = false,
+                    
+
+                });
+
+                if (results.Count <= 0) 
+                    return;
+
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
@@ -99,7 +111,7 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+            });
         }
 
         public async void mnuMassExport_Click()
@@ -108,20 +120,29 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
+                
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
                 bool success = MassExport(CachedPath);
                 if (!success)
                     await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
-            }
+            });
         }
 
         public async void btnImport_Click()
@@ -130,53 +151,59 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Directory = folderName;
-
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                FileDialogFilter filter = new FileDialogFilter();
-                filter.Name = "PNG Files";
-                filter.Extensions.Add("png");
-                openFileDialog.Filters.Add(filter);
-            }
-            {
-                FileDialogFilter filter = new FileDialogFilter();
-                filter.Name = "DirData XML";
-                filter.Extensions.Add("xml");
-                openFileDialog.Filters.Add(filter);
-            }
-
-            string[] results = await openFileDialog.ShowAsync(parent);
-
-            if (results != null && results.Length > 0)
-            {
-                string animName = Path.GetFileNameWithoutExtension(results[0]);
-
-                if (anims.Contains(animName))
+                IReadOnlyList<IStorageFile> results = await parent.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions 
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to overwrite the existing sheet:\n" + animName, "Sprite Sheet already exists.",
-                        MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    Title = "Open .png or .xml File",
+                    SuggestedStartLocation = directory,
+                    AllowMultiple = false,
+                    FileTypeFilter =
+                    [
+                        new FilePickerFileType("PNG Files")
+                        {
+                            Patterns = ["*.png"]
+                        },
+                        new FilePickerFileType("DirData XML")
+                        {
+                            Patterns = ["*.xml"]
+                        }
+                    ]
+                });
+
+                if (results.Count > 0)
+                {
+                    string filePath = results.First().Path.LocalPath;
+                    string animName = Path.GetFileNameWithoutExtension(filePath);
+
+                    if (anims.Contains(animName))
+                    {
+                        MessageBox.MessageBoxResult result = await MessageBox.Show(parent,
+                            "Are you sure you want to overwrite the existing sheet:\n" + animName,
+                            "Sprite Sheet already exists.",
+                            MessageBox.MessageBoxButtons.YesNo);
+                        if (result == MessageBox.MessageBoxResult.No)
+                            return;
+                    }
+                    DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(filePath));
+                    if (Path.GetExtension(filePath) == ".xml")
+                        CachedPath = Path.GetDirectoryName(filePath);
+                    else
+                        CachedPath = filePath;
+
+                    try
+                    {
+                        Import(CachedPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        DiagManager.Instance.LogError(ex, false);
+                        await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                         return;
+                    }
                 }
-
-                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(results[0]));
-                if (Path.GetExtension(results[0]) == ".xml")
-                    CachedPath = Path.GetDirectoryName(results[0]);
-                else
-                    CachedPath = results[0];
-
-                try
-                {
-                    Import(CachedPath);
-                }
-                catch (Exception ex)
-                {
-                    DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-            }
+            });
         }
 
         public async void btnReImport_Click()
@@ -193,6 +220,43 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        // public async void btnExport_Click()
+        // {
+        //     //get current sprite
+        //     string animData = anims[Anims.InternalIndex];
+        //
+        //     //remember addresses in registry
+        //     string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
+        //
+        //     SaveFileDialog saveFileDialog = new SaveFileDialog();
+        //     saveFileDialog.Directory = folderName;
+        //
+        //     FileDialogFilter filter = new FileDialogFilter();
+        //     filter.Name = "PNG Files";
+        //     filter.Extensions.Add("png");
+        //     saveFileDialog.Filters.Add(filter);
+        //
+        //     string folder = await saveFileDialog.ShowAsync(parent);
+        //
+        //     if (!String.IsNullOrEmpty(folder))
+        //     {
+        //         DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
+        //         //CachedPath = folder;
+        //
+        //         try
+        //         {
+        //             DevForm.ExecuteOrPend(() => { Export(folder, animData); });
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             DiagManager.Instance.LogError(ex, false);
+        //             await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+        //             return;
+        //         }
+        //     }
+        // }
+
+        
         public async void btnExport_Click()
         {
             //get current sprite
@@ -201,34 +265,45 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Directory = folderName;
-
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "PNG Files";
-            filter.Extensions.Add("png");
-            saveFileDialog.Filters.Add(filter);
-
-            string folder = await saveFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            var options = new FilePickerSaveOptions
             {
-                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
-                //CachedPath = folder;
+                Title = "Export PNG",
+                SuggestedStartLocation = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName),
+                DefaultExtension = "png",
+                SuggestedFileName = "export.png",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("PNG Files")
+                    {
+                        Patterns = new[] { "*.png" }
+                    }
+                ]
+            };
+            
+            var saveFile = await parent.StorageProvider.SaveFilePickerAsync(options);
+
+            if (saveFile != null)
+            {
+                string filePath = saveFile.Path.LocalPath;
+                DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(filePath));
 
                 try
                 {
-                    DevForm.ExecuteOrPend(() => { Export(folder, animData); });
+                    DevForm.ExecuteOrPend(() => { Export(filePath, animData); });
                 }
                 catch (Exception ex)
                 {
                     DiagManager.Instance.LogError(ex, false);
-                    await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
+            
+                    
+                    await MessageBox.Show(parent,
+                        "Export Failed",
+                        $"Error exporting to\n{filePath}\n\n{ex.Message}",
+                        MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
             }
         }
-
         public async void btnDelete_Click()
         {
             //get current sprite
