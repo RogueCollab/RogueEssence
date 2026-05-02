@@ -591,7 +591,11 @@ namespace RogueEssence.Dungeon
                 StablePriorityQueue<int, HitboxHit> hitTargets = new StablePriorityQueue<int, HitboxHit>();
 
                 foreach (Hitbox hitbox in hitboxes)
+                {
+                    if (DiagManager.Instance.CurSettings.BattleFlow > Settings.BattleSpeed.Normal)
+                        hitbox.SkipHitQueue();
                     hitbox.UpdateHitQueue(hitTargets);
+                }
 
                 //hit each target
                 while (hitTargets.Count > 0)

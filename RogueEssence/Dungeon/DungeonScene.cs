@@ -323,7 +323,12 @@ namespace RogueEssence.Dungeon
 
                     //the check events may have ended the scene
                     if (GameManager.Instance.SceneOutcome == null)
-                        yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+                    {
+                        if (CurrentCharacter.ForceAI)
+                            yield return CoroutineManager.Instance.StartCoroutine(ProcessAI());
+                        else
+                            yield return CoroutineManager.Instance.StartCoroutine(ProcessInput(GameManager.Instance.InputManager));
+                    }
                 }
 
                 if (!GameManager.Instance.FrameProcessed)

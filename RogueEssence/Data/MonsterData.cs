@@ -59,7 +59,7 @@ namespace RogueEssence.Data
         /// Skill group for shared skills
         /// </summary>
         [JsonConverter(typeof(SkillGroupConverter))]
-        [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
+        [Dev.DataType(0, DataManager.DataType.SkillGroup, true)]
         public string SkillGroup1;
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace RogueEssence.Data
         /// </summary>
         [JsonConverter(typeof(SkillGroupConverter))]
         [Dev.SharedRow]
-        [Dev.DataType(0, DataManager.DataType.SkillGroup, false)]
+        [Dev.DataType(0, DataManager.DataType.SkillGroup, true)]
         public string SkillGroup2;
 
         /// <summary>
