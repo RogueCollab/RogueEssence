@@ -31,7 +31,7 @@ namespace RogueEssence.Dev
                 nudValue.Minimum = attribute.Min;
                 nudValue.Maximum = attribute.Max;
             }
-            nudValue.Value = (double)member;
+            nudValue.Value = (int)member;
             control.Children.Add(nudValue);
         }
 
