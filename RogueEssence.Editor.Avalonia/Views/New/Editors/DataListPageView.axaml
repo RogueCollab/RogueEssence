@@ -103,15 +103,18 @@
 
             <ListBox Grid.Row="2"
                      ContextRequested="DataListPageListBox_OnContextRequested"
-                     Background="{DynamicResource Brush.Contents}"
+                     Background="{DynamicResource Brush.ListBox.Background}"
                      x:Name="DataListPageListBox" SelectedItem="{Binding SelectedItem}"
                      ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
                      BorderThickness="1" DoubleTapped="DataListPageListBox_OnDoubleTapped">
                 <ListBox.Styles>
                     <Style Selector="ListBoxItem">
-                        <Setter Property="Background" Value="{DynamicResource Brush.Contents}" />
+                        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
                     </Style>
                 </ListBox.Styles>
+                <ListBox.ItemContainerTheme>
+                    <StaticResource ResourceKey="CompactListBoxItem"/>
+                </ListBox.ItemContainerTheme>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Title}" Padding="4" />

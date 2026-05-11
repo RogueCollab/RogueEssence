@@ -15,9 +15,9 @@ public class DevControlViewModel : EditorPageViewModel
 
     public TestComboBoxViewModel Fruits { get; }
 
-    public DevControlViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
+    public DevControlViewModel(EditorContext context,
         DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabTravelViewModel travel,
-        DevTabScriptViewModel script, NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
+        DevTabScriptViewModel script, NodeBase node) : base(context, node)
     {
         Fruits = new TestComboBoxViewModel();
         Game = game;

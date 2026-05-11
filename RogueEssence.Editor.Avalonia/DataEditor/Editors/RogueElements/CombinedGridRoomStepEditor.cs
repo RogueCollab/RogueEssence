@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class CombinedGridRoomStepEditor : Editor<ICombineGridRoomStep>
     {
+        public CombinedGridRoomStepEditor(EditorContext context) : base(context) { }
         public override string GetString(ICombineGridRoomStep obj, Type type, object[] attributes)
         {
             PropertyInfo mergeRateInfo = typeof(ICombineGridRoomStep).GetProperty(nameof(obj.MergeRate));

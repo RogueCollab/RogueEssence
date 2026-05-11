@@ -16,15 +16,14 @@ public class SpritePageViewModel : EditorPageViewModel
     // public override string Title => "Sprite Stuff";
 
 
-    public SpritePageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
-        NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
+    public SpritePageViewModel(EditorContext context, NodeBase node) : base(context, node)
     {
-        CreateATab = ReactiveCommand.Create(() => tabEvents.AddChildPage(this, pageFactory.CreatePage(typeof(SpritePageViewModel))));
-        CreateATopTab = ReactiveCommand.Create(() => tabEvents.AddTopLevelTab(pageFactory.CreatePage(typeof(ModInfoEditorViewModel))));
+        CreateATab = ReactiveCommand.Create(() => _context.TabEvents.AddChildPage(this, _context.PageFactory.CreatePage(typeof(SpritePageViewModel))));
+        CreateATopTab = ReactiveCommand.Create(() => _context.TabEvents.AddTopLevelTab(_context.PageFactory.CreatePage(typeof(ModInfoEditorViewModel))));
         TestDialog = ReactiveCommand.CreateFromTask(async () =>
             {
                 var rename = new RenameWindowViewModel();
-                var result = await dialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions()
+                var result = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions()
                 {
                     AllowMultiple = false,
                     Title = "Select a folder"
@@ -33,7 +32,7 @@ public class SpritePageViewModel : EditorPageViewModel
             }
         );
         
-        RemoveSelfTab = ReactiveCommand.Create( () => tabEvents.RemoveTab(this));
+        RemoveSelfTab = ReactiveCommand.Create( () => _context.TabEvents.RemoveTab(this));
             
         
     }

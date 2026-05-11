@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class InvItemEditor : Editor<InvItem>
     {
+        public InvItemEditor(EditorContext context) : base(context) { }
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, InvItem member, Type[] subGroupStack)
         {
             Avalonia.Controls.Grid innerPanel1 = getSharedRowPanel(2);

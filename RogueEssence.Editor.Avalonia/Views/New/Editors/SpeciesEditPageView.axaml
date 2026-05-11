@@ -172,28 +172,28 @@
                     </ContextMenu>
                 </TreeDataGrid.ContextMenu>
             </TreeDataGrid>
-
-            <Grid Grid.Row="4" ColumnDefinitions="Auto, *">
-                <UniformGrid Rows="1" Columns="3">
-                    <Button Classes="flat" Margin="0,0,10,0" Command="{Binding btnImport_Click}"
-                            IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
-                        <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
-                    </Button>
-                    <Button Classes="flat" Margin="0,0,10,0" Command="{Binding btnReImport_Click}"
-                            IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                        <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
-                    </Button>
-                    <Button Classes="flat" Command="{Binding btnExport_Click}"
-                            IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
-                        <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
-                    </Button>
-                </UniformGrid>
-                <Button Grid.Column="1" HorizontalAlignment="Right" Command="{Binding btnDelete_Click}"
-                        Classes="secondary" Padding="4,3,4,3"
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Button Classes="flat" Width="100"
+                        Command="{Binding btnImport_Click}"
                         IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" />
+                    <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
                 </Button>
-            </Grid>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnReImport_Click}"
+                        IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnExport_Click}"
+                        IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnExport_Click}"
+                        IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                </Button>
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

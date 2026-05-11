@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class TypeEditor : Editor<Type>
     {
+        public TypeEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultLabel => false;

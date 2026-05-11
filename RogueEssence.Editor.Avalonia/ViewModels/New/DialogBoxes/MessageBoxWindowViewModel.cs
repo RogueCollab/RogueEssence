@@ -6,7 +6,7 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class MessageBoxWindowViewModel : ReactiveObject
+    public class MessageBoxWindowViewModel: ViewModelBase
     {
         public string Title { get; }
         public string Text { get; }

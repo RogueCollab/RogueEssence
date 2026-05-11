@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 
     public class EntryDataEditor : StringEditor
     {
+        public EntryDataEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

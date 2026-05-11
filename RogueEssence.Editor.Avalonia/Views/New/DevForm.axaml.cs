@@ -212,11 +212,12 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
         public void openMap()
         {
-            MapEditForm = new MapEditForm();
-            ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
-            MapEditForm.DataContext = vm;
-            vm.LoadFromCurrentMap();
-            MapEditForm.Show();
+            // TODO: Resolve this!
+            // MapEditForm = new MapEditForm();
+            // ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
+            // MapEditForm.DataContext = vm;
+            // vm.LoadFromCurrentMap();
+            // MapEditForm.Show();
         }
 
         public void groundEditorClosed(object sender, EventArgs e)

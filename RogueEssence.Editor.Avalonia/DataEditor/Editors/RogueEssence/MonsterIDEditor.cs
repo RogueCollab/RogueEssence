@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class MonsterIDEditor : Editor<MonsterID>
     {
+        public MonsterIDEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

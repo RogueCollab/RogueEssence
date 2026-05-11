@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
@@ -26,16 +28,14 @@ namespace RogueEssence.Dev
             collection.AddSingleton<TabEvents>();
             collection.AddSingleton<PageFactory>();
             collection.AddSingleton<NodeFactory>();
+            collection.AddSingleton<EditorContext>();
             collection.AddSingleton<DevFormViewModel>();
 
        
             AddDevTabViewModels(collection);
+            AddMapEditViewModels(collection);
             
-            collection.AddTransient<TabSwitcherViewModel>(sp =>
-            {
-                var mainVm = sp.GetRequiredService<DevFormViewModel>();
-                return new TabSwitcherViewModel(mainVm);
-            });
+            collection.AddTransient<TabSwitcherViewModel>();
 
             collection.AddTransient<ModSwitcherViewModel>();
 
@@ -70,6 +70,32 @@ namespace RogueEssence.Dev
             collection.AddTransient<SpeciesEditPageViewModel>();
             collection.AddTransient<DataListPageViewModel>();
             collection.AddTransient<ReflectedDataPageViewModel>();
+            
+            
+            var editorTypes = Assembly.GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => typeof(IEditor).IsAssignableFrom(t) && !t.IsAbstract);
+
+            foreach (var type in editorTypes)
+            {
+                Console.WriteLine("Registering editor: " + type.Name);
+                collection.AddTransient(type);
+            }
+        }
+
+        private static void AddMapEditViewModels(this IServiceCollection services)
+        {
+            services.AddSingleton<MapTabTexturesViewModel>();
+            services.AddSingleton<MapTabDecorationsViewModel>();
+            services.AddSingleton<MapTabTerrainViewModel>();
+            services.AddSingleton<MapTabTilesViewModel>();
+            services.AddSingleton<MapTabItemsViewModel>();
+            services.AddSingleton<MapTabEntitiesViewModel>();
+            services.AddSingleton<MapTabEntrancesViewModel>();
+            services.AddSingleton<MapTabSpawnsViewModel>();
+            services.AddSingleton<MapTabEffectsViewModel>();
+            services.AddSingleton<MapTabPropertiesViewModel>();
+            services.AddSingleton<MapEditViewModel>();
         }
         
         private static void AddDevTabViewModels(this IServiceCollection services)
@@ -103,6 +129,9 @@ namespace RogueEssence.Dev
 
     public partial class App : Application
     {
+        public static Action<IServiceCollection>? RegisterServices { get; set; }
+        public static Action<IServiceProvider>? OnServicesReady { get; set; }
+        
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -132,6 +161,10 @@ namespace RogueEssence.Dev
             var collection = new ServiceCollection();
             collection.AddCommonServices();
 
+
+
+            RegisterServices?.Invoke(collection);
+            
             // TopLevel provider
             collection.AddSingleton<Func<TopLevel?>>(x => () =>
             {
@@ -148,7 +181,7 @@ namespace RogueEssence.Dev
 
             services.RegisterPages();
 
-
+            OnServicesReady?.Invoke(services);
             var vm = services.GetRequiredService<DevFormViewModel>();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

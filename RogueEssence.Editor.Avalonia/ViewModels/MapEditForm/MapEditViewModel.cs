@@ -26,18 +26,28 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class MapEditViewModel : ViewModelBase
     {
-        public MapEditViewModel()
+        public MapEditViewModel(
+            MapTabTexturesViewModel textures,
+            MapTabDecorationsViewModel decorations,
+            MapTabTerrainViewModel terrain,
+            MapTabTilesViewModel tiles,
+            MapTabItemsViewModel items,
+            MapTabEntitiesViewModel entities,
+            MapTabEntrancesViewModel entrances,
+            MapTabSpawnsViewModel spawns,
+            MapTabEffectsViewModel effects,
+            MapTabPropertiesViewModel properties)
         {
-            Textures = new MapTabTexturesViewModel();
-            Decorations = new MapTabDecorationsViewModel();
-            Terrain = new MapTabTerrainViewModel();
-            Tiles = new MapTabTilesViewModel();
-            Items = new MapTabItemsViewModel();
-            Entities = new MapTabEntitiesViewModel();
-            Entrances = new MapTabEntrancesViewModel();
-            Spawns = new MapTabSpawnsViewModel();
-            Effects = new MapTabEffectsViewModel();
-            Properties = new MapTabPropertiesViewModel();
+            Textures = textures;
+            Decorations = decorations;
+            Terrain = terrain;
+            Tiles = tiles;
+            Items = items;
+            Entities = entities;
+            Entrances = entrances;
+            Spawns = spawns;
+            Effects = effects;
+            Properties = properties;
             CurrentFile = "";
         }
 

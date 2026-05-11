@@ -6,5 +6,29 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:ReflectedDataPageViewModel"
              x:Class="RogueEssence.Dev.Views.ReflectedDataPageView">
-    Welcome to Reflection
+    
+    <Design.DataContext>
+        <vm:ReflectedDataPageViewModel></vm:ReflectedDataPageViewModel>
+    </Design.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="32"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <!--ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2"-->
+        <ScrollViewer Grid.ColumnSpan="2">
+            <StackPanel Name="stkContent" Margin="12, 4">
+        
+            </StackPanel>
+        </ScrollViewer>
+        
+        <Button Click="btnApply_Click" Classes="flat" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding isRootPage}">Save All Sub-Windows</Button>
+        <Button Click="btnOK_Click" Classes="flat" Margin="4" Grid.Row="2" Grid.Column="0">OK</Button>
+        <Button Click="btnCancel_Click" Classes="flat" Margin="4" Grid.Row="2" Grid.Column="1">Cancel</Button>
+    </Grid>
 </UserControl>

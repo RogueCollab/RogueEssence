@@ -207,6 +207,10 @@
       <DependentUpon>DataListPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\New\DialogBoxes\AnimChoiceWindowView.axaml.cs">
+      <DependentUpon>AnimChoiceWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

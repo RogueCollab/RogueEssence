@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
 using Avalonia.Input;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -69,15 +70,14 @@ namespace RogueEssence.Dev.ViewModels
         public PriorityOp OnEditPriority;
 
         public StringConv StringConv;
-
-        private Window parent;
+        
+        private IDialogService _dialogService;
 
         public bool ConfirmDelete;
 
-        public PriorityListBoxViewModel(Window parent, StringConv conv)
+        public PriorityListBoxViewModel(IDialogService dialogService, StringConv conv)
         {
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<PriorityElement>();
         }
 
@@ -186,9 +186,8 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete", MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 

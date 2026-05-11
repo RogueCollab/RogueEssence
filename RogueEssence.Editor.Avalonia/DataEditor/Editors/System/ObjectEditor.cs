@@ -15,5 +15,7 @@ using System.Reactive.Subjects;
 namespace RogueEssence.Dev
 {
     public class ObjectEditor : Editor<Object>
-    { }
+    {
+        public ObjectEditor(EditorContext context) : base(context) { }
+    }
 }

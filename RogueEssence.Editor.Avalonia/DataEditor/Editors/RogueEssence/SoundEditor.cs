@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class SoundEditor : StringEditor
     {
+        public SoundEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
         public override bool DefaultDecoration => false;

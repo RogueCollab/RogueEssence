@@ -10,11 +10,19 @@ using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using RogueEssence.Dev.ViewModels;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Layout;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev
 {
     public class TypeDictEditor : Editor<ITypeDict>
     {
+
+        public TypeDictEditor(EditorContext context) : base(context)
+        {
+            
+        }
         public override bool DefaultSubgroup => true;
 
         public override bool DefaultDecoration => false;
@@ -32,7 +40,7 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 180;
 
-            CollectionBoxViewModel vm = new CollectionBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            CollectionBoxViewModel vm = new CollectionBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
             CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
             if (confirmAtt != null)
@@ -44,20 +52,33 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             vm.OnEditItem += (int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + index + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
+                // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                //TODO: make this a member and reference it that way
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, elementType);
+                NodeBase node =
+                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName,
+                        pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel
+                    newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    object newElement = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, elementType,
+                        ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0],
+                        advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    object newElement = DataEditor.SaveClassControls(stack, elementName, elementType,
+                        ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
 
                     bool itemExists = false;
-
                     List<object> states = (List<object>)vm.GetList(typeof(List<object>));
                     for (int ii = 0; ii < states.Count; ii++)
                     {
@@ -72,7 +93,8 @@ namespace RogueEssence.Dev
 
                     if (itemExists)
                     {
-                        await MessageBox.Show(control.GetOwningForm(), "Cannot add duplicate states.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                        await MessageBoxWindowView.Show(_context.DialogService, "Cannot add duplicate states.",
+                            "Entry already exists.", MessageBoxWindowView.MessageBoxButtons.Ok);
                         return false;
                     }
                     else
@@ -82,8 +104,7 @@ namespace RogueEssence.Dev
                     }
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             List<object> states = new List<object>();
@@ -104,6 +125,7 @@ namespace RogueEssence.Dev
                 if (desc != null)
                     ToolTip.SetTip(expander, desc);
                 expander.IsExpanded = member.Count > 0;
+                expander.HorizontalAlignment = HorizontalAlignment.Stretch;
                 expander.Content = lbxValue;
                 control.Children.Add(expander);
             }

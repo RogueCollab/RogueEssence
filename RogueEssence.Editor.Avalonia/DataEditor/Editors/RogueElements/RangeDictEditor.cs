@@ -12,6 +12,8 @@ using System.Collections;
 using RogueEssence.Dev.ViewModels;
 using RogueEssence.LevelGen;
 using Avalonia.Interactivity;
+using RogueEssence.Dev.Services;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev
 {
@@ -27,7 +29,7 @@ namespace RogueEssence.Dev
         /// </summary>
         public bool Inclusive;
 
-        public RangeDictEditor(bool index1, bool inclusive)
+        public RangeDictEditor(EditorContext context, bool index1, bool inclusive) : base(context)
         {
             Index1 = index1;
             Inclusive = inclusive;
@@ -51,7 +53,7 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 220;
 
-            RangeDictBoxViewModel vm = new RangeDictBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            RangeDictBoxViewModel vm = new RangeDictBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
             vm.Index1 = Index1;
             vm.Inclusive = Inclusive;
@@ -68,59 +70,76 @@ namespace RogueEssence.Dev
 
             lbxValue.DataContext = vm;
 
-            lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+            lbxValue.SetListContextMenu(createContextMenu(_context.DialogService, control, type, vm));
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
             vm.OnEditItem += (IntRange key, object element, bool advancedEdit, RangeDictBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + key.ToString() + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
+                // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, elementType);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), element, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    element = DataEditor.SaveClassControls(stack, elementName, elementType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(key, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
-
+            
             vm.OnEditKey += (IntRange key, object element, bool advancedEdit, RangeDictBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "<Range>";
-                DataEditForm frmKey = new DataEditForm();
 
                 List<object> attrList = new List<object>();
                 if (rangeAtt != null)
                     attrList.Add(rangeAtt);
-                frmKey.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, attrList.ToArray());
 
-                DataEditor.LoadClassControls(frmKey.ControlPanel, parent, null, elementName, keyType, attrList.ToArray(), key, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmKey, keyType);
+                // string title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, attrList.ToArray());
 
-                frmKey.SelectedOKEvent += async () =>
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
+
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    key = (IntRange)DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, keyType, attrList.ToArray(), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, keyType, attrList.ToArray(), key, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    key = (IntRange)DataEditor.SaveClassControls(stack, elementName, keyType, attrList.ToArray(), true, new Type[0], advancedEdit);
                     op(key, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmKey);
-                frmKey.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             vm.LoadFromDict(member);
             control.Children.Add(lbxValue);
         }
 
-        private static ContextMenu createContextMenu(StackPanel control, Type type, RangeDictBoxViewModel vm)
+        private static ContextMenu createContextMenu(IDialogService dialogService, StackPanel control, Type type, RangeDictBoxViewModel vm)
         {
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(IRangeDict<>), type, 0);
 
@@ -146,7 +165,7 @@ namespace RogueEssence.Dev
                     DataEditor.SetClipboardObj(obj, null);
                 }
                 else
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(dialogService, String.Format("No index selected!"), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
             };
             pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
             {
@@ -160,7 +179,7 @@ namespace RogueEssence.Dev
                     vm.InsertOnKey(idx, DataEditor.clipboardObj);
                 }
                 else
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(dialogService, String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
             };
             return copyPasteStrip;
         }

@@ -20,6 +20,7 @@ namespace RogueEssence.Dev
 
     public class StringKeyEditor : Editor<StringKey>
     {
+        public StringKeyEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

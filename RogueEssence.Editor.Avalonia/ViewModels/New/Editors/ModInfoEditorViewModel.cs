@@ -10,8 +10,7 @@ public class ModInfoEditorViewModel : EditorPageViewModel
 
     public TestComboBoxViewModel Fruits { get; }
     
-    public ModInfoEditorViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService,
-        NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService) 
+    public ModInfoEditorViewModel(EditorContext context, NodeBase node) : base(context, node) 
     {
        
         Fruits = new TestComboBoxViewModel();

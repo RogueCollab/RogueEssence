@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using RogueEssence.Data;
 using RogueEssence.Dev.ViewModels;
 
@@ -15,6 +16,17 @@ namespace RogueEssence.Dev
         
         // Used for closing tabs when a data entry is deleted
         public event Action<string, DataManager.DataType>? CloseTabsForEntry;
+        
+        
+        public event Func<EditorPageViewModel, Task>? SaveChildrenEvent;
+
+        public async Task SaveChildren(EditorPageViewModel page)
+        {
+            if (SaveChildrenEvent != null)
+                await SaveChildrenEvent.Invoke(page);
+        }
+        
+        // TODO: Probably remove this...
 
         public void RequestCloseTabsForEntry(string key, DataManager.DataType dataType)
         {

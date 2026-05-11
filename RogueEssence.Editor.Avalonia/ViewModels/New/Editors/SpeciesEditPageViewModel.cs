@@ -206,9 +206,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public string HeaderText { get; }
 
-        public SpeciesEditPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents,
-            IDialogService dialogService,
-            OpenEditorNodeWithParams node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
+        public SpeciesEditPageViewModel(EditorContext context,
+            OpenEditorNodeWithParams node) : base(context, node)
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
             OpList = new ObservableCollection<SpeciesOpContainer>();
@@ -239,7 +238,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!chosenMonster.Filled)
             {
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     string.Format("No graphics exist for {0}.", chosenMonster.Title),
                     "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -249,11 +248,8 @@ namespace RogueEssence.Dev.ViewModels
             int chosenAnim = -1;
             if (animOptions.Length > 0)
             {
-                AnimChoiceWindow window = new AnimChoiceWindow();
-                AnimChoiceViewModel viewModel = new AnimChoiceViewModel(animOptions);
-                window.DataContext = viewModel;
-
-                bool animResult = await window.ShowDialog<bool>(parent);
+                AnimChoiceWindowViewModel viewModel = new AnimChoiceWindowViewModel(animOptions);
+                bool animResult = await _context.DialogService.ShowDialogAsync<AnimChoiceWindowViewModel, bool>(viewModel);
                 if (!animResult)
                     return;
                 chosenAnim = animOptions[viewModel.ChosenAnim];
@@ -306,14 +302,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuMassImport_Click()
         {
-            await MessageBoxWindowView.Show(DialogService,
+            await MessageBoxWindowView.Show(_context.DialogService,
                 "Note: Importing a sprite to a slot that is already filled will automatically overwrite the old one.",
                 "Mass Import", MessageBoxWindowView.MessageBoxButtons.Ok);
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select sprite folder to mass import",
                 AllowMultiple = false,
@@ -332,7 +328,7 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     $"Error importing from\n{CachedPath}\n\n{ex.Message}",
                     "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -355,7 +351,7 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select folder to mass export to",
                 AllowMultiple = false,
@@ -382,7 +378,7 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(DialogService, "Error when reindexing.\n\n" + ex.Message,
+                await MessageBoxWindowView.Show(_context.DialogService, "Error when reindexing.\n\n" + ex.Message,
                     "Reindex Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
@@ -396,7 +392,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (chosenMonster.Filled)
             {
-                var res = await MessageBoxWindowView.Show(DialogService,
+                var res = await MessageBoxWindowView.Show(_context.DialogService,
                     "Are you sure you want to overwrite the existing sheet:\n" + GetFormString(formdata),
                     "Sprite Sheet already exists.", MessageBoxWindowView.MessageBoxButtons.OkCancel);
                 if (res == MessageBoxWindowView.MessageBoxResult.No)
@@ -408,7 +404,7 @@ namespace RogueEssence.Dev.ViewModels
             //notify (once) that sprites need to follow a rigid guideline
             if (!notifiedImport)
             {
-                await MessageBoxWindowView.Show(DialogService, "When importing sprites, " +
+                await MessageBoxWindowView.Show(_context.DialogService, "When importing sprites, " +
                                                                "make sure that all files in each folder adhere to the naming convention.",
                     "Sprite Importing", MessageBoxWindowView.MessageBoxButtons.Ok);
                 notifiedImport = true;
@@ -418,7 +414,7 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select folder to import from",
                 AllowMultiple = false,
@@ -437,7 +433,7 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed",
                     MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -453,7 +449,7 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed",
                     MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -477,7 +473,7 @@ namespace RogueEssence.Dev.ViewModels
 
             if (!chosenMonster.Filled)
             {
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     String.Format("No graphics exist for {0}.", chosenMonster.Title), "Error",
                     MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -488,7 +484,7 @@ namespace RogueEssence.Dev.ViewModels
 
             //open window to choose directory
 
-            string folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            string folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select folder to export to",
                 AllowMultiple = false,
@@ -507,7 +503,7 @@ namespace RogueEssence.Dev.ViewModels
             catch (Exception ex)
             {
                 DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed",
                     MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -518,7 +514,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (!chosenMonster.Filled)
             {
-                await MessageBoxWindowView.Show(DialogService,
+                await MessageBoxWindowView.Show(_context.DialogService,
                     String.Format("No graphics exist for {0}.", chosenMonster.Title), "Error",
                     MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
@@ -527,7 +523,7 @@ namespace RogueEssence.Dev.ViewModels
             //get current sprite
             CharID formdata = chosenMonster.ID;
 
-            var result = await MessageBoxWindowView.Show(DialogService,
+            var result = await MessageBoxWindowView.Show(_context.DialogService,
                 "Are you sure you want to delete the following sheet:\n" + GetFormString(formdata),
                 "Delete Sprite Sheet.",
                 MessageBoxWindowView.MessageBoxButtons.YesNo);

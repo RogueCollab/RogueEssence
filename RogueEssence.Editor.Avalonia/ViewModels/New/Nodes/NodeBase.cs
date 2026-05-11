@@ -29,7 +29,7 @@ using System.Collections.ObjectModel;
 
 public class NodeBase : ViewModelBase, IEquatable<NodeBase>
 {
-    public ObservableCollection<NodeBase> SubNodes { get; set; }
+    public ObservableCollection<NodeBase> SubNodes { get; }
 
     public NodeBase? Parent { get; internal set; }
 
@@ -138,11 +138,24 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
     
     public void RemoveNode(NodeBase node)
     {
-        Console.WriteLine("hi");
-        Console.WriteLine($"Removing node {node.Title}");
         SubNodes.Remove(node);
     }
     
+    // NOTE: Include itself while looking for a match
+    public T FindNode<T>() where T : NodeBase
+    {
+        var currentNode = this;
+
+        while (currentNode != null)
+        {
+            if (currentNode is T match)
+                return match;
+
+            currentNode = currentNode.Parent;
+        }
+
+        return null;
+    }
 }
 
 public class OpenEditorNode : NodeBase
@@ -165,6 +178,20 @@ public class OpenEditorNode : NodeBase
     {
         return EditorType.GetHashCode();
     }
+}
+
+public class ReflectedDataNode : OpenEditorNode
+{
+    public ReflectedDataNode(string title, Type editorType, string icon = null)
+        : base(title, editorType, icon)
+    { }
+    
+    // TODO: Rather than using references, keep track of a tree of inherited subtypes to check if they're equal?
+    // Don't use references...
+    // Don't use the title, use the type instead or a combination of elementName, parent, elementType
+    // Find something more reliable than the title?
+    protected override bool EqualsCore(NodeBase other) => other.Title == Title;
+    protected override int GetHashCodeCore() => Title.GetHashCode();
 }
 
 
@@ -807,7 +834,7 @@ public class ModRootNode : ItemRootNode
     public override async Task AddItem()
     {
         ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
-        var vm = new ModConfigWindowViewModel(header);
+        var vm = new ModConfigWindowViewModel(_dialogService, header);
         bool result = await _dialogService.ShowDialogAsync<ModConfigWindowViewModel, bool>(vm, "Mod Config");
         
         if (!result)

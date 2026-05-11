@@ -47,7 +47,9 @@
          <StyleInclude Source="/Assets/Styles.axaml"/>
          <StyleInclude Source="/Assets/ListBoxStyles.axaml"/>
          <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
+         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
          <StyleInclude Source="/Assets/TreeStyles.axaml"/>
+         <StyleInclude Source="/Assets/DataGridStyles.axaml"/>
      </Application.Styles>
              
 </Application>

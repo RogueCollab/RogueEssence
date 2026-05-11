@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class EnumEditor : Editor<Enum>
     {
+        public EnumEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;

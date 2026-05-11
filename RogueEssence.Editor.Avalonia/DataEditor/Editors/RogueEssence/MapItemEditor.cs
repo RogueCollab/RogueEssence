@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class MapItemEditor : Editor<MapItem>
     {
+        public MapItemEditor(EditorContext context) : base(context) { }
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, MapItem member, Type[] subGroupStack)
         {
             MapItemAttribute itemAtt = ReflectionExt.FindAttribute<MapItemAttribute>(attributes);

@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Input;
 using RogueElements;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -55,14 +56,14 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
-        private Window parent;
-
         public bool ConfirmDelete;
+        
+        private IDialogService _dialogService;
 
-        public SpawnListBoxViewModel(Window parent, StringConv conv)
+        public SpawnListBoxViewModel(IDialogService dialogService, StringConv conv)
         {
+            _dialogService = dialogService;
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<SpawnListElement>();
         }
 
@@ -208,9 +209,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                    MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 

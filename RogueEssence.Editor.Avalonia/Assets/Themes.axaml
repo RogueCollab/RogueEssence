@@ -24,6 +24,7 @@
       <Color x:Key="Color.TabHeader.BackgroundHovered">#FFDFDFDF</Color>
       <Color x:Key="Color.FG1">#FF1F1F1F</Color>
       <Color x:Key="Color.FG2">#FF6F6F6F</Color>
+      <Color x:Key="Color.ListBox.Background">#FFEBEBEB</Color>
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
@@ -49,6 +50,7 @@
       <Color x:Key="Color.TabHeader.BackgroundHovered">#FF404040</Color>
       <Color x:Key="Color.FG1">#FFDDDDDD</Color>
       <Color x:Key="Color.FG2">#60F1F1F1</Color>
+      <Color x:Key="Color.ListBox.Background">#FF1C1C1C</Color>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -67,6 +69,8 @@
   <SolidColorBrush x:Key="Brush.Border1" Color="{DynamicResource Color.Border1}"/>
   <SolidColorBrush x:Key="Brush.Border2" Color="{DynamicResource Color.Border2}"/>
   <SolidColorBrush x:Key="Brush.Border3" Color="{DynamicResource Color.Border3}"/>
+  <SolidColorBrush x:Key="Brush.DataGrid.HeaderBackground" Color="{DynamicResource Color.FlatButton.Background}"/>
+  <SolidColorBrush x:Key="Brush.ListBox.Background" Color="{DynamicResource Color.ListBox.Background}"/>
   <SolidColorBrush x:Key="Brush.FlatButton.Background" Color="{DynamicResource Color.FlatButton.Background}"/>
   <SolidColorBrush x:Key="Brush.FlatButton.BackgroundHovered" Color="{DynamicResource Color.FlatButton.BackgroundHovered}"/>
   <SolidColorBrush x:Key="Brush.IconButton.Background" Color="{DynamicResource Color.IconButton.Background}"/>

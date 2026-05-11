@@ -28,6 +28,11 @@ namespace RogueEssence.Dev
             where TEditor : EditorPageViewModel
             => Create<OpenEditorNode>(title, typeof(TEditor), icon);
         
+        public ReflectedDataNode CreateReflectedDataNode<TEditor>(string title, string? icon = null)
+            where TEditor : EditorPageViewModel
+            => Create<ReflectedDataNode>(title, typeof(TEditor), icon);
+
+        
         public OpenEditorNodeWithParams CreateOpenEditorNodeWithParams<TEditor>(
             string title,
             object[] extraParams,

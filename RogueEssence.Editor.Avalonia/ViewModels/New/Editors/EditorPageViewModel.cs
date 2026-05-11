@@ -3,6 +3,7 @@ using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using Avalonia.Controls;
 using RogueEssence.Dev.Services;
 
 
@@ -13,17 +14,11 @@ public abstract class EditorPageViewModel<TNode> : EditorPageViewModel
 {
     
     // The node that opened this page
-    public TNode Node { get; }
+    public new TNode Node => (TNode)base.Node;
 
-    protected EditorPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, 
-        IDialogService dialogService, NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService)
+    protected EditorPageViewModel(EditorContext context, NodeBase node) : base(context, node)
     {
-        if (node is not TNode typedNode)
-            throw new ArgumentException($"Expected {typeof(TNode).Name} but got {node.GetType().Name}");
-        
-        Node = typedNode;
     }
-    
     protected override bool IsSamePage(EditorPageViewModel other)
     {
         var otherTyped = (EditorPageViewModel<TNode>)other;
@@ -36,25 +31,32 @@ public abstract class EditorPageViewModel<TNode> : EditorPageViewModel
 
 public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel>
 {
-    public double ScrollOffset { get; set; } = 0;
-    
-    public virtual string DefaultTitle => "Dev Edit";
-    
-    private string _title = "";
 
-
-    public string Title =>
-        string.IsNullOrEmpty(_title) ? DefaultTitle : _title;
+    public Control? AttachedView { get; set; }
     
+    public virtual string DefaultTitle => "DEFAULT TEXT";
     
-
+    public event EventHandler? PageRemoved;
     
-    // Whether to add a new tab when this page is selected
+    public virtual void OnPageRemoved()
+    {
+        PageRemoved?.Invoke(this, EventArgs.Empty);
+    }
+    
+    // Whether to add a new tab when this page is added
     public virtual bool AddNewTab => true;
     
         
-    // Only load data when there is no duplicate pages
+    // Only load data when there is no duplicate pages using the IsSamePage method
     public virtual void LoadData() { }
+    
+        
+    private string _title = "";
+
+
+    // Tab title
+    public string Title =>
+        string.IsNullOrEmpty(_title) ? DefaultTitle : _title;
     
     public bool Equals(EditorPageViewModel? other)
     {
@@ -111,25 +113,41 @@ public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel
             }
         }
         
-    public readonly NodeFactory NodeFactory;
-    public readonly TabEvents TabEvents;
-    public readonly IDialogService DialogService;
-    public readonly PageFactory PageFactory;
+    public NodeBase Node { get; }
     
-    public EditorPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents, IDialogService dialogService)
+    protected readonly EditorContext _context;
+
+    protected EditorPageViewModel(EditorContext context, NodeBase node)
     {
-        this.TabEvents = tabEvents;
-        this.DialogService = dialogService;
-        this.PageFactory = pageFactory;
-        this.NodeFactory = nodeFactory;
+        Node = node;
+        _context = context;
     }
     
+    public (NodeBase node, ReflectedDataPageViewModel? editor) AddNewNodeAndTab(string title, string icon = "Icons.PaintBrushFill")
+    {
+        NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, icon);
+        Node.SubNodes.Add(node);
+        ReflectedDataPageViewModel editor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+        if (editor != null)
+        {
+            editor.SetPageTitle(title, icon);
+            _context.TabEvents.AddChildPage(this, editor);
+        }
+
+        return (node, editor);
+    }
+ 
     
 
     public void SetPageTitleFromNode(NodeBase node)
     {
-        _icon = node.Icon;
-        _title = node.Title;
+        SetPageTitle(node.Title, node.Icon);
+    }
+
+    public void SetPageTitle(string title, string icon)
+    {
+        _title = title;
+        _icon = icon;
     }
     
     public void SetTitle(string title)

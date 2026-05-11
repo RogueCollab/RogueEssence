@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
     public class ZoneDataEditor : Editor<ZoneData>
     {
 
+        public ZoneDataEditor(EditorContext context) : base(context) { }
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, ZoneData obj, Type[] subGroupStack)
         {
             base.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
@@ -32,7 +33,7 @@ namespace RogueEssence.Dev
 
                 if (!Directory.Exists(zonescriptdir))
                 {
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("This zone has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(_context.DialogService, String.Format("This zone has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
                 }
                 else
                 {

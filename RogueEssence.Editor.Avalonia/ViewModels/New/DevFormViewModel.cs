@@ -156,11 +156,8 @@ public class DevFormViewModel : ViewModelBase
             ModSwitcherClosed?.Invoke();
         }
     }
-
-    public ReactiveCommand<Unit, Unit> OpenPreferencesWindow { get; }
-
-    public ReactiveCommand<Unit, Unit> ClearFilterCommand { get; }
-
+    
+    
     private string _filter = "";
 
     public string Filter
@@ -356,6 +353,18 @@ public class DevFormViewModel : ViewModelBase
         }
     }
 
+    public async Task SaveChildren(EditorPageViewModel page)
+    {
+        if (!_pageToNodeMap.TryGetValue(page, out var pageNode))
+            return;
+
+        foreach (var child in pageNode.SubNodes.Cast<PageNode>().ToList())
+        {
+            await SaveChildren(child.Page);
+            if (child.Page.AttachedView is ISaveable saveable)
+                await saveable.Save();
+        }
+    }
     private void ClosePageAndChildren(PageNode node)
     {
         var children = node.SubNodes.Cast<PageNode>().ToList();
@@ -428,16 +437,7 @@ public class DevFormViewModel : ViewModelBase
         Pages = new ObservableCollection<EditorPageViewModel>();
         TopLevelPages = new ObservableCollection<PageNode>();
         _pageToNodeMap = new Dictionary<EditorPageViewModel, PageNode>();
-
-        // TODO: move this own view
-        ClearFilterCommand = ReactiveCommand.Create(() => { Filter = string.Empty; });
-
-        OpenPreferencesWindow = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await _dialogService.ShowDialogAsync<PreferencesWindowViewModel, bool>(
-                PreferencesWindowViewModel.Instance, "Preferences");
-        });
-
+        
         this.WhenAnyValue(x => x.ActivePage)
             .Buffer(2, 1)
             .Subscribe(pair =>
@@ -465,6 +465,16 @@ public class DevFormViewModel : ViewModelBase
         };
     }
 
+    public void ClearFilter()
+    {
+        Filter = "";
+    }
+
+    public async void ShowPreferencesWindow()
+    {
+        await _dialogService.ShowDialogAsync<PreferencesWindowViewModel, bool>(
+            PreferencesWindowViewModel.Instance, "Preferences");
+    }
     public void LoadDevTree()
     {
         Filter = "";
@@ -475,7 +485,9 @@ public class DevFormViewModel : ViewModelBase
         Pages.Clear();
         _pageToNodeMap.Clear();
 
-        var tab = _pageFactory.CreatePage(typeof(DevControlViewModel));
+        
+        // TODO: Attach the DevControlNode to this tab rather than keeping it null... 
+        var tab = _pageFactory.CreatePage(typeof(DevControlViewModel), null);
         tab.Icon = "Icons.GameControllerFill";
         AddTopLevelPage(tab);
 
@@ -526,17 +538,16 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateConstantsNode(NodeBase parent)
     {
-        // var constantsNode = _nodeFactory.CreateOpenEditorNode("Constants", "Icons.ListFill", "");
-        //
-        // var startParamsNode = _nodeFactory.CreateOpenEditorNode("Start Params", "Icons.ListFill", "");
-        // var universalEventsNode = _nodeFactory.CreateOpenEditorNode("Universal Events", "Icons.ListFill", "");
+        var constantsNode = _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Constants", "Icons.ListFill", "");
+        var startParamsNode = _nodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Start Params", "Icons.ListFill", "");
+        var universalEventsNode = _nodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Universal Events", "Icons.ListFill", "");
         //
         // var menuTextNode = _nodeFactory.CreateOpenEditorNode("Menu Text", "Icons.TableFill", "");
         // var gameplayTextNode = _nodeFactory.CreateOpenEditorNode("Gameplay Text", "Icons.TableFill", "");
         //
         //
-        // constantsNode.SubNodes.Add(startParamsNode);
-        // constantsNode.SubNodes.Add(universalEventsNode);
+        constantsNode.SubNodes.Add(startParamsNode);
+        constantsNode.SubNodes.Add(universalEventsNode);
         // constantsNode.SubNodes.Add(menuTextNode);
         // constantsNode.SubNodes.Add(gameplayTextNode);
         //
@@ -870,6 +881,8 @@ public class DevFormViewModel : ViewModelBase
             AddChildPage(parent, child);
             ActivePage = child;
         };
+        
+        _tabEvents.SaveChildrenEvent += SaveChildren;
 
         _tabEvents.AddTopLevelTabEvent += (tab) => { AddTopLevelPage(tab); };
 
@@ -956,6 +969,8 @@ public class DevFormViewModel : ViewModelBase
     {
         if (PageHasChildren(page))
         {
+            
+            // TODO: Add a can close method and check if any of the subtabs has any unsaved changes.
             var result = await MessageBoxWindowView.Show(_dialogService,
                 "Are you sure you want to close all subtabs?  Your changes will not be saved.", "Confirm Close",
                 MessageBoxWindowView.MessageBoxButtons.YesNo);
@@ -965,6 +980,7 @@ public class DevFormViewModel : ViewModelBase
         }
 
         RemoveTab(page);
+        page.OnPageRemoved();
         return true;
     }
 

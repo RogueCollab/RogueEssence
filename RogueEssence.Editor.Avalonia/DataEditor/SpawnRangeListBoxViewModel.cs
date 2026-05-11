@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Input;
 using RogueElements;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -86,9 +87,7 @@ namespace RogueEssence.Dev.ViewModels
         public delegate void ElementOp(int index, object element, bool advancedEdit, EditElementOp op);
 
         public StringConv StringConv;
-
-        private Window parent;
-
+        
         public event ElementOp OnEditItem;
 
         public bool Index1;
@@ -111,10 +110,11 @@ namespace RogueEssence.Dev.ViewModels
 
         public bool ConfirmDelete;
 
-        public SpawnRangeListBoxViewModel(Window parent, StringConv conv)
+        private IDialogService _dialogService;
+        public SpawnRangeListBoxViewModel(IDialogService dialogService, StringConv conv)
         {
+            _dialogService = dialogService;
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<SpawnRangeListElement>();
         }
 
@@ -127,6 +127,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref currentElement, value);
+                if (currentElement > -1)
                 if (currentElement > -1)
                 {
                     CurrentWeight = Collection[currentElement].Weight;
@@ -262,9 +263,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
-                        MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                        MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 

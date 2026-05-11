@@ -13,6 +13,7 @@ namespace RogueEssence.Dev
 {
     public class AutoTileEditor : Editor<AutoTile>
     {
+        public AutoTileEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

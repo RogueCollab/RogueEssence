@@ -13,6 +13,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -75,7 +76,6 @@ namespace RogueEssence.Dev.ViewModels
         }
 
         public StringConv StringConv;
-        private Window parent;
 
         public delegate void EditElementOp(int index, object element);
 
@@ -88,44 +88,24 @@ namespace RogueEssence.Dev.ViewModels
         public int AddIndex => Index1 ? 1 : 0;
         public bool ConfirmDelete;
         
-        public ReactiveCommand<Unit, Unit> DeleteCommand { get; }
-        public ReactiveCommand<Unit, Unit> MoveUpCommand { get; }
-        public ReactiveCommand<Unit, Unit> MoveDownCommand { get; }
+        public bool CanMoveUp => SelectedIndex > 0;
+        public bool CanMoveDown => SelectedIndex >= 0 && SelectedIndex < Collection.Count - 1;
+        public bool HasSelection => SelectedIndex >= 0;
         
-        
-        public CollectionBoxViewModel(Window parent, StringConv conv)
+        private IDialogService _dialogService;
+        public CollectionBoxViewModel(IDialogService dialogService, StringConv conv)
         {
+            _dialogService = dialogService;
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<ListElement>();
-
-            var collectionCount = Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
-                    h => Collection.CollectionChanged += h,
-                    h => Collection.CollectionChanged -= h)
-                .Select(_ => Collection.Count)
-                .StartWith(Collection.Count);
-
-            var hasSelection = this.WhenAnyValue(x => x.SelectedIndex, index => index >= 0);
-            
-            DeleteCommand = ReactiveCommand.CreateFromTask(DeleteItemAsync, hasSelection);
-            
-            MoveUpCommand = ReactiveCommand.Create(MoveUp, 
-                this.WhenAnyValue(x => x.SelectedIndex, index => index > 0));
-            
-            MoveDownCommand = ReactiveCommand.Create(MoveDown,
-                Observable.CombineLatest(
-                    this.WhenAnyValue(x => x.SelectedIndex),
-                    collectionCount,
-                    (index, count) => index >= 0 && index < count - 1));
-            
-            // Force UI refresh when CanExecute changes
-            MoveDownCommand.CanExecute.Subscribe(canExecute => 
+            this.WhenAnyValue(x => x.SelectedIndex).Subscribe(_ =>
             {
-                Console.WriteLine($"MoveDown button should be {(canExecute ? "enabled" : "disabled")}");
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
             });
         }
-
-        private void MoveDown()
+        public void MoveDown()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count - 1)
             {
@@ -202,19 +182,19 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem?.Invoke(index, element, advancedEdit, InsertItem);
         }
 
-        private async Task DeleteItemAsync()
+        public async Task DeleteItemAsync()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(
-                        parent,
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(
+                        _dialogService,
                         "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue,
                         "Confirm Delete",
-                        MessageBox.MessageBoxButtons.YesNo);
+                        MessageBoxWindowView.MessageBoxButtons.YesNo);
 
-                    if (result == MessageBox.MessageBoxResult.No)
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 
@@ -236,7 +216,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection[b].Key = b;
         }
 
-        private void MoveUp()
+        public void MoveUp()
         {
             if (SelectedIndex > 0)
             {

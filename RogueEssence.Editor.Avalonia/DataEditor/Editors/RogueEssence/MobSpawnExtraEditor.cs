@@ -10,6 +10,7 @@ namespace RogueEssence.Dev
 {
     public class MobSpawnStatusEditor : Editor<MobSpawnStatus>
     {
+        public MobSpawnStatusEditor(EditorContext context) : base(context) { }
         public override string GetString(MobSpawnStatus obj, Type type, object[] attributes)
         {
             if (obj.Statuses.Count != 1)
@@ -27,6 +28,7 @@ namespace RogueEssence.Dev
     }
     public class MobSpawnScriptEditor : Editor<MobSpawnScript>
     {
+        public MobSpawnScriptEditor(EditorContext context) : base(context) { }
         public override string GetString(MobSpawnScript obj, Type type, object[] attributes)
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return " + obj.ArgTable).First() as LuaTable;

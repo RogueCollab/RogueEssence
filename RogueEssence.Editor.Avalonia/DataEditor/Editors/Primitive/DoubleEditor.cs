@@ -12,11 +12,15 @@ using System.Collections;
 using Avalonia;
 using System.Reactive.Subjects;
 using System.IO;
+using DynamicData;
 
 namespace RogueEssence.Dev
 {
     public class DoubleEditor : Editor<Double>
     {
+        
+        public DoubleEditor(EditorContext context) : base(context) { }
+        
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

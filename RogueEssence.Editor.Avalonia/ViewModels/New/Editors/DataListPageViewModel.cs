@@ -53,9 +53,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     public DataManager.DataType DataType => Node.DataType;
 
 
-    public DataListPageViewModel(NodeFactory nodeFactory, PageFactory pageFactory, TabEvents tabEvents,
-        IDialogService dialogService,
-        NodeBase node) : base(nodeFactory, pageFactory, tabEvents, dialogService, node)
+    public DataListPageViewModel(EditorContext context, NodeBase node) : base(context, node)
     {
     }
 
@@ -124,7 +122,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         //remember addresses in registry
         string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
-        string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+        string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = "Select DTEF folder",
             AllowMultiple = false,
@@ -147,7 +145,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
         if (conflict)
         {
-            var result = await MessageBoxWindowView.Show(DialogService,
+            var result = await MessageBoxWindowView.Show(_context.DialogService,
                 $"Are you sure you want to overwrite the existing sheet:\n{animName}",
                 "Tileset already exists.", MessageBoxWindowView.MessageBoxButtons.YesNo);
 
@@ -164,7 +162,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         catch (Exception ex)
         {
             DiagManager.Instance.LogError(ex, false);
-            await MessageBoxWindowView.Show(DialogService, $"Error importing from\n{folder}\n\n{ex.Message}",
+            await MessageBoxWindowView.Show(_context.DialogService, $"Error importing from\n{folder}\n\n{ex.Message}",
                 "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
             return;
         }
@@ -177,7 +175,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
             //remember addresses in registry
             string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
 
-            string? folder = await DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select folder to export the DTEF to",
                 AllowMultiple = false,
@@ -236,7 +234,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     public void AddUnderParentNode(DataListEntry entry)
     {
         Node.AddNodeIfNotExists(
-            NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon));
+            _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon));
         NodeHelper.ExpandParents(Node, true);
     }
 
@@ -245,7 +243,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         var entry = DataRegistry.Map[DataType];
 
         var vm = new RenameWindowViewModel();
-        bool result = await DialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
+        bool result = await _context.DialogService.ShowDialogAsync<RenameWindowViewModel, bool>(vm, $"Add new {DataType}");
 
         if (!result)
             return;
@@ -302,7 +300,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
         if (PathMod.Quest.IsValid() && modStatus == DataManager.ModStatus.Base)
         {
-            await MessageBoxWindowView.Show(DialogService,
+            await MessageBoxWindowView.Show(_context.DialogService,
                 string.Format("The {0} {1} is not a part of the currently edited mod and cannot be deleted.",
                     datatype.ToString(), key),
                 "Delete " + datatype.ToString(), MessageBoxWindowView.MessageBoxButtons.Ok);
@@ -311,11 +309,11 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
         MessageBoxWindowView.MessageBoxResult result;
         if (modStatus == DataManager.ModStatus.Base || modStatus == DataManager.ModStatus.Added)
-            result = await MessageBoxWindowView.Show(DialogService,
+            result = await MessageBoxWindowView.Show(_context.DialogService,
                 string.Format("Are you sure you want to delete the following {0}:\n{1}", datatype.ToString(), key),
                 "Delete " + datatype.ToString(), MessageBoxWindowView.MessageBoxButtons.YesNo);
         else
-            result = await MessageBoxWindowView.Show(DialogService,
+            result = await MessageBoxWindowView.Show(_context.DialogService,
                 string.Format("The following {0} will be reset back to the base game:\n{1}", datatype.ToString(), key),
                 "Delete " + datatype.ToString(), MessageBoxWindowView.MessageBoxButtons.YesNo);
 
@@ -325,7 +323,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
         Items.Remove(SelectedItem);
         UpdateVisibleItems(SearchFilter);
-        TabEvents.RequestCloseTabsForEntry(key, datatype);
+        _context.TabEvents.RequestCloseTabsForEntry(key, datatype);
         var nodeToRemove = Node.SubNodes
             .OfType<DataItemNode>()
             .FirstOrDefault(n => n.ItemKey == key);

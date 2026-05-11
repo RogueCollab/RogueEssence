@@ -10,8 +10,9 @@
         </StackPanel>
     </Design.PreviewWith>
 
-    
+
     <Style Selector="Expander">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
         <Style.Resources>
             <SolidColorBrush x:Key="ExpanderContentBackground" Color="Transparent" />
             <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="Transparent" />
@@ -31,7 +32,6 @@
             <Setter Property="Margin" Value="0" />
             <Setter Property="MinHeight" Value="24" />
             <Setter Property="Template">
-
                 <ControlTemplate>
                     <Border x:Name="ToggleButtonBackground">
                         <Grid ColumnDefinitions="Auto, *">
@@ -45,12 +45,10 @@
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
                                       RenderTransformOrigin="50%,50%"
+                                      RenderTransform="rotate(180deg)"
                                       Stretch="Uniform"
                                       Stroke="{DynamicResource ExpanderChevronForeground}"
                                       StrokeThickness="1" />
-                                <Border.RenderTransform>
-                                    <RotateTransform />
-                                </Border.RenderTransform>
                             </Border>
                             <ContentPresenter Grid.Column="1"
                                               x:Name="PART_ContentPresenter"
@@ -65,9 +63,15 @@
                 </ControlTemplate>
             </Setter>
         </Style>
+
+        <Style Selector="^ /template/ ToggleButton#ExpanderHeader /template/ Border#ExpandCollapseChevronBorder">
+            <Setter Property="RenderTransform" Value="rotate(90deg)"/>
+        </Style>
+
+        <Style Selector="^:expanded /template/ ToggleButton#ExpanderHeader /template/ Border#ExpandCollapseChevronBorder">
+            <Setter Property="RenderTransform" Value="rotate(180deg)"/>
+        </Style>
     </Style>
-
-
     <Style Selector="UserControl">
         <Setter Property="FontSize" Value="12" />
     </Style>
@@ -795,7 +799,7 @@
     </Style>
 
     <Style Selector="TextBox">
-        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="4,0" />
         <Setter Property="MinHeight" Value="30" />
         <Setter Property="VerticalContentAlignment" Value="Center" />

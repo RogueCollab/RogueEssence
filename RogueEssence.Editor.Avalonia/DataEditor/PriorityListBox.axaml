@@ -1,9 +1,12 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
              xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
   <UserControl.Resources>
@@ -11,30 +14,49 @@
   <Design.DataContext>
     <vm:PriorityListBoxViewModel/>
   </Design.DataContext>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition/>
-      <RowDefinition Height="40"/>
-      <RowDefinition/>
-      <RowDefinition Height="40"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition Width="30"/>
-    </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" ItemsSource="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="3" Grid.ColumnSpan="2" MinHeight="50">
+  <Grid RowDefinitions="*, 40, *" ColumnDefinitions="*, *, 30">
+    <DataGrid 
+      Name="gridItems" 
+      IsReadOnly="true" 
+      HorizontalAlignment="Stretch"
+      ItemsSource="{Binding Collection}" 
+      SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
+      DoubleTapped="doubleClickStart" 
+      PointerReleased="lbxCollection_DoubleClick" 
+      Margin="4" Grid.RowSpan="3" 
+      Grid.ColumnSpan="2" 
+      MinHeight="50"
+      x:DataType="vm:PriorityElement"
+      Classes="default"
+    >
       <DataGrid.Columns>
         <DataGridTextColumn Header="Priority"
-                      Binding="{Binding PriorityObj}" />
+                            Binding="{Binding PriorityObj}"
+                            Width="80" />
         <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=DisplayValue}" />
+                            Binding="{Binding Path=DisplayValue}"
+                            Width="*" />
       </DataGrid.Columns>
     </DataGrid>
-    <Button x:Name="PriorityListBoxAddButton" PointerReleased="PriorityListBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="3" Grid.Column="0">Add</Button>
-    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="3" Grid.Column="1">Delete</Button>
-    <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="2">^</Button>
-    <Button x:Name="PriorityListBoxEditButton" PointerReleased="PriorityListBoxEditButton_OnPointerReleased" Margin="4" Grid.Row="1" Grid.Column="2">~</Button>
-    <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="2" Grid.Column="2">v</Button>
+    
+    <StackPanel Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Margin="10, 0, 0, 0">
+      <Button x:Name="PriorityListBoxAddButton" PointerReleased="PriorityListBoxAddButton_OnPointerReleased" Classes="secondary" Margin="0, 0" Padding="4, 3">
+        <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.Plus}" />
+      </Button>
+      <Button Command="{Binding btnDelete_Click}" Classes="secondary" Margin="0, 0" Padding="4, 3">
+        <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.Minus}" />
+      </Button>
+    </StackPanel>
+    <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10, 0, 0, 0">
+      <Button Command="{Binding btnUp_Click}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+        <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.CaretUpFill}" />
+      </Button>
+      <Button x:Name="PriorityListBoxEditButton" PointerReleased="PriorityListBoxEditButton_OnPointerReleased" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+        <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.SortDescendingFill}" />
+      </Button>
+      <Button Command="{Binding btnDown_Click}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+        <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.CaretDownFill}" />
+      </Button>
+    </StackPanel>
   </Grid>
 </UserControl>

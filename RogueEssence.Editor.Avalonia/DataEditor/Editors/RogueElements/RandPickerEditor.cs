@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class RandPickerEditor : Editor<IRandPicker>
     {
+        public RandPickerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
     }
 }
