@@ -7,11 +7,11 @@ namespace RogueEssence.Menu
 {
     public class ModDiffSummary : SummaryMenu
     {
-        const int MAX_DIFF = 10;
+        const int MAX_DIFF = 9;
 
         MenuText Title;
         MenuDivider MenuDiv;
-        public MenuText[] Diffs;
+        public List<MenuText> Diffs;
 
         public ModDiffSummary(string title) : this(MenuLabel.MOD_DIFF_SUMMARY, title) { }
         public ModDiffSummary(string label, string title) : base(new Rect(new Loc(16, 16), new Loc(16, 16)))
@@ -26,16 +26,24 @@ namespace RogueEssence.Menu
 
         public void SetDiff(List<ModDiff> diff)
         {
-            Diffs = new MenuText[diff.Count];
-            int rows = Math.Min(Diffs.Length, MAX_DIFF);
+            int rows = Math.Min(diff.Count, MAX_DIFF);
+            Diffs = new List<MenuText>();
             for (int ii = 0; ii < rows; ii++)
             {
-                int yy = ii % MAX_DIFF;
-                Diffs[ii] = new MenuText(diff[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * ii));
-                Elements.Add(Diffs[ii]);
+                MenuText diffMenuText = new MenuText(diff[ii].Name, new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * ii));
+                Diffs.Add(diffMenuText);
+                Elements.Add(diffMenuText);
+            }
+            int overflow = diff.Count - MAX_DIFF;
+            if (overflow > 0)
+            {
+                MenuText diffMenuText = new MenuText(Text.FormatKey("MENU_AND_MORE", overflow), new Loc(GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight + TitledStripMenu.TITLE_OFFSET + VERT_SPACE * Diffs.Count));
+                Diffs.Add(diffMenuText);
+                Elements.Add(diffMenuText);
             }
 
-            Bounds = new Rect(new Loc(16, 16), new Loc(CalculateChoiceLength(Diffs, Title.GetTextLength() + 16 + GraphicsManager.MenuBG.TileWidth * 2), rows * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + TitledStripMenu.TITLE_OFFSET));
+
+            Bounds = new Rect(new Loc(16, 16), new Loc(CalculateChoiceLength(Diffs, Title.GetTextLength() + 16 + GraphicsManager.MenuBG.TileWidth * 2), Diffs.Count * VERT_SPACE + GraphicsManager.MenuBG.TileHeight * 2 + TitledStripMenu.TITLE_OFFSET));
             MenuDiv.Length = Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2;
         }
 

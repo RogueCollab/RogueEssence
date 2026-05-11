@@ -317,6 +317,11 @@ namespace RogueEssence.Dungeon
         public bool StopItemAtHit;
 
         /// <summary>
+        /// Will act as AI even if controlled
+        /// </summary>
+        public bool ForceAI;
+
+        /// <summary>
         /// Will move erratically
         /// </summary>
         public bool MovesScrambled;
@@ -1258,7 +1263,7 @@ namespace RogueEssence.Dungeon
         /// <param name="skillNum"></param>
         /// <param name="enabled"></param>
         /// <param name="refresh"></param>
-        public void LearnSkill(string skillNum, bool enabled, bool refresh = true)
+        public void LearnSkill(string skillNum, bool enabled, bool fullRefresh = true)
         {
             int newSlot = 0;
             foreach (SlotSkill skill in BaseSkills)
@@ -1267,18 +1272,18 @@ namespace RogueEssence.Dungeon
                     newSlot++;
             }
             if (newSlot < MAX_SKILL_SLOTS)
-                ReplaceSkill(skillNum, newSlot, enabled, refresh);
+                ReplaceSkill(skillNum, newSlot, enabled, fullRefresh);
         }
 
 
-        public void ReplaceSkill(string skillNum, int newSlot, bool enabled, bool refresh = true)
+        public void ReplaceSkill(string skillNum, int newSlot, bool enabled, bool fullRefresh = true)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
 
-            OnSkillsChanged(skillIndices.ToArray());
+            if (fullRefresh)
+                OnSkillsChanged(skillIndices.ToArray());
 
-            if (refresh)
-                RefreshTraits();
+            RefreshTraits(fullRefresh);
         }
 
         private List<int> baseReplaceSkill(string skillNum, int newSlot, bool enabled)
@@ -1564,6 +1569,7 @@ namespace RogueEssence.Dungeon
             CanRemoveStuck = false;
             StopItemAtHit = false;
 
+            ForceAI = false;
             MovesScrambled = false;
 
             ChargeSaver = false;
