@@ -538,9 +538,9 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateConstantsNode(NodeBase parent)
     {
-        var constantsNode = _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Constants", "Icons.ListFill", "");
-        var startParamsNode = _nodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Start Params", "Icons.ListFill", "");
-        var universalEventsNode = _nodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Universal Events", "Icons.ListFill", "");
+        var constantsNode = _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Constants", "Icons.ListFill");
+        var startParamsNode = _nodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Start Params", "Icons.ListFill");
+        var universalEventsNode = _nodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Universal Events", "Icons.ListFill");
         //
         // var menuTextNode = _nodeFactory.CreateOpenEditorNode("Menu Text", "Icons.TableFill", "");
         // var gameplayTextNode = _nodeFactory.CreateOpenEditorNode("Gameplay Text", "Icons.TableFill", "");
