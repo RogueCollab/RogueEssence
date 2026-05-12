@@ -63,9 +63,8 @@ namespace RogueEssence.Dev
                     ReflectionExt.GetPassableAttributes(1, attributes));
 
                 NodeBase node =
-                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title,
-                        pageViewModel.Node.Icon);
-                pageViewModel.Node.SubNodes.Add(node);
+                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);
                 ReflectedDataPageViewModel

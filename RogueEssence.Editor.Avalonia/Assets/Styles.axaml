@@ -249,7 +249,7 @@
         <Setter Property="Background" Value="{DynamicResource Brush.IconButton.BackgroundHovered}" />
     </Style>
     <Style Selector="Button.secondary:disabled">
-        <Setter Property="Opacity" Value=".65" />
+        <Setter Property="Opacity" Value=".30" />
     </Style>
     <Style Selector="Button.secondary ToolTip TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Brush.FG1}" />
@@ -269,7 +269,7 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="Button.flat.danger:disabled">
-        <Setter Property="Opacity" Value=".65" />
+        <Setter Property="Opacity" Value=".30" />
     </Style>
     <Style Selector="Button.flat.danger TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}" />

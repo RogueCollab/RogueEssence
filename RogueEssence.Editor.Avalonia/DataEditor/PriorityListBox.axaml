@@ -9,54 +9,59 @@
              VerticalAlignment="Stretch"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
-  <UserControl.Resources>
-  </UserControl.Resources>
-  <Design.DataContext>
-    <vm:PriorityListBoxViewModel/>
-  </Design.DataContext>
-  <Grid RowDefinitions="*, 40, *" ColumnDefinitions="*, *, 30">
-    <DataGrid 
-      Name="gridItems" 
-      IsReadOnly="true" 
-      HorizontalAlignment="Stretch"
-      ItemsSource="{Binding Collection}" 
-      SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
-      DoubleTapped="doubleClickStart" 
-      PointerReleased="lbxCollection_DoubleClick" 
-      Margin="4" Grid.RowSpan="3" 
-      Grid.ColumnSpan="2" 
-      MinHeight="50"
-      x:DataType="vm:PriorityElement"
-      Classes="default"
-    >
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Priority"
-                            Binding="{Binding PriorityObj}"
-                            Width="80" />
-        <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=DisplayValue}"
-                            Width="*" />
-      </DataGrid.Columns>
-    </DataGrid>
-    
-    <StackPanel Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Margin="10, 0, 0, 0">
-      <Button x:Name="PriorityListBoxAddButton" PointerReleased="PriorityListBoxAddButton_OnPointerReleased" Classes="secondary" Margin="0, 0" Padding="4, 3">
-        <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.Plus}" />
-      </Button>
-      <Button Command="{Binding btnDelete_Click}" Classes="secondary" Margin="0, 0" Padding="4, 3">
-        <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.Minus}" />
-      </Button>
-    </StackPanel>
-    <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="10, 0, 0, 0">
-      <Button Command="{Binding btnUp_Click}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
-        <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.CaretUpFill}" />
-      </Button>
-      <Button x:Name="PriorityListBoxEditButton" PointerReleased="PriorityListBoxEditButton_OnPointerReleased" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
-        <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.SortDescendingFill}" />
-      </Button>
-      <Button Command="{Binding btnDown_Click}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
-        <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.CaretDownFill}" />
-      </Button>
-    </StackPanel>
-  </Grid>
+    <UserControl.Resources>
+    </UserControl.Resources>
+    <Design.DataContext>
+        <vm:PriorityListBoxViewModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="*, 40, *" ColumnDefinitions="*, *, 30">
+        <DataGrid
+            Name="gridItems"
+            IsReadOnly="true"
+            HorizontalAlignment="Stretch"
+            ItemsSource="{Binding Collection}"
+            SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
+            DoubleTapped="doubleClickStart"
+            PointerReleased="lbxCollection_DoubleClick"
+            Margin="4" Grid.RowSpan="3"
+            Grid.ColumnSpan="2"
+            MinHeight="50"
+            x:DataType="vm:PriorityElement"
+            Classes="default">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Priority"
+                                    Binding="{Binding PriorityObj}"
+                                    Width="80" />
+                <DataGridTextColumn Header="Value"
+                                    Binding="{Binding Path=DisplayValue}"
+                                    Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Margin="10, 0, 0, 0"
+                    Spacing="30">
+            <StackPanel>
+                <Button x:Name="PriorityListBoxAddButton" PointerReleased="PriorityListBoxAddButton_OnPointerReleased"
+                        Classes="secondary" Margin="0, 0" Padding="4, 3">
+                    <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.Plus}" />
+                </Button>
+                <Button Command="{Binding btnDelete_Click}" IsEnabled="{Binding HasSelection}" Classes="secondary" Margin="0, 0" Padding="4, 3">
+                    <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.Minus}" />
+                </Button>
+            </StackPanel>
+            <StackPanel>
+                <Button Command="{Binding btnUp_Click}" IsEnabled="{Binding CanMoveUp}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                    <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.CaretUpFill}" />
+                </Button>
+                <Button x:Name="PriorityListBoxEditButton"
+                        PointerReleased="PriorityListBoxEditButton_OnPointerReleased" IsEnabled="{Binding HasSelection}" Classes="secondary" Margin="0, 0"
+                        Padding="4,3, 4, 3">
+                    <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.SortDescendingFill}" />
+                </Button>
+                <Button Command="{Binding btnDown_Click}" IsEnabled="{Binding CanMoveDown}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                    <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.CaretDownFill}" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
 </UserControl>

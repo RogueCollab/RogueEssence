@@ -95,11 +95,9 @@ namespace RogueEssence.Dev.ViewModels
         // public override string Title => "Species Editor";
 
 
-        public bool CheckSprites;
+        public bool CheckSprites { get; private set; }
         private bool notifiedImport;
-
-        private Window parent;
-
+        
 
         public string Name
         {
@@ -109,7 +107,6 @@ namespace RogueEssence.Dev.ViewModels
                     ? GraphicsManager.AssetType.Chara.ToString()
                     : GraphicsManager.AssetType.Portrait.ToString();
             }
-            set { }
         }
 
         private List<string> monsterKeys;
@@ -207,7 +204,7 @@ namespace RogueEssence.Dev.ViewModels
         public string HeaderText { get; }
 
         public SpeciesEditPageViewModel(EditorContext context,
-            OpenEditorNodeWithParams node) : base(context, node)
+            OpenEditorNodeWithParams node, Action<EditorPageViewModel> onPageOpen) : base(context, node, onPageOpen)
         {
             Monsters = new ObservableCollection<MonsterNodeViewModel>();
             OpList = new ObservableCollection<SpeciesOpContainer>();
@@ -215,7 +212,7 @@ namespace RogueEssence.Dev.ViewModels
             HeaderText = node.Title;
         }
 
-        public override void LoadData()
+        public override void OnPageLoad()
         {
             LoadFormDataEntries(CheckSprites);
             this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
@@ -364,9 +361,8 @@ namespace RogueEssence.Dev.ViewModels
 
             bool success = MassExport(CachedPath, singleSheet);
             if (!success)
-                await MessageBox.Show(parent,
-                    "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed",
-                    MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_context.DialogService,"Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed",
+                    MessageBoxWindowView.MessageBoxButtons.Ok);
         }
 
         public async void mnuReIndex_Click()

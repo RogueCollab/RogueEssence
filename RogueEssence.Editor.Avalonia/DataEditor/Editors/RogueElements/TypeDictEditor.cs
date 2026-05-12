@@ -127,6 +127,7 @@ namespace RogueEssence.Dev
                 expander.IsExpanded = member.Count > 0;
                 expander.HorizontalAlignment = HorizontalAlignment.Stretch;
                 expander.Content = lbxValue;
+                expander.Padding = new Thickness(0);
                 control.Children.Add(expander);
             }
             else

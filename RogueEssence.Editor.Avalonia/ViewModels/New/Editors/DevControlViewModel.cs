@@ -1,3 +1,4 @@
+using System;
 using RogueEssence.Dev.Services;
 
 namespace RogueEssence.Dev.ViewModels;
@@ -17,7 +18,7 @@ public class DevControlViewModel : EditorPageViewModel
 
     public DevControlViewModel(EditorContext context,
         DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabTravelViewModel travel,
-        DevTabScriptViewModel script, NodeBase node) : base(context, node)
+        DevTabScriptViewModel script, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
         Fruits = new TestComboBoxViewModel();
         Game = game;

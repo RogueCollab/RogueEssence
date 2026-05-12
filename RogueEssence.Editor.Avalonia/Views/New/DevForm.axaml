@@ -161,18 +161,18 @@
                                                             Icon="{Binding Icon}"
                                                             IconSize="12" />
 
-                                                <Button Grid.Column="1" HorizontalAlignment="Left"
-                                                        Classes="icon_button"
-                                                        Padding="4, 0, 0, 0"
-                                                        Width="18" Height="18"
-                                                        IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
-
-                                                        Command="{Binding AddCommand}">
-                                                    <Path Stretch="Fill"
-                                                          Fill="{DynamicResource Brush.FG1}"
-                                                          Width="12" Height="12"
-                                                          Data="{StaticResource Icons.Plus}" />
-                                                </Button>
+                                                <!-- <Button Grid.Column="1" HorizontalAlignment="Left" -->
+                                                <!--         Classes="icon_button" -->
+                                                <!--         Padding="4, 0, 0, 0" -->
+                                                <!--         Width="18" Height="18" -->
+                                                <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}" -->
+                                                <!-- -->
+                                                <!--         Command="{Binding AddCommand}"> -->
+                                                <!--     <Path Stretch="Fill" -->
+                                                <!--           Fill="{DynamicResource Brush.FG1}" -->
+                                                <!--           Width="12" Height="12" -->
+                                                <!--           Data="{StaticResource Icons.Plus}" /> -->
+                                                <!-- </Button> -->
                                             </Grid>
                                         </DataTemplate>
 
@@ -181,21 +181,21 @@
                                                 <v:IconText Text="{Binding Title}"
                                                             Icon="{Binding Icon}"
                                                             IconSize="12" />
-
-                                                <Button Grid.Column="1"
-                                                        Padding="4, 0, 0, 0"
-                                                        HorizontalAlignment="Left"
-                                                        Command="{Binding ((vm:ItemRootNode)Parent).DeleteCommand}"
-                                                        CommandParameter="{Binding}"
-                                                        IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}"
-                                                        Classes="icon_button"
-                                                        Width="18" Height="18"
-                                                        VerticalAlignment="Center">
-                                                    <Path Stretch="Fill"
-                                                          Fill="{DynamicResource Brush.FG1}"
-                                                          Width="12" Height="12"
-                                                          Data="{StaticResource Icons.Minus}" />
-                                                </Button>
+                                                <!-- -->
+                                                <!-- <Button Grid.Column="1" -->
+                                                <!--         Padding="4, 0, 0, 0" -->
+                                                <!--         HorizontalAlignment="Left" -->
+                                                <!--         Command="{Binding ((vm:ItemRootNode)Parent).DeleteCommand}" -->
+                                                <!--         CommandParameter="{Binding}" -->
+                                                <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}" -->
+                                                <!--         Classes="icon_button" -->
+                                                <!--         Width="18" Height="18" -->
+                                                <!--         VerticalAlignment="Center"> -->
+                                                <!--     <Path Stretch="Fill" -->
+                                                <!--           Fill="{DynamicResource Brush.FG1}" -->
+                                                <!--           Width="12" Height="12" -->
+                                                <!--           Data="{StaticResource Icons.Minus}" /> -->
+                                                <!-- </Button> -->
                                             </Grid>
                                         </DataTemplate>
 

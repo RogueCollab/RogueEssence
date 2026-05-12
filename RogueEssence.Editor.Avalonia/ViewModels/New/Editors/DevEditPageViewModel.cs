@@ -67,7 +67,7 @@ public class DevEditPageViewModel : EditorPageViewModel
     
     // public override string? Title => "Dev Edit";
 
-    public DevEditPageViewModel(EditorContext context, NodeBase node) : base(context, node)
+    public DevEditPageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
         var n = node as DataItemNode;
         var nn = node.Parent as DataRootNode;

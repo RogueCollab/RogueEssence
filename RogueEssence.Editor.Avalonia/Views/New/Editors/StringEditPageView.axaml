@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="using:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:StringEditPageViewModel"
+             x:Class="RogueEssence.Dev.Views.StringEditPageView">
+    <Design.DataContext>
+        <vm:StringEditPageViewModel/>
+    </Design.DataContext>
+    <Grid RowDefinitions="64, Auto, Auto, Auto">
+        <TextBlock Grid.Row="1" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                   Text="{Binding HeaderText}" />
+
+        <Grid Grid.Row="2" RowDefinitions="Auto, 16, Auto, 32, Auto" Margin="64, 8" MinWidth="600">
+            <DataGrid x:Name="StringDataGrid" Grid.Row="2" ItemsSource="{Binding GameStrings}" Classes="default" 
+                      SelectedIndex="{Binding CurrentString, Mode=TwoWay}"
+                      CanUserResizeColumns="True" 
+                      HorizontalScrollBarVisibility="Disabled" 
+                      Height="400"
+                      BorderBrush="{DynamicResource Brush.Border2}" 
+                      BorderThickness="1"
+                      Margin="4">
+                <DataGrid.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+                    </Style>
+                    <Style Selector="TextBox">
+                        <Setter Property="TextWrapping" Value="Wrap" />
+                        <Setter Property="AcceptsReturn" Value="True" />
+                    </Style>
+                </DataGrid.Styles>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="1*"/>
+                    <DataGridTextColumn Header="Comment" Binding="{Binding Comment}" Width="1*"/>
+                    <DataGridTextColumn Header="String" Binding="{Binding String}" Width="3*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                <Button x:Name="StringDataGridButtonAdd" Classes="flat" Width="100"
+                        Click="StringDataGridButtonAdd_OnClick">
+                    <v:IconText Text="Add" Icon="Icons.Plus" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnDelete_Click}">
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnSave_Click}">
+                    <v:IconText Text="Save All" Icon="Icons.FloppyDiskFill" IconSize="12" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

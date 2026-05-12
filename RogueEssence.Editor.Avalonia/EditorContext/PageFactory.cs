@@ -67,7 +67,7 @@ namespace RogueEssence.Dev
             return (TPage)_provider.GetRequiredService(type);
         }
         
-        public EditorPageViewModel? CreatePage(Type pageType, NodeBase? node = null, Func<Task>? onOpen = null)
+        public EditorPageViewModel? CreatePage(Type pageType, NodeBase? node = null, Action<EditorPageViewModel> onOpen = null)
         {
             
             // Make sure it's a page
@@ -88,49 +88,17 @@ namespace RogueEssence.Dev
        
             if (node != null)
             {
-                page = (EditorPageViewModel)ActivatorUtilities.CreateInstance(_provider, pageType, node);
+                if (onOpen == null)
+                {
+                    onOpen = (vm) => { };
+                }
+                page = (EditorPageViewModel)ActivatorUtilities.CreateInstance(_provider, pageType, node, onOpen);
             }
             else
             {
                 page = (EditorPageViewModel)_provider.GetRequiredService(pageType);
             }
             
-            if (node is DataItemNode && page is ReflectedDataPageViewModel pg)
-            {
-                var dataRoot = pg.Node.FindNode<DataRootNode>();
-                var dataItem = pg.Node.FindNode<DataItemNode>();
-
-                DataManager.DataType dataType = dataRoot.DataType;
-                string key = dataItem.ItemKey;
-
-                var regis = DataRegistry.Map[dataType];
-                IEntryData data = regis.GetEntry(key);
-
-                string title = DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key),
-                    data.Name.ToLocal(), data, data.GetType());
-
-                pg.SetPageTitle(title, pg.Node.Icon);
-
-                pg.OnLoadAction = (StackPanel stack) =>
-                {
-                    DataEditor.LoadDataControls(key, data, stack);
-                };
-
-                pg.OnOKAction = async (StackPanel stack) =>
-                {
-                    Console.WriteLine("OK ACTION");
-                    lock (GameBase.lockObj)
-                    {
-                        object obj = data;
-                        DataEditor.SaveDataControls(ref obj, stack, new Type[0]);
-                        DataManager.Instance.ContentChanged(dataType, key, (IEntryData)obj);
-
-                        string newName = DataManager.Instance.DataIndices[dataType].Get(key).GetLocalString(true);
-                        pg.SetPageTitle(DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key), newName, obj, obj.GetType()), pg.Node.Icon);
-                    }
-                    return true;
-                };
-            }
             return page;
         }
 
@@ -153,8 +121,14 @@ namespace RogueEssence.Dev
         //     return (EditorPageViewModel)_provider.GetRequiredService(pageType);
         // }
         
-        public TPage? CreatePage<TPage>(NodeBase? node) where TPage : EditorPageViewModel
+        public TPage? CreatePage<TPage>(NodeBase? node, Action<EditorPageViewModel> onOpen = null) where TPage : EditorPageViewModel
         {
+
+            if (onOpen == null)
+            {
+                onOpen = (vm) => { };
+            }
+            
             var type = typeof(TPage);
         
             if (!_registeredTypes.Contains(type))
@@ -164,7 +138,7 @@ namespace RogueEssence.Dev
 
             if (node != null)
             {
-                return (TPage)ActivatorUtilities.CreateInstance(_provider, type, node);
+                return (TPage)ActivatorUtilities.CreateInstance(_provider, type, node, onOpen);
             }
         
             return (TPage)_provider.GetRequiredService(type);

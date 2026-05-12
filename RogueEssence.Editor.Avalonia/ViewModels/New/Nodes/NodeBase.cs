@@ -15,6 +15,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 using Avalonia.Threading;
+using DynamicData;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
 using RogueEssence.Content;
@@ -130,10 +131,17 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
             child.CollapseChildren();
         }
     }
-    public void AddNodeIfNotExists(NodeBase node)
+    public bool AddNodeIfNotExists(NodeBase node)
     {
+        bool added = false;
+
         if (!SubNodes.Contains(node))
+        {
             SubNodes.Add(node);
+            added = true;
+        }
+        
+        return added;
     }
     
     public void RemoveNode(NodeBase node)
@@ -161,10 +169,13 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
 public class OpenEditorNode : NodeBase
 {
     public Type EditorType { get; }
-
-    public OpenEditorNode(string title, Type? editorType, string? icon = null)
+    
+    public readonly Action<EditorPageViewModel>? OnPageLoad;
+    
+    public OpenEditorNode(string title, Type? editorType, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
         : base(title, icon ?? "")
     {
+        OnPageLoad = onPageLoad;
         EditorType = editorType;
     }
     
@@ -182,16 +193,34 @@ public class OpenEditorNode : NodeBase
 
 public class ReflectedDataNode : OpenEditorNode
 {
-    public ReflectedDataNode(string title, Type editorType, string icon = null)
-        : base(title, editorType, icon)
-    { }
-    
-    // TODO: Rather than using references, keep track of a tree of inherited subtypes to check if they're equal?
-    // Don't use references...
-    // Don't use the title, use the type instead or a combination of elementName, parent, elementType
-    // Find something more reliable than the title?
-    protected override bool EqualsCore(NodeBase other) => other.Title == Title;
-    protected override int GetHashCodeCore() => Title.GetHashCode();
+    private string BuildIdentifier(NodeBase? parent)
+    {
+        var parts = new List<string> { Title };
+        NodeBase? current = parent;
+
+        while (current != null)
+        {
+            parts.Add(current.Title);
+            current = current.Parent;
+        }
+
+        parts.Reverse();
+        return string.Join("/", parts);
+    }
+
+    private readonly string _identifier;
+
+    public ReflectedDataNode(string title, Type editorType,
+        string icon = null, NodeBase? parent = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon, onPageLoad)
+    {
+        _identifier = BuildIdentifier(parent);
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+        => other is ReflectedDataNode o && _identifier == o._identifier;
+
+    protected override int GetHashCodeCore() => _identifier.GetHashCode();
 }
 
 
@@ -204,8 +233,9 @@ public class OpenEditorNodeWithParams : OpenEditorNode
         string title,
         Type? editorType,
         object[] extraParams,
-        string? icon = null)
-        : base(title, editorType, icon)
+        string? icon = null, 
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon, onPageLoad)
     {
         ExtraParams = extraParams;
     }
@@ -221,8 +251,10 @@ public class OpenEditorNodeFX<T> : OpenEditorNode
         Type? editorType,
         Func<T> getter, 
         Action<T> setter,
-        string? icon = null)
-        : base(title, editorType, icon)
+        string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null
+        )
+        : base(title, editorType, icon, onPageLoad)
     {
         _getter = getter;
         _setter = setter;
@@ -244,8 +276,8 @@ public abstract class ItemRootNode : OpenEditorNode
     public abstract Task AddItem();
     public abstract Task DeleteItem(string key);
 
-    protected ItemRootNode(string title, Type? editorKey, string icon = null)
-        : base(title, editorKey, icon)
+    protected ItemRootNode(string title, Type? editorKey, string icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorKey, icon, onPageLoad)
     {
         DeleteCommand = ReactiveCommand.Create<NodeBase>(RemoveNode);
         
@@ -260,8 +292,8 @@ public class DataRootNode : ItemRootNode
     private readonly IDialogService _dialogService;
 
     public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
-        Type? editorType, string title, string? icon = null)
-        : base(title, editorType, icon ?? "")
+        Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
@@ -648,8 +680,8 @@ public class DataItemNode : OpenEditorNode
     //     set => this.RaiseAndSetIfChanged(ref _editorKey, value);
     // }
 
-    public DataItemNode(string itemKey, Type? editorType, string? title, string? icon = null)
-        : base(title ?? "", editorType, icon ?? "")
+    public DataItemNode(string itemKey, Type? editorType, string? title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title ?? "", editorType, icon ?? "", onPageLoad)
     {
         ItemKey = itemKey;
     }
@@ -694,8 +726,8 @@ public class SpriteRootNode : ItemRootNode
         GraphicsManager.AssetType assetType,
         Type? editorType,
         string title,
-        string? icon = null)
-        : base(title, editorType, icon ?? "")
+        string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
     {
         AssetType = assetType;
         // _dialogService = dialogService;
@@ -760,8 +792,8 @@ public class SpriteTileRootNode : SpriteRootNode
     private readonly IDialogService _dialogService;
     public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
 
-    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, Type? editorType, string title, string? icon = null)
-        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorType, title, icon)
+    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorType, title, icon, onPageLoad)
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;
@@ -823,8 +855,8 @@ public class ModRootNode : ItemRootNode
 
     private readonly IDialogService _dialogService;
     public ModRootNode(NodeFactory nodeFactory, IDialogService dialogService,
-        Type? editorType, string title, string? icon = null)
-        : base(title, editorType, icon ?? "")
+        Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
     {
         _nodeFactory = nodeFactory;
         _dialogService = dialogService;

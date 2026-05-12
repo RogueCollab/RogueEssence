@@ -35,78 +35,10 @@
     </Design.DataContext>
 
     <UserControl.Styles>
-        <Style Selector="Button#CloseTabButton">
-            <Setter Property="Opacity" Value="0"></Setter>
-        </Style>
-
-
         <Style Selector="controls|DragTabItem">
+            <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="Padding" Value="0"></Setter>
-        </Style>
-
-        <Style Selector="controls|DragTabItem">
-            <Setter Property="Margin" Value="0,0, 8, 0"></Setter>
-            <Style Selector="^:selected">
-                <Setter Property="Background">
-                    <Setter.Value>
-                        <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
-                            <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
-                                     RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
-                            <Binding Source="SelectedTabItemBackgroundBrush" />
-                            <Binding Source="" />
-                            <Binding Path="RequestedThemeVariant" Source="{x:Static Application.Current}" />
-                        </MultiBinding>
-                    </Setter.Value>
-                </Setter>
-
-                <Setter Property="Foreground">
-                    <Setter.Value>
-                        <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
-                            <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
-                                     RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
-                            <!-- highlight color -->
-                            <Binding Source="TabItemHeaderForegroundSelected" />
-                            <!-- deselect color -->
-                            <Binding Source="TabItemHeaderForegroundUnselected" />
-                            <Binding Path="RequestedThemeVariant"
-                                     Source="{x:Static Application.Current}" />
-                        </MultiBinding>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <Style Selector="^:selected:pointerover">
-                <Setter Property="Background">
-                    <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
-                        <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
-                                 RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
-                        <Binding Source="SelectedTabItemBackgroundBrush" />
-                        <Binding Source="TabItemHeaderBackgroundUnselectedPointerOver" />
-                        <Binding Path="RequestedThemeVariant"
-                                 Source="{x:Static Application.Current}" />
-                    </MultiBinding>
-                </Setter>
-            </Style>
-        </Style>
-
-        <Style Selector="Button#CloseTabButton:pointerover">
-            <Setter Property="Opacity" Value="1"></Setter>
-        </Style>
-
-        <Style Selector="Button#CloseTabButton:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="1"></Setter>
-        </Style>
-
-        <Style Selector="Grid#CloseButtonContainer:pointerover > Ellipse#NeedToSaveEllipse">
-            <Setter Property="Opacity" Value="0"></Setter>
-        </Style>
-
-        <Style Selector="Grid#CloseButtonContainer:pointerover > Button#CloseTabButton">
-            <Setter Property="Opacity" Value="1"></Setter>
-        </Style>
-
-        <Style Selector="controls|DragTabItem">
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
@@ -139,9 +71,7 @@
                                         CornerRadius="{DynamicResource ControlCornerRadius}"
                                         IsVisible="False" />
                             </Grid>
-
                         </Border>
-                        <!-- Selection indicator -->
                         <Border x:Name="Indicator"
                                 Height="4"
                                 CornerRadius="20"
@@ -151,11 +81,94 @@
                                 Width="166" />
                     </Grid>
                 </ControlTemplate>
-
             </Setter>
 
+            <Style Selector="^:selected">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
+                            <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
+                                     RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
+                            <Binding Source="SelectedTabItemBackgroundBrush" />
+                            <Binding Source="" />
+                            <Binding Path="RequestedThemeVariant" Source="{x:Static Application.Current}" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
+                            <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
+                                     RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
+                            <Binding Source="TabItemHeaderForegroundSelected" />
+                            <Binding Source="TabItemHeaderForegroundUnselected" />
+                            <Binding Path="RequestedThemeVariant" Source="{x:Static Application.Current}" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
+            <Style Selector="^:selected:pointerover">
+                <Setter Property="Background">
+                    <MultiBinding Converter="{StaticResource ObjectToColorKeyConverter}">
+                        <Binding Path="((vm:DevFormViewModel)DataContext).TemporaryTab"
+                                 RelativeSource="{RelativeSource AncestorType=controls:TabsControl}" />
+                        <Binding Source="SelectedTabItemBackgroundBrush" />
+                        <Binding Source="TabItemHeaderBackgroundUnselectedPointerOver" />
+                        <Binding Path="RequestedThemeVariant" Source="{x:Static Application.Current}" />
+                    </MultiBinding>
+                </Setter>
+            </Style>
         </Style>
+
+
+        <!-- 1. default hidden -->
+        <Style Selector="Button#CloseTabButton">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!-- 2. show on any tab hover -->
+        <Style Selector="controls|DragTabItem:pointerover Button#CloseTabButton">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+
+        <!-- 3. hide on selected (not hovered) -->
+        <Style Selector="controls|DragTabItem:selected Button#CloseTabButton">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!-- 4. show on selected + hovered -->
+        <Style Selector="controls|DragTabItem:selected:pointerover Button#CloseTabButton">
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+      
+        <Style Selector="controls|DragTabItem:selected /template/ controls|LeftPressedThumb#PART_Thumb">
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style Selector="Button#CloseTabButton">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="Button#CloseTabButton">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="controls|DragTabItem:pointerover Button#CloseTabButton">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+        <Style Selector="controls|DragTabItem:selected Button#CloseTabButton">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="controls|DragTabItem:selected:pointerover Button#CloseTabButton">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+       
+        <Style Selector="Grid#CloseButtonContainer:pointerover > Ellipse#NeedToSaveEllipse">
+            <Setter Property="Opacity" Value="0"></Setter>
+        </Style>
+
+
         <Style Selector="controls|DragTabItem:selected /template/ Border#Indicator">
             <Setter Property="Background" Value="{DynamicResource Brush.Accent}" />
             <Setter Property="IsVisible"
@@ -184,7 +197,7 @@
                             </ScrollViewer>
                             <Thumb Grid.Column="2" Name="PART_RightDragWindowThumb"
                                    MinWidth="{TemplateBinding RightThumbWidth}" />
-                            
+
                             <ContentPresenter Grid.Column="2" Name="PART_RightContent"
                                               Content="{TemplateBinding RightContent}" />
                         </Grid>
@@ -214,7 +227,8 @@
                                 Name="TabSwitcherFlyoutButton">
                             <Path Width="13" Height="13" Margin="0,2,0,0" Data="{StaticResource Icons.Tabs}" />
                             <Button.Flyout>
-                                <Flyout Placement="BottomEdgeAlignedRight" Opened="TabSwitcherFlyout_OnOpened" Closed="TabSwitcherFlyout_OnClosed">
+                                <Flyout Placement="BottomEdgeAlignedRight" Opened="TabSwitcherFlyout_OnOpened"
+                                        Closed="TabSwitcherFlyout_OnClosed">
                                     <StackPanel Orientation="Vertical" Background="{DynamicResource Brush.Popup}">
                                         <ContentControl Content="{Binding TabSwitcher}" Margin="0" />
                                     </StackPanel>
@@ -223,7 +237,7 @@
                         </Button>
                     </StackPanel>
                 </controls:TabsControl.RightContent>
-                
+
                 <controls:TabsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:EditorPageViewModel}">
                         <!-- TODO: The tooltip doesn't show up when hovered over text-->
@@ -249,7 +263,7 @@
                                                  Fill="Gray" />
                                         <Button Classes="icon_button"
                                                 x:Name="CloseTabButton"
-                                                Width="16" Height="16" Margin="8, 0, 0. 0"
+                                                Width="16" Height="16" Margin="8, 0, 0, 0"
                                                 Click="OnCloseTab"
                                                 ZIndex="100">
                                             <Path x:Name="CloseTabPath" Width="9" Height="9"
@@ -261,7 +275,7 @@
                         </Grid>
                     </DataTemplate>
                 </controls:TabsControl.ItemTemplate>
-             
+
             </controls:TabsControl>
         </Grid>
     </Grid>

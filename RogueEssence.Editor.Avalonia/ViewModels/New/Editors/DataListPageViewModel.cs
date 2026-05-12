@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using DynamicData;
@@ -53,7 +54,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     public DataManager.DataType DataType => Node.DataType;
 
 
-    public DataListPageViewModel(EditorContext context, NodeBase node) : base(context, node)
+    public DataListPageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
     }
 
@@ -71,7 +72,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     }
 
 
-    public override void LoadData()
+    public override void OnPageLoad()
     {
         ReloadEntries();
 
@@ -231,10 +232,62 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
             FilteredItems.Add(item);
     }
 
+    
+    Action<EditorPageViewModel> _onPageOpen;
+    public void OnPageOpen(Action<EditorPageViewModel> onPageOpen)
+    {
+     
+        
+    }
+    
     public void AddUnderParentNode(DataListEntry entry)
     {
+
+        Action<EditorPageViewModel> callback = (vm) =>
+        {
+            ReflectedDataPageViewModel pg = (ReflectedDataPageViewModel)vm;
+            
+            pg.SetIsRootPage(true);
+            
+            
+            var dataRoot = pg.Node.FindNode<DataRootNode>();
+            var dataItem = pg.Node.FindNode<DataItemNode>();
+
+            DataManager.DataType dataType = dataRoot.DataType;
+            string key = dataItem.ItemKey;
+
+            var regis = DataRegistry.Map[dataType];
+            IEntryData data = regis.GetEntry(key);
+
+            string title = DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key),
+                data.Name.ToLocal(), data, data.GetType());
+
+            pg.SetPageTitle(title, pg.Node.Icon);
+
+            pg.OnLoadAction = (StackPanel stack) =>
+            {
+                DataEditor.LoadDataControls(key, data, stack);
+            };
+
+            pg.OnOKAction = async (StackPanel stack) =>
+            {
+                lock (GameBase.lockObj)
+                {
+                    object obj = data;
+                    DataEditor.SaveDataControls(ref obj, stack, new Type[0]);
+                    DataManager.Instance.ContentChanged(dataType, key, (IEntryData)obj);
+
+                    string newName = DataManager.Instance.DataIndices[dataType].Get(key).GetLocalString(true);
+                    pg.SetPageTitle(
+                        DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key), newName, obj,
+                            obj.GetType()), pg.Node.Icon);
+                }
+
+                return true;
+            };
+        };
         Node.AddNodeIfNotExists(
-            _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon));
+            _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon, callback));
         NodeHelper.ExpandParents(Node, true);
     }
 

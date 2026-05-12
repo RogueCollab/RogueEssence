@@ -66,7 +66,7 @@ namespace RogueEssence.Dev
 
                 NodeHelper.ExpandParents(node, true);
                 ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
-                newEditor.SetPageTitle(title, pageViewModel.Node.Icon);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
 
                 newEditor.OnLoadAction = (StackPanel stack) =>
                 {
@@ -125,6 +125,7 @@ namespace RogueEssence.Dev
                 expander.IsExpanded = member.Count > 0;
                 expander.Content = lbxValue;
                 expander.HorizontalAlignment = HorizontalAlignment.Stretch;
+                expander.Padding = new Thickness(0);
                 
                 control.Children.Add(expander);
             }

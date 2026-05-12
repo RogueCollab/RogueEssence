@@ -211,6 +211,10 @@
       <DependentUpon>AnimChoiceWindowView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\New\Editors\StringEditPageView.axaml.cs">
+      <DependentUpon>StringEditPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

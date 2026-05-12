@@ -50,6 +50,9 @@ namespace RogueEssence.Dev.ViewModels
 
     public class PriorityListBoxViewModel : ViewModelBase
     {
+        public bool CanMoveUp => SelectedIndex > 0;
+        public bool CanMoveDown => SelectedIndex >= 0 && SelectedIndex < Collection.Count - 1;
+        public bool HasSelection => SelectedIndex >= 0 && SelectedIndex < Collection.Count;
         public ObservableCollection<PriorityElement> Collection { get; }
 
         private int selectedIndex;
@@ -79,6 +82,21 @@ namespace RogueEssence.Dev.ViewModels
         {
             StringConv = conv;
             Collection = new ObservableCollection<PriorityElement>();
+            _dialogService = dialogService;
+            
+            this.WhenAnyValue(x => x.SelectedIndex).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public IPriorityList GetList(Type type)
@@ -182,15 +200,17 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnDelete_Click()
         {
+    
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
                 if (ConfirmDelete)
                 {
+                    Console.WriteLine(_dialogService);
+                    
                     MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete", MessageBoxWindowView.MessageBoxButtons.YesNo);
                     if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
-
                 Collection.RemoveAt(SelectedIndex);
             }
         }

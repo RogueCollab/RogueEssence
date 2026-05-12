@@ -16,7 +16,7 @@ public abstract class EditorPageViewModel<TNode> : EditorPageViewModel
     // The node that opened this page
     public new TNode Node => (TNode)base.Node;
 
-    protected EditorPageViewModel(EditorContext context, NodeBase node) : base(context, node)
+    protected EditorPageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
     }
     protected override bool IsSamePage(EditorPageViewModel other)
@@ -46,9 +46,13 @@ public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel
     // Whether to add a new tab when this page is added
     public virtual bool AddNewTab => true;
     
-        
+    private Action<EditorPageViewModel>? _onPageLoad;
+    
     // Only load data when there is no duplicate pages using the IsSamePage method
-    public virtual void LoadData() { }
+    public virtual void OnPageLoad()
+    {
+        _onPageLoad?.Invoke(this);
+    }
     
         
     private string _title = "";
@@ -117,26 +121,27 @@ public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel
     
     protected readonly EditorContext _context;
 
-    protected EditorPageViewModel(EditorContext context, NodeBase node)
+    protected EditorPageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageLoad = null)
     {
         Node = node;
         _context = context;
+        _onPageLoad = onPageLoad;
     }
     
-    public (NodeBase node, ReflectedDataPageViewModel? editor) AddNewNodeAndTab(string title, string icon = "Icons.PaintBrushFill")
-    {
-        NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, icon);
-        Node.SubNodes.Add(node);
-        ReflectedDataPageViewModel editor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
-        if (editor != null)
-        {
-            editor.SetPageTitle(title, icon);
-            _context.TabEvents.AddChildPage(this, editor);
-        }
-
-        return (node, editor);
-    }
- 
+    // public (NodeBase node, ReflectedDataPageViewModel? editor) AddNewNodeAndTab(string title, string icon = "Icons.PaintBrushFill")
+    // {
+    //     NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, icon);
+    //     Node.SubNodes.Add(node);
+    //     ReflectedDataPageViewModel editor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+    //     if (editor != null)
+    //     {
+    //         editor.SetPageTitle(title, icon);
+    //         _context.TabEvents.AddChildPage(this, editor);
+    //     }
+    //
+    //     return (node, editor);
+    // }
+    //
     
 
     public void SetPageTitleFromNode(NodeBase node)

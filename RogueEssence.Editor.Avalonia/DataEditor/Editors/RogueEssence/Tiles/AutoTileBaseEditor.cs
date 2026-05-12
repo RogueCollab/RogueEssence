@@ -35,7 +35,7 @@ namespace RogueEssence.Dev
                 elementAttr[0] = new AnimAttribute(0, "Tile");
 
                 NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, pageViewModel.Node.Icon);
-                pageViewModel.Node.SubNodes.Add(node);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);
                 ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);

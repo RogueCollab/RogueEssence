@@ -16,7 +16,7 @@ public class SpritePageViewModel : EditorPageViewModel
     // public override string Title => "Sprite Stuff";
 
 
-    public SpritePageViewModel(EditorContext context, NodeBase node) : base(context, node)
+    public SpritePageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
         CreateATab = ReactiveCommand.Create(() => _context.TabEvents.AddChildPage(this, _context.PageFactory.CreatePage(typeof(SpritePageViewModel))));
         CreateATopTab = ReactiveCommand.Create(() => _context.TabEvents.AddTopLevelTab(_context.PageFactory.CreatePage(typeof(ModInfoEditorViewModel))));

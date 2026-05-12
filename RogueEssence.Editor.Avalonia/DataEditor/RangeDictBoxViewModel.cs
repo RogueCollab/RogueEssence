@@ -166,11 +166,22 @@ namespace RogueEssence.Dev.ViewModels
         public bool ConfirmDelete;
 
         private IDialogService _dialogService;
+        public bool HasSelection => CurrentElement >= 0 && CurrentElement < Collection.Count;
+
         public RangeDictBoxViewModel(IDialogService dialogService, StringConv conv)
         {
             _dialogService = dialogService;
             StringConv = conv;
             Collection = new ObservableCollection<RangeDictElement>();
+            this.WhenAnyValue(x => x.CurrentElement).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public T GetDict<T>() where T : IRangeDict

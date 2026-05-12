@@ -98,6 +98,12 @@ namespace RogueEssence.Dev.ViewModels
             _dialogService = dialogService;
             StringConv = conv;
             Collection = new ObservableCollection<ListElement>();
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            }; 
             this.WhenAnyValue(x => x.SelectedIndex).Subscribe(_ =>
             {
                 this.RaisePropertyChanged(nameof(CanMoveUp));
@@ -105,6 +111,7 @@ namespace RogueEssence.Dev.ViewModels
                 this.RaisePropertyChanged(nameof(HasSelection));
             });
         }
+        
         public void MoveDown()
         {
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count - 1)

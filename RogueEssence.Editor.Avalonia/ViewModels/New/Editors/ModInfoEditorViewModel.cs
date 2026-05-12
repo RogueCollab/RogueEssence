@@ -1,3 +1,5 @@
+using System;
+
 namespace RogueEssence.Dev.ViewModels;
 
 using Dev.Services;
@@ -10,7 +12,7 @@ public class ModInfoEditorViewModel : EditorPageViewModel
 
     public TestComboBoxViewModel Fruits { get; }
     
-    public ModInfoEditorViewModel(EditorContext context, NodeBase node) : base(context, node) 
+    public ModInfoEditorViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen) 
     {
        
         Fruits = new TestComboBoxViewModel();

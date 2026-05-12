@@ -70,17 +70,7 @@ namespace RogueEssence.Dev
             collection.AddTransient<SpeciesEditPageViewModel>();
             collection.AddTransient<DataListPageViewModel>();
             collection.AddTransient<ReflectedDataPageViewModel>();
-            
-            
-            var editorTypes = Assembly.GetExecutingAssembly()
-                .GetTypes()
-                .Where(t => typeof(IEditor).IsAssignableFrom(t) && !t.IsAbstract);
-
-            foreach (var type in editorTypes)
-            {
-                Console.WriteLine("Registering editor: " + type.Name);
-                collection.AddTransient(type);
-            }
+            collection.AddTransient<StringEditPageViewModel>();
         }
 
         private static void AddMapEditViewModels(this IServiceCollection services)
@@ -124,6 +114,7 @@ namespace RogueEssence.Dev
             pageFactory.Register<DevEditPageViewModel>();
             pageFactory.Register<SpeciesEditPageViewModel>();
             pageFactory.Register<DataListPageViewModel>();
+            pageFactory.Register<StringEditPageViewModel>();
         }
     }
 

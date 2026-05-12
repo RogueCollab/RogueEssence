@@ -11,7 +11,9 @@ using System.Reactive.Subjects;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using Avalonia.Media;
 using RogueEssence.Dev.Services;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev
 {
@@ -330,8 +332,10 @@ namespace RogueEssence.Dev
                     
                                     
                     string title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
-                    NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, vm.Node.Icon);
+                    NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, vm.Node.Icon, vm.Node);
                     vm.Node.AddNodeIfNotExists(node);
+                    
+                    NodeHelper.ExpandParents(node, true);
                     
                     ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
                     newEditor.SetPageTitle(title, vm.Node.Icon);
@@ -480,7 +484,8 @@ namespace RogueEssence.Dev
                     {
                         Border border = new Border();
                         border.BorderThickness = new Thickness(1);
-                        border.BorderBrush = Avalonia.Media.Brushes.LightGray;
+                        border.CornerRadius = new CornerRadius(4);
+                        border.BorderBrush = Application.Current?.FindResource("Brush.SubStackBorder") as IBrush;
                         border.Margin = new Thickness(2);
                         control.Children.Add(border);
 
@@ -570,7 +575,9 @@ namespace RogueEssence.Dev
                     {
                         Border border = new Border();
                         border.BorderThickness = new Thickness(1);
-                        border.BorderBrush = Avalonia.Media.Brushes.LightGray;
+                        border.CornerRadius = new CornerRadius(4);
+                        // border.BorderBrush = Avalonia.Media.Brushes.LightGray;
+                        border.BorderBrush = Application.Current?.FindResource("Brush.SubStackBorder") as IBrush;
                         border.Margin = new Thickness(2);
                         control.Children.Add(border);
 

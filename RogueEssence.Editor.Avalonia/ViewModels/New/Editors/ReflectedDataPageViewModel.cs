@@ -15,24 +15,33 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
     
     public Action<StackPanel> OnLoadAction;
     public Func<StackPanel, Task<bool>> OnOKAction;
-
-    // public delegate Task<bool> OKEvent();
-    // public OKEvent SelectedOKEvent;
-
-    // public override string Title => "Random Page Info";
+    
+    private bool _shouldRemoveNode = true;
+    
     public ReflectedDataPageViewModel(EditorContext context,
-        NodeBase node) : base(context, node)
+        NodeBase node, Action<EditorPageViewModel> onPageLoad) : base(context, node, onPageLoad)
     {
-        AddNewNodeAndTabCommand = ReactiveCommand.Create(AddNewNodeAndTabDefault);
     }
     
-    public bool isRootPage => Node is not ReflectedDataNode;
-    public override void LoadData()
+    // Whether to remove the node from the parent when the page is closed
+    public void SetRemoveNode(bool remove)
     {
-        base.LoadData();
+        _shouldRemoveNode = remove;
+    }
+    
+    private bool _isRootPage;
+    public bool IsRootPage
+    {
+        get => _isRootPage;
+        private set => this.RaiseAndSetIfChanged(ref _isRootPage, value);
     }
 
-
+    // If the page is the root page, it will include the "Save All Sub-Windows" button
+    public void SetIsRootPage(bool isRoot)
+    {
+        IsRootPage = isRoot;
+    }
+    
     public async Task<bool> ApplySave()
     {
         await _context.TabEvents.SaveChildren(this);
@@ -40,81 +49,22 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
             return await saveable.Save();
         return true;
     }
-    public void Close()
-    {
-        Node.Parent?.SubNodes.Remove(Node);
-        _context.TabEvents.RemoveTab(this);
-    }
 
-    public ReactiveCommand<Unit, Unit> AddNewNodeAndTabCommand { get; }
- 
-    public void AddNewNodeAndTabDefault()
+    public void RemoveNodeFromTree()
     {
-        NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("New Node [TODO Change Title]", "Icons.PaintBrushFill");
-        Node.SubNodes.Add(node);
-        var editor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
-        if (editor != null)
+        if (_shouldRemoveNode)
         {
-            editor.SetPageTitle("New Node [TODO Change Title]", Node.Icon);
-            _context.TabEvents.AddChildPage(this, editor);
+            Node.Parent?.SubNodes.Remove(Node);
         }
     }
-    
-    public event EventHandler Closed;
-
-    public List<ReflectedDataPageViewModel> Children;
-
-    // public void RegisterChild(ReflectedDataPageViewModel child)
-    // {
-    //     Children.Add(child);
-    //     child.Closed += (object sender, EventArgs e) =>
-    //     {
-    //         Children.Remove(child);
-    //         TabClosed?.Invoke(this, EventArgs.Empty);
-    //     };
-    // }
-    
-    public void RegisterChild(ReflectedDataPageViewModel child)
+    public void Close()
     {
-        Children.Add(child);
+        _context.TabEvents.RemoveTab(this);
+        RemoveNodeFromTree();
     }
-    
-    public void UnregisterChild(ReflectedDataPageViewModel child)
-    {
-        Children.Remove(child);
-        Closed?.Invoke(this, EventArgs.Empty);
-    }
-    
-    // public async Task SaveChildren()
-    // {
-    //     for (int ii = Children.Count - 1; ii >= 0; ii--)
-    //     {
-    //         DataEditForm dataEditor = children[ii];
-    //         if (dataEditor != null)
-    //         {
-    //             await dataEditor.SaveChildren();
-    //             if (dataEditor.SelectedOKEvent != null)
-    //                 await dataEditor.SelectedOKEvent.Invoke();
-    //         }
-    //     }
-    // }
-    //
-
-    // Dummy test
-    // public void AddNewNodeAndTab()
-    // {
-    //     NodeBase node = NodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("New Node", "Icons.PaintBrushFill");
-    //     Node.SubNodes.Add(node);
-    //     var editor = PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
-    //     if (editor != null)
-    //     {
-    //         TabEvents.AddTopLevelTab(editor);
-    //     }
-    // }
-    
     public override void OnPageRemoved()
     {
-        Node.Parent?.RemoveNode(Node);
+        RemoveNodeFromTree();
         base.OnPageRemoved();
     }
     

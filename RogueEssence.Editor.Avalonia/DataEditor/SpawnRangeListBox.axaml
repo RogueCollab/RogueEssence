@@ -5,6 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
              x:Class="RogueEssence.Dev.Views.SpawnRangeListBox">
   <Design.DataContext>
     <vm:SpawnRangeListBoxViewModel/>
@@ -13,68 +15,75 @@
     <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
     <converters:PercentConverter x:Key="PercentConverter"/>
   </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition/>
-      <RowDefinition Height="42"/>
-      <RowDefinition Height="36"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <Grid Grid.Row="0">
-      <Grid.RowDefinitions>
-        <RowDefinition/>
-        <RowDefinition/>
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition/>
-        <ColumnDefinition Width="40"/>
-      </Grid.ColumnDefinitions>
-      <DataGrid Name="gridItems" IsReadOnly="true" ItemsSource="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="gridCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Start"
-                        Binding="{Binding DisplayStart}" />
-          <DataGridTextColumn Header="End"
-                        Binding="{Binding DisplayEnd}" />
-          <DataGridTextColumn Header="Weight"
-                        Binding="{Binding Weight}" />
-          <DataGridTextColumn Header="Value"
-                              Binding="{Binding Path=DisplayValue}" />
-        </DataGrid.Columns>
-      </DataGrid>
-      <Button Command="{Binding btnUp_Click}" Margin="4" Grid.Row="0" Grid.Column="1">^</Button>
-      <Button Command="{Binding btnDown_Click}" Margin="4" Grid.Row="1" Grid.Column="1">v</Button>
+
+  <Grid RowDefinitions="*, 42" ColumnDefinitions="*, 30">
+
+    <!-- DataGrid: row 0 only, first column -->
+    <DataGrid Name="gridItems"
+              IsReadOnly="true"
+              HorizontalAlignment="Stretch"
+              ItemsSource="{Binding Collection}"
+              SelectedIndex="{Binding CurrentElement, Mode=TwoWay}"
+              DoubleTapped="doubleClickStart"
+              PointerReleased="gridCollection_DoubleClick"
+              Margin="4"
+              Grid.Row="0"
+              Grid.Column="0"
+              MinHeight="50"
+              Classes="default">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Start"  Binding="{Binding DisplayStart}" Width="70" />
+        <DataGridTextColumn Header="End"    Binding="{Binding DisplayEnd}"   Width="70" />
+        <DataGridTextColumn Header="Weight" Binding="{Binding Weight}"       Width="70" />
+        <DataGridTextColumn Header="Value"  Binding="{Binding Path=DisplayValue}" Width="*" />
+      </DataGrid.Columns>
+    </DataGrid>
+
+
+    <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="10, 0, 0, 0" VerticalAlignment="Top" Spacing="30">
+      <StackPanel Spacing="0">
+        <Button x:Name="SpawnRangeListBoxAddButton"
+                PointerReleased="SpawnRangeListBoxAddButton_OnPointerReleased"
+                Classes="secondary" Margin="0, 0" Padding="4, 3">
+          <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.Plus}" />
+        </Button>
+        <Button Command="{Binding btnDelete_Click}"
+                IsEnabled="{Binding HasSelection}"
+                Classes="secondary" Margin="0, 0" Padding="4, 3">
+          <Path Width="10" Height="10" Margin="0, 0, 0, 0" Data="{StaticResource Icons.Minus}" />
+        </Button>
+      </StackPanel>
+      <StackPanel Spacing="0">
+        <Button Command="{Binding btnUp_Click}"
+                IsEnabled="{Binding CanMoveUp}"
+                Classes="secondary" Margin="0, 0" Padding="4, 3">
+          <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.CaretUpFill}" />
+        </Button>
+        <Button Command="{Binding btnDown_Click}"
+                IsEnabled="{Binding CanMoveDown}"
+                Classes="secondary" Margin="0, 0" Padding="4, 3">
+          <Path Width="10" Height="10" Margin="0, 0, 0, 0" Data="{StaticResource Icons.CaretDownFill}" />
+        </Button>
+      </StackPanel>
+    </StackPanel>
+    
+    <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto, *, Auto, *, Auto, *">
+      <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="0">Start:</TextBlock>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}"
+                     Value="{Binding CurrentStart}"
+                     ValueChanged="nudStart_ValueChanged"
+                     Margin="4" Grid.Column="1"/>
+      <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="2">End:</TextBlock>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}"
+                     Value="{Binding CurrentEnd}"
+                     ValueChanged="nudEnd_ValueChanged"
+                     Margin="4" Grid.Column="3"/>
+      <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="4">Weight:</TextBlock>
+      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}"
+                     Value="{Binding CurrentWeight}"
+                     Minimum="1"
+                     Margin="4" Grid.Column="5"/>
     </Grid>
-    <Grid Grid.Row="1">
-      <Grid.RowDefinitions>
-        <RowDefinition/>
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="30"/>
-        <ColumnDefinition/>
-        <ColumnDefinition Width="30"/>
-        <ColumnDefinition/>
-        <ColumnDefinition Width="40"/>
-        <ColumnDefinition/>
-      </Grid.ColumnDefinitions>
-      <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0">Start:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentStart}" ValueChanged="nudStart_ValueChanged" Margin="4" Grid.Row="0" Grid.Column="1"/>
-      <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="2">End:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentEnd}" ValueChanged="nudEnd_ValueChanged" Margin="4" Grid.Row="0" Grid.Column="3"/>
-      <TextBlock VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="4">Weight:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" Value="{Binding CurrentWeight}" Minimum="1" Margin="4" Grid.Row="0" Grid.Column="5"/>
-    </Grid>
-    <Grid Grid.Row="2">
-      <Grid.RowDefinitions>
-        <RowDefinition/>
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition/>
-        <ColumnDefinition/>
-      </Grid.ColumnDefinitions>
-      <Button x:Name="SpawnRangeListBoxAddButton" PointerReleased="SpawnRangeListBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1">Add</Button>
-      <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="1">Delete</Button>
-    </Grid>
+
   </Grid>
 </UserControl>
