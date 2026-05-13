@@ -8,21 +8,22 @@
              x:DataType="vm:ZoneEditorPageViewModel"
              x:Class="RogueEssence.Dev.Views.ZoneEditorPageView">
     <ScrollViewer>
-        <StackPanel Spacing="8" Margin="16">
-            <TextBlock Text="Zone Edit" FontSize="24" FontWeight="Bold"/>
-            <DataGrid x:Name="ZoneDataGrid"
-                      x:DataType="v:ZoneMockEntry"
-                      Classes="default"
-
-                      >
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
-                    <DataGridTextColumn Header="Level Range" Binding="{Binding LevelRange}" Width="120"/>
-                    <DataGridTextColumn Header="Map Count" Binding="{Binding MapCount}" Width="100"/>
-                    <DataGridTextColumn Header="Music" Binding="{Binding Music}" Width="200"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </StackPanel>
+        <TextBlock>Hi there, this is just a temporary page! :D</TextBlock>
+        <!-- <StackPanel Spacing="8" Margin="16"> -->
+        <!--     <TextBlock Text="Zone Edit" FontSize="24" FontWeight="Bold"/> -->
+        <!--     <DataGrid x:Name="ZoneDataGrid" -->
+        <!--               x:DataType="v:ZoneMockEntry" -->
+        <!--               Classes="default" -->
+        <!-- -->
+        <!--               > -->
+        <!--         <DataGrid.Columns> -->
+        <!--             <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/> -->
+        <!--             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/> -->
+        <!--             <DataGridTextColumn Header="Level Range" Binding="{Binding LevelRange}" Width="120"/> -->
+        <!--             <DataGridTextColumn Header="Map Count" Binding="{Binding MapCount}" Width="100"/> -->
+        <!--             <DataGridTextColumn Header="Music" Binding="{Binding Music}" Width="200"/> -->
+        <!--         </DataGrid.Columns> -->
+        <!--     </DataGrid> -->
+        <!-- </StackPanel> -->
     </ScrollViewer>
 </UserControl>

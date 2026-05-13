@@ -74,7 +74,6 @@ public partial class ReflectedDataPageView : UserControl, ISaveable
         if (DataContext is not EditorPageViewModel vm) return;
     
         vm.AttachedView = this;
-        Console.WriteLine($"View set on {vm}");
 
         if (DataContext is ReflectedDataPageViewModel reflectedVm && reflectedVm.OnLoadAction != null)
             reflectedVm.OnLoadAction(ControlPanel);

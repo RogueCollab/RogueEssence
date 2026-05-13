@@ -18,7 +18,7 @@ public partial class ZoneEditorPageView : UserControl
     public ZoneEditorPageView()
     {
         InitializeComponent();
-        ZoneDataGrid.ItemsSource = GetMockData();
+        // ZoneDataGrid.ItemsSource = GetMockData();
     }
     
     private List<ZoneMockEntry> GetMockData() => new List<ZoneMockEntry>

@@ -237,7 +237,6 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddTopLevelPage(EditorPageViewModel page)
     {
-        Console.WriteLine($"Adding top level page {page}");
         var navigated = TryNavigateToExistingPage(page);
         if (navigated) return;
 
@@ -319,13 +318,13 @@ public class DevFormViewModel : ViewModelBase
 
     public void RemoveTab(EditorPageViewModel page)
     {
-        Console.WriteLine($"Removing tab {page}" + "hmmm");
+        // Console.WriteLine($"Removing tab {page}" + "hmmm");
         if (!_pageToNodeMap.TryGetValue(page, out var node))
             return;
 
         int removeIdx = Pages.IndexOf(page);
         
-        Console.WriteLine($"Removing tab {page} at index {removeIdx}");
+        // Console.WriteLine($"Removing tab {page} at index {removeIdx}");
 
         ClosePageAndChildren(node);
 
@@ -1158,8 +1157,7 @@ public class DevFormViewModel : ViewModelBase
     public void AddPageFromTreeNode(OpenEditorNode node)
     {
         var editor = _context.PageFactory.CreatePage(node.EditorType, node, node.OnPageLoad);
-
-        Console.WriteLine("EDitpr" + editor);
+        
         if (editor != null)
         {
             editor.SetPageTitleFromNode(node);

@@ -635,7 +635,6 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             var selectedItem = (OpenEditorNode)treeView.RowSelection.SelectedItem;
             if (selectedItem != null)
             {
-                Console.WriteLine(selectedItem.ToString());
                 vm.AddPageFromTreeNode(selectedItem);
             }
 
