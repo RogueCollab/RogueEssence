@@ -598,7 +598,7 @@ public class DevFormViewModel : ViewModelBase
     private void CreateConstantsNode(NodeBase parent)
     {
         var constantsNode =
-            _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Constants", "Icons.ListFill");
+            _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Constants", "Icons.ListFill", parent);
         var startParamsNode = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Start Params",
             "Icons.ListFill",
             parent,

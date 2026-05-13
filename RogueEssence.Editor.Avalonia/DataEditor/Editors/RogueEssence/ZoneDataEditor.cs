@@ -11,6 +11,7 @@ using RogueEssence.Script;
 using Avalonia;
 using System.Diagnostics;
 using System.IO;
+using Avalonia.Media;
 
 namespace RogueEssence.Dev
 {
@@ -27,7 +28,9 @@ namespace RogueEssence.Dev
             Button btnTest = new Button();
             btnTest.Margin = new Thickness(0, 4, 0, 0);
             btnTest.Content = "Open Script Folder";
+            btnTest.Classes.Add("flat");
             btnTest.Click += async (object sender, RoutedEventArgs e) =>
+            
             {
                 string zonescriptdir = LuaEngine.MakeZoneScriptPath(parent, "");
 
@@ -58,7 +61,7 @@ namespace RogueEssence.Dev
 
             Border border = new Border();
             border.BorderThickness = new Thickness(1);
-            border.BorderBrush = Avalonia.Media.Brushes.LightGray;
+            border.BorderBrush = Application.Current?.FindResource("Brush.SubStackBorder") as IBrush;
             border.Margin = new Thickness(2);
             control.Children.Add(border);
 

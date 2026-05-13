@@ -27,6 +27,7 @@ namespace RogueEssence.Dev
             NumericUpDown nudValue = new NumericUpDown();
             nudValue.Minimum = Int32.MinValue;
             nudValue.Maximum = Int32.MaxValue;
+            nudValue.Increment = 1;
             NumberRangeAttribute attribute = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
             if (attribute != null)
             {

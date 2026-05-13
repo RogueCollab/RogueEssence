@@ -279,7 +279,6 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnDelete_Click()
         {
-            Console.WriteLine("Delete");
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
             {
                 if (ConfirmDelete)

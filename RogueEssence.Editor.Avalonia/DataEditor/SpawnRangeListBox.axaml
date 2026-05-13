@@ -33,8 +33,8 @@
               Classes="default">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Start"  Binding="{Binding DisplayStart}" Width="70" />
-        <DataGridTextColumn Header="End"    Binding="{Binding DisplayEnd}"   Width="70" />
-        <DataGridTextColumn Header="Weight" Binding="{Binding Weight}"       Width="70" />
+        <DataGridTextColumn Header="End" Binding="{Binding DisplayEnd}" Width="70" />
+        <DataGridTextColumn Header="Weight" Binding="{Binding Weight}" Width="70" />
         <DataGridTextColumn Header="Value"  Binding="{Binding Path=DisplayValue}" Width="*" />
       </DataGrid.Columns>
     </DataGrid>

@@ -38,7 +38,7 @@ namespace RogueEssence.Dev
                 if (heightAtt != null)
                     lbxValue.MaxHeight = heightAtt.Height;
                 else
-                    lbxValue.MaxHeight = 220;
+                    lbxValue.MaxHeight = 180;
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
                 lbxValue.DataContext = vm;
@@ -193,7 +193,7 @@ namespace RogueEssence.Dev
                 string elementName = name + "[" + index + "]";
                 // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon, pageViewModel.Node);
                 
                 pageViewModel.Node.AddNodeIfNotExists(node);
                 

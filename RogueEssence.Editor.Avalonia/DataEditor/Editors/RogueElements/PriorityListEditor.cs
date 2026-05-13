@@ -41,7 +41,7 @@ namespace RogueEssence.Dev
             if (heightAtt != null)
                 lbxValue.MaxHeight = heightAtt.Height;
             else
-                lbxValue.MaxHeight = 220;
+                lbxValue.MaxHeight = 180;
 
             PriorityListBoxViewModel vm = new PriorityListBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
             lbxValue.DataContext = vm;
@@ -61,7 +61,7 @@ namespace RogueEssence.Dev
                 string elementName = name + "[" + priority.ToString() + "]";
                 string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon, pageViewModel.Node);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);

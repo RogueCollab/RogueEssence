@@ -57,7 +57,7 @@ namespace RogueEssence.Dev
 
                 NodeBase node =
                     _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title,
-                        pageViewModel.Node.Icon);
+                        pageViewModel.Node.Icon, pageViewModel.Node);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);

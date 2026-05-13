@@ -8,12 +8,21 @@
     <Design.DataContext>
         <vm:DevTabScriptViewModel/>
     </Design.DataContext>
-    <Grid RowDefinitions="40, 26, Auto, 80" ColumnDefinitions="*, *" ColumnSpacing="8" RowSpacing="8">
-                  
-        <Button Classes="flat" Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" Margin="4" Grid.Row="0" Grid.Column="0" >Reload Scripts</Button>
-        <Button Classes="flat" Name="btnTextTest" Command="{Binding btnTextTest_Click}" Margin="4" Grid.Row="0" Grid.Column="1" >Text Test</Button>
+    <Grid RowDefinitions="40, 26, Auto, 100" ColumnDefinitions="*, *" RowSpacing="8">
+        <Button Classes="flat" Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" Margin="4,4,2,4" Grid.Row="0" Grid.Column="0">Reload Scripts</Button>
+        <Button Classes="flat" Name="btnTextTest" Command="{Binding btnTextTest_Click}" Margin="2,4,4,4" Grid.Row="0" Grid.Column="1">Text Test</Button>
         <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="0">Lua Console:</TextBlock>
-        <TextBox Name="txtScriptOutput" Height="300" VerticalAlignment="Stretch" VerticalContentAlignment="Top" Text="{Binding ScriptLog}" CaretIndex="{Binding ScriptCaret}" Margin="4" IsReadOnly="True" TextWrapping="Wrap" Focusable="False" Grid.Row="2" Grid.ColumnSpan="2" />
-        <TextBox Watermark="Enter Lua code..."  VerticalContentAlignment="Top" HorizontalContentAlignment="Left" Height="100" Name="txtScriptInput" Text="{Binding ScriptLine}" CaretIndex="{Binding CmdCaret, Mode=TwoWay}" Margin="4" TextWrapping="Wrap" Grid.Row="3" Grid.ColumnSpan="2" KeyDown="txtScriptInput_KeyDown" Padding="4"></TextBox>
+        <TextBox Name="txtScriptOutput" Height="300" VerticalAlignment="Stretch" VerticalContentAlignment="Top" Text="{Binding ScriptLog}" CaretIndex="{Binding ScriptCaret}" Margin="4" IsReadOnly="True" TextWrapping="Wrap" Focusable="False" Grid.Row="2" Grid.ColumnSpan="2"/>
+        <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="4">
+            <TextBox Watermark="Enter Lua code..."
+                     VerticalContentAlignment="Top"
+                     VerticalAlignment="Stretch"
+                     Name="txtScriptInput"
+                     Text="{Binding ScriptLine}"
+                     CaretIndex="{Binding CmdCaret, Mode=TwoWay}"
+                     TextWrapping="Wrap"
+                     KeyDown="txtScriptInput_KeyDown"
+                     Padding="4"/>
+        </Border>
     </Grid>
 </UserControl>

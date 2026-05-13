@@ -58,6 +58,10 @@ namespace RogueEssence.Dev.ViewModels
 
         public bool ConfirmDelete;
         
+        public bool CanMoveUp => CurrentElement > 0;
+        public bool CanMoveDown => CurrentElement >= 0 && CurrentElement < Collection.Count - 1;
+        public bool HasSelection => CurrentElement >= 0 && CurrentElement < Collection.Count;
+        
         private IDialogService _dialogService;
 
         public SpawnListBoxViewModel(IDialogService dialogService, StringConv conv)
@@ -65,6 +69,20 @@ namespace RogueEssence.Dev.ViewModels
             _dialogService = dialogService;
             StringConv = conv;
             Collection = new ObservableCollection<SpawnListElement>();
+            
+            this.WhenAnyValue(x => x.CurrentElement).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public ObservableCollection<SpawnListElement> Collection { get; }
@@ -203,7 +221,7 @@ namespace RogueEssence.Dev.ViewModels
             OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }
 
-        private async void btnDelete_Click()
+        public async void btnDelete_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
             {
@@ -226,7 +244,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection[b] = obj;
         }
 
-        private void btnUp_Click()
+        public void btnUp_Click()
         {
             if (CurrentElement > 0)
             {
@@ -236,7 +254,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void btnDown_Click()
+        public void btnDown_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count - 1)
             {
