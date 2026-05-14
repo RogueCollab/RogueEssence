@@ -101,25 +101,12 @@
             <Border Grid.Column="0" Margin="0,0,0,0" BorderThickness="1"
                     BorderBrush="{DynamicResource Brush.ToolBar}" CornerRadius="6">
                 <Grid RowDefinitions="28, 3, *">
-                    <TextBox
-                        Margin="0,0,0,0"
-                        Height="28"
-
-                        BorderThickness="0"
-                        CornerRadius="0"
-                        BorderBrush="{DynamicResource Brush.Border2}"
-                        Watermark="Search..."
-                        Text="{Binding Filter, Mode=TwoWay}"
-                        VerticalContentAlignment="Center">
-                        <TextBox.InnerLeftContent>
-                            <Path
-                                Fill="{DynamicResource Brush.FG2}"
-                                Width="12" Height="12"
-                                Margin="6,0,0,0"
-                                Data="{StaticResource Icons.MagnifyingGlassFill}" />
-
-
-                        </TextBox.InnerLeftContent>
+                    <TextBox Classes="search"
+                             Margin="0,0,0,0"
+                             Height="28"
+                             BorderThickness="0"
+                             Watermark="Search..."
+                             Text="{Binding Filter, Mode=TwoWay}">
                         <TextBox.InnerRightContent>
                             <Button Classes="icon_button"
                                     Width="16"
@@ -129,6 +116,7 @@
                                     IsVisible="{Binding Filter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                     HorizontalAlignment="Right">
                                 <Path
+                                    Fill="{DynamicResource Brush.FG2}"
                                     Width="14" Height="14"
                                     Margin="0,1,0,0"
                                     Data="{StaticResource Icons.XCircleFill}" />

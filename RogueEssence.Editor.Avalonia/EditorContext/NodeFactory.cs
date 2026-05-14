@@ -65,12 +65,12 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<DataRootNode>(dataType, typeof(TEditor), title, icon, CreateCallback(onOpen));
 
-    public ModRootNode CreateModRootNode<TEditor>(
-        string title,
-        string? icon = null,
-        Action<TEditor>? onOpen = null)
-        where TEditor : EditorPageViewModel
-        => Create<ModRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
+    // public ModRootNode CreateModRootNode<TEditor>(
+    //     string title,
+    //     string? icon = null,
+    //     Action<TEditor>? onOpen = null)
+    //     where TEditor : EditorPageViewModel
+    //     => Create<ModRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
 
     public DataItemNode CreateDataItemNode<TEditor>(
         string key,
@@ -80,8 +80,9 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<DataItemNode>(key, typeof(TEditor), title, icon, CreateCallback(onOpen));
 
+    // _serviceProvider.GetService<IDialogService>()
     public PageNode CreatePageNode(EditorPageViewModel childPage, PageNode? parentNode = null)
-        => new PageNode(_serviceProvider.GetService<IDialogService>(), this, childPage, parentNode);
+        => new PageNode(this, childPage, parentNode);
 
     public SpriteRootNode CreateSpriteRootNode<TEditor>(
         GraphicsManager.AssetType assetType,
@@ -91,12 +92,12 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<SpriteRootNode>(assetType, typeof(TEditor), title, icon, CreateCallback(onOpen));
 
-    public SpriteTileRootNode CreateSpriteTileRootNode<TEditor>(
-        string title,
-        string? icon = null,
-        Action<TEditor>? onOpen = null)
-        where TEditor : EditorPageViewModel
-        => Create<SpriteTileRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
+    // public SpriteTileRootNode CreateSpriteTileRootNode<TEditor>(
+    //     string title,
+    //     string? icon = null,
+    //     Action<TEditor>? onOpen = null)
+    //     where TEditor : EditorPageViewModel
+    //     => Create<SpriteTileRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
 
     public OpenEditorNodeFX<T> CreateOpenEditorNodeFX<T, TEditor>(
         string title,

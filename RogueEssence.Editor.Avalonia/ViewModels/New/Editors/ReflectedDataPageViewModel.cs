@@ -12,7 +12,6 @@ namespace RogueEssence.Dev.ViewModels;
 
 public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
 {
-    
     public Action<StackPanel> OnLoadAction;
     public Func<StackPanel, Task<bool>> OnOKAction;
     

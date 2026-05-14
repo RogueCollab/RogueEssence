@@ -630,23 +630,7 @@ public class DevFormViewModel : ViewModelBase
         var gameplayTextNode = _context.NodeFactory.CreateOpenEditorNodeWithParams<StringEditPageViewModel>("Gameplay Text", [true], "Icons.TableFill");
         stringsNode.SubNodes.Add(menuTextNode);
         stringsNode.SubNodes.Add(gameplayTextNode);
-        // var universalEventsNode = _context.NodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>("Universal Events", "Icons.ListFill");
-
-        //             public void btnEditStartParams_Click()
-        //     {
-        //         OpenItem<StartParams>("Start Params", DataManager.Instance.Start, (obj) => {
-        //             DataManager.Instance.Start = obj;
-        //             DataManager.Instance.SaveStartParams();
-        //         });
-        //     }
-        //
-        //     public void btnEditUniversal_Click()
-        //     {
-        //         OpenItem<UniversalBaseEffect>("Universal Event", (UniversalBaseEffect)DataManager.Instance.UniversalEvent, (obj) => {
-        //             DataManager.Instance.UniversalEvent = obj;
-        //             DataManager.SaveData(obj, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT);
-        //         });
-        //     }
+   
         //     public async void mnuUniversalFile_Click()
         //     {
         //         DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
@@ -678,25 +662,7 @@ public class DevFormViewModel : ViewModelBase
         //             await MessageBox.Show(parent, "Universal is now saved as a patch.", "Complete", MessageBox.MessageBoxButtons.Ok);
         //     }
         //
-        //     public void btnEditStrings_Click()
-        //     {
-        //         StringsEditViewModel mv = new StringsEditViewModel();
-        //         Views.StringsEditForm editForm = new Views.StringsEditForm();
-        //         mv.LoadStringEntries(false, editForm);
-        //         editForm.DataContext = mv;
-        //         editForm.Show();
-        //     }
-        //
-        //     public void btnEditStringsEx_Click()
-        //     {
-        //         StringsEditViewModel mv = new StringsEditViewModel();
-        //         Views.StringsEditForm editForm = new Views.StringsEditForm();
-        //         mv.LoadStringEntries(true, editForm);
-        //         editForm.DataContext = mv;
-        //         editForm.Show();
-        //     }
-        //
-        //
+ 
 
         constantsNode.SubNodes.Add(startParamsNode);
         
