@@ -527,7 +527,7 @@ public class DevFormViewModel : ViewModelBase
         //
         CreateSpriteNode(root);
 
-        // CreateModNode(root);
+        CreateModNode(root);
         Nodes.Add(root);
 
         AttachEventsRecursive(root);
@@ -943,19 +943,8 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateModNode(NodeBase parent)
     {
-        var modsViewModel = _context.PageFactory.GetRequiredService<DevTabModsViewModel>();
-        var modRoot = _context.NodeFactory.CreateModRootNode<DevEditPageViewModel>("Mods", "Icons.ScrollFill");
+        var modRoot = _context.NodeFactory.CreateOpenEditorNode<ModEditPageViewModel>("Mods", "Icons.ScrollFill");
 
-        foreach (ModsNodeViewModel mod in modsViewModel.Mods)
-        {
-            var name = mod.Namespace == "origin" ? "Origins" : mod.Name;
-            var itemNode = _context.NodeFactory.CreateDataItemNode<DevEditPageViewModel>(
-                mod.Namespace,
-                $"{mod.Namespace}: {name}",
-                "Icons.ScrollFill");
-
-            modRoot.SubNodes.Add(itemNode);
-        }
 
         parent.SubNodes.Add(modRoot);
     }

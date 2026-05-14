@@ -65,7 +65,7 @@ namespace RogueEssence.Dev
             collection.AddTransient<GroundEditorPageViewModel>();
             collection.AddTransient<RandomInfoPageViewModel>();
             collection.AddTransient<SpritePageViewModel>();
-            collection.AddTransient<ModInfoEditorViewModel>();
+            collection.AddTransient<ModEditPageViewModel>();
             collection.AddTransient<DevEditPageViewModel>();
             collection.AddTransient<SpeciesEditPageViewModel>();
             collection.AddTransient<DataListPageViewModel>();
@@ -110,7 +110,7 @@ namespace RogueEssence.Dev
             pageFactory.Register<GroundEditorPageViewModel>();
             pageFactory.Register<RandomInfoPageViewModel>();
             pageFactory.Register<SpritePageViewModel>();
-            pageFactory.Register<ModInfoEditorViewModel>();
+            pageFactory.Register<ModEditPageViewModel>();
             pageFactory.Register<DevEditPageViewModel>();
             pageFactory.Register<SpeciesEditPageViewModel>();
             pageFactory.Register<DataListPageViewModel>();

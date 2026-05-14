@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace RogueEssence.Dev.Views;
 
-public partial class ModInfoEditorView : UserControl
+public partial class ModEditPageView : UserControl
 {
-    public ModInfoEditorView()
+    public ModEditPageView()
     {
         InitializeComponent();
     }

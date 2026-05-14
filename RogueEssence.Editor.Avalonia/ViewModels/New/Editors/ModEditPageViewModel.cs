@@ -4,7 +4,7 @@ namespace RogueEssence.Dev.ViewModels;
 
 using Dev.Services;
 
-public class ModInfoEditorViewModel : EditorPageViewModel
+public class ModEditPageViewModel : EditorPageViewModel
 {
     // public override string? Title => "Mod Info";
     
@@ -12,7 +12,7 @@ public class ModInfoEditorViewModel : EditorPageViewModel
 
     public TestComboBoxViewModel Fruits { get; }
     
-    public ModInfoEditorViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen) 
+    public ModEditPageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen) 
     {
        
         Fruits = new TestComboBoxViewModel();

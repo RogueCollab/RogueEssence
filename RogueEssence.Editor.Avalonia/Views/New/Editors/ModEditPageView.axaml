@@ -4,7 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:RogueEssence.Dev.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:DataType="vm:ModInfoEditorViewModel"
-             x:Class="RogueEssence.Dev.Views.ModInfoEditorView">
-    Welcome to Avalonia!
+             x:DataType="vm:ModEditPageViewModel"
+             x:Class="RogueEssence.Dev.Views.ModEditPageView">
+    Welcome to Mod Editor
+    
+    
 </UserControl>
