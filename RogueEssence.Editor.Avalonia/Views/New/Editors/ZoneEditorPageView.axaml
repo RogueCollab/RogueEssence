@@ -8,7 +8,7 @@
              x:DataType="vm:ZoneEditorPageViewModel"
              x:Class="RogueEssence.Dev.Views.ZoneEditorPageView">
     <ScrollViewer>
-        <TextBlock>Hi there, this is just a temporary page! :D</TextBlock>
+        <TextBlock>Hi there, this is just a temporary page! The end is never the end is never the end is never the end.</TextBlock>
         <!-- <StackPanel Spacing="8" Margin="16"> -->
         <!--     <TextBlock Text="Zone Edit" FontSize="24" FontWeight="Bold"/> -->
         <!--     <DataGrid x:Name="ZoneDataGrid" -->

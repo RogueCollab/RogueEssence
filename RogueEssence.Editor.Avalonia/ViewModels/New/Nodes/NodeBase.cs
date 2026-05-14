@@ -701,16 +701,16 @@ public class DataItemNode : OpenEditorNode
 // SpriteRootNode have additional properties like mass exporting
 public class SpriteRootNode : ItemRootNode
 {
-    private readonly ISpriteOperationStrategy _strategy;
+    private readonly ISpriteRootOperationStrategy _strategy;
     
     public readonly GraphicsManager.AssetType AssetType;
 
     
     public ReactiveCommand<Unit, Unit> MassExportCommand { get; }
     public ReactiveCommand<Unit, Unit> MassImportCommand { get; }
-    public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
-    public ReactiveCommand<Unit, Unit> ImportCommand { get; }
-    public ReactiveCommand<Unit, Unit> ReImportCommand { get; }
+    // public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
+    // public ReactiveCommand<Unit, Unit> ImportCommand { get; }
+    // public ReactiveCommand<Unit, Unit> ReImportCommand { get; }
 
     private string _cachedPath;
     public string CachedPath
@@ -735,19 +735,19 @@ public class SpriteRootNode : ItemRootNode
 
         if (AssetType == GraphicsManager.AssetType.Tile)
         {
-            _strategy = new SpriteTileStrategy(dialogService, nodeFactory, this);
+            _strategy = new SpriteRootTileStrategy(dialogService, nodeFactory, this);
         }
         else
         {
-            _strategy = new SpriteAssetTypeStrategy(dialogService, nodeFactory, this);
+            _strategy = new SpriteRootAssetTypeStrategy(dialogService, nodeFactory, this);
             
         }
         
         MassExportCommand = ReactiveCommand.CreateFromTask(MassExportAsync);
         MassImportCommand = ReactiveCommand.CreateFromTask(MassImportAsync);
-        ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
-        ImportCommand = ReactiveCommand.CreateFromTask(ImportSpriteAsync);
-        ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
+        // ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
+        // ImportCommand = ReactiveCommand.CreateFromTask(ImportSpriteAsync);
+        // ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
     }
 
     public override async Task AddItem()
@@ -760,30 +760,30 @@ public class SpriteRootNode : ItemRootNode
         // await _strategy.DeleteAsync(node);
     }
 
-    private async Task MassExportAsync()
+    public async Task MassExportAsync()
     {
         await _strategy.MassExportAsync();
     }
 
-    private async Task MassImportAsync()
+    public async Task MassImportAsync()
     {
         await _strategy.MassImportAsync();
     }
 
-    private async Task ExportSpriteAsync(DataItemNode node)
-    {
-        await _strategy.ExportAsync(node);
-    }
+    // private async Task ExportSpriteAsync(DataItemNode node)
+    // {
+    //     await _strategy.ExportAsync(node);
+    // }
 
-    private async Task ImportSpriteAsync()
-    {
-        await _strategy.ImportAsync();
-    }
-
-    private async Task ReImportSpriteAsync()
-    {
-        await _strategy.ReImportAsync();
-    }
+    // private async Task ImportSpriteAsync()
+    // {
+    //     await _strategy.ImportAsync();
+    // }
+    //
+    // private async Task ReImportSpriteAsync()
+    // {
+    //     await _strategy.ReImportAsync();
+    // }
 }
 
 public class SpriteTileRootNode : SpriteRootNode

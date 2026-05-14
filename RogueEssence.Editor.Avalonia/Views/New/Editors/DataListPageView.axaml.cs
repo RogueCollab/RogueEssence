@@ -20,7 +20,7 @@ public partial class DataListPageView : UserControl
     private void DataListPageListBox_OnDoubleTapped(object sender, TappedEventArgs e)
     {
         if (DataContext is DataListPageViewModel vm)
-            vm.AddUnderParentNode(vm.SelectedItem);
+            vm.AddChildItemUnderParent(vm.SelectedItem);
     }
 
 

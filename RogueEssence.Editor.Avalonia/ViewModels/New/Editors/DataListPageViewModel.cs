@@ -23,11 +23,10 @@ public record DataListEntry(string Key, string Value)
     public string Title => $"{Key}: {Value}";
 }
 
+
+
 public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 {
-    public ReactiveCommand<string, Unit> ResaveAsFileCommand { get; }
-
-
     private string _searchFilter = string.Empty;
 
     public string SearchFilter
@@ -221,7 +220,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     protected override bool IsSamePage(EditorPageViewModel other)
     {
         var page = other as DataListPageViewModel;
-        return Node.Equals(page?.Node);
+        return DataType == page?.DataType;
     }
 
     private void UpdateVisibleItems(string filter)
@@ -231,64 +230,55 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         foreach (var item in Items.Where(e => strategy.Matches(e.Title, filter)))
             FilteredItems.Add(item);
     }
-
     
-    Action<EditorPageViewModel> _onPageOpen;
-    public void OnPageOpen(Action<EditorPageViewModel> onPageOpen)
+    public void AddChildItemUnderParent(DataListEntry entry)
     {
-     
-        
-    }
-    
-    public void AddUnderParentNode(DataListEntry entry)
-    {
-
-        Action<EditorPageViewModel> callback = (vm) =>
-        {
-            ReflectedDataPageViewModel pg = (ReflectedDataPageViewModel)vm;
-            
-            pg.SetIsRootPage(true);
-            
-            
-            var dataRoot = pg.Node.FindNode<DataRootNode>();
-            var dataItem = pg.Node.FindNode<DataItemNode>();
-
-            DataManager.DataType dataType = dataRoot.DataType;
-            string key = dataItem.ItemKey;
-
-            var regis = DataRegistry.Map[dataType];
-            IEntryData data = regis.GetEntry(key);
-
-            string title = DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key),
-                data.Name.ToLocal(), data, data.GetType());
-
-            pg.SetPageTitle(title, pg.Node.Icon);
-
-            pg.OnLoadAction = (StackPanel stack) =>
-            {
-                DataEditor.LoadDataControls(key, data, stack);
-            };
-
-            pg.OnOKAction = async (StackPanel stack) =>
-            {
-                lock (GameBase.lockObj)
-                {
-                    object obj = data;
-                    DataEditor.SaveDataControls(ref obj, stack, new Type[0]);
-                    DataManager.Instance.ContentChanged(dataType, key, (IEntryData)obj);
-
-                    string newName = DataManager.Instance.DataIndices[dataType].Get(key).GetLocalString(true);
-                    pg.SetPageTitle(
-                        DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key), newName, obj,
-                            obj.GetType()), pg.Node.Icon);
-                }
-
-                return true;
-            };
-        };
         Node.AddNodeIfNotExists(
-            _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon, callback));
+            _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon, _configurePage));
         NodeHelper.ExpandParents(Node, true);
+    }
+
+    private void _configurePage(EditorPageViewModel vm)
+    {
+        ReflectedDataPageViewModel pg = (ReflectedDataPageViewModel)vm;
+    
+        pg.SetIsRootPage(true);
+    
+        var dataRoot = pg.Node.FindNode<DataRootNode>();
+        var dataItem = pg.Node.FindNode<DataItemNode>();
+
+        DataManager.DataType dataType = dataRoot.DataType;
+        string key = dataItem.ItemKey;
+
+        var regis = DataRegistry.Map[dataType];
+        IEntryData data = regis.GetEntry(key);
+
+        string title = DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key),
+            data.Name.ToLocal(), data, data.GetType());
+
+        pg.SetPageTitle(title, pg.Node.Icon);
+
+        pg.OnLoadAction = (StackPanel stack) =>
+        {
+            DataEditor.LoadDataControls(key, data, stack);
+        };
+
+        pg.OnOKAction = async (StackPanel stack) =>
+        {
+            lock (GameBase.lockObj)
+            {
+                object obj = data;
+                DataEditor.SaveDataControls(ref obj, stack, new Type[0]);
+                DataManager.Instance.ContentChanged(dataType, key, (IEntryData)obj);
+
+                string newName = DataManager.Instance.DataIndices[dataType].Get(key).GetLocalString(true);
+                pg.SetPageTitle(
+                    DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key), newName, obj,
+                        obj.GetType()), pg.Node.Icon);
+            }
+
+            return true;
+        };
     }
 
     public async Task AddItem()

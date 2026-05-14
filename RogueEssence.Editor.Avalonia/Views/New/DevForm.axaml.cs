@@ -565,6 +565,8 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     private void ShowSpriteItemNodeMenu(TreeDataGridRow current, DataItemNode node, SpriteRootNode parentNode,
         ContextRequestedEventArgs e)
     {
+        // var contextMenu = ContextMenuHelper.CreateDataItemMenu(parentNode, node.ItemKey);
+
         // var menu = new ContextMenu
         // {
         //     Items =
@@ -597,24 +599,27 @@ public partial class DevForm : ChromelessWindow, IRootEditor
     
     private void ShowSpriteRootNodeMenu(TreeDataGridRow current, SpriteRootNode root, ContextRequestedEventArgs e)
     {
-        var menu = new ContextMenu
-        {
-            Items =
-            {
-                new MenuItem { Header = "Mass Import", Command = root.MassImportCommand, Icon = App.CreateMenuIcon("Icons.DownloadSimpleFill") },
-                new MenuItem { Header = "Mass Export", Command = root.MassExportCommand, Icon = App.CreateMenuIcon("Icons.ExportFill") },
-                
-                
-                new Separator(),
-                new MenuItem { Header = "Import", Command = root.ImportCommand, Icon = App.CreateMenuIcon("Icons.Plus") },
-                new MenuItem { Header = "Re-Import", Command = root.ReImportCommand, Icon = App.CreateMenuIcon("Icons.RepeatFill") },
-                // new MenuItem { Header = "Add", Command = root.AddCommand,  Icon = App.CreateMenuIcon("Icons.Plus") }
-            }
-        };
+     //    var menu = new ContextMenu
+     //    {
+     //        Items =
+     //        {
+     //            new MenuItem { Header = "Mass Import", Command = root.MassImportCommand, Icon = App.CreateMenuIcon("Icons.DownloadSimpleFill") },
+     //            new MenuItem { Header = "Mass Export", Command = root.MassExportCommand, Icon = App.CreateMenuIcon("Icons.ExportFill") },
+     //            
+     //            
+     // ,
+     //            // new MenuItem { Header = "Import", Command = root.ImportCommand, Icon = App.CreateMenuIcon("Icons.Plus") },
+     //            // new MenuItem { Header = "Re-Import", Command = root.ReImportCommand, Icon = App.CreateMenuIcon("Icons.RepeatFill") },
+     //            // new MenuItem { Header = "Add", Command = root.AddCommand,  Icon = App.CreateMenuIcon("Icons.Plus") }
+     //        }
+     //    };
+
+        var menu = ContextMenuHelper.CreateSpriteItemMenu(root);
 
         if (root is SpriteTileRootNode node)
         {
-            menu.Items.Insert(0, new MenuItem { Header = "Re-Index", Command = node.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") } );
+            menu.Items.Add(new Separator());
+            menu.Items.Add(new MenuItem { Header = "Re-Index", Command = node.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill")});
         };
 
         AttachAndOpenMenu(current, menu, e);
@@ -664,13 +669,13 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                 ShowDataItemNodeMenu(row, itemNode, root, e);
                 break;
     
-            case DataItemNode itemNode when parent is SpriteRootNode spriteRoot:
-                ShowSpriteItemNodeMenu(row, itemNode, spriteRoot, e);
-                break;
-    
-            case DataRootNode rootNode:
-                ShowRootNodeMenu(row, rootNode, e);
-                break;
+            // case DataItemNode itemNode when parent is SpriteRootNode spriteRoot:
+            //     ShowSpriteItemNodeMenu(row, itemNode, spriteRoot, e);
+            //     break;
+            //
+            // case DataRootNode rootNode:
+            //     ShowRootNodeMenu(row, rootNode, e);
+            //     break;
     
             case SpriteRootNode spriteRoot:
                 ShowSpriteRootNodeMenu(row, spriteRoot, e);

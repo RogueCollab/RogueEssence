@@ -20,7 +20,7 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class AnimEditViewModel : ViewModelBase
     {
-        private GraphicsManager.AssetType   assetType;
+        private GraphicsManager.AssetType assetType;
         private Window parent;
 
 

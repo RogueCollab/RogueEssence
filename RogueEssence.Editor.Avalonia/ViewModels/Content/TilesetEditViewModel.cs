@@ -146,6 +146,7 @@ namespace RogueEssence.Dev.ViewModels
             });
         }
 
+        
         public async void mnuReIndex_Click()
         {
             try

@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public interface ISpriteOperationStrategy
+public interface ISpriteRootOperationStrategy
 {
     Task<NodeBase> AddAsync();
     Task DeleteAsync(DataItemNode node);

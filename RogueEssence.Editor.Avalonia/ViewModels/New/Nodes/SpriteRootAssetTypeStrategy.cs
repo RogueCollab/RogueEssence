@@ -10,7 +10,7 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
+public class SpriteRootAssetTypeStrategy : ISpriteRootOperationStrategy
 {
     private readonly IDialogService _dialogService;
     private readonly NodeFactory _nodeFactory;
@@ -65,7 +65,7 @@ public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
         return success;
     }
 
-    public SpriteAssetTypeStrategy(IDialogService dialogService, NodeFactory nodeFactory, SpriteRootNode spriteRootNode)
+    public SpriteRootAssetTypeStrategy(IDialogService dialogService, NodeFactory nodeFactory, SpriteRootNode spriteRootNode)
     {
         _dialogService = dialogService;
         _nodeFactory = nodeFactory;
@@ -124,7 +124,7 @@ public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
         {
             var options = new FolderPickerOpenOptions
             {
-                Title = "Select folder to mass export to",
+                Title = $"Select folder to mass export {name} to",
                 AllowMultiple = false,
             };
             var folder = await _dialogService.ShowFolderPickerAsync(options, folderName);
@@ -152,7 +152,7 @@ public class SpriteAssetTypeStrategy : ISpriteOperationStrategy
 
         var options = new FolderPickerOpenOptions
         {
-            Title = "Select folder to mass import",
+            Title = $"Select folder to mass import \"{name}\" from",
             AllowMultiple = false,
         };
         var result = await _dialogService.ShowFolderPickerAsync(options, folderName);

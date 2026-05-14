@@ -15,7 +15,7 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class SpriteTileStrategy : ISpriteOperationStrategy
+public class SpriteRootTileStrategy : ISpriteRootOperationStrategy
 {
     private int _cachedSize;
 
@@ -23,7 +23,7 @@ public class SpriteTileStrategy : ISpriteOperationStrategy
     private readonly NodeFactory _nodeFactory;
     private readonly SpriteRootNode _spriteRootNode;
 
-    public SpriteTileStrategy(IDialogService dialogService, NodeFactory nodeFactory, SpriteRootNode spriteRootNode)
+    public SpriteRootTileStrategy(IDialogService dialogService, NodeFactory nodeFactory, SpriteRootNode spriteRootNode)
     {
         _dialogService = dialogService;
         _nodeFactory = nodeFactory;

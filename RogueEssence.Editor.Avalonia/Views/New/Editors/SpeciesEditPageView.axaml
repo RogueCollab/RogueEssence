@@ -189,8 +189,9 @@
                     <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
                 </Button>
                 <Button Classes="flat" Width="100" Margin="24,0,0,0"
-                        Command="{Binding btnExport_Click}"
-                        IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        Command="{Binding btnDelete_Click}"
+                        IsEnabled="{Binding 
+                        ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
                 </Button>
             </StackPanel>

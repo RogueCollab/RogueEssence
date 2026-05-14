@@ -13,14 +13,12 @@ public class DevControlViewModel : EditorPageViewModel
     public DevTabScriptViewModel Script { get; }
 
     public override string DefaultTitle => "Dev Control";
-
-    public TestComboBoxViewModel Fruits { get; }
+    
 
     public DevControlViewModel(EditorContext context,
         DevTabGameViewModel game, DevTabPlayerViewModel player, DevTabTravelViewModel travel,
         DevTabScriptViewModel script, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
-        Fruits = new TestComboBoxViewModel();
         Game = game;
         Player = player;
         Travel = travel;

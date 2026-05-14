@@ -83,7 +83,6 @@
 
             <TextBox Grid.Row="0"
                      Height="24"
-                     x:Name="TabSwitcherTextBox"
                      HorizontalAlignment="Stretch"
                      Margin="0"
                      BorderThickness="1"
