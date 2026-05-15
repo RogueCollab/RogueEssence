@@ -74,6 +74,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     public override void OnPageLoad()
     {
         ReloadEntries();
+        Node.OnReload += ReloadEntries;
 
         // ResaveAsFileCommand = Node.ResaveAsFile;
 
@@ -81,11 +82,11 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
         EditMenuItems.Clear();
 
-        EditMenuItems.Add(new DataOpContainer("Re-Index", ReIndexAsync));
+        EditMenuItems.Add(new DataOpContainer("Re-Index", Node.ReIndexAsync));
         if (DataType != DataManager.DataType.AutoTile)
         {
-            EditMenuItems.Add(new DataOpContainer("Resave all as File", () => ResaveAllAsync(false)));
-            EditMenuItems.Add(new DataOpContainer("Resave all as Diff", () => ResaveAllAsync(true)));
+            EditMenuItems.Add(new DataOpContainer("Resave all as File", () => Node.ResaveAllAsync(false)));
+            EditMenuItems.Add(new DataOpContainer("Resave all as Diff", () => Node.ResaveAllAsync(true)));
         }
         else
         {
@@ -198,25 +199,18 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     // }
 
 
-    private async Task ResaveAllAsync(bool asDiff)
+
+
+
+
+    public override void OnPageRemoved()
     {
-        await Task.Run(() =>
-        {
-            lock (GameBase.lockObj)
-            {
-                DevHelper.Resave(DataType, asDiff);
-                DevHelper.RunIndexing(DataType);
-                DevHelper.RunExtraIndexing(DataType);
-                DataManager.Instance.LoadIndex(DataType);
-                DataManager.Instance.LoadUniversalIndices();
-                DataManager.Instance.ClearCache(DataType);
-                DiagManager.Instance.DevEditor.ReloadData(DataType);
-                ReloadEntries();
-            }
-        });
+        Node.OnReload -= ReloadEntries;
+        base.OnPageRemoved();
+
     }
 
-
+ 
     protected override bool IsSamePage(EditorPageViewModel other)
     {
         var page = other as DataListPageViewModel;
@@ -275,10 +269,28 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
                 pg.SetPageTitle(
                     DataEditor.GetWindowTitle(String.Format("{0} #{1}", dataType.ToString(), key), newName, obj,
                         obj.GetType()), pg.Node.Icon);
+                
+                // TODO: This needs to update after pressing OK on the default name too...
+                
+                pg.Node.Title = $"{key}: {newName}";
+                pg.Title = $"{key}: {newName}";
+                ModifyEntry(key, newName);
+            
             }
 
             return true;
         };
+    }
+    
+    
+    
+    public void ModifyEntry(string key, string newValue)
+    {
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if (item == null) return;
+        int index = Items.IndexOf(item);
+        Items[index] = item with { Value = newValue };
+        UpdateVisibleItems(SearchFilter);
     }
 
     public async Task AddItem()
@@ -314,22 +326,22 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         // Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
 
-    private async Task ReIndexAsync()
-    {
-        await Task.Run(() =>
-        {
-            lock (GameBase.lockObj)
-            {
-                DevHelper.RunIndexing(DataType);
-                DevHelper.RunExtraIndexing(DataType);
-                DataManager.Instance.LoadIndex(DataType);
-                DataManager.Instance.LoadUniversalIndices();
-                DataManager.Instance.ClearCache(DataType);
-                DiagManager.Instance.DevEditor.ReloadData(DataType);
-                ReloadEntries();
-            }
-        });
-    }
+    // private async Task ReIndexAsync()
+    // {
+    //     await Task.Run(() =>
+    //     {
+    //         lock (GameBase.lockObj)
+    //         {
+    //             DevHelper.RunIndexing(DataType);
+    //             DevHelper.RunExtraIndexing(DataType);
+    //             DataManager.Instance.LoadIndex(DataType);
+    //             DataManager.Instance.LoadUniversalIndices();
+    //             DataManager.Instance.ClearCache(DataType);
+    //             DiagManager.Instance.DevEditor.ReloadData(DataType);
+    //             ReloadEntries();
+    //         }
+    //     });
+    // }
 
 
     public async Task DeleteItem()

@@ -20,27 +20,16 @@ public class SpriteRootTileStrategy : ISpriteRootOperationStrategy
     private int _cachedSize;
 
     private readonly IDialogService _dialogService;
-    private readonly NodeFactory _nodeFactory;
+    // private readonly NodeFactory _nodeFactory;
     private readonly SpriteRootNode _spriteRootNode;
 
-    public SpriteRootTileStrategy(IDialogService dialogService, NodeFactory nodeFactory, SpriteRootNode spriteRootNode)
+    public SpriteRootTileStrategy(IDialogService dialogService, SpriteRootNode spriteRootNode)
     {
         _dialogService = dialogService;
-        _nodeFactory = nodeFactory;
         _spriteRootNode = spriteRootNode;
     }
 
-    public async Task<NodeBase> AddAsync()
-    {
-        var vm = new RenameWindowViewModel();
-        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(
-            vm, "Add sprite ID");
 
-        if (!result) return null;
-
-        return _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(
-            vm.Name, vm.Name + ":", "Icons.PaintBrushFill");
-    }
 
     public async Task DeleteAsync(DataItemNode node)
     {
@@ -266,19 +255,19 @@ public class SpriteRootTileStrategy : ISpriteRootOperationStrategy
         }
     }
 
-    private void _reloadFullList()
-    {
-        lock (GameBase.lockObj)
-        {
-            _spriteRootNode.SubNodes.Clear();
-            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
-            {
-                _spriteRootNode.SubNodes.Add(
-                    _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(name, name + ":", _spriteRootNode.AssetType.GetIcon())
-                );
-            }
-        }
-    }
+    // private void _reloadFullList()
+    // {
+    //     lock (GameBase.lockObj)
+    //     {
+    //         _spriteRootNode.SubNodes.Clear();
+    //         foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
+    //         {
+    //             _spriteRootNode.SubNodes.Add(
+    //                 _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(name, name + ":", _spriteRootNode.AssetType.GetIcon())
+    //             );
+    //         }
+    //     }
+    // }
 
 
     private void _import(string currentPath, int tileSize)
@@ -286,7 +275,7 @@ public class SpriteRootTileStrategy : ISpriteRootOperationStrategy
         DevForm.ExecuteOrPend(() => { _tryImport(currentPath, tileSize); });
 
         //recompute
-        _reloadFullList();
+        // _reloadFullList();
     }
 
     private void _tryImport(string currentPath, int tileSize)
@@ -321,7 +310,7 @@ public class SpriteRootTileStrategy : ISpriteRootOperationStrategy
         DevForm.ExecuteOrPend(() => { _tryMassImport(currentPath, tileSize); });
 
         //recompute
-        _reloadFullList();
+        // _reloadFullList();
     }
 
     private void _tryMassImport(string currentPath, int tileSize)

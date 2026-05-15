@@ -561,40 +561,17 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         
         AttachAndOpenMenu(current, contextMenu, e);
     }
-
-    private void ShowSpriteItemNodeMenu(TreeDataGridRow current, DataItemNode node, SpriteRootNode parentNode,
-        ContextRequestedEventArgs e)
-    {
-        // var contextMenu = ContextMenuHelper.CreateDataItemMenu(parentNode, node.ItemKey);
-
-        // var menu = new ContextMenu
-        // {
-        //     Items =
-        //     {
-        //         new MenuItem { Header = "Export", Command = parentNode.ExportCommand, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.ExportFill") },
-        //         new Separator(),
-        //         new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node, Icon =  App.CreateMenuIcon("Icons.TrashFill") }
-        //     }
-        // };
-
-        // AttachAndOpenMenu(current, menu, e);
-    }
-
+    
     private void ShowRootNodeMenu(TreeDataGridRow current, DataRootNode root, ContextRequestedEventArgs e)
     {
-        // var menu = new ContextMenu
-        // {
-        //     Items =
-        //     {
-        //         new MenuItem { Header = "Re-Index", Command = root.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") },
-        //         new MenuItem { Header = "Resave all as File", Command = root.ResaveAllAsFileCommand, Icon = App.CreateMenuIcon("Icons.FileFill") },
-        //         new MenuItem { Header = "Resave all as Diff", Command = root.ResaveAllAsDiffCommand, Icon = App.CreateMenuIcon("Icons.PlusMinusFill") },
-        //         new Separator(),
-        //         new MenuItem { Header = "Add", Command = root.AddCommand, Icon = App.CreateMenuIcon("Icons.Plus") }
-        //     }
-        // };
-        //
-        // AttachAndOpenMenu(current, menu, e);
+        var menu = ContextMenuHelper.CreateDataRootMenu(root);
+        AttachAndOpenMenu(current, menu, e);
+    }
+    
+    private void ShowUniversalNodeMenu(TreeDataGridRow current, UniversalNode node, ContextRequestedEventArgs e)
+    {
+        var menu = ContextMenuHelper.CreateUniversalRootMenu(node);
+        AttachAndOpenMenu(current, menu, e);
     }
     
     private void ShowSpriteRootNodeMenu(TreeDataGridRow current, SpriteRootNode root, ContextRequestedEventArgs e)
@@ -614,14 +591,8 @@ public partial class DevForm : ChromelessWindow, IRootEditor
      //        }
      //    };
 
-        var menu = ContextMenuHelper.CreateSpriteItemMenu(root);
-
-        if (root is SpriteTileRootNode node)
-        {
-            menu.Items.Add(new Separator());
-            menu.Items.Add(new MenuItem { Header = "Re-Index", Command = node.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill")});
-        };
-
+        var menu = ContextMenuHelper.CreateSpriteRootMenu(root);
+        
         AttachAndOpenMenu(current, menu, e);
     }
 
@@ -673,9 +644,13 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             //     ShowSpriteItemNodeMenu(row, itemNode, spriteRoot, e);
             //     break;
             //
-            // case DataRootNode rootNode:
-            //     ShowRootNodeMenu(row, rootNode, e);
-            //     break;
+            case DataRootNode rootNode:
+                ShowRootNodeMenu(row, rootNode, e);
+                break;
+            
+            case UniversalNode universalNode:
+                ShowUniversalNodeMenu(row, universalNode, e);
+                break;
     
             case SpriteRootNode spriteRoot:
                 ShowSpriteRootNodeMenu(row, spriteRoot, e);

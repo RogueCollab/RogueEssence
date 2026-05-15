@@ -56,11 +56,11 @@ public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel
     
         
     private string _title = "";
-
-
-    // Tab title
-    public string Title =>
-        string.IsNullOrEmpty(_title) ? DefaultTitle : _title;
+    public string Title
+    {
+        get => string.IsNullOrEmpty(_title) ? DefaultTitle : _title;
+        set => this.RaiseAndSetIfChanged(ref _title, value);
+    }
     
     public bool Equals(EditorPageViewModel? other)
     {

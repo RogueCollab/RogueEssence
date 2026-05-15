@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using RogueEssence.Data;
 using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Utility;
@@ -31,6 +32,21 @@ public class ContextMenuHelper
         return menu;
     }
     
+    public static ContextMenu CreateDataRootMenu(DataRootNode node)
+    {
+        var menu = CreateContextMenu(
+            CreateMenuItem("Re-Index", "Icons.FileFill", async () => await node.ReIndexAsync())
+        );
+
+        if (node.DataType != DataManager.DataType.AutoTile)
+        {
+            menu.Items.Add(new Separator());
+            menu.Items.Add(CreateMenuItem("Resave all as File", "Icons.FileFill", () => node.ResaveAllAsync(false)));
+            menu.Items.Add(CreateMenuItem("Resave all as Patch", "Icons.FileTextFill", () => node.ResaveAllAsync(true)));
+        }
+        return menu;
+    }
+    
     public static ContextMenu CreateDataItemMenu(DataRootNode node, string key)
     {
         return CreateContextMenu(
@@ -39,11 +55,30 @@ public class ContextMenuHelper
         );
     }
     
-    public static ContextMenu CreateSpriteItemMenu(SpriteRootNode node)
+    public static ContextMenu CreateSpriteRootMenu(SpriteRootNode root)
+    {
+        var menu = CreateContextMenu(
+            CreateMenuItem("Mass Import", "Icons.DownloadFill", async () => await root.MassImportAsync()),
+            CreateMenuItem("Mass Export", "Icons.ExportFill", async () => await root.MassExportAsync())
+        );
+        
+        if (root is SpriteTileRootNode node)
+        {
+            menu.Items.Add(new Separator());
+            var reIndexItem = new MenuItem { Header = "Re-Index", Icon = App.CreateMenuIcon("Icons.ListNumbersFill") };
+            reIndexItem.Click += async (_, _) => await node.ReIndexAsync();
+            menu.Items.Add(reIndexItem);
+        };
+
+        return menu;
+
+    }
+    
+    public static ContextMenu CreateUniversalRootMenu(UniversalNode node)
     {
         return CreateContextMenu(
-            CreateMenuItem("Mass Import", "Icons.DownloadFill", async () => await node.MassImportAsync()),
-            CreateMenuItem("Mass Export", "Icons.ExportFill", async () => await node.MassExportAsync())
+            CreateMenuItem("Resave as File", "Icons.DownloadFill", async () => await node.ResaveAsFile()),
+            CreateMenuItem("Resave as Patch", "Icons.ExportFill", async () => await node.ResaveAsDiff())
         );
     }
 }

@@ -142,12 +142,12 @@
                             <DataTemplate x:Key="TreeDataGridNodeBaseTemplate" DataType="vm:NodeBase">
                                 <ContentControl Content="{Binding}">
                                     <ContentControl.DataTemplates>
-                                        <DataTemplate DataType="vm:ItemRootNode">
-                                            <Grid ColumnDefinitions="*, 32" Height="16" Margin="8, 0, 0, 0">
-                                                <v:IconText Grid.Column="0" Grid.ColumnSpan="2"
-                                                            Text="{Binding Title}"
-                                                            Icon="{Binding Icon}"
-                                                            IconSize="12" />
+                                        <!-- <DataTemplate DataType="vm:ItemRootNode"> -->
+                                        <!--     <Grid ColumnDefinitions="*, 32" Height="16" Margin="8, 0, 0, 0"> -->
+                                        <!--         <v:IconText Grid.Column="0" Grid.ColumnSpan="2" -->
+                                        <!--                     Text="{Binding Title}" -->
+                                        <!--                     Icon="{Binding Icon}" -->
+                                        <!--                     IconSize="12" /> -->
 
                                                 <!-- <Button Grid.Column="1" HorizontalAlignment="Left" -->
                                                 <!--         Classes="icon_button" -->
@@ -161,8 +161,8 @@
                                                 <!--           Width="12" Height="12" -->
                                                 <!--           Data="{StaticResource Icons.Plus}" /> -->
                                                 <!-- </Button> -->
-                                            </Grid>
-                                        </DataTemplate>
+                                        <!--     </Grid> -->
+                                        <!-- </DataTemplate> -->
 
                                         <DataTemplate DataType="vm:DataItemNode">
                                             <Grid ColumnDefinitions="*,32" Height="16" Margin="8, 0, 0, 0">

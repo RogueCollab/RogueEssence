@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using RogueEssence.Data;
 using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.ViewModels;
 
@@ -33,6 +34,9 @@ public partial class DataListPageView : UserControl
             listBox.DataContext is not DataListPageViewModel vm)
             return;
 
+        if (vm.DataType == DataManager.DataType.AutoTile) 
+            return;
+        
         var contextMenu = ContextMenuHelper.CreateDataItemMenu(vm.Node, entry.Key);
         contextMenu.Open(this);
     }

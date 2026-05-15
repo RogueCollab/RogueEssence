@@ -65,26 +65,25 @@ public class SpriteRootAssetTypeStrategy : ISpriteRootOperationStrategy
         return success;
     }
 
-    public SpriteRootAssetTypeStrategy(IDialogService dialogService, NodeFactory nodeFactory, SpriteRootNode spriteRootNode)
+    public SpriteRootAssetTypeStrategy(IDialogService dialogService, SpriteRootNode spriteRootNode)
     {
         _dialogService = dialogService;
-        _nodeFactory = nodeFactory;
         _spriteRootNode = spriteRootNode;
     }
 
-    public async Task<NodeBase> AddAsync()
-    {
-        
-        Console.WriteLine("TODO: Resolve this later...");
-        var vm = new RenameWindowViewModel();
-        bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(
-            vm, "Add sprite ID");
-
-        if (!result) return null;
-
-        return _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(
-            vm.Name, vm.Name + ":", "Icons.PaintBrushFill");
-    }
+    // public async Task<NodeBase> AddAsync()
+    // {
+    //     
+    //     Console.WriteLine("TODO: Resolve this later...");
+    //     var vm = new RenameWindowViewModel();
+    //     bool result = await _dialogService.ShowDialogAsync<RenameWindowViewModel, bool>(
+    //         vm, "Add sprite ID");
+    //
+    //     if (!result) return null;
+    //
+    //     return _nodeFactory.CreateDataItemNode<DevEditPageViewModel>(
+    //         vm.Name, vm.Name + ":", "Icons.PaintBrushFill");
+    // }
 
     public async Task DeleteAsync(DataItemNode node)
     {

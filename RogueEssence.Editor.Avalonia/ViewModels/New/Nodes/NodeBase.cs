@@ -51,7 +51,7 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
     }
 
     public event Action? SubNodesChanged;
-    
+
 
     public NodeBase(string title = "", string? icon = null)
     {
@@ -81,7 +81,7 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
         get => _isVisible;
         set => this.RaiseAndSetIfChanged(ref _isVisible, value);
     }
-    
+
     public bool Equals(NodeBase? other)
     {
         if (other is null) return false;
@@ -89,12 +89,12 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
         return EqualsCore(other);
     }
 
-    public override bool Equals(object? obj) => (obj is NodeBase) && this.Equals((NodeBase) obj);
+    public override bool Equals(object? obj) => (obj is NodeBase) && this.Equals((NodeBase)obj);
     public override int GetHashCode() => GetHashCodeCore();
 
     protected virtual bool EqualsCore(NodeBase other) => ReferenceEquals(this, other);
     protected virtual int GetHashCodeCore() => RuntimeHelpers.GetHashCode(this);
-    
+
 
     private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e)
     {
@@ -106,7 +106,7 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
                 child.SubNodesChanged += SubNodesChanged;
             }
         }
-        
+
         if (e.OldItems != null)
         {
             foreach (NodeBase child in e.OldItems)
@@ -131,6 +131,7 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
             child.CollapseChildren();
         }
     }
+
     public bool AddNodeIfNotExists(NodeBase node)
     {
         bool added = false;
@@ -140,15 +141,15 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
             SubNodes.Add(node);
             added = true;
         }
-        
+
         return added;
     }
-    
+
     public void RemoveNode(NodeBase node)
     {
         SubNodes.Remove(node);
     }
-    
+
     // NOTE: Include itself while looking for a match
     public T FindNode<T>() where T : NodeBase
     {
@@ -169,22 +170,24 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
 public class OpenEditorNode : NodeBase
 {
     public Type EditorType { get; }
-    
+
     public readonly Action<EditorPageViewModel>? OnPageLoad;
-    
-    public OpenEditorNode(string title, Type? editorType, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+
+    public OpenEditorNode(string title, Type? editorType, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
         : base(title, icon ?? "")
     {
         OnPageLoad = onPageLoad;
         EditorType = editorType;
     }
-    
+
     protected override bool EqualsCore(NodeBase other)
     {
         if (other is not OpenEditorNode node)
             return false;
         return EditorType == node.EditorType;
     }
+
     protected override int GetHashCodeCore()
     {
         return EditorType.GetHashCode();
@@ -223,7 +226,6 @@ public class ReflectedDataNode : OpenEditorNode
     protected override int GetHashCodeCore() => _identifier.GetHashCode();
 }
 
-
 // TODO: Remove
 public class OpenEditorNodeWithParams : OpenEditorNode
 {
@@ -233,36 +235,11 @@ public class OpenEditorNodeWithParams : OpenEditorNode
         string title,
         Type? editorType,
         object[] extraParams,
-        string? icon = null, 
+        string? icon = null,
         Action<EditorPageViewModel>? onPageLoad = null)
         : base(title, editorType, icon, onPageLoad)
     {
         ExtraParams = extraParams;
-    }
-}
-
-public class OpenEditorNodeFX<T> : OpenEditorNode
-{
-    private readonly Func<T> _getter;
-    private readonly Action<T> _setter;
-
-    public OpenEditorNodeFX(
-        string title, 
-        Type? editorType,
-        Func<T> getter, 
-        Action<T> setter,
-        string? icon = null,
-        Action<EditorPageViewModel>? onPageLoad = null
-        )
-        : base(title, editorType, icon, onPageLoad)
-    {
-        _getter = getter;
-        _setter = setter;
-    }
-
-    public async Task OnClickAsync()
-    {
-
     }
 }
 
@@ -284,13 +261,106 @@ public class OpenEditorNodeFX<T> : OpenEditorNode
 //     }
 // }
 
+public class UniversalNode : OpenEditorNode
+{
+    private IDialogService _dialogService;
+
+    public UniversalNode(IDialogService dialogService,
+        Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
+    {
+        _dialogService = dialogService;
+    }
+
+    public async Task ResaveAsFile()
+    {
+        if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) ==
+            DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, "Universal data must have saved edits first!", "Error",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal",
+            DataManager.DATA_EXT, DataManager.SavePolicy.File);
+
+        await MessageBoxWindowView.Show(_dialogService, "Universal is now saved as a file.", "Complete",
+            MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+
+    public async Task ResaveAsDiff()
+    {
+        if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) ==
+            DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, "Universal data must have saved edits first!", "Error",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        //you can't make a diff for the base game!
+        DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal",
+            DataManager.DATA_EXT, DataManager.SavePolicy.Diff);
+
+        if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) ==
+            DataManager.ModStatus.Base)
+            await MessageBoxWindowView.Show(_dialogService, "Modded Universal was identical to base. Unneeded patch removed.", "Complete",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+        else
+            await MessageBoxWindowView.Show(_dialogService, "Universal is now saved as a patch.", "Complete",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+}
+
 public class DataRootNode : OpenEditorNode
 {
     public DataManager.DataType DataType { get; }
 
     private readonly NodeFactory _nodeFactory;
     private readonly IDialogService _dialogService;
-
+    public Action OnReload;
+    
+    public void Reload()
+    {
+        OnReload?.Invoke(); 
+    }
+    
+    public async Task ReIndexAsync()
+    {
+        await Task.Run(() =>
+        {
+            lock (GameBase.lockObj)
+            {
+                DevHelper.RunIndexing(DataType);
+                DevHelper.RunExtraIndexing(DataType);
+                DataManager.Instance.LoadIndex(DataType);
+                DataManager.Instance.LoadUniversalIndices();
+                DataManager.Instance.ClearCache(DataType);
+                DiagManager.Instance.DevEditor.ReloadData(DataType);
+                Reload();
+            }
+        });
+    }
+    
+    public async Task ResaveAllAsync(bool asDiff)
+    {
+        await Task.Run(() =>
+        {
+            lock (GameBase.lockObj)
+            {
+                DevHelper.Resave(DataType, asDiff);
+                DevHelper.RunIndexing(DataType);
+                DevHelper.RunExtraIndexing(DataType);
+                DataManager.Instance.LoadIndex(DataType);
+                DataManager.Instance.LoadUniversalIndices();
+                DataManager.Instance.ClearCache(DataType);
+                DiagManager.Instance.DevEditor.ReloadData(DataType);
+                Reload();
+            }
+        });
+    }
+    
     public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
         Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
         : base(title, editorType, icon ?? "", onPageLoad)
@@ -311,15 +381,18 @@ public class DataRootNode : OpenEditorNode
     {
         return EditorType.GetHashCode() ^ DataType.GetHashCode();
     }
+    
+    
 
     public async Task ResaveItemAsFile(string key)
     {
         if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
         {
-            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key),
+                "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
             return;
         }
-    
+
         lock (GameBase.lockObj)
         {
             var entry = DataRegistry.Map[DataType];
@@ -327,37 +400,44 @@ public class DataRootNode : OpenEditorNode
             DataManager.Instance.ContentResaved(DataType, key, data, false);
             string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
         }
-    
-        await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a file.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+
+        await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a file.", key), "Complete",
+            MessageBoxWindowView.MessageBoxButtons.Ok);
     }
-    
+
     public async Task ResaveItemAsPatch(string key)
     {
         var modStatus = DataManager.GetEntryDataModStatus(key, DataType.ToString());
-    
+
         if (modStatus == DataManager.ModStatus.Base)
         {
-            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key),
+                "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
             return;
         }
-    
+
         if (modStatus == DataManager.ModStatus.Added)
         {
-            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is newly added in this mod and cannot be saved as patch.", key), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            await MessageBoxWindowView.Show(_dialogService,
+                string.Format("{0} is newly added in this mod and cannot be saved as patch.", key), "Error",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
             return;
         }
-    
+
         lock (GameBase.lockObj)
         {
             var entry = DataRegistry.Map[DataType];
             IEntryData data = entry.GetEntry(key);
             DataManager.Instance.ContentResaved(DataType, key, data, true);
         }
-    
+
         if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
-            await MessageBoxWindowView.Show(_dialogService, string.Format("Modded {0} was identical to base. Unneeded patch removed.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+            await MessageBoxWindowView.Show(_dialogService,
+                string.Format("Modded {0} was identical to base. Unneeded patch removed.", key), "Complete",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
         else
-            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a patch.", key), "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a patch.", key),
+                "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
     }
     
     
@@ -367,19 +447,21 @@ public class DataRootNode : OpenEditorNode
 public class DataItemNode : OpenEditorNode
 {
     public string ItemKey { get; }
-    
-    public DataItemNode(string itemKey, Type? editorType, string? title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+
+    public DataItemNode(string itemKey, Type? editorType, string? title, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
         : base(title ?? "", editorType, icon ?? "", onPageLoad)
     {
         ItemKey = itemKey;
     }
-    
+
     protected override bool EqualsCore(NodeBase other)
     {
         if (other is not DataItemNode node)
             return false;
         return ItemKey == node.ItemKey && EditorType == node.EditorType;
     }
+
     protected override int GetHashCodeCore()
     {
         return EditorType.GetHashCode() ^ ItemKey.GetHashCode();
@@ -389,25 +471,27 @@ public class DataItemNode : OpenEditorNode
 // SpriteRootNode have additional properties like mass exporting
 public class SpriteRootNode : OpenEditorNode
 {
-    private readonly ISpriteRootOperationStrategy _strategy;
-    
+    protected ISpriteRootOperationStrategy _strategy;
+
     public readonly GraphicsManager.AssetType AssetType;
 
-    
+
     public ReactiveCommand<Unit, Unit> MassExportCommand { get; }
+
     public ReactiveCommand<Unit, Unit> MassImportCommand { get; }
     // public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
     // public ReactiveCommand<Unit, Unit> ImportCommand { get; }
     // public ReactiveCommand<Unit, Unit> ReImportCommand { get; }
 
     private string _cachedPath;
+
     public string CachedPath
     {
         get => _cachedPath;
         set => this.RaiseAndSetIfChanged(ref _cachedPath, value);
     }
 
-    
+
     public SpriteRootNode(
         IDialogService dialogService,
         NodeFactory nodeFactory,
@@ -421,22 +505,19 @@ public class SpriteRootNode : OpenEditorNode
         // _dialogService = dialogService;
         // _nodeFactory = nodeFactory;
 
-        if (AssetType == GraphicsManager.AssetType.Tile)
-        {
-            _strategy = new SpriteRootTileStrategy(dialogService, nodeFactory, this);
-        }
-        else
-        {
-            _strategy = new SpriteRootAssetTypeStrategy(dialogService, nodeFactory, this);
-            
-        }
-        
+
+        _strategy = CreateStrategy(dialogService);
+        // _strategy = new SpriteRootTileStrategy(dialogService, nodeFactory, this);
+
         MassExportCommand = ReactiveCommand.CreateFromTask(MassExportAsync);
         MassImportCommand = ReactiveCommand.CreateFromTask(MassImportAsync);
         // ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
         // ImportCommand = ReactiveCommand.CreateFromTask(ImportSpriteAsync);
         // ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
     }
+
+    protected virtual ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
+        => new SpriteRootAssetTypeStrategy(dialogService, this);
 
     public async Task AddItem()
     {
@@ -472,6 +553,57 @@ public class SpriteRootNode : OpenEditorNode
     // {
     //     await _strategy.ReImportAsync();
     // }
+}
+
+public class SpriteTileRootNode : SpriteRootNode
+{
+    private readonly IDialogService _dialogService;
+    public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
+
+
+    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, Type? editorType, string title,
+        string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorType, title, icon, onPageLoad)
+    {
+        _dialogService = dialogService;
+
+        ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
+    }
+
+    protected override ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
+        => new SpriteRootTileStrategy(dialogService, this);
+
+
+    public async Task ReIndexAsync()
+    {
+        try
+        {
+            _reIndex();
+        }
+        catch (Exception ex)
+        {
+            DiagManager.Instance.LogError(ex, false);
+            await MessageBoxWindowView.Show(_dialogService, "Error when reindexing.\n\n" + ex.Message, "Reindex Failed",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+    }
+
+    private void _reIndex()
+    {
+        DevForm.ExecuteOrPend(() => { _tryReIndex(); });
+    }
+
+    private void _tryReIndex()
+    {
+        lock (GameBase.lockObj)
+        {
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+            DiagManager.Instance.LogInfo("All files re-indexed.");
+        }
+    }
 }
 
 // public class ModRootNode : ItemRootNode
@@ -522,6 +654,7 @@ public class SpriteRootNode : OpenEditorNode
 public class PageNode : NodeBase
 {
     private readonly NodeFactory _nodeFactory;
+
     // private readonly IDialogService _dialogService;
     public EditorPageViewModel Page { get; }
     public PageNode? Parent { get; set; }

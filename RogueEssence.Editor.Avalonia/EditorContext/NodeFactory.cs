@@ -41,6 +41,13 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<OpenEditorNode>(title, typeof(TEditor), icon, CreateCallback(onOpen));
 
+    public OpenEditorNode CreateUniversalNode<TEditor>(
+        string title,
+        string? icon = null,
+        Action<TEditor>? onOpen = null)
+        where TEditor : EditorPageViewModel
+        => Create<UniversalNode>(title, typeof(TEditor), icon, CreateCallback(onOpen));
+    
     public ReflectedDataNode CreateReflectedDataNode<TEditor>(
         string title,
         string? icon = null,
@@ -91,20 +98,13 @@ public class NodeFactory
         Action<TEditor>? onOpen = null)
         where TEditor : EditorPageViewModel
         => Create<SpriteRootNode>(assetType, typeof(TEditor), title, icon, CreateCallback(onOpen));
-
-    // public SpriteTileRootNode CreateSpriteTileRootNode<TEditor>(
-    //     string title,
-    //     string? icon = null,
-    //     Action<TEditor>? onOpen = null)
-    //     where TEditor : EditorPageViewModel
-    //     => Create<SpriteTileRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
-
-    public OpenEditorNodeFX<T> CreateOpenEditorNodeFX<T, TEditor>(
+    
+    
+        
+    public SpriteTileRootNode CreateSpriteTileRootNode<TEditor>(
         string title,
-        Func<T> getter,
-        Action<T> setter,
         string? icon = null,
         Action<TEditor>? onOpen = null)
         where TEditor : EditorPageViewModel
-        => Create<OpenEditorNodeFX<T>>(title, typeof(TEditor), getter, setter, icon, CreateCallback(onOpen));
+        => Create<SpriteTileRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
 }

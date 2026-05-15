@@ -9,25 +9,25 @@
         <v:IconText Text="{Binding Title}" Icon="{Binding Icon}" IconSize="12" />
     </DataTemplate>
 
-    <DataTemplate x:Key="ItemRootDataTemplate" DataType="vm:ItemRootNode">
-        <Grid ColumnDefinitions="Auto, *, 16" Height="16">
-            <ContentPresenter Content="{Binding}"
-                              ContentTemplate="{StaticResource NodeContentTemplate}" />
-            <Button x:Name="DataRootAddButton" Grid.Column="2" Classes="icon_button"
-                    IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
-                    Command="{Binding AddCommand}">
-                <Path Stretch="Fill"
-                      Fill="{DynamicResource Brush.FG1}"
-                      Width="10" Height="10"
-                      Data="{StaticResource Icons.Plus}" />
-            </Button>
-        </Grid>
-    </DataTemplate>
-
-    <TreeDataTemplate x:Key="ItemRootTemplate" DataType="vm:ItemRootNode" ItemsSource="{Binding SubNodes}">
-        <ContentPresenter Content="{Binding}"
-                          ContentTemplate="{StaticResource ItemRootDataTemplate}" />
-    </TreeDataTemplate>
+    <!-- <DataTemplate x:Key="ItemRootDataTemplate" DataType="vm:ItemRootNode"> -->
+    <!--     <Grid ColumnDefinitions="Auto, *, 16" Height="16"> -->
+    <!--         <ContentPresenter Content="{Binding}" -->
+    <!--                           ContentTemplate="{StaticResource NodeContentTemplate}" /> -->
+    <!--         <Button x:Name="DataRootAddButton" Grid.Column="2" Classes="icon_button" -->
+    <!--                 IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeViewItem}}" -->
+    <!--                 Command="{Binding AddCommand}"> -->
+    <!--             <Path Stretch="Fill" -->
+    <!--                   Fill="{DynamicResource Brush.FG1}" -->
+    <!--                   Width="10" Height="10" -->
+    <!--                   Data="{StaticResource Icons.Plus}" /> -->
+    <!--         </Button> -->
+    <!--     </Grid> -->
+    <!-- </DataTemplate> -->
+    <!-- -->
+    <!-- <TreeDataTemplate x:Key="ItemRootTemplate" DataType="vm:ItemRootNode" ItemsSource="{Binding SubNodes}"> -->
+    <!--     <ContentPresenter Content="{Binding}" -->
+    <!--                       ContentTemplate="{StaticResource ItemRootDataTemplate}" /> -->
+    <!-- </TreeDataTemplate> -->
 
     <TreeDataTemplate x:Key="DataItemTemplate" DataType="vm:DataItemNode" ItemsSource="{Binding SubNodes}">
         <Grid ColumnDefinitions="*,Auto"
@@ -36,21 +36,21 @@
               Height="16">
             <ContentPresenter Content="{Binding}"
                               ContentTemplate="{StaticResource NodeContentTemplate}" />
-            <Button Grid.Column="1"
-                    Classes="icon_button"
-                    Width="16" Height="16"
-                    Command="{Binding $parent[TreeViewItem;1].((vm:ItemRootNode)DataContext).DeleteCommand}"
-                    CommandParameter="{Binding}"
-                    IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Right"
-                    Background="Transparent"
-                    BorderThickness="0">
-                <Path Stretch="Fill"
-                      Fill="{DynamicResource Brush.FG1}"
-                      Width="10" Height="10"
-                      Data="{StaticResource Icons.TrashFill}" />
-            </Button>
+            <!-- <Button Grid.Column="1" -->
+            <!--         Classes="icon_button" -->
+            <!--         Width="16" Height="16" -->
+            <!--         Command="{Binding $parent[TreeViewItem;1].((vm:ItemRootNode)DataContext).DeleteCommand}" -->
+            <!--         CommandParameter="{Binding}" -->
+            <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeViewItem}}" -->
+            <!--         VerticalAlignment="Center" -->
+            <!--         HorizontalAlignment="Right" -->
+            <!--         Background="Transparent" -->
+            <!--         BorderThickness="0"> -->
+            <!--     <Path Stretch="Fill" -->
+            <!--           Fill="{DynamicResource Brush.FG1}" -->
+            <!--           Width="10" Height="10" -->
+            <!--           Data="{StaticResource Icons.TrashFill}" /> -->
+            <!-- </Button> -->
         </Grid>
     </TreeDataTemplate>
 

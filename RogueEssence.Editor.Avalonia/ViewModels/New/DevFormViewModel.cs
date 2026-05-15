@@ -524,7 +524,7 @@ public class DevFormViewModel : ViewModelBase
 
         CreateDataNode(root);
         CreateConstantsNode(root);
-        //
+        
         CreateSpriteNode(root);
 
         CreateModNode(root);
@@ -613,7 +613,7 @@ public class DevFormViewModel : ViewModelBase
                 parent)
         );
 
-        var universalEventsNode = _context.NodeFactory.CreateOpenEditorNode<ReflectedDataPageViewModel>(
+        var universalEventsNode = _context.NodeFactory.CreateUniversalNode<ReflectedDataPageViewModel>(
             "Universal Event", "Icons.ListFill",
             CreateDataOnOpen(
                 () => (UniversalBaseEffect)DataManager.Instance.UniversalEvent,
@@ -798,9 +798,21 @@ public class DevFormViewModel : ViewModelBase
                 type == GraphicsManager.AssetType.Font)
                 continue;
 
-            spriteNode.SubNodes.Add(
-                _context.NodeFactory.CreateSpriteRootNode<SpritePageViewModel>(type, type.ToString(), type.GetIcon()));
 
+            if (type != GraphicsManager.AssetType.Tile)
+            {
+
+                spriteNode.SubNodes.Add(
+                    _context.NodeFactory.CreateSpriteRootNode<SpritePageViewModel>(type, type.ToString(),
+                        type.GetIcon()));
+            }
+            else
+            {
+                spriteNode.SubNodes.Add(
+                    _context.NodeFactory.CreateSpriteTileRootNode<SpritePageViewModel>(type.ToString(),
+                        type.GetIcon()));
+                
+            }
             // if (type == GraphicsManager.AssetType.Tile)
             // {
             //     var tileRootNode = _nodeFactory.CreateSpriteTileRootNode(
@@ -856,57 +868,9 @@ public class DevFormViewModel : ViewModelBase
 
 
         parent.SubNodes.Add(spriteNode);
-
-        // lock (GameBase.lockObj)
-        // {
-        // anims.Clear();
-        // Anims.Clear();
-        // string assetPattern = GraphicsManager.GetPattern(assetType);
-        // string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern), String.Format(Path.GetFileName(assetPattern), "*"));
-        // for (int ii = 0; ii < dirs.Length; ii++)
-        // {
-        //     string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-        //     anims.Add(filename);
-        // }
-        // Anims.SetItems(anims);
-        // }
-
-
-        // var dataNode = _nodeFactory.CreateSpriteRootNode("aaaa", "Icons.FloppyDiskFill", "Sprite");
-
-        // foreach (var type in Enum.GetValues<DataManager.DataType>())
-        // {
-        //     if (type == DataManager.DataType.All || type == DataManager.DataType.None)
-        //         continue;
-        //
-        //
-        //     var dataItemRootNode = _nodeFactory.CreateDataRootNode(
-        //         type,
-        //         "TODO",
-        //         type.ToString(),
-        //         type.GetIcon());
-        //     dataNode.SubNodes.Add(dataItemRootNode);
-        //     var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
-        //
-        //     foreach (string key in entries.Keys)
-        //     {
-        //         var itemNode = _nodeFactory.CreateDataItemNode(
-        //             key,
-        //             "DevEditEditor",
-        //             $"{key}: {entries[key]}",
-        //             type.GetIcon());
-        //
-        //         dataItemRootNode.SubNodes.Add(itemNode);
-        //     }
-        // }
-        //
-        // parent.SubNodes.Add(dataNode);
+        
     }
-
-    private void HandleSprites()
-    {
-    }
-
+    
     private void CreateModNode(NodeBase parent)
     {
         var modRoot = _context.NodeFactory.CreateOpenEditorNode<ModEditPageViewModel>("Mods", "Icons.ScrollFill");
