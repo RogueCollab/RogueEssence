@@ -873,7 +873,7 @@ public class DevFormViewModel : ViewModelBase
     
     private void CreateModNode(NodeBase parent)
     {
-        var modRoot = _context.NodeFactory.CreateOpenEditorNode<ModEditPageViewModel>("Mods", "Icons.ScrollFill");
+        var modRoot = _context.NodeFactory.CreateOpenEditorNode<ModListPageViewModel>("Mods", "Icons.ScrollFill");
 
 
         parent.SubNodes.Add(modRoot);

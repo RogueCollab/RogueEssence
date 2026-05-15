@@ -45,6 +45,7 @@ namespace RogueEssence.Dev
             collection.AddTransient<DataItemNode>();
             collection.AddTransient<OpenEditorNode>();
             collection.AddTransient<PageNode>();
+            collection.AddTransient<ModItemNode>();
 
             // TODO: remove?
             // collection.AddSingleton<Func<Type, NodeBase>>(x => type => type switch
@@ -65,7 +66,8 @@ namespace RogueEssence.Dev
             collection.AddTransient<GroundEditorPageViewModel>();
             collection.AddTransient<RandomInfoPageViewModel>();
             collection.AddTransient<SpritePageViewModel>();
-            collection.AddTransient<ModEditPageViewModel>();
+            collection.AddTransient<ModListPageViewModel>();
+            collection.AddTransient<ModConfigPageViewModel>();
             collection.AddTransient<DevEditPageViewModel>();
             collection.AddTransient<SpeciesEditPageViewModel>();
             collection.AddTransient<DataListPageViewModel>();
@@ -110,7 +112,8 @@ namespace RogueEssence.Dev
             pageFactory.Register<GroundEditorPageViewModel>();
             pageFactory.Register<RandomInfoPageViewModel>();
             pageFactory.Register<SpritePageViewModel>();
-            pageFactory.Register<ModEditPageViewModel>();
+            pageFactory.Register<ModListPageViewModel>();
+            pageFactory.Register<ModConfigPageViewModel>();
             pageFactory.Register<DevEditPageViewModel>();
             pageFactory.Register<SpeciesEditPageViewModel>();
             pageFactory.Register<DataListPageViewModel>();

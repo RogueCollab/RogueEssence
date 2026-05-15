@@ -73,6 +73,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
     public override void OnPageLoad()
     {
+        base.OnPageLoad();
         ReloadEntries();
         Node.OnReload += ReloadEntries;
 
@@ -221,7 +222,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     {
         FilteredItems.Clear();
         var strategy = new BeginningTitleFilterStrategy();
-        foreach (var item in Items.Where(e => strategy.Matches(e.Title, filter)))
+        foreach (var item in Items.Where(e => strategy.Matches(e.Title, filter) || strategy.Matches(e.Key, filter)))
             FilteredItems.Add(item);
     }
     

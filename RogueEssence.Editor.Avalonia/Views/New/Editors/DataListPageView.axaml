@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:DataListPageViewModel"
              x:Class="RogueEssence.Dev.Views.DataListPageView">
@@ -106,14 +107,26 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
-                <Button Command="{Binding AddItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
-                    <Path Width="14" Height="14" Data="{StaticResource Icons.Plus}" />
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Button Classes="flat" Width="100"
+                        Command="{Binding AddItem}">
+                    <v:IconText Text="Add" Icon="Icons.Plus" IconSize="12" />
                 </Button>
-                <Button Command="{Binding DeleteItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
-                    <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" />
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding DeleteItem}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        >
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
                 </Button>
             </StackPanel>
+            <!-- <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4"> -->
+            <!--     <Button Command="{Binding AddItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
+            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Plus}" /> -->
+            <!--     </Button> -->
+            <!--     <Button Command="{Binding DeleteItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
+            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" /> -->
+            <!--     </Button> -->
+            <!-- </StackPanel> -->
         </Grid>
     </Grid>
 </UserControl>

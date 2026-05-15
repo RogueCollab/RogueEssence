@@ -215,6 +215,10 @@
       <DependentUpon>StringEditPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\New\Editors\ModConfigPageView.axaml.cs">
+      <DependentUpon>ModConfigPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

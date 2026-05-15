@@ -87,6 +87,16 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<DataItemNode>(key, typeof(TEditor), title, icon, CreateCallback(onOpen));
 
+    
+    public ModItemNode CreatModItemNode<TEditor>(
+        string path,
+        string title,
+        string? icon = null,
+        Action<TEditor>? onOpen = null)
+        where TEditor : EditorPageViewModel
+        => Create<ModItemNode>(path, typeof(TEditor), title, icon, CreateCallback(onOpen));
+
+    
     // _serviceProvider.GetService<IDialogService>()
     public PageNode CreatePageNode(EditorPageViewModel childPage, PageNode? parentNode = null)
         => new PageNode(this, childPage, parentNode);

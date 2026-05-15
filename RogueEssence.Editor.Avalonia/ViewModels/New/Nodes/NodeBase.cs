@@ -243,6 +243,22 @@ public class OpenEditorNodeWithParams : OpenEditorNode
     }
 }
 
+
+// public class OpenEditorNodeWithParams : OpenEditorNode
+// {
+//     public object[] ExtraParams { get; }
+//
+//     public OpenEditorNodeWithParams(
+//         string title,
+//         Type? editorType,
+//         object[] extraParams,
+//         string? icon = null,
+//         Action<EditorPageViewModel>? onPageLoad = null)
+//         : base(title, editorType, icon, onPageLoad)
+//     {
+//         ExtraParams = extraParams;
+//     }
+// }
 // public abstract class ItemRootNode : OpenEditorNode
 // {
 //     
@@ -310,6 +326,31 @@ public class UniversalNode : OpenEditorNode
         else
             await MessageBoxWindowView.Show(_dialogService, "Universal is now saved as a patch.", "Complete",
                 MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+}
+
+
+public class ModItemNode : OpenEditorNode
+{
+    public string Path { get; }
+
+    public ModItemNode(string path, Type? editorType, string? title, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title ?? "", editorType, icon ?? "", onPageLoad)
+    {
+        Path = path;
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not ModItemNode node)
+            return false;
+        return Path == node.Path && EditorType == node.EditorType;
+    }
+
+    protected override int GetHashCodeCore()
+    {
+        return Path.GetHashCode() ^ EditorType.GetHashCode();
     }
 }
 
@@ -555,19 +596,17 @@ public class SpriteRootNode : OpenEditorNode
     // }
 }
 
+
 public class SpriteTileRootNode : SpriteRootNode
 {
     private readonly IDialogService _dialogService;
-    public ReactiveCommand<Unit, Unit> ReIndexCommand { get; }
-
 
     public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, Type? editorType, string title,
         string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
         : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorType, title, icon, onPageLoad)
     {
         _dialogService = dialogService;
-
-        ReIndexCommand = ReactiveCommand.CreateFromTask(ReIndexAsync);
+        
     }
 
     protected override ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
