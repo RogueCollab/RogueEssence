@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="using:RogueEssence.Dev.Views"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SpritePageViewModel"
+             x:Class="RogueEssence.Dev.Views.SpritePageView">
+    <Design.DataContext>
+        <vm:SpritePageViewModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="Auto, 32, Auto, 20, Auto">
+        <DockPanel Grid.Row="0" VerticalAlignment="Top">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
+                    <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
+                    <Separator IsVisible="{Binding IsTileAsset}" />
+                    <MenuItem IsVisible="{Binding IsTileAsset}" Header="Re-Index" Command="{Binding mnuReIndex_Click}" />
+                </MenuItem>
+            </Menu>
+
+
+            <!-- <Grid RowDefinitions="*, 34" ColumnDefinitions="*, *, *, *"> -->
+            <!--     <views:SearchListBox DataContext="{Binding Anims}" Margin="4" Grid.ColumnSpan="4"/> -->
+            <!--     <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button> -->
+            <!--     <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button> -->
+            <!--     <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Export</Button> -->
+            <!--     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button> -->
+            <!-- </Grid> -->
+        </DockPanel>
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                   Text="{Binding AssetType}" />
+
+        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8" MinWidth="600">
+
+            <TextBox Classes="search"
+                     Grid.Row="0"
+                     Text="{Binding SearchFilter, Mode=TwoWay}" />
+
+            <ListBox Grid.Row="2"
+                     x:Name="SpritePageListBox"
+                     SelectionChanged="SpritePageListBox_OnSelectionChanged"
+                     ContextRequested="SpritePageListBox_OnContextRequested"
+                     Background="{DynamicResource Brush.ListBox.Background}"
+                     SelectedItem="{Binding SelectedItem}"
+                     ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
+                     BorderThickness="1">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemContainerTheme>
+                    <StaticResource ResourceKey="CompactListBoxItem" />
+                </ListBox.ItemContainerTheme>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" Padding="4" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Button Classes="flat" Width="100"
+                        Command="{Binding btnImport_Click}">
+                    <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnReImport_Click}"
+                        IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnExport_Click}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnDelete_Click}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                </Button>
+            </StackPanel>
+            <!--          -->
+            <!-- <StackPanel Grid.Row="3" Orientation="Horizontal"> -->
+            <!--     <Button Classes="flat" Width="100" -->
+            <!--             Command="{Binding btnImport_Click}" -->
+            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+            <!--         <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" /> -->
+            <!--     </Button> -->
+            <!--     <Button Classes="flat" Width="100" Margin="24,0,0,0" -->
+            <!--             Command="{Binding btnReImport_Click}" -->
+            <!--             IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"> -->
+            <!--         <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" /> -->
+            <!--     </Button> -->
+            <!--     <Button Classes="flat" Width="100" Margin="24,0,0,0" -->
+            <!--             Command="{Binding btnExport_Click}" -->
+            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+            <!--         <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" /> -->
+            <!--     </Button> -->
+            <!--     <Button Classes="flat" Width="100" Margin="24,0,0,0" -->
+            <!--             Command="{Binding btnExport_Click}" -->
+            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
+            <!--         <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" /> -->
+            <!--     </Button> -->
+            <!-- </StackPanel> -->
+
+        </Grid>
+    </Grid>
+</UserControl>

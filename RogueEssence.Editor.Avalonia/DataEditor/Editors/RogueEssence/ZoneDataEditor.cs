@@ -11,12 +11,14 @@ using RogueEssence.Script;
 using Avalonia;
 using System.Diagnostics;
 using System.IO;
+using Avalonia.Media;
 
 namespace RogueEssence.Dev
 {
     public class ZoneDataEditor : Editor<ZoneData>
     {
 
+        public ZoneDataEditor(EditorContext context) : base(context) { }
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, ZoneData obj, Type[] subGroupStack)
         {
             base.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
@@ -26,13 +28,15 @@ namespace RogueEssence.Dev
             Button btnTest = new Button();
             btnTest.Margin = new Thickness(0, 4, 0, 0);
             btnTest.Content = "Open Script Folder";
+            btnTest.Classes.Add("flat");
             btnTest.Click += async (object sender, RoutedEventArgs e) =>
+            
             {
                 string zonescriptdir = LuaEngine.MakeZoneScriptPath(parent, "");
 
                 if (!Directory.Exists(zonescriptdir))
                 {
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("This zone has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(_context.DialogService, String.Format("This zone has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
                 }
                 else
                 {
@@ -57,7 +61,7 @@ namespace RogueEssence.Dev
 
             Border border = new Border();
             border.BorderThickness = new Thickness(1);
-            border.BorderBrush = Avalonia.Media.Brushes.LightGray;
+            border.BorderBrush = Application.Current?.FindResource("Brush.SubStackBorder") as IBrush;
             border.Margin = new Thickness(2);
             control.Children.Add(border);
 

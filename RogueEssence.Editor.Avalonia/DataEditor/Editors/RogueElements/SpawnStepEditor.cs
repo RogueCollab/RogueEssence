@@ -18,6 +18,8 @@ namespace RogueEssence.Dev
 {
     public class BaseSpawnStepEditor : Editor<IBaseSpawnStep>
     {
+        
+        public BaseSpawnStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IBaseSpawnStep obj, Type type, object[] attributes)
         {
             PropertyInfo memberInfo = typeof(IBaseSpawnStep).GetProperty(nameof(obj.Spawn));
@@ -28,6 +30,7 @@ namespace RogueEssence.Dev
     }
     public class PlaceMobsStepEditor : Editor<IPlaceMobsStep>
     {
+        public PlaceMobsStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IPlaceMobsStep obj, Type type, object[] attributes)
         {
             PropertyInfo memberInfo = typeof(IPlaceMobsStep).GetProperty(nameof(obj.Spawn));
@@ -38,6 +41,7 @@ namespace RogueEssence.Dev
     }
     public class MoneySpawnStepEditor : Editor<IMoneySpawnStep>
     {
+        public MoneySpawnStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IMoneySpawnStep obj, Type type, object[] attributes)
         {
             PropertyInfo memberInfo = typeof(IMoneySpawnStep).GetProperty(nameof(obj.MoneyRange));

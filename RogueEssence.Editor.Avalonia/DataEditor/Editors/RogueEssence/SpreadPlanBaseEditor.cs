@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class SpreadPlanBaseEditor : Editor<SpreadPlanBase>
     {
+        public SpreadPlanBaseEditor(EditorContext context) : base(context) { }
         public override string GetString(SpreadPlanBase obj, Type type, object[] attributes)
         {
             MemberInfo[] floorRangeInfo = type.GetMember(nameof(obj.FloorRange));
@@ -29,6 +30,7 @@ namespace RogueEssence.Dev
 
     public class SpreadPlanSpacedEditor : Editor<SpreadPlanSpaced>
     {
+        public SpreadPlanSpacedEditor(EditorContext context) : base(context) { }
         public override string GetString(SpreadPlanSpaced obj, Type type, object[] attributes)
         {
             MemberInfo[] floorRangeInfo = type.GetMember(nameof(obj.FloorRange));
@@ -41,6 +43,7 @@ namespace RogueEssence.Dev
 
     public class SpreadPlanQuotaEditor : Editor<SpreadPlanQuota>
     {
+        public SpreadPlanQuotaEditor(EditorContext context) : base(context) { }
         public override string GetString(SpreadPlanQuota obj, Type type, object[] attributes)
         {
             MemberInfo[] floorRangeInfo = type.GetMember(nameof(obj.FloorRange));

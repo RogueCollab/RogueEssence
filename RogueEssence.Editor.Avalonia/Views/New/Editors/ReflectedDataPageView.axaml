@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:ReflectedDataPageViewModel"
+             x:Class="RogueEssence.Dev.Views.ReflectedDataPageView">
+    
+    <Design.DataContext>
+        <vm:ReflectedDataPageViewModel></vm:ReflectedDataPageViewModel>
+    </Design.DataContext>
+    <Grid RowDefinitions="*, Auto, 32" ColumnDefinitions="*, *">
+        <!--ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2"-->
+        <ScrollViewer Grid.ColumnSpan="2">
+            <StackPanel Name="stkContent" Margin="12, 4">
+        
+            </StackPanel>
+        </ScrollViewer>
+        
+        <Button Click="btnApply_Click" Classes="flat" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding IsRootPage}">Save All Sub-Windows</Button>
+        <Button Click="btnOK_Click" Classes="flat" Margin="4" Grid.Row="2" Grid.Column="0">OK</Button>
+        <Button Click="btnCancel_Click" Classes="flat" Margin="4" Grid.Row="2" Grid.Column="1">Cancel</Button>
+    </Grid>
+</UserControl>

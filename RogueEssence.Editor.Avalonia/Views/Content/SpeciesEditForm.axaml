@@ -10,7 +10,7 @@
         Title="{Binding Name}" Height="280" Width="300">
   <!--Icon="/Assets/app-logo.ico"-->
     <Design.DataContext>
-      <vm:SpeciesEditViewModel/>
+      <vm:SpeciesEditViewModel2/>
     </Design.DataContext>
   <Window.Resources>
     <converters:OXConverter x:Key="OXConverter"/>
@@ -36,9 +36,9 @@
         <ColumnDefinition/>
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
-      <TreeView Items="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
+      <TreeView ItemsSource="{Binding Monsters}" SelectedItem="{Binding ChosenMonster}" SelectionMode="AlwaysSelected" Margin="4" Grid.ColumnSpan="4">
         <TreeView.DataTemplates>
-          <TreeDataTemplate DataType="vm:MonsterNodeViewModel" ItemsSource="{Binding Nodes}">
+          <TreeDataTemplate DataType="vm:MonsterNodeViewModel2" ItemsSource="{Binding Nodes}">
             <Grid>
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="24"/>
@@ -50,7 +50,7 @@
           </TreeDataTemplate>
         </TreeView.DataTemplates>
         <TreeView.ContextMenu>
-          <ContextMenu Items="{Binding OpList}">
+          <ContextMenu ItemsSource="{Binding OpList}">
             <ContextMenu.Styles>
               <Style Selector="MenuItem">
                 <Setter Property="Header" Value="{Binding Name}"/>

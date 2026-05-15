@@ -30,7 +30,7 @@
     <Button Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1" Grid.Column="1">Reload Scripts</Button>
     <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Map Callbacks</TextBlock>
     <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="4" BorderThickness="1" BorderBrush="Black">
-      <ItemsControl Items="{Binding ScriptItems}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}">
+      <ItemsControl ItemsSource="{Binding ScriptItems}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Grid>
@@ -38,7 +38,8 @@
                 <ColumnDefinition Width="28"/>
                 <ColumnDefinition/>
               </Grid.ColumnDefinitions>
-              <CheckBox Margin="4"
+              <CheckBox
+                Margin="4"
                         IsEnabled="False"
                         IsChecked="{Binding IsChecked}"/>
               <TextBlock Margin="0,4" Grid.Column="1" VerticalAlignment="Center"

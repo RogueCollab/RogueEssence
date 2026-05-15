@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class DataFolderEditor : StringEditor
     {
+        public DataFolderEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
         public override bool DefaultDecoration => false;
@@ -27,7 +28,6 @@ namespace RogueEssence.Dev
         {
             DataFolderAttribute animAtt = ReflectionExt.FindAttribute<DataFolderAttribute>(attributes);
             ComboBox cbValue = new SearchComboBox();
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             string choice = member;
 
             List<string> items = new List<string>();
@@ -44,7 +44,7 @@ namespace RogueEssence.Dev
             }
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbValue.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             cbValue.SelectedIndex = chosenIndex;
             control.Children.Add(cbValue);

@@ -10,12 +10,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using RogueEssence.Dev.Services;
 
 namespace RogueEssence.Dev.ViewModels
 {
     public class MapTabPropertiesViewModel : ViewModelBase
     {
-        public MapTabPropertiesViewModel()
+        public MapTabPropertiesViewModel(IDialogService dialogService)
         {
             Sights = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.SightRange.Blind; ii++)
@@ -43,7 +44,7 @@ namespace RogueEssence.Dev.ViewModels
             BlankBG.OnEditItem += AutoTile_Edit;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            TextureMap = new DictionaryBoxViewModel(form.MapEditForm, new StringConv(typeof(AutoTile), new object[0]));
+            TextureMap = new DictionaryBoxViewModel(dialogService, new StringConv(typeof(AutoTile), new object[0]));
             TextureMap.OnMemberChanged += TextureMap_Changed;
             TextureMap.OnEditKey += TextureMap_EditKey;
             TextureMap.OnEditItem += TextureMap_EditItem;

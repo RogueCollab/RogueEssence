@@ -42,11 +42,24 @@ namespace RogueEssence.Dev
             reactiveObject.RaisePropertyChanged(propertyName);
         }
 
-        public static ParentForm GetOwningForm(this IControl control)
+        public static ParentForm GetOwningForm(this Control control)
         {
             while (control.Parent != null)
-                control = control.Parent;
+                control = (Control) control.Parent;
             return (ParentForm)control;
+        }
+        
+        
+        public static T FindAncestorViewModel<T>(this Control control) where T : class
+        {
+            Control current = control.Parent as Control;
+            while (current != null)
+            {
+                if (current.DataContext is T match)
+                    return match;
+                current = current.Parent as Control;
+            }
+            return null;
         }
     }
 }

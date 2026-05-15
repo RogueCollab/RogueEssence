@@ -11,12 +11,14 @@ using RogueEssence.Dev.Views;
 using System.Collections;
 using Avalonia;
 using System.Reactive.Subjects;
+using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev
 {
     public class ArrayEditor : Editor<Array>
     {
+        public ArrayEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -36,7 +38,7 @@ namespace RogueEssence.Dev
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, rangeAtt.Index1);
                 lbxValue.DataContext = vm;
-                lbxValue.SetListContextMenu(ListEditor.CreateContextMenu(control, type, vm));
+                lbxValue.SetListContextMenu(ListEditor.CreateContextMenu(_context.DialogService, control, type, vm));
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
@@ -52,7 +54,7 @@ namespace RogueEssence.Dev
 
                 CollectionBoxViewModel vm = createViewModel(control, parent, name, type, attributes, member, false);
                 lbxValue.DataContext = vm;
-                lbxValue.SetListContextMenu(ListEditor.CreateContextMenu(control, type, vm));
+                lbxValue.SetListContextMenu(ListEditor.CreateContextMenu(_context.DialogService, control, type, vm));
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
                 control.Children.Add(lbxValue);
             }
@@ -63,7 +65,7 @@ namespace RogueEssence.Dev
         {
             Type elementType = type.GetElementType();
 
-            CollectionBoxViewModel vm = new CollectionBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            CollectionBoxViewModel vm = new CollectionBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
             vm.Index1 = index1;
             CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
             if (confirmAtt != null)
@@ -72,22 +74,30 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             vm.OnEditItem += (int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + index + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(0, attributes));
+                string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(0, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, elementType);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(title, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    element = DataEditor.SaveClassControls(stack, elementName, elementType, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0], advancedEdit);
                     op(index, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
 
@@ -105,7 +115,7 @@ namespace RogueEssence.Dev
             //TODO: 2D array grid support
             //if (type.GetElementType().IsArray)
 
-            IControl lbxValue = control.Children[controlIndex];
+            Control lbxValue = control.Children[controlIndex];
             CollectionBoxViewModel mv = (CollectionBoxViewModel)lbxValue.DataContext;
             List<object> objList = (List<object>)mv.GetList(typeof(List<object>));
 

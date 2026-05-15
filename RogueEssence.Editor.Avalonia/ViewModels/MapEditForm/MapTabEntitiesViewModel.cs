@@ -16,7 +16,7 @@ namespace RogueEssence.Dev.ViewModels
     {
         public delegate void EntityOp(Character ent);
 
-        public MapTabEntitiesViewModel()
+        public MapTabEntitiesViewModel(EditorContext context)
         {
             //Teams = new TeamBoxViewModel(DiagManager.Instance.DevEditor.MapEditor.Edits);
 
@@ -101,10 +101,10 @@ namespace RogueEssence.Dev.ViewModels
             speciesChanged();
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            ActionEvents = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(BattleEvent), new object[0]));
+            ActionEvents = new CollectionBoxViewModel(context.DialogService, new StringConv(typeof(BattleEvent), new object[0]));
             ActionEvents.OnMemberChanged += ActionEvents_Changed;
             ActionEvents.OnEditItem += ActionEvents_EditItem;
-            Statuses = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(StatusEffect), new object[0]));
+            Statuses = new CollectionBoxViewModel(context.DialogService, new StringConv(typeof(StatusEffect), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
         }
@@ -595,6 +595,7 @@ namespace RogueEssence.Dev.ViewModels
             DataEditForm frmData = new DataEditRootForm();
             frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
+            
             DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0], advancedEdit);
             DataEditor.TrackTypeSize(frmData, typeof(StatusEffect));
 

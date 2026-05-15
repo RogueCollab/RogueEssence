@@ -48,9 +48,11 @@ namespace RogueEssence.Dev.ViewModels
 
     public class DevTabModsViewModel : ViewModelBase
     {
-        public DevTabModsViewModel()
+        private EditorContext _context;
+        public DevTabModsViewModel(EditorContext context)
         {
             currentMod = null;
+            _context = context;
 
             Mods = new ObservableCollection<ModsNodeViewModel>();
             reloadMods();
@@ -107,9 +109,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnAdd_Click()
         {
-            ModConfigWindow window = new ModConfigWindow();
+            ModConfigWindowView window = new ModConfigWindowView();
             ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
-            ModConfigViewModel vm = new ModConfigViewModel(header);
+            ModConfigViewModel2 vm = new ModConfigViewModel2(_context.DialogService, header);
             window.DataContext = vm;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
@@ -188,9 +190,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnEdit_Click()
         {
-            ModConfigWindow window = new ModConfigWindow();
+            ModConfigWindowView window = new ModConfigWindowView();
             ModHeader header = PathMod.Quest;
-            ModConfigViewModel vm = new ModConfigViewModel(header);
+            ModConfigViewModel2 vm = new ModConfigViewModel2(_context.DialogService, header);
             window.DataContext = vm;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;

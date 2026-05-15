@@ -14,10 +14,10 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class MapTabEffectsViewModel : ViewModelBase
     {
-        public MapTabEffectsViewModel()
+        public MapTabEffectsViewModel(EditorContext context)
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            Statuses = new CollectionBoxViewModel(form.MapEditForm, new StringConv(typeof(MapStatus), new object[0]));
+            Statuses = new CollectionBoxViewModel(context.DialogService, new StringConv(typeof(MapStatus), new object[0]));
             Statuses.OnMemberChanged += Statuses_Changed;
             Statuses.OnEditItem += Statuses_EditItem;
 

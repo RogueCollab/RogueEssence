@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
 using Avalonia.Input;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -58,15 +59,14 @@ namespace RogueEssence.Dev.ViewModels
         public event Action OnMemberChanged;
 
         public StringConv StringConv;
-
-        private Window parent;
-
+        
         public bool ConfirmDelete;
 
-        public DictionaryBoxViewModel(Window parent, StringConv conv)
+        private IDialogService _dialogService;
+        public DictionaryBoxViewModel(IDialogService dialogService, StringConv conv)
         {
             StringConv = conv;
-            this.parent = parent;
+            _dialogService = dialogService;
             Collection = new ObservableCollection<DictionaryElement>();
         }
 
@@ -104,7 +104,7 @@ namespace RogueEssence.Dev.ViewModels
             int existingIndex = getIndexFromKey(key);
             if (existingIndex > -1)
             {
-                await MessageBox.Show(parent, "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_dialogService, "Dictionary already contains this key!", "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
 
@@ -119,7 +119,7 @@ namespace RogueEssence.Dev.ViewModels
             int existingIndex = getIndexFromKey(key);
             if (existingIndex > -1)
             {
-                await MessageBox.Show(parent, "Dictionary already contains this key!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_dialogService, "Dictionary already contains this key!", "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
             bool advancedEdit = false;
@@ -181,9 +181,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
+                        MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 

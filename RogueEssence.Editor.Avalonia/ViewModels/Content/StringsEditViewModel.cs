@@ -75,6 +75,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             string defname = String.Format("STRING_{0}", GameStrings.Count);
             GameStrings.Add(new MapString(defname, "", ""));
+            CurrentString = GameStrings.Count - 1;
         }
         public void btnDelete_Click()
         {

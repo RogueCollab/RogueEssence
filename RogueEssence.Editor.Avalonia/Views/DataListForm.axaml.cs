@@ -12,22 +12,14 @@ using System.Threading;
 
 namespace RogueEssence.Dev.Views
 {
-    public class DataListForm : Window
+    public partial class DataListForm : Window
     {
 
         public DataListForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         public void SetListContextMenu(ContextMenu menu)
         {
             SearchListBox lbx = this.FindControl<SearchListBox>("lbxItems");

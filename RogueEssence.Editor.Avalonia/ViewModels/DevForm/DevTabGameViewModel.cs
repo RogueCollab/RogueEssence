@@ -103,7 +103,7 @@ namespace RogueEssence.Dev.ViewModels
             set { this.SetIfChanged(ref chosenIntrinsic, value); }
         }
 
-        public ObservableCollection<string> Statuses { get; }
+        public ObservableCollection<string> Statuses { get; } = new();
 
         public List<string> StatusKeys;
 

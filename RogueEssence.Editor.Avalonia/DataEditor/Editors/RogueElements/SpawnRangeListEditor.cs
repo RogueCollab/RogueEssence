@@ -10,6 +10,8 @@ using Avalonia.Controls;
 using RogueEssence.Dev.Views;
 using RogueEssence.Dev.ViewModels;
 using Avalonia.Interactivity;
+using RogueEssence.Dev.Services;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev
 {
@@ -25,7 +27,7 @@ namespace RogueEssence.Dev
         /// </summary>
         public bool Inclusive;
 
-        public SpawnRangeListEditor(bool index1, bool inclusive)
+        public SpawnRangeListEditor(EditorContext context, bool index1, bool inclusive) : base(context)
         {
             Index1 = index1;
             Inclusive = inclusive;
@@ -46,7 +48,7 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 260;
 
-            SpawnRangeListBoxViewModel vm = new SpawnRangeListBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+            SpawnRangeListBoxViewModel vm = new SpawnRangeListBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
             vm.Index1 = Index1;
             vm.Inclusive = Inclusive;
@@ -63,29 +65,37 @@ namespace RogueEssence.Dev
             }
 
             lbxValue.DataContext = vm;
-            lbxValue.SetListContextMenu(createContextMenu(control, type, vm));
+            lbxValue.SetListContextMenu(createContextMenu(_context.DialogService, control, type, vm));
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
 
             //add lambda expression for editing a single element
             vm.OnEditItem += (int index, object element, bool advancedEdit, SpawnRangeListBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + index + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
-                
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, elementType);
+                // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                frmData.SelectedOKEvent += async () =>
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon, pageViewModel.Node);
+                pageViewModel.Node.AddNodeIfNotExists(node);
+
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    element = DataEditor.SaveClassControls(stack, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0], advancedEdit);
                     op(index, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             vm.LoadFromList(member);
@@ -93,7 +103,7 @@ namespace RogueEssence.Dev
         }
 
 
-        private static ContextMenu createContextMenu(StackPanel control, Type type, SpawnRangeListBoxViewModel vm)
+        private static ContextMenu createContextMenu(IDialogService dialogService, StackPanel control, Type type, SpawnRangeListBoxViewModel vm)
         {
             Type elementType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnRangeList<>), type, 0);
 
@@ -102,11 +112,12 @@ namespace RogueEssence.Dev
             MenuItem copyToolStripMenuItem = new MenuItem();
             MenuItem pasteToolStripMenuItem = new MenuItem();
 
-            Avalonia.Collections.AvaloniaList<object> list = (Avalonia.Collections.AvaloniaList<object>)copyPasteStrip.Items;
+            Avalonia.Collections.AvaloniaList<object> list = new Avalonia.Collections.AvaloniaList<object>();
             list.AddRange(new MenuItem[] {
                             copyToolStripMenuItem,
                             pasteToolStripMenuItem});
 
+            copyPasteStrip.ItemsSource = list;
             copyToolStripMenuItem.Header = "Copy List Element: " + elementType.Name;
             pasteToolStripMenuItem.Header = "Insert List Element: " + elementType.Name;
 
@@ -118,7 +129,7 @@ namespace RogueEssence.Dev
                     DataEditor.SetClipboardObj(obj, null);
                 }
                 else
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("No index selected!"), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(dialogService, String.Format("No index selected!"), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
             };
             pasteToolStripMenuItem.Click += async (object copySender, RoutedEventArgs copyE) =>
             {
@@ -132,7 +143,7 @@ namespace RogueEssence.Dev
                     vm.InsertOnKey(idx, DataEditor.clipboardObj);
                 }
                 else
-                    await MessageBox.Show(control.GetOwningForm(), String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(dialogService, String.Format("Incompatible types:\n{0}\n{1}", type1.AssemblyQualifiedName, type2.AssemblyQualifiedName), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
             };
             return copyPasteStrip;
         }

@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class IntEditor : Editor<Int32>
     {
+        public IntEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -45,6 +46,7 @@ namespace RogueEssence.Dev
             nudValue.Minimum = minimum;
             nudValue.Maximum = maximum;
             nudValue.Value = member;
+            nudValue.Increment = 1;
 
             control.Children.Add(nudValue);
         }

@@ -32,7 +32,7 @@
       <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" ToolTip.Tip="Map name in the current language.">Map Name:</TextBlock>
       <TextBox Text="{Binding MapName}" VerticalAlignment="Center" Margin="4" Grid.Column="1" Grid.ColumnSpan="3"/>
       <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1" ToolTip.Tip="Choose how the edge of the map is handled.">Scroll Edge:</TextBlock>
-      <views:SearchComboBox Items="{Binding ScrollEdges}" SelectedIndex="{Binding ChosenScroll}" Margin="4" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"/>
+      <views:SearchComboBox ItemsSource="{Binding ScrollEdges}" SelectedIndex="{Binding ChosenScroll}" Margin="4" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"/>
       <CheckBox Margin="4,2" IsChecked="{Binding NoSwitch}" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" ToolTip.Tip="Prevents leader switching.">No Switch</CheckBox>
       <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="3" Grid.ColumnSpan="2" ToolTip.Tip="Graphics to use for the background.">Background:</TextBlock>
       <views:ClassBox DataContext="{Binding BG}" Margin="4,2" Grid.Row="4" Grid.ColumnSpan="2"/>
@@ -50,7 +50,7 @@
       </Grid.RowDefinitions>
 
       <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Music:</TextBlock>
-      <ListBox Name="lbxMusic" SelectionMode="AlwaysSelected" Items="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
+      <ListBox Name="lbxMusic" SelectionMode="AlwaysSelected" ItemsSource="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
       <Button Name="btnReloadMusic" Command="{Binding btnReloadMusic_Click}" Margin="4" Grid.Row="2">Reload Music</Button>
     </Grid>
   </Grid>

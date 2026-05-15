@@ -7,13 +7,14 @@ using RogueEssence.Ground;
 using RogueEssence.Data;
 using ReactiveUI;
 using System.Collections.ObjectModel;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class ModConfigViewModel : ViewModelBase
+    public class ModConfigViewModel2 : ViewModelBase
     {
-        public ModConfigViewModel(ModHeader header)
+        public ModConfigViewModel2(IDialogService dialogService, ModHeader header)
         {
             Name = header.Name;
             Namespace = header.Namespace;
@@ -29,7 +30,7 @@ namespace RogueEssence.Dev.ViewModels
             ChosenModType = (int)header.ModType;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            Relationships = new CollectionBoxViewModel(form, new StringConv(typeof(RelatedMod), new object[0]));
+            Relationships = new CollectionBoxViewModel(dialogService, new StringConv(typeof(RelatedMod), new object[0]));
             Relationships.OnEditItem += Relationships_EditItem;
             Relationships.LoadFromList(header.Relationships);
         }

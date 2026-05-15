@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:ModListPageViewModel"
+             x:Class="RogueEssence.Dev.Views.ModListPageView">
+    <Design.DataContext>
+        <vm:ModListPageViewModel/>
+    </Design.DataContext>
+    <Grid RowDefinitions="64, Auto, Auto, Auto">
+
+
+        <TextBlock Grid.Row="1" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                   Text="Mods" />
+
+        <!-- Search Grid -->
+        <Grid Grid.Row="2" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8" MinWidth="600">
+
+            <TextBox Classes="search"
+                     Grid.Row="0"
+                     Text="{Binding SearchFilter, Mode=TwoWay}"/>
+
+         
+            <ListBox Grid.Row="2"
+                     DoubleTapped="ModListPageListBox_OnDoubleTapped"
+                     Background="{DynamicResource Brush.ListBox.Background}"
+                     x:Name="ModListPageListBox" SelectedItem="{Binding SelectedItem}"
+                     ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
+                     BorderThickness="1">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemContainerTheme>
+                    <StaticResource ResourceKey="CompactListBoxItem"/>
+                </ListBox.ItemContainerTheme>
+   
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Display}" Padding="4" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Button Classes="flat" Width="100"
+                        Command="{Binding btnSwitch_Click}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Switch To" Icon="Icons.RepeatFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnAdd_Click}">
+                    <v:IconText Text="Add" Icon="Icons.Plus" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnDelete_Click}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                </Button>
+            </StackPanel>
+            <!-- -->
+            <!-- <Button Command="{Binding btnSwitch_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Switch To</Button> -->
+            <!-- <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Add New</Button> -->
+            <!-- <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="2">Delete</Button> -->
+            <!-- -->
+            <!-- <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4"> -->
+            <!--     <Button Command="{Binding AddItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
+            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Plus}" /> -->
+            <!--     </Button> -->
+            <!--     <Button Command="{Binding DeleteItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
+            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" /> -->
+            <!--     </Button> -->
+            <!-- </StackPanel> -->
+        </Grid>
+    </Grid>
+    
+</UserControl>

@@ -13,23 +13,14 @@ using RogueEssence.Dungeon;
 
 namespace RogueEssence.Dev.Views
 {
-    public class AnimEditForm : Window
+    public partial class AnimEditForm : Window
     {
 
         public AnimEditForm()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-
+        
         public void Window_Closed(object sender, EventArgs e)
         {
             lock (GameBase.lockObj)

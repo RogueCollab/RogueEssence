@@ -9,7 +9,10 @@ using RogueEssence.Dungeon;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using RogueElements;
 using RogueEssence.Dev.Views;
 
@@ -78,15 +81,24 @@ namespace RogueEssence.Dev.ViewModels
 
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
-
+            
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass import",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
+                
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
@@ -101,7 +113,9 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+
+            });
+
         }
 
         public async void mnuMassExport_Click()
@@ -110,20 +124,28 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to mass export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig(Name + "Dir", folder);
                 CachedPath = folder + "/";
 
                 bool success = MassExport(CachedPath);
                 if (!success)
                     await MessageBox.Show(parent, "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed", MessageBox.MessageBoxButtons.Ok);
-            }
+            });
         }
 
         public async void btnImport_Click()
@@ -132,13 +154,21 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to import",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
                 string animName = Path.GetFileNameWithoutExtension(folder);
 
                 if (anims.Contains(animName))
@@ -162,7 +192,7 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+            });
         }
 
         public async void btnReImport_Click()
@@ -188,13 +218,21 @@ namespace RogueEssence.Dev.ViewModels
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
             //open window to choose directory
-            OpenFolderDialog openFileDialog = new OpenFolderDialog();
-            openFileDialog.Directory = folderName;
-
-            string folder = await openFileDialog.ShowAsync(parent);
-
-            if (!String.IsNullOrEmpty(folder))
+            IStorageFolder directory = await parent.StorageProvider.TryGetFolderFromPathAsync(folderName);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
+                IReadOnlyList<IStorageFolder> results = await parent.StorageProvider.OpenFolderPickerAsync(
+                    new FolderPickerOpenOptions
+                    {
+                        Title = "Select folder to export to",
+                        SuggestedStartLocation = directory,
+                        AllowMultiple = false,
+                    });
+
+                if (results.Count <= 0)
+                    return;
+
+                string folder = results.First().Path.LocalPath;
                 DevForm.SetConfig(Name + "Dir", Path.GetDirectoryName(folder));
                 //CachedPath = folder;
 
@@ -208,7 +246,7 @@ namespace RogueEssence.Dev.ViewModels
                     await MessageBox.Show(parent, "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed", MessageBox.MessageBoxButtons.Ok);
                     return;
                 }
-            }
+            });
         }
 
         public async void btnDelete_Click()

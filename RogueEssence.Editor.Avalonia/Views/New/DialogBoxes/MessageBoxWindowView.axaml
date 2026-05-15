@@ -1,0 +1,57 @@
+﻿<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="using:RogueEssence.Dev.ViewModels"
+                    x:Class="RogueEssence.Dev.Views.MessageBoxWindowView"
+                    x:DataType="vm:MessageBoxWindowViewModel"
+                    xmlns:v="using:RogueEssence.Dev.Views"
+                    CanResize="False"
+                    MaxWidth="400"
+                    MinWidth="300"
+                    x:Name="ThisControl"
+                    SizeToContent="WidthAndHeight">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- TitleBar -->
+        <Grid Grid.Row="0" Height="28" IsVisible="{Binding !#ThisControl.UseSystemWindowFrame}">
+            <Border Background="{DynamicResource Brush.TitleBar}"
+                    BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}"
+                    PointerPressed="BeginMoveWindow" />
+
+            <Path Width="14" Height="14"
+                  Margin="10,0,0,0"
+                  HorizontalAlignment="Left"
+                  Data="{StaticResource Icons.SoftwareUpdate}"
+                  IsVisible="{OnPlatform True, macOS=False}" />
+
+            <TextBlock Classes="bold"
+                       Text="{Binding Title}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       IsHitTestVisible="False" />
+            
+            <v:CaptionButtons HorizontalAlignment="Right"
+                              IsCloseButtonOnly="True"
+                              IsVisible="{OnPlatform True, macOS=False}"/>
+            
+        </Grid>
+        
+        <StackPanel Grid.Row="1" Margin="16" Spacing="12">
+            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+            <ItemsControl ItemsSource="{Binding Buttons}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="{Binding Buttons.Count}" ColumnSpacing="8"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Classes="flat" Classes.primary="{Binding IsPrimary}" Classes.danger="{Binding Danger}" Content="{Binding Caption}"
+                                Command="{Binding Command}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+    </Grid>
+
+
+</v:ChromelessWindow>

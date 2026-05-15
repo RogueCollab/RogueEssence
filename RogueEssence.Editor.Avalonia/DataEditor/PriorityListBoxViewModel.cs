@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
 using Avalonia.Input;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -49,6 +50,9 @@ namespace RogueEssence.Dev.ViewModels
 
     public class PriorityListBoxViewModel : ViewModelBase
     {
+        public bool CanMoveUp => SelectedIndex > 0;
+        public bool CanMoveDown => SelectedIndex >= 0 && SelectedIndex < Collection.Count - 1;
+        public bool HasSelection => SelectedIndex >= 0 && SelectedIndex < Collection.Count;
         public ObservableCollection<PriorityElement> Collection { get; }
 
         private int selectedIndex;
@@ -69,16 +73,30 @@ namespace RogueEssence.Dev.ViewModels
         public PriorityOp OnEditPriority;
 
         public StringConv StringConv;
-
-        private Window parent;
+        
+        private IDialogService _dialogService;
 
         public bool ConfirmDelete;
 
-        public PriorityListBoxViewModel(Window parent, StringConv conv)
+        public PriorityListBoxViewModel(IDialogService dialogService, StringConv conv)
         {
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<PriorityElement>();
+            _dialogService = dialogService;
+            
+            this.WhenAnyValue(x => x.SelectedIndex).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public IPriorityList GetList(Type type)
@@ -182,16 +200,17 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnDelete_Click()
         {
+    
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    Console.WriteLine(_dialogService);
+                    
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete", MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
-
                 Collection.RemoveAt(SelectedIndex);
             }
         }

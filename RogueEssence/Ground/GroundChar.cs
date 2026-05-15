@@ -139,6 +139,7 @@ namespace RogueEssence.Ground
         {
         }
 
+        
         public GroundChar(CharData baseChar, Loc newLoc, Dir8 charDir, string instancename)
         {
             Data = baseChar;
