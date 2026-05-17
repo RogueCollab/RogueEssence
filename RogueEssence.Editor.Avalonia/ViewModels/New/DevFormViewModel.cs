@@ -506,8 +506,10 @@ public class DevFormViewModel : ViewModelBase
         // _nodeFactory.CreateOpenEditorNode("Dev Control",  typeof(DevControlViewModel), "Icons.GameControllerFill"));
         root.SubNodes.Add(
             _nodeFactory.CreateOpenEditorNode<DevControlViewModel>("Dev Control", "Icons.GameControllerFill"));
-        // root.SubNodes.Add(
-        //     _nodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Zone Editor", "Icons.StairsFill"));
+        root.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Map Editor", "Icons.StairsFill"));
+        root.SubNodes.Add(
+            _nodeFactory.CreateOpenEditorNode<GroundEditorPageViewModel>("Ground Editor", "Icons.IslandFill"));
         // root.SubNodes.Add(
         // _nodeFactory.CreateOpenEditorNode("Ground Editor", typeof(GroundEditorPageViewModel), "Icons.MapTrifoldFill"));
         // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
@@ -599,7 +601,7 @@ public class DevFormViewModel : ViewModelBase
     private void CreateConstantsNode(NodeBase parent)
     {
         var constantsNode =
-            _context.NodeFactory.CreateReflectedDataNode<ZoneEditorPageViewModel>("Constants", "Icons.ListFill", parent);
+            _context.NodeFactory.CreateReflectedDataNode<MapEditorPageViewModel>("Constants", "Icons.ListFill", parent);
         var startParamsNode = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Start Params",
             "Icons.ListFill",
             parent,
@@ -625,7 +627,7 @@ public class DevFormViewModel : ViewModelBase
                 parent));
 
         
-        var stringsNode = _context.NodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Strings", "Icons.TableFill");
+        var stringsNode = _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Strings", "Icons.TableFill");
         var menuTextNode = _context.NodeFactory.CreateOpenEditorNodeWithParams<StringEditPageViewModel>("Menu Text", [false], "Icons.TableFill");
         var gameplayTextNode = _context.NodeFactory.CreateOpenEditorNodeWithParams<StringEditPageViewModel>("Gameplay Text", [true], "Icons.TableFill");
         stringsNode.SubNodes.Add(menuTextNode);
@@ -670,7 +672,7 @@ public class DevFormViewModel : ViewModelBase
         constantsNode.SubNodes.Add(stringsNode);
         
         var effectsNode =
-            _context.NodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Effects", "Icons.SparkleFill");
+            _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Effects", "Icons.SparkleFill");
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Heal FX",
             "Icons.SparkleFill",
             effectsNode,
@@ -747,7 +749,7 @@ public class DevFormViewModel : ViewModelBase
     private void CreateDataNode(NodeBase parent)
     {
         var dataNode =
-            _context.NodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Datazz", "Icons.FloppyDiskFill");
+            _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Datazz", "Icons.FloppyDiskFill");
         foreach (var type in Enum.GetValues<DataManager.DataType>())
         {
             if (type is DataManager.DataType.All or DataManager.DataType.None)
@@ -779,7 +781,7 @@ public class DevFormViewModel : ViewModelBase
     {
         // var spritesViewModel = _pageFactory.GetRequiredService<DevTabSpritesViewModel>();
         var spriteNode =
-            _context.NodeFactory.CreateOpenEditorNode<ZoneEditorPageViewModel>("Sprites", "Icons.PaintBrushFill");
+            _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Sprites", "Icons.PaintBrushFill");
         //
         spriteNode.SubNodes.Add(
             _context.NodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Char Sprites", [true],

@@ -13,9 +13,9 @@ public class ZoneMockEntry
     public int MapCount { get; set; }
     public string Music { get; set; }
 }
-public partial class ZoneEditorPageView : UserControl
+public partial class MapEditorPageView : UserControl
 {
-    public ZoneEditorPageView()
+    public MapEditorPageView()
     {
         InitializeComponent();
         // ZoneDataGrid.ItemsSource = GetMockData();

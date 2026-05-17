@@ -11,8 +11,6 @@
         <vm:ModListPageViewModel/>
     </Design.DataContext>
     <Grid RowDefinitions="64, Auto, Auto, Auto">
-
-
         <TextBlock Grid.Row="1" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
                    Text="Mods" />
 
