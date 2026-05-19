@@ -40,7 +40,8 @@ namespace RogueEssence.Dev.ViewModels
                 AnimLayerWindow window = new AnimLayerWindow();
                 window.DataContext = vm;
 
-                result = await window.ShowDialog<bool>(form.MapEditForm);
+                // result = await window.ShowDialog<bool>(form.MapEditPage);
+                result = true;
             }
 
             lock (GameBase.lockObj)

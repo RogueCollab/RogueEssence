@@ -29,13 +29,17 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 {
     public bool LoadComplete { get; private set; }
 
-        public MapEditForm MapEditForm;
+        public MapEditorPageViewModel MapEditPage;
         public GroundEditForm GroundEditForm;
 
         private Action pendingEditorAction;
         private Exception pendingException;
 
-        public IMapEditor MapEditor { get { return MapEditForm; } }
+        public IMapEditor MapEditor 
+        { 
+            get { return MapEditPage; }
+            set { MapEditPage = (MapEditorPageViewModel)value; }
+        }
         public IGroundEditor GroundEditor { get { return GroundEditForm; } }
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
@@ -178,9 +182,10 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                     ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
                     vm.Textures.TileBrowser.UpdateFrame();
                 }
-                if (MapEditForm != null)
+                if (MapEditPage != null)
                 {
-                    ViewModels.MapEditViewModel vm = (ViewModels.MapEditViewModel)MapEditForm.DataContext;
+
+                    MapEditorPageViewModel vm = MapEditPage;
                     vm.Textures.TileBrowser.UpdateFrame();
                     vm.Terrain.TileBrowser.UpdateFrame();
                 }
@@ -212,12 +217,9 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
         public void openMap()
         {
-            // TODO: Resolve this!
-            // MapEditForm = new MapEditForm();
-            // ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
-            // MapEditForm.DataContext = vm;
-            // vm.LoadFromCurrentMap();
-            // MapEditForm.Show();
+            DevFormViewModel vm  = (DevFormViewModel)this.DataContext;
+            vm.OpenMapEditor();
+
         }
 
         public void groundEditorClosed(object sender, EventArgs e)
@@ -234,10 +236,10 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         private IEnumerator<YieldInstruction> resetEditors()
         {
             GroundEditForm = null;
-            MapEditForm = null;
+            MapEditPage = null;
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }
-
+        
 
         public void CloseGround()
         {
@@ -247,11 +249,10 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
         public void CloseMap()
         {
-            if (MapEditForm != null)
-                MapEditForm.Close();
+            if (MapEditPage != null)
+                MapEditPage.Close();
         }
-
-
+        
         void LoadGame()
         {
             // Windows - CAN run game in new thread, CAN run game in same thread via dispatch.

@@ -237,7 +237,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     {
         ReflectedDataPageViewModel pg = (ReflectedDataPageViewModel)vm;
     
-        pg.SetIsRootPage(true);
+        pg.SetRootPage(true);
     
         var dataRoot = pg.Node.FindNode<DataRootNode>();
         var dataItem = pg.Node.FindNode<DataItemNode>();

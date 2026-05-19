@@ -9,6 +9,17 @@ using RogueEssence.Dev.Services;
 
 namespace RogueEssence.Dev.ViewModels;
 
+public interface IPreCreatePage
+{
+    static virtual void OnPreCreate() { }
+}
+
+
+public interface IPageReloadable
+{
+    public void Reload();
+}
+
 public abstract class EditorPageViewModel<TNode> : EditorPageViewModel
     where TNode : NodeBase
 {

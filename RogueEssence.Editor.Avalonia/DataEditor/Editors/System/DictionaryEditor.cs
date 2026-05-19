@@ -56,8 +56,7 @@ namespace RogueEssence.Dev
                     ReflectionExt.GetPassableAttributes(2, attributes));
 
                 NodeBase node =
-                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title,
-                        pageViewModel.Node.Icon, pageViewModel.Node);
+                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, pageViewModel.Node, pageViewModel.Node.Icon);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);
@@ -91,7 +90,7 @@ namespace RogueEssence.Dev
                     ReflectionExt.GetPassableAttributes(1, attributes));
 
                 NodeBase node =
-                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node.Icon);
+                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);

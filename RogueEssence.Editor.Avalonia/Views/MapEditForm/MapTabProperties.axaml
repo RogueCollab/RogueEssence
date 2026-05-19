@@ -9,31 +9,8 @@
   <Design.DataContext>
     <vm:MapTabPropertiesViewModel/>
   </Design.DataContext>
-  <Grid Margin="4" >
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <Grid.RowDefinitions>
-      <RowDefinition/>
-    </Grid.RowDefinitions>
-    <Grid Grid.Row="0" Grid.Column="0" Grid.RowSpan="1">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="36"/>
-        <RowDefinition Height="36"/>
-        <RowDefinition Height="36"/>
-        <RowDefinition Height="36"/>
-        <RowDefinition Height="36"/>
-        <RowDefinition Height="22"/>
-        <RowDefinition Height="48"/>
-        <RowDefinition />
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="80"/>
-        <ColumnDefinition/>
-        <ColumnDefinition Width="80"/>
-        <ColumnDefinition/>
-      </Grid.ColumnDefinitions>
+  <Grid Margin="4" ColumnDefinitions="*,*" RowDefinitions="*">
+    <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="36,36,36,36,36,22,48,*" ColumnDefinitions="80,*,80,*">
       <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" ToolTip.Tip="Map name in the current language.">Map Name:</TextBlock>
       <TextBox Text="{Binding MapName}" VerticalAlignment="Center" Margin="4" Grid.Column="1" Grid.ColumnSpan="3"/>
       <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1" ToolTip.Tip="The darkness of the map, for seeing tiles.">Tile Sight:</TextBlock>
@@ -57,15 +34,10 @@
         <views:DictionaryBox DataContext="{Binding TextureMap}" Margin="4" Grid.Row="1"/>
       </Grid>
     </Grid>
-    <Grid Grid.Row="0" Grid.Column="1">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="20"/>
-        <RowDefinition/>
-        <RowDefinition Height="34"/>
-      </Grid.RowDefinitions>
+    <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="20, *, 34">
       <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Music:</TextBlock>
-      <ListBox Name="lbxMusic" SelectionMode="AlwaysSelected" ItemsSource="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
-      <Button Name="btnReloadMusic" Command="{Binding btnReloadMusic_Click}" Margin="4" Grid.Row="2">Reload Music</Button>
+      <ListBox Classes="datalist" Name="lbxMusic" SelectionMode="AlwaysSelected" ItemsSource="{Binding Music}" SelectedIndex="{Binding ChosenMusic}" Margin="4" Grid.Row="1"/>
+      <Button Classes="flat" Name="btnReloadMusic" Command="{Binding btnReloadMusic_Click}" Margin="4" Grid.Row="2">Reload Music</Button>
     </Grid>
   </Grid>
 

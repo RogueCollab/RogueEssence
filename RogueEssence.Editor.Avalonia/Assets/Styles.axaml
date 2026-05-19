@@ -10,6 +10,62 @@
         </StackPanel>
     </Design.PreviewWith>
 
+    <Style Selector="RadioButton">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="RadioButton">
+                <Border
+                    Name="RootBorder"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}">
+                    <Grid ColumnDefinitions="16,*">
+                        <Grid Height="{DynamicResource RadioButtonMinHeight}" VerticalAlignment="Center">
+
+                            <Ellipse
+                                Name="OuterEllipse"
+                                Width="16"
+                                Height="16"
+                                Fill="{DynamicResource RadioButtonOuterEllipseFill}"
+                                Stroke="{DynamicResource RadioButtonOuterEllipseStroke}"
+                                StrokeThickness="{DynamicResource RadioButtonBorderThemeThickness}"
+                                UseLayoutRounding="False" />
+
+                            <Ellipse
+                                Name="CheckOuterEllipse"
+                                Width="16"
+                                Height="16"
+                                Fill="{DynamicResource RadioButtonOuterEllipseCheckedFill}"
+                                Opacity="0"
+                                Stroke="{DynamicResource RadioButtonOuterEllipseCheckedStroke}"
+                                StrokeThickness="{DynamicResource RadioButtonBorderThemeThickness}"
+                                UseLayoutRounding="False" />
+
+                            <Ellipse
+                                Name="CheckGlyph"
+                                Width="6"
+                                Height="6"
+                                Fill="{DynamicResource RadioButtonCheckGlyphFill}"
+                                Opacity="0"
+                                Stroke="{DynamicResource RadioButtonCheckGlyphStroke}"
+                                UseLayoutRounding="False" />
+                        </Grid>
+
+                        <ContentPresenter
+                            Name="PART_ContentPresenter"
+                            Grid.Column="1"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Foreground="{TemplateBinding Foreground}" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+    </Style>
 
     <Style Selector="Expander">
         <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
@@ -65,11 +121,12 @@
         </Style>
 
         <Style Selector="^ /template/ ToggleButton#ExpanderHeader /template/ Border#ExpandCollapseChevronBorder">
-            <Setter Property="RenderTransform" Value="rotate(90deg)"/>
+            <Setter Property="RenderTransform" Value="rotate(90deg)" />
         </Style>
 
-        <Style Selector="^:expanded /template/ ToggleButton#ExpanderHeader /template/ Border#ExpandCollapseChevronBorder">
-            <Setter Property="RenderTransform" Value="rotate(180deg)"/>
+        <Style
+            Selector="^:expanded /template/ ToggleButton#ExpanderHeader /template/ Border#ExpandCollapseChevronBorder">
+            <Setter Property="RenderTransform" Value="rotate(180deg)" />
         </Style>
     </Style>
     <Style Selector="UserControl">
@@ -779,14 +836,14 @@
     <!-- </Style> -->
 
     <Style Selector="TextBox.search">
-        <Setter Property="Height" Value="24"/>
-        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="Margin" Value="0"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="0"/>
-        <Setter Property="Watermark" Value="Search..."/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border2}"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Height" Value="24" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Watermark" Value="Search..." />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border2}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="InnerLeftContent">
             <Setter.Value>
                 <Template>
@@ -799,8 +856,8 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    
+
+
     <Style Selector="NumericUpDown">
         <Style Selector="^ /template/ ButtonSpinner#PART_Spinner">
             <Setter Property="MinHeight" Value="0" />

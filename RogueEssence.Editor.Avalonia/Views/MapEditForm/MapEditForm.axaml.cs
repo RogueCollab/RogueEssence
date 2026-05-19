@@ -58,7 +58,7 @@ namespace RogueEssence.Dev.Views
         private IEnumerator<YieldInstruction> exitMapEdit()
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm = null;
+            form.MapEditPage = null;
 
             //move to the previous scene or the title, if there was none
             if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())

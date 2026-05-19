@@ -520,7 +520,7 @@ namespace RogueEssence.Dev.ViewModels
             lock (GameBase.lockObj)
             {
                 Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
-                if (form.MapEditForm == null)
+                if (form.MapEditPage == null)
                 {
                     LuaEngine.Instance.BreakScripts();
                     MenuManager.Instance.ClearMenus();

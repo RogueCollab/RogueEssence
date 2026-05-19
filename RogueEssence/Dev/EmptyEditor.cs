@@ -7,7 +7,7 @@ namespace RogueEssence.Dev
     {
         public bool LoadComplete => true;
         public IGroundEditor GroundEditor => null;
-        public IMapEditor MapEditor => null;
+        public IMapEditor MapEditor { get; set; }
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
 

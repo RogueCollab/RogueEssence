@@ -6,4 +6,14 @@
             <Setter Property="Padding" Value="4,2"/>
         </ControlTheme>
     </Styles.Resources>
+
+    <Style Selector="ListBox.datalist">
+        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border2}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="ItemContainerTheme" Value="{StaticResource CompactListBoxItem}" />
+    </Style>
+    <Style Selector="ListBox.datalist ListBoxItem">
+        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+    </Style>
 </Styles>

@@ -57,7 +57,7 @@ namespace RogueEssence.Dev
                 // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, attributes));
 
                 NodeBase node =
-                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName,
+                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, null,
                         pageViewModel.Node.Icon);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 

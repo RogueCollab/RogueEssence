@@ -26,28 +26,9 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class MapEditViewModel : ViewModelBase
     {
-        public MapEditViewModel(
-            MapTabTexturesViewModel textures,
-            MapTabDecorationsViewModel decorations,
-            MapTabTerrainViewModel terrain,
-            MapTabTilesViewModel tiles,
-            MapTabItemsViewModel items,
-            MapTabEntitiesViewModel entities,
-            MapTabEntrancesViewModel entrances,
-            MapTabSpawnsViewModel spawns,
-            MapTabEffectsViewModel effects,
-            MapTabPropertiesViewModel properties)
+        public MapEditViewModel()
         {
-            Textures = textures;
-            Decorations = decorations;
-            Terrain = terrain;
-            Tiles = tiles;
-            Items = items;
-            Entities = entities;
-            Entrances = entrances;
-            Spawns = spawns;
-            Effects = effects;
-            Properties = properties;
+            
             CurrentFile = "";
         }
 
@@ -91,84 +72,85 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuOpen_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
-            
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                IReadOnlyList<IStorageFile> results = await form.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                {
-                    Title = "Open .rsmap File",
-                    SuggestedStartLocation = directory,
-                    AllowMultiple = false,
-                    FileTypeFilter =
-                    [
-                        new FilePickerFileType("Map Files")
-                        {
-                            Patterns = ["*." + DataManager.MAP_EXT.Substring(1)]
-                        }
-                    ]
-                });
-                if (results.Count > 0)
-                {
-                    IStorageFile result = results.First();
-                    
-                    bool legalPath = false;
-                    foreach (string proposedPath in PathMod.FallbackPaths(DataManager.MAP_PATH))
-                    {
-                        if (comparePaths(proposedPath, Path.GetDirectoryName(result.Path.LocalPath)))
-                            legalPath = true;
-                    }
-                    if (!legalPath)
-                        await MessageBox.Show(form.MapEditForm, String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.", PathMod.ModPath(DataManager.MAP_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
-                    else
-                    {
-                        lock (GameBase.lockObj)
-                            DoLoad(Path.GetFileNameWithoutExtension(results.First().Name));
-                    }
-                }
-                
-            });
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            // IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
+            //
+            // await Dispatcher.UIThread.InvokeAsync(async () =>
+            // {
+            //     IReadOnlyList<IStorageFile> results = await form.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            //     {
+            //         Title = "Open .rsmap File",
+            //         SuggestedStartLocation = directory,
+            //         AllowMultiple = false,
+            //         FileTypeFilter =
+            //         [
+            //             new FilePickerFileType("Map Files")
+            //             {
+            //                 Patterns = ["*." + DataManager.MAP_EXT.Substring(1)]
+            //             }
+            //         ]
+            //     });
+            //     if (results.Count > 0)
+            //     {
+            //         IStorageFile result = results.First();
+            //         
+            //         bool legalPath = false;
+            //         foreach (string proposedPath in PathMod.FallbackPaths(DataManager.MAP_PATH))
+            //         {
+            //             if (comparePaths(proposedPath, Path.GetDirectoryName(result.Path.LocalPath)))
+            //                 legalPath = true;
+            //         }
+            //         if (!legalPath)
+            //             await MessageBox.Show(form.MapEditPage, String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.", PathMod.ModPath(DataManager.MAP_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
+            //         else
+            //         {
+            //             lock (GameBase.lockObj)
+            //                 DoLoad(Path.GetFileNameWithoutExtension(results.First().Name));
+            //         }
+            //     }
+            //     
+            // });
         }
 
 
         public async void mnuExportAsGround_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Directory = mapDir;
-
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "Ground Files";
-            filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
-            saveFileDialog.Filters.Add(filter);
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            string result = await saveFileDialog.ShowAsync(form.MapEditForm);
-
-            if (!String.IsNullOrEmpty(result))
-            {
-                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
-                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
-                    await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
-                else if (Path.GetFileName(result).Contains(" "))
-                    await MessageBox.Show(form.MapEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
-                else
-                {
-                    lock (GameBase.lockObj)
-                    {
-                        //Schedule saving the map
-                        ExportToGround(ZoneManager.Instance.CurrentMap, result);
-                    }
-                    await MessageBox.Show(form.MapEditForm, String.Format("Textures have been saved to Ground!"), "Success", MessageBox.MessageBoxButtons.Ok);
-                }
-            }
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
+            // SaveFileDialog saveFileDialog = new SaveFileDialog();
+            // saveFileDialog.Directory = mapDir;
+            //
+            // FileDialogFilter filter = new FileDialogFilter();
+            // filter.Name = "Ground Files";
+            // filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
+            // saveFileDialog.Filters.Add(filter);
+            //
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            // string result = await saveFileDialog.ShowAsync(form.MapEditPage);
+            //
+            // if (!String.IsNullOrEmpty(result))
+            // {
+            //     string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+            //     if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+            //         await MessageBox.Show(form.MapEditPage, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+            //     else if (Path.GetFileName(result).Contains(" "))
+            //         await MessageBox.Show(form.MapEditPage, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
+            //     else
+            //     {
+            //         lock (GameBase.lockObj)
+            //         {
+            //             //Schedule saving the map
+            //             ExportToGround(ZoneManager.Instance.CurrentMap, result);
+            //         }
+            //         await MessageBox.Show(form.MapEditPage, String.Format("Textures have been saved to Ground!"), "Success", MessageBox.MessageBoxButtons.Ok);
+            //     }
+            // }
         }
 
         public async Task<bool> mnuSave_Click()
         {
+            Console.WriteLine(ZoneManager.Instance.CurrentMap + "MAP?");
             if (CurrentFile == "")
                 return await mnuSaveAs_Click(); //Since its the same thing, might as well re-use the function! It makes everyone's lives easier!
             else
@@ -185,38 +167,39 @@ namespace RogueEssence.Dev.ViewModels
         }
         public async Task<bool> mnuSaveAs_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Directory = mapDir;
-
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "Map Files";
-            filter.Extensions.Add(DataManager.MAP_EXT.Substring(1));
-            saveFileDialog.Filters.Add(filter);
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            string result = await saveFileDialog.ShowAsync(form.MapEditForm);
-
-            if (!String.IsNullOrEmpty(result))
-            {
-                string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
-                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
-                    await MessageBox.Show(form.MapEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
-                else if (Path.GetFileName(result).Contains(" "))
-                    await MessageBox.Show(form.MapEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
-                else
-                {
-                    lock (GameBase.lockObj)
-                    {
-                        string oldFilename = CurrentFile;
-
-                        //Schedule saving the map
-                        DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
-                    }
-                    return true;
-                }
-            }
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
+            // SaveFileDialog saveFileDialog = new SaveFileDialog();
+            // saveFileDialog.Directory = mapDir;
+            //
+            // FileDialogFilter filter = new FileDialogFilter();
+            // filter.Name = "Map Files";
+            // filter.Extensions.Add(DataManager.MAP_EXT.Substring(1));
+            // saveFileDialog.Filters.Add(filter);
+            //
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            // string result = await saveFileDialog.ShowAsync(form.MapEditPage);
+            //
+            // if (!String.IsNullOrEmpty(result))
+            // {
+            //     string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
+            //     if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+            //         await MessageBox.Show(form.MapEditPage, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+            //     else if (Path.GetFileName(result).Contains(" "))
+            //         await MessageBox.Show(form.MapEditPage, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
+            //     else
+            //     {
+            //         lock (GameBase.lockObj)
+            //         {
+            //             string oldFilename = CurrentFile;
+            //
+            //             //Schedule saving the map
+            //             DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
+            //         }
+            //         return true;
+            //     }
+            // }
+            // return false;
             return false;
         }
 
@@ -228,8 +211,8 @@ namespace RogueEssence.Dev.ViewModels
                 lock (GameBase.lockObj)
                 {
                     DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                    form.MapEditForm.SilentClose();
-                    form.MapEditForm = null;
+                    form.MapEditPage.SilentClose();
+                    form.MapEditPage = null;
                     GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64());
                 }
             }
@@ -237,33 +220,33 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuImportFromPng_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            IStorageFolder directory = await form.MapEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
-
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                IReadOnlyList<IStorageFile> results = await form.MapEditForm.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                {
-                    Title = "Open .png File",
-                    SuggestedStartLocation = directory,
-                    AllowMultiple = false,
-                    FileTypeFilter =
-                    [
-                        new FilePickerFileType("PNG Files")
-                        {
-                            Patterns = ["*.PNG"]
-                        }
-                    ]
-                });
-                
-                if (results.Count > 0)
-                {
-                    IStorageFile result = results.First();
-                    DoImportPng(result.Path.LocalPath);
-
-                }
-            });
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            // IStorageFolder directory = await form.MapEditPage.StorageProvider.TryGetFolderFromPathAsync(mapDir);
+            //
+            // await Dispatcher.UIThread.InvokeAsync(async () =>
+            // {
+            //     IReadOnlyList<IStorageFile> results = await form.MapEditPage.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            //     {
+            //         Title = "Open .png File",
+            //         SuggestedStartLocation = directory,
+            //         AllowMultiple = false,
+            //         FileTypeFilter =
+            //         [
+            //             new FilePickerFileType("PNG Files")
+            //             {
+            //                 Patterns = ["*.PNG"]
+            //             }
+            //         ]
+            //     });
+            //     
+            //     if (results.Count > 0)
+            //     {
+            //         IStorageFile result = results.First();
+            //         DoImportPng(result.Path.LocalPath);
+            //
+            //     }
+            // });
         }
 
         public void mnuClearLayer_Click()
@@ -278,7 +261,8 @@ namespace RogueEssence.Dev.ViewModels
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
             if (Textures.TileBrowser.CurrentTileset == "")
-                await MessageBox.Show(form.MapEditForm, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
+                Console.WriteLine("hi");
+                // await MessageBox.Show(form.MapEditPage, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
             else
             {
                 lock (GameBase.lockObj)
@@ -295,8 +279,9 @@ namespace RogueEssence.Dev.ViewModels
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            bool result = await window.ShowDialog<bool>(form.MapEditForm);
+            // bool result = await window.ShowDialog<bool>(form.MapEditPage);
 
+            bool result = true;
             lock (GameBase.lockObj)
             {
                 if (result)

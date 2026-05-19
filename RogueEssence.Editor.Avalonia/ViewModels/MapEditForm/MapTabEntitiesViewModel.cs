@@ -8,6 +8,7 @@ using RogueEssence.Dungeon;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RogueEssence.Dev.Utility;
 using RogueEssence.LevelGen;
 
 namespace RogueEssence.Dev.ViewModels
@@ -16,8 +17,12 @@ namespace RogueEssence.Dev.ViewModels
     {
         public delegate void EntityOp(Character ent);
 
-        public MapTabEntitiesViewModel(EditorContext context)
+        private EditorContext _context;
+        private EditorPageViewModel _parent;
+        public MapTabEntitiesViewModel(EditorContext context, EditorPageViewModel parent)
         {
+            _context = context;
+            _parent = parent;
             //Teams = new TeamBoxViewModel(DiagManager.Instance.DevEditor.MapEditor.Edits);
 
             MonsterTeam team = new MonsterTeam();
@@ -561,23 +566,29 @@ namespace RogueEssence.Dev.ViewModels
         public void ActionEvents_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Action Events[" + index + "]";
-            DataEditForm frmData = new DataEditRootForm();
-            frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(BattleEvent), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(BattleEvent), new object[0], element, true, new Type[0], advancedEdit);
-            DataEditor.TrackTypeSize(frmData, typeof(BattleEvent));
+            NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, _parent.Node, _parent.Icon);
+            _parent.Node.AddNodeIfNotExists(node);
+            NodeHelper.ExpandParents(node, true);
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            frmData.SelectedOKEvent += async () =>
+            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+            newEditor.SetPageTitle(elementName, _parent.Node.Icon);
+            newEditor.SetRootPage(true);
+            newEditor.SetRemoveNode(true);
+
+            newEditor.OnLoadAction = stack =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(BattleEvent), new object[0], true, new Type[0], advancedEdit);
+                DataEditor.LoadClassControls(stack, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(BattleEvent), new object[0], element, true, new Type[0], advancedEdit);
+            };
 
+            newEditor.OnOKAction = async stack =>
+            {
+                element = DataEditor.SaveClassControls(stack, elementName, typeof(BattleEvent), new object[0], true, new Type[0], advancedEdit);
                 op(index, element);
                 return true;
             };
 
-            form.MapEditForm.RegisterChild(frmData);
-            frmData.Show();
+            _context.TabEvents.AddChildPage(_parent, newEditor);
         }
 
         public void Statuses_Changed()
@@ -592,17 +603,24 @@ namespace RogueEssence.Dev.ViewModels
         public void Statuses_EditItem(int index, object element, bool advancedEdit, CollectionBoxViewModel.EditElementOp op)
         {
             string elementName = "Statuses[" + index + "]";
-            DataEditForm frmData = new DataEditRootForm();
-            frmData.Title = DataEditor.GetWindowTitle(SelectedEntity.Name, elementName, element, typeof(StatusEffect), new object[0]);
 
-            
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0], advancedEdit);
-            DataEditor.TrackTypeSize(frmData, typeof(StatusEffect));
+            NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, _parent.Node, _parent.Icon);
+            _parent.Node.AddNodeIfNotExists(node);
+            NodeHelper.ExpandParents(node, true);
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            frmData.SelectedOKEvent += async () =>
+            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+            newEditor.SetPageTitle(elementName, _parent.Node.Icon);
+            newEditor.SetRootPage(true);
+            newEditor.SetRemoveNode(true);
+
+            newEditor.OnLoadAction = stack =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(StatusEffect), new object[0], true, new Type[0], advancedEdit);
+                DataEditor.LoadClassControls(stack, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(StatusEffect), new object[0], element, true, new Type[0], advancedEdit);
+            };
+
+            newEditor.OnOKAction = async stack =>
+            {
+                element = DataEditor.SaveClassControls(stack, elementName, typeof(StatusEffect), new object[0], true, new Type[0], advancedEdit);
 
                 bool itemExists = false;
 
@@ -618,18 +636,15 @@ namespace RogueEssence.Dev.ViewModels
 
                 if (itemExists)
                 {
-                    await MessageBox.Show(frmData, "Cannot add duplicate IDs.", "Entry already exists.", MessageBox.MessageBoxButtons.Ok);
+                    await MessageBoxWindowView.Show(_context.DialogService, "Cannot add duplicate IDs.", "Entry already exists.", MessageBoxWindowView.MessageBoxButtons.Ok);
                     return false;
                 }
-                else
-                {
-                    op(index, element);
-                    return true;
-                }
+
+                op(index, element);
+                return true;
             };
 
-            form.MapEditForm.RegisterChild(frmData);
-            frmData.Show();
+            _context.TabEvents.AddChildPage(_parent, newEditor);
         }
 
         /// <summary>

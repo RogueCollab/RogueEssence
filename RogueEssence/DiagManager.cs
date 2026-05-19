@@ -100,7 +100,7 @@ namespace RogueEssence
             FNALoggerEXT.LogWarn = LogInfo;
             FNALoggerEXT.LogError = LogInfo;
         }
-
+        
         public void SetErrorListener(LogAdded errorAdded, ErrorTrace errorTrace)
         {
             errorAddedEvent = errorAdded;

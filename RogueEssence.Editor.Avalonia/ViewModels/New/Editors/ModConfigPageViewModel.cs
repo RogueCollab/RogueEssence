@@ -155,8 +155,7 @@ public class ModConfigPageViewModel : EditorPageViewModel
             DataEditor.GetWindowTitle("Relationship", elementName, element, typeof(RelatedMod), new object[0]);
 
         NodeBase node =
-            _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName,
-                pageViewModel.Node.Icon, pageViewModel.Node);
+            _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
         pageViewModel.Node.AddNodeIfNotExists(node);
         NodeHelper.ExpandParents(node, true);
 

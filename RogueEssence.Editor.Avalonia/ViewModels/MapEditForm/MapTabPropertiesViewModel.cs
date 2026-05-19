@@ -10,14 +10,22 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using DynamicData;
 using RogueEssence.Dev.Services;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev.ViewModels
 {
     public class MapTabPropertiesViewModel : ViewModelBase
     {
-        public MapTabPropertiesViewModel(IDialogService dialogService)
+
+        private EditorContext _context;
+        private EditorPageViewModel _parent;
+        public MapTabPropertiesViewModel(EditorContext context, EditorPageViewModel parent)
         {
+            _context = context;
+            _parent = parent;
+            
             Sights = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.SightRange.Blind; ii++)
                 Sights.Add(((Map.SightRange)ii).ToLocal());
@@ -44,7 +52,7 @@ namespace RogueEssence.Dev.ViewModels
             BlankBG.OnEditItem += AutoTile_Edit;
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            TextureMap = new DictionaryBoxViewModel(dialogService, new StringConv(typeof(AutoTile), new object[0]));
+            TextureMap = new DictionaryBoxViewModel(_context.DialogService, new StringConv(typeof(AutoTile), new object[0]));
             TextureMap.OnMemberChanged += TextureMap_Changed;
             TextureMap.OnEditKey += TextureMap_EditKey;
             TextureMap.OnEditItem += TextureMap_EditItem;
@@ -139,32 +147,40 @@ namespace RogueEssence.Dev.ViewModels
         {
             ZoneManager.Instance.CurrentMap.Background = BG.GetObject<IBackgroundSprite>();
         }
-
+        
+        
+        public void BlankBG_Changed()
+        {
+            ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.Tile;
+        }
         public void MapBG_Edit(object element, bool advancedEdit, ClassBoxViewModel.EditElementOp op)
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
-            DataEditForm frmData = new DataEditRootForm();
-            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
+            string title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, type, new object[0], element, true, new Type[0], advancedEdit);
-            DataEditor.TrackTypeSize(frmData, type);
+            NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, _parent.Node, _parent.Icon);
+            _parent.Node.AddNodeIfNotExists(node);
+            NodeHelper.ExpandParents(node, true);
 
-            frmData.SelectedOKEvent += async () =>
+            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+            newEditor.SetPageTitle(elementName, _parent.Node.Icon);
+            newEditor.SetRootPage(true);
+            newEditor.SetRemoveNode(true);
+
+            newEditor.OnLoadAction = stack =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0], advancedEdit);
+                DataEditor.LoadClassControls(stack, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, type, new object[0], element, true, new Type[0], advancedEdit);
+            };
+
+            newEditor.OnOKAction = async stack =>
+            {
+                element = DataEditor.SaveClassControls(stack, elementName, type, new object[0], true, new Type[0], advancedEdit);
                 op(element);
                 return true;
             };
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.RegisterChild(frmData);
-            frmData.Show();
-        }
-
-        public void BlankBG_Changed()
-        {
-            ZoneManager.Instance.CurrentMap.BlankBG = BlankBG.Tile;
+            _context.TabEvents.AddChildPage(_parent, newEditor);
         }
 
         public void AutoTile_Edit(AutoTile element, TileBoxViewModel.EditElementOp op)
@@ -191,7 +207,7 @@ namespace RogueEssence.Dev.ViewModels
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.RegisterChild(frmData);
+            // form.MapEditPage.RegisterChild(frmData);
             frmData.Show();
         }
 
@@ -202,49 +218,66 @@ namespace RogueEssence.Dev.ViewModels
             ZoneManager.Instance.CurrentMap.CalculateTerrainAutotiles(Loc.Zero, new Loc(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height));
         }
 
+    
         public void TextureMap_EditKey(object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap<Key>";
-            DataEditForm frmKey = new DataEditRootForm();
-            frmKey.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(string), new object[0]);
-
             DataTypeAttribute attr = new DataTypeAttribute(1, DataManager.DataType.Terrain, false);
-            DataEditor.LoadClassControls(frmKey.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(string), new object[1] { attr }, key, true, new Type[0], advancedEdit);
-            DataEditor.TrackTypeSize(frmKey, typeof(int));
+            // string title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(string), new object[0]);
 
-            frmKey.SelectedOKEvent += async () =>
+            NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, _parent.Node, _parent.Icon);
+            _parent.Node.AddNodeIfNotExists(node);
+            NodeHelper.ExpandParents(node, true);
+
+            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+            newEditor.SetPageTitle(elementName, _parent.Node.Icon);
+            newEditor.SetRootPage(true);
+            newEditor.SetRemoveNode(true);
+            
+            newEditor.OnLoadAction = stack =>
             {
-                object newKey = DataEditor.SaveClassControls(frmKey.ControlPanel, elementName, typeof(string), new object[1] { attr }, true, new Type[0], advancedEdit);
+                DataEditor.LoadClassControls(stack, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(string), new object[1] { attr }, key, true, new Type[0], advancedEdit);
+            };
+
+            newEditor.OnOKAction = async stack =>
+            {
+                object newKey = DataEditor.SaveClassControls(stack, elementName, typeof(string), new object[1] { attr }, true, new Type[0], advancedEdit);
                 op(key, newKey, element);
                 return true;
             };
+        
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.RegisterChild(frmKey);
-            frmKey.Show();
+            _context.TabEvents.AddChildPage(_parent, newEditor);
         }
-
+        
         public void TextureMap_EditItem(object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op)
         {
             string elementName = "TextureMap[" + key.ToString() + "]";
-            DataEditForm frmData = new DataEditRootForm();
-            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
+            // string title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentMap.AssetName, elementName, element, typeof(AutoTile), new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(AutoTile), new object[0], element, true, new Type[0], advancedEdit);
-            DataEditor.TrackTypeSize(frmData, typeof(AutoTile));
+            NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, _parent.Node, _parent.Icon);
+            _parent.Node.AddNodeIfNotExists(node);
+            NodeHelper.ExpandParents(node, true);
 
-            frmData.SelectedOKEvent += async () =>
+            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+            newEditor.SetPageTitle(elementName, _parent.Node.Icon);
+            newEditor.SetRootPage(true);
+            newEditor.SetRemoveNode(true);
+
+            newEditor.OnLoadAction = stack =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, typeof(AutoTile), new object[0], true, new Type[0], advancedEdit);
+                DataEditor.LoadClassControls(stack, ZoneManager.Instance.CurrentMap.AssetName, null, elementName, typeof(AutoTile), new object[0], element, true, new Type[0], advancedEdit);
+            };
+
+            newEditor.OnOKAction = async stack =>
+            {
+                element = DataEditor.SaveClassControls(stack, elementName, typeof(AutoTile), new object[0], true, new Type[0], advancedEdit);
                 op(key, key, element);
                 return true;
             };
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.MapEditForm.RegisterChild(frmData);
-            frmData.Show();
+            _context.TabEvents.AddChildPage(_parent, newEditor);
         }
-
 
         public void btnReloadMusic_Click()
         {
@@ -266,7 +299,7 @@ namespace RogueEssence.Dev.ViewModels
                 {
                     string song = Path.GetFileName(files[ii]);
                     Music.Add(song);
-                    if (song == ZoneManager.Instance.CurrentMap.Music)
+                    if (ZoneManager.Instance.CurrentMap != null && song == ZoneManager.Instance.CurrentMap.Music)
                         ChosenMusic = ii+1;
                 }
             }

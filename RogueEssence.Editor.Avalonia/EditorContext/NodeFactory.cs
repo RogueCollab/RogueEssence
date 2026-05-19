@@ -48,11 +48,10 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<UniversalNode>(title, typeof(TEditor), icon, CreateCallback(onOpen));
     
-    public ReflectedDataNode CreateReflectedDataNode<TEditor>(
-        string title,
-        string? icon = null,
-        NodeBase? parent = null,
-        Action<TEditor>? onOpen = null)
+    public ReflectedDataNode CreateReflectedDataNode<TEditor>(string title,
+        NodeBase parent,
+        string icon = null,
+        Action<TEditor> onOpen = null)
         where TEditor : EditorPageViewModel
         => Create<ReflectedDataNode>(title, typeof(TEditor), icon, parent, CreateCallback(onOpen));
 

@@ -67,7 +67,7 @@ namespace RogueEssence.Dev
             return (TPage)_provider.GetRequiredService(type);
         }
         
-        public EditorPageViewModel? CreatePage(Type pageType, NodeBase? node = null, Action<EditorPageViewModel> onOpen = null)
+        public EditorPageViewModel? CreatePage(Type pageType, NodeBase node, Action<EditorPageViewModel> onOpen = null)
         {
             
             // Make sure it's a page
@@ -83,22 +83,13 @@ namespace RogueEssence.Dev
                 return null;
             }
             
-            EditorPageViewModel page;
-
-       
-            if (node != null)
+            if (onOpen == null)
             {
-                if (onOpen == null)
-                {
-                    onOpen = (vm) => { };
-                }
-                page = (EditorPageViewModel)ActivatorUtilities.CreateInstance(_provider, pageType, node, onOpen);
+                onOpen = (vm) => { };
             }
-            else
-            {
-                page = (EditorPageViewModel)_provider.GetRequiredService(pageType);
-            }
+            EditorPageViewModel page = (EditorPageViewModel)ActivatorUtilities.CreateInstance(_provider, pageType, node, onOpen);
             
+           
             return page;
         }
 

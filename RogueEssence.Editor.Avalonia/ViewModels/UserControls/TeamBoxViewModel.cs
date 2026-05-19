@@ -85,7 +85,7 @@ namespace RogueEssence.Dev.ViewModels
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            bool result = await window.ShowDialog<bool>(form.MapEditForm);
+            // bool result = await window.ShowDialog<bool>(form.MapEditPage);
 
             //lock (GameBase.lockObj)
             //{

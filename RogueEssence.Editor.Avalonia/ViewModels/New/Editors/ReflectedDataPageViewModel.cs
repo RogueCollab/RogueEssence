@@ -36,7 +36,7 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
     }
 
     // If the page is the root page, it will include the "Save All Sub-Windows" button
-    public void SetIsRootPage(bool isRoot)
+    public void SetRootPage(bool isRoot)
     {
         IsRootPage = isRoot;
     }

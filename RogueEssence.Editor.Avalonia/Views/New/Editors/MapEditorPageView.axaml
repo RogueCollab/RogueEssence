@@ -10,63 +10,63 @@
   <Design.DataContext>
     <vm:MapEditorPageViewModel></vm:MapEditorPageViewModel>
   </Design.DataContext>
-    <TextBlock>Hi</TextBlock>
-  <!-- <DockPanel> -->
-  <!--   <Menu DockPanel.Dock="Top"> -->
-  <!--     <MenuItem Header="_File"> -->
-  <!--       <MenuItem Header="_New" Command="{Binding mnuNew_Click}"/> -->
-  <!--       <MenuItem Header="_Open" Command="{Binding mnuOpen_Click}"/> -->
-  <!--       <MenuItem Header="_Save" Command="{Binding mnuSave_Click}"/> -->
-  <!--       <MenuItem Header="_Save As" Command="{Binding mnuSaveAs_Click}"/> -->
-  <!--       <MenuItem Header="_Save and Test" Command="{Binding mnuTest_Click}"/> -->
-  <!--       <MenuItem Header="_Export as Ground" Command="{Binding mnuExportAsGround_Click}"/> -->
-  <!--     </MenuItem> -->
-  <!--     <MenuItem Header="_Edit"> -->
-  <!--       <MenuItem Header="Resize Map" Command="{Binding mnuReSize_Click}"/> -->
-  <!--       <Separator/> -->
-  <!--       <MenuItem Header="Undo" Command="{Binding mnuUndo_Click}"/> -->
-  <!--       <MenuItem Header="Redo" Command="{Binding mnuRedo_Click}"/> -->
-  <!--     </MenuItem> -->
-  <!--     <MenuItem Header="_Tiles"> -->
-  <!--       <MenuItem Header="_Load from .png into Tileset" Command="{Binding mnuImportFromPng_Click}"/> -->
-  <!--       <MenuItem Header="_Load Tileset into Layer" Command="{Binding mnuImportFromTileset_Click}"/> -->
-  <!--       <MenuItem Header="_Clear Layer" Command="{Binding mnuClearLayer_Click}"/> -->
-  <!--       <MenuItem Header="_Load Standardize Frame Length" Command="{Binding mnuStandardizeFrameLength_Click}"/> -->
-  <!--     </MenuItem> -->
-  <!--   </Menu> -->
-  <!--   <Grid> -->
-  <!--     <TabControl Name="tabOptions" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex}" Margin="2"> -->
-  <!--       <TabItem Name="tabTextures" Header="Textures" > -->
-  <!--         <v:MapTabTextures DataContext="{Binding Textures}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabDecorations" Header="Decorations" > -->
-  <!--         <v:MapTabDecorations DataContext="{Binding Decorations}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabTerrain" Header="Terrain" > -->
-  <!--         <v:MapTabTerrain DataContext="{Binding Terrain}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabTiles" Header="Tiles" > -->
-  <!--         <v:MapTabTiles DataContext="{Binding Tiles}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabItems" Header="Items" > -->
-  <!--         <v:MapTabItems DataContext="{Binding Items}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabEntities" Header="Entities" > -->
-  <!--         <v:MapTabEntities DataContext="{Binding Entities}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabEntrances" Header="Entrances" > -->
-  <!--         <v:MapTabEntrances DataContext="{Binding Entrances}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabSpawns" Header="Spawns" > -->
-  <!--         <v:MapTabSpawns DataContext="{Binding Spawns}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabEffects" Header="Effects" > -->
-  <!--         <v:MapTabEffects DataContext="{Binding Effects}"/> -->
-  <!--       </TabItem> -->
-  <!--       <TabItem Name="tabProperties" Header="Properties" > -->
-  <!--         <v:MapTabProperties DataContext="{Binding Properties}"/> -->
-  <!--       </TabItem> -->
-  <!--     </TabControl> -->
-  <!--   </Grid> -->
-  <!-- </DockPanel> -->
+    <!-- <TextBlock>Hi</TextBlock> -->
+  <DockPanel>
+    <Menu DockPanel.Dock="Top" IsEnabled="{Binding AllowEdit}">
+      <MenuItem Header="_File">
+        <MenuItem Header="_New" Command="{Binding mnuNew_Click}"/>
+        <MenuItem Header="_Open" Command="{Binding mnuOpen_Click}"/>
+        <MenuItem Header="_Save" Command="{Binding mnuSave_Click}"/>
+        <MenuItem Header="_Save As" Command="{Binding mnuSaveAs_Click}"/>
+        <MenuItem Header="_Save and Test" Command="{Binding mnuTest_Click}"/>
+        <MenuItem Header="_Export as Ground" Command="{Binding mnuExportAsGround_Click}"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="Resize Map" Command="{Binding mnuReSize_Click}"/>
+        <Separator/>
+        <MenuItem Header="Undo" Command="{Binding mnuUndo_Click}"/>
+        <MenuItem Header="Redo" Command="{Binding mnuRedo_Click}"/>
+      </MenuItem>
+      <MenuItem Header="_Tiles">
+        <MenuItem Header="_Load from .png into Tileset" Command="{Binding mnuImportFromPng_Click}"/>
+        <MenuItem Header="_Load Tileset into Layer" Command="{Binding mnuImportFromTileset_Click}"/>
+        <MenuItem Header="_Clear Layer" Command="{Binding mnuClearLayer_Click}"/>
+        <MenuItem Header="_Load Standardize Frame Length" Command="{Binding mnuStandardizeFrameLength_Click}"/>
+      </MenuItem>
+    </Menu>
+    <Grid>
+      <TabControl Name="tabOptions" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex}" Margin="2" IsEnabled="{Binding AllowEdit}">
+        <TabItem Name="tabTextures" Header="Textures" >
+          <v:MapTabTextures DataContext="{Binding Textures}"/>
+        </TabItem>
+        <TabItem Name="tabDecorations" Header="Decorations" >
+          <v:MapTabDecorations DataContext="{Binding Decorations}"/>
+        </TabItem>
+        <TabItem Name="tabTerrain" Header="Terrain" >
+          <v:MapTabTerrain DataContext="{Binding Terrain}"/>
+        </TabItem>
+        <TabItem Name="tabTiles" Header="Tiles" >
+          <v:MapTabTiles DataContext="{Binding Tiles}"/>
+        </TabItem>
+        <TabItem Name="tabItems" Header="Items" >
+          <v:MapTabItems DataContext="{Binding Items}"/>
+        </TabItem>
+        <TabItem Name="tabEntities" Header="Entities" >
+          <v:MapTabEntities DataContext="{Binding Entities}"/>
+        </TabItem>
+        <TabItem Name="tabEntrances" Header="Entrances" >
+          <v:MapTabEntrances DataContext="{Binding Entrances}"/>
+        </TabItem>
+        <TabItem Name="tabSpawns" Header="Spawns" >
+          <v:MapTabSpawns DataContext="{Binding Spawns}"/>
+        </TabItem>
+        <TabItem Name="tabEffects" Header="Effects" >
+          <v:MapTabEffects DataContext="{Binding Effects}"/>
+        </TabItem>
+        <TabItem Name="tabProperties" Header="Properties" >
+          <v:MapTabProperties DataContext="{Binding Properties}"/>
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </DockPanel>
 </UserControl>

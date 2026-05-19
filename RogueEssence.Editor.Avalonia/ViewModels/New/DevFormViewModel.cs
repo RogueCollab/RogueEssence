@@ -17,6 +17,7 @@ using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Utility;
 using RogueEssence.Dev.Views;
+using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using RogueEssence.Script;
 
@@ -237,8 +238,13 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddTopLevelPage(EditorPageViewModel page)
     {
-        var navigated = TryNavigateToExistingPage(page);
-        if (navigated) return;
+        var navigatedPage = TryNavigateToExistingPage(page);
+        if (navigatedPage != null)
+        {
+            if (navigatedPage is IPageReloadable reloadable)
+                reloadable.Reload();
+            return;
+        }
 
         if (!page.AddNewTab)
         {
@@ -259,8 +265,8 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddChildPage(EditorPageViewModel parentPage, EditorPageViewModel childPage)
     {
-        var navigated = TryNavigateToExistingPage(childPage);
-        if (navigated) return;
+        var navigatedPage = TryNavigateToExistingPage(childPage);
+        if (navigatedPage != null) return;
 
 
         // Otherwise... add to the list of tabs
@@ -287,17 +293,17 @@ public class DevFormViewModel : ViewModelBase
     }
 
     // Returns whether the navigation was successful
-    private bool TryNavigateToExistingPage(EditorPageViewModel page)
+    private EditorPageViewModel? TryNavigateToExistingPage(EditorPageViewModel page)
     {
         var existing = Pages.FirstOrDefault(p => p.Equals(page));
         if (existing != null)
         {
             TemporaryTab = null;
             ActivePage = existing;
-            return true;
+            return existing;
         }
 
-        return false;
+        return null;
     }
 
     public bool PageHasChildren(EditorPageViewModel page)
@@ -471,6 +477,11 @@ public class DevFormViewModel : ViewModelBase
             PreferencesWindowViewModel.Instance, "Preferences");
     }
 
+    public NodeBase Root { get; internal set; }
+    public NodeBase MapEditorNode { get; internal set; }
+    
+    public NodeBase GroundEditorNode { get; internal set; }
+    
     public void LoadDevTree()
     {
         NodeFactory _nodeFactory = _context.NodeFactory;
@@ -483,11 +494,7 @@ public class DevFormViewModel : ViewModelBase
         _pageToNodeMap.Clear();
 
 
-        // TODO: Attach the DevControlNode to this tab rather than keeping it null... 
-        var tab = _context.PageFactory.CreatePage(typeof(DevControlViewModel), null);
-        tab.Icon = "Icons.GameControllerFill";
-        AddTopLevelPage(tab);
-
+       
 
         foreach (var n in Nodes)
         {
@@ -502,14 +509,30 @@ public class DevFormViewModel : ViewModelBase
         var root = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>(rootStr, "Icons.ScrollFill");
 
 
+        Root = root;
         // root.SubNodes.Add(
         // _nodeFactory.CreateOpenEditorNode("Dev Control",  typeof(DevControlViewModel), "Icons.GameControllerFill"));
-        root.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode<DevControlViewModel>("Dev Control", "Icons.GameControllerFill"));
-        root.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Map Editor", "Icons.StairsFill"));
-        root.SubNodes.Add(
-            _nodeFactory.CreateOpenEditorNode<GroundEditorPageViewModel>("Ground Editor", "Icons.IslandFill"));
+
+        var devControlNode =
+            _nodeFactory.CreateOpenEditorNode<DevControlViewModel>("Dev Control", "Icons.GameControllerFill");
+        root.SubNodes.Add(devControlNode);
+        
+        // TODO: Attach the DevControlNode to this tab rather than keeping it null... 
+        var tab = _context.PageFactory.CreatePage(typeof(DevControlViewModel), devControlNode);
+        // tab.Icon = "Icons.GameControllerFill";
+        AddTopLevelPage(tab);
+
+
+        var mapEditorNode = _nodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Map Editor", "Icons.StairsFill");
+        root.SubNodes.Add(mapEditorNode);
+        
+        MapEditorNode = mapEditorNode;
+
+        var groundEditorNode =
+            _nodeFactory.CreateOpenEditorNode<GroundEditorPageViewModel>("Ground Editor", "Icons.IslandFill");
+
+        root.SubNodes.Add(groundEditorNode);
+        GroundEditorNode = groundEditorNode;
         // root.SubNodes.Add(
         // _nodeFactory.CreateOpenEditorNode("Ground Editor", typeof(GroundEditorPageViewModel), "Icons.MapTrifoldFill"));
         // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
@@ -572,7 +595,7 @@ public class DevFormViewModel : ViewModelBase
         return vm =>
         {
             vm.SetRemoveNode(false);
-            vm.SetIsRootPage(true);
+            vm.SetRootPage(true);
             vm.OnLoadAction = stack => { DataEditor.LoadDataControls("", getter(), stack); };
 
             vm.OnOKAction = async stack =>
@@ -601,19 +624,17 @@ public class DevFormViewModel : ViewModelBase
     private void CreateConstantsNode(NodeBase parent)
     {
         var constantsNode =
-            _context.NodeFactory.CreateReflectedDataNode<MapEditorPageViewModel>("Constants", "Icons.ListFill", parent);
+            _context.NodeFactory.CreateReflectedDataNode<MapEditorPageViewModel>("Constants", parent, "Icons.ListFill");
         var startParamsNode = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Start Params",
-            "Icons.ListFill",
             parent,
-            CreateDataOnOpen(
+            "Icons.ListFill", CreateDataOnOpen(
                 () => DataManager.Instance.Start,
                 obj =>
                 {
                     DataManager.Instance.Start = obj;
                     DataManager.Instance.SaveStartParams();
                 },
-                parent)
-        );
+                parent));
 
         var universalEventsNode = _context.NodeFactory.CreateUniversalNode<ReflectedDataPageViewModel>(
             "Universal Event", "Icons.ListFill",
@@ -674,72 +695,67 @@ public class DevFormViewModel : ViewModelBase
         var effectsNode =
             _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Effects", "Icons.SparkleFill");
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Heal FX",
-            "Icons.SparkleFill",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.HealFX, fx => DataManager.Instance.HealFX = fx, "Heal", parent)));
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.HealFX, fx => DataManager.Instance.HealFX = fx, "Heal", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "Restore Charge FX", "Icons.SparkleFill",
+            "Restore Charge FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.RestoreChargeFX, fx => DataManager.Instance.RestoreChargeFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.RestoreChargeFX, fx => DataManager.Instance.RestoreChargeFX = fx,
                 "RestoreCharge", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "Lose Charge FX", "Icons.SparkleFill",
+            "Lose Charge FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.LoseChargeFX, fx => DataManager.Instance.LoseChargeFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.LoseChargeFX, fx => DataManager.Instance.LoseChargeFX = fx,
                 "LoseCharge", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "No Charge FX", "Icons.SparkleFill",
+            "No Charge FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.NoChargeFX, fx => DataManager.Instance.NoChargeFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.NoChargeFX, fx => DataManager.Instance.NoChargeFX = fx,
                 "NoCharge", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Element FX",
-            "Icons.SparkleFill",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.ElementFX, fx => DataManager.Instance.ElementFX = fx, "Element",
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.ElementFX, fx => DataManager.Instance.ElementFX = fx, "Element",
                 parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "Intrinsic FX", "Icons.SparkleFill",
+            "Intrinsic FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.IntrinsicFX, fx => DataManager.Instance.IntrinsicFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.IntrinsicFX, fx => DataManager.Instance.IntrinsicFX = fx,
                 "Intrinsic", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "Send Home FX", "Icons.SparkleFill",
+            "Send Home FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.SendHomeFX, fx => DataManager.Instance.SendHomeFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.SendHomeFX, fx => DataManager.Instance.SendHomeFX = fx,
                 "SendHome", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "Item Lost FX", "Icons.SparkleFill",
+            "Item Lost FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.ItemLostFX, fx => DataManager.Instance.ItemLostFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.ItemLostFX, fx => DataManager.Instance.ItemLostFX = fx,
                 "ItemLost", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Warp FX",
-            "Icons.SparkleFill",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.WarpFX, fx => DataManager.Instance.WarpFX = fx, "Warp", parent)));
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.WarpFX, fx => DataManager.Instance.WarpFX = fx, "Warp", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(
-            "Knockback FX", "Icons.SparkleFill",
+            "Knockback FX",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.KnockbackFX, fx => DataManager.Instance.KnockbackFX = fx,
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.KnockbackFX, fx => DataManager.Instance.KnockbackFX = fx,
                 "Knockback", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Jump FX",
-            "Icons.SparkleFill",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.JumpFX, fx => DataManager.Instance.JumpFX = fx, "Jump", parent)));
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.JumpFX, fx => DataManager.Instance.JumpFX = fx, "Jump", parent)));
 
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Throw FX",
-            "Icons.SparkleFill",
             effectsNode,
-            CreateFXOnOpen(() => DataManager.Instance.ThrowFX, fx => DataManager.Instance.ThrowFX = fx, "Throw",
+            "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.ThrowFX, fx => DataManager.Instance.ThrowFX = fx, "Throw",
                 parent)));
 
         constantsNode.SubNodes.Add(effectsNode);
@@ -963,6 +979,9 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddPageFromTreeNode(OpenEditorNode node)
     {
+        if (node.EditorType.IsAssignableTo(typeof(IPreCreatePage)))
+            node.EditorType.GetMethod("OnPreCreate")?.Invoke(null, null);
+        
         var editor = _context.PageFactory.CreatePage(node.EditorType, node, node.OnPageLoad);
         
         if (editor != null)
@@ -990,6 +1009,13 @@ public class DevFormViewModel : ViewModelBase
         return true;
     }
 
+
+    public void OpenMapEditor()
+    {
+        var page = _context.PageFactory.CreatePage<MapEditorPageViewModel>(MapEditorNode);
+        page.SetPageTitle("Map Editor", "Icons.StairsFill");
+        AddTopLevelPage(page);
+    }
 
     // public TreeSearchViewModel TreeSearch { get; } = new TreeSearchViewModel();
 }

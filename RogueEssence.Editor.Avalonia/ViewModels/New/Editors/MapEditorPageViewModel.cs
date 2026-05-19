@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using ReactiveUI;
 using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Data;
@@ -18,9 +19,29 @@ using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
+public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreatePage, IPageReloadable
 {
+    // This is probably not the ideal way of doing this...
+    public static void OnPreCreate()
+    {
+        lock (GameBase.lockObj)
+        {
+            Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
+            if (form.MapEditPage == null)
+            {
+                LuaEngine.Instance.BreakScripts();
+                MenuManager.Instance.ClearMenus();
+                if (ZoneManager.Instance.CurrentMap != null)
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, ZoneManager.Instance.CurrentMap.AssetName);
+                else
+                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, "");
+            }
+        }
+    }
     public bool Active { get; private set; }
+    
+    
+
     public UndoStack Edits { get; }
 
 
@@ -44,39 +65,48 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
         onPageOpen)
     {
         Edits = new UndoStack();
-        // Textures = textures;
-        // Decorations = decorations;
-        // Terrain = terrain;
-        // Tiles = tiles;
-        // Items = items;
-        // Entities = entities;
-        // Entrances = entrances;
-        // Spawns = spawns;
-        // Effects = effects;
-        // Properties = properties;
-        CurrentFile = "";
+    }
+
+    private void _reload()
+    {
+        AllowEdit = true;
+        DiagManager.Instance.DevEditor.MapEditor = this;
+
+        DevForm.ExecuteOrInvoke(() =>
+        {
+            Textures = new MapTabTexturesViewModel();
+            Decorations = new MapTabDecorationsViewModel();
+            Terrain = new MapTabTerrainViewModel();
+            Tiles = new MapTabTilesViewModel(_context, this);
+            Items = new MapTabItemsViewModel();
+            Entities = new MapTabEntitiesViewModel(_context, this);
+            Entrances = new MapTabEntrancesViewModel();
+            Spawns = new MapTabSpawnsViewModel();
+            Effects = new MapTabEffectsViewModel(_context, this);
+            Properties = new MapTabPropertiesViewModel(_context, this);
+        
+            CurrentFile = "";
+
+        
+        
+            LoadFromCurrentMap();
+            Active = true;
+        });
+        
+        
+       
+        base.OnPageLoad();
+        
+    }
+
+    public void Reload()
+    {
+        _reload();
     }
 
     public override void OnPageLoad()
     {
-        lock (GameBase.lockObj)
-        {
-            Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
-            if (form.MapEditForm == null)
-            {
-                LuaEngine.Instance.BreakScripts();
-                MenuManager.Instance.ClearMenus();
-                if (ZoneManager.Instance.CurrentMap != null)
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, ZoneManager.Instance.CurrentMap.AssetName);
-                else
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.MoveToEditor(false, "");
-            }
-        }
-        
-        
-        
-        base.OnPageLoad();
-        
+        _reload();
     }
 
     public MapTabTexturesViewModel Textures { get; set; }
@@ -137,29 +167,32 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
             ]
         };
 
-        string result = await _context.DialogService.ShowFilePickerAsync(options, mapDir);
+        await Dispatcher.UIThread.InvokeAsync(async () => { 
 
-        if (result != null)
-        {
-            bool legalPath = false;
-            foreach (string proposedPath in PathMod.FallbackPaths(DataManager.MAP_PATH))
-            {
-                if (comparePaths(proposedPath, Path.GetDirectoryName(result)))
-                    legalPath = true;
-            }
+            string result = await _context.DialogService.ShowFilePickerAsync(options, mapDir);
 
-            if (!legalPath)
+            if (result != null)
             {
-                await MessageBoxWindowView.Show(_context.DialogService,
-                    String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.",
-                        PathMod.ModPath(DataManager.MAP_PATH)), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+                bool legalPath = false;
+                foreach (string proposedPath in PathMod.FallbackPaths(DataManager.MAP_PATH))
+                {
+                    if (comparePaths(proposedPath, Path.GetDirectoryName(result)))
+                        legalPath = true;
+                }
+
+                if (!legalPath)
+                {
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.",
+                            PathMod.ModPath(DataManager.MAP_PATH)), "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+                }
+                else
+                {
+                    lock (GameBase.lockObj)
+                        DoLoad(Path.GetFileNameWithoutExtension(result));
+                }
             }
-            else
-            {
-                lock (GameBase.lockObj)
-                    DoLoad(Path.GetFileNameWithoutExtension(result));
-            }
-        }
+        });
     }
     // public async void mnuOpen_Click()
     // {
@@ -282,32 +315,37 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
                 }
             ]
         };
+        await Dispatcher.UIThread.InvokeAsync(async () => { 
 
-        string result = await _context.DialogService.TryGetSaveFileAsync(options, mapDir);
+            string result = await _context.DialogService.TryGetSaveFileAsync(options, mapDir);
 
-        if (!string.IsNullOrEmpty(result))
-        {
-            string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
-            if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
-                await MessageBoxWindowView.Show(_context.DialogService,
-                    string.Format("Map can only be saved to:\n{0}", reqDir),
-                    "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
-            else if (Path.GetFileName(result).Contains(" "))
-                await MessageBoxWindowView.Show(_context.DialogService,
-                    string.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)),
-                    "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
-            else
+            if (!string.IsNullOrEmpty(result))
             {
-                lock (GameBase.lockObj)
+                string reqDir = PathMod.HardMod(DataManager.MAP_PATH);
+                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        string.Format("Map can only be saved to:\n{0}", reqDir),
+                        "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+                else if (Path.GetFileName(result).Contains(" "))
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        string.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)),
+                        "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+                else
                 {
-                    string oldFilename = CurrentFile;
-                    DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
+                    lock (GameBase.lockObj)
+                    {
+                        string oldFilename = CurrentFile;
+                        DoSave(ZoneManager.Instance.CurrentMap, result, oldFilename);
+                    }
+
+                    return true;
                 }
-
-                return true;
             }
-        }
+            
+       
 
+            return false;
+        });
         return false;
     }
     // public async Task<bool> mnuSaveAs_Click()
@@ -360,11 +398,12 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
             lock (GameBase.lockObj)
             {
                 DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                form.MapEditForm.SilentClose();
-                form.MapEditForm = null;
+                form.MapEditPage.SilentClose();
+                form.MapEditPage = null;
                 GameManager.Instance.SceneOutcome =
                     GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false,
                         MathUtils.Rand.NextUInt64());
+                AllowEdit = false;
             }
         }
     }
@@ -421,25 +460,25 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
         window.DataContext = viewModel;
 
         DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-        bool result = await window.ShowDialog<bool>(form.MapEditForm);
-
-        lock (GameBase.lockObj)
-        {
-            if (result)
-            {
-                //TODO: support undo for this
-                DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
-
-                DiagManager.Instance.LoadMsg = "Resizing Map...";
-                DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-
-                ZoneManager.Instance.CurrentMap.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight,
-                    viewModel.ResizeDir);
-
-                DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-            }
-        }
+        //
+        // bool result = await window.ShowDialog<bool>(form.MapEditPage);
+        //
+        // lock (GameBase.lockObj)
+        // {
+        //     if (result)
+        //     {
+        //         //TODO: support undo for this
+        //         DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
+        //
+        //         DiagManager.Instance.LoadMsg = "Resizing Map...";
+        //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+        //
+        //         ZoneManager.Instance.CurrentMap.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight,
+        //             viewModel.ResizeDir);
+        //
+        //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+        //     }
+        // }
     }
 
     public void mnuUndo_Click()
@@ -803,4 +842,58 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor
             }
         }
     }
+    
+ 
+    
+    public void Window_Loaded(object sender, EventArgs e)
+    {
+        Active = true;
+    }
+    
+    private bool silentClose;
+
+    public void SilentClose()
+    {
+        silentClose = true;
+        // Close();
+    }
+
+    public override void OnPageRemoved()
+    {
+        base.OnPageRemoved();
+        Active = false;
+        if (!silentClose)
+            GameManager.Instance.SceneOutcome = exitMapEdit();
+        
+    }
+    
+    
+    private IEnumerator<YieldInstruction> exitMapEdit()
+    {
+        DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+        form.MapEditPage = null;
+
+        //move to the previous scene or the title, if there was none
+        if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.MoveToZone(DataManager.Instance.Save.NextDest, true, false));
+        else
+            yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
+    }
+    
+    public void Close()
+    {
+        _context.TabEvents.RemoveTab(this);
+    }
+
+    // Keeps track of whether the map editor while testing in-game
+    private bool _allowEdit;
+    public bool AllowEdit
+    {
+        get { return _allowEdit; }
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _allowEdit, value);
+        }
+    }
+
 }

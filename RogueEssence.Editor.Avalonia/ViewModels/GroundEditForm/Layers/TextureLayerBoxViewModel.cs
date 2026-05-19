@@ -39,7 +39,9 @@ namespace RogueEssence.Dev.ViewModels
                 MapLayerWindow window = new MapLayerWindow();
                 window.DataContext = vm;
 
-                result = await window.ShowDialog<bool>(form.MapEditForm);
+
+                result = true;
+                // result = await window.ShowDialog<bool>(form.MapEditPage);
             }
 
             lock (GameBase.lockObj)
