@@ -30,7 +30,7 @@
     <Compile Update="DataEditor\RangeDictBox.axaml.cs">
       <DependentUpon>RangeDictBox.axaml</DependentUpon>
     </Compile>
-    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileEditForm.axaml.cs">
+    <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileEditWindowView.axaml.cs">
       <DependentUpon>TileEditForm.axaml</DependentUpon>
     </Compile>
     <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBox.axaml.cs">
@@ -191,7 +191,7 @@
       <DependentUpon>DevTabGame.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\MapRetileWindow.axaml.cs">
+    <Compile Update="Views\New\DialogBoxes\MapRetileWindowView.axaml.cs">
       <DependentUpon>MapRetileWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -217,6 +217,18 @@
     </Compile>
     <Compile Update="Views\New\Editors\ModConfigPageView.axaml.cs">
       <DependentUpon>ModConfigPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\DialogBoxes\MapLayerWindowView.axaml.cs">
+      <DependentUpon>MapLayerWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\DialogBoxes\MapResizeWindowView.axaml.cs">
+      <DependentUpon>MapResizeWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\New\DialogBoxes\ModNameWindowView.axaml.cs">
+      <DependentUpon>ModNameWindowView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

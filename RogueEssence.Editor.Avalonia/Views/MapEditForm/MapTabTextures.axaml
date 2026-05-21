@@ -14,38 +14,20 @@
   <UserControl.Resources>
     <converters:ComparisonConverter x:Key="ComparisonConverter"/>
   </UserControl.Resources>
-  <Grid Margin="4" >
-    <Grid.RowDefinitions>
-      <RowDefinition Height="38"/>
-      <RowDefinition/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="180"/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <views:LayerBox DataContext="{Binding Layers}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"/>
-    <Grid Grid.Row="0" Grid.Column="1">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="16"/>
-        <RowDefinition Height="26"/>
-      </Grid.RowDefinitions>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition/>
-        <ColumnDefinition/>
-        <ColumnDefinition/>
-        <ColumnDefinition/>
-      </Grid.ColumnDefinitions>
-      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Mode</TextBlock>
-      <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Draw}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="0">Draw</RadioButton>
+  <Grid Margin="4" RowDefinitions="38,*" ColumnDefinitions="180,*">
+    <views:LayerBox DataContext="{Binding Layers}" Grid.RowSpan="2"/>
+    <Grid Grid.Column="1" RowDefinitions="16,26" ColumnDefinitions="*,*,*,*">
+      <TextBlock Margin="4,2" VerticalAlignment="Bottom">Mode</TextBlock>
+      <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Draw}}" VerticalAlignment="Top" Margin="2" Grid.Row="1">Draw</RadioButton>
       <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Rectangle}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="1">Rectangle</RadioButton>
       <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Fill}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="2">Fill</RadioButton>
       <RadioButton IsChecked="{Binding Path=TexMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Eyedrop}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="3">Eyedrop</RadioButton>
     </Grid>
     <TabControl TabStripPlacement="Top" SelectedIndex="{Binding TabIndex}" Margin="4" Grid.Row="1" Grid.Column="1">
-      <TabItem Header="Tiles" >
+      <TabItem Header="Tiles">
         <views:TileBrowser DataContext="{Binding TileBrowser}"/>
       </TabItem>
-      <TabItem Header="Autotiles" >
+      <TabItem Header="Autotiles">
         <views:AutotileBrowser DataContext="{Binding AutotileBrowser}"/>
       </TabItem>
     </TabControl>

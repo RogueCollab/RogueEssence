@@ -270,9 +270,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnAdd_Click(bool advancedEdit)
         {
-            int index = CurrentElement;
-            if (index < 0)
-                index = Collection.Count;
+            // int index = CurrentElement;
+            // if (index < 0) 
+            int index = Collection.Count;
             object element = null;
             OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }

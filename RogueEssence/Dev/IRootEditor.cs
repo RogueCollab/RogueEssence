@@ -8,7 +8,7 @@ namespace RogueEssence.Dev
         bool LoadComplete { get; }
         bool AteMouse { get; }
         bool AteKeyboard { get; }
-        IGroundEditor GroundEditor { get; }
+        IGroundEditor GroundEditor { get; set; }
         IMapEditor MapEditor { get; set; }
 
         void ReloadData(DataManager.DataType dataType);

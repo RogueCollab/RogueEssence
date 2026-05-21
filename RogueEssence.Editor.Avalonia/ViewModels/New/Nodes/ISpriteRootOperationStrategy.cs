@@ -6,7 +6,5 @@ public interface ISpriteRootOperationStrategy
 {
     Task MassExportAsync();
     Task MassImportAsync();
-    Task ExportAsync(DataItemNode node);
     Task ImportAsync();
-    Task ReImportAsync();
 }

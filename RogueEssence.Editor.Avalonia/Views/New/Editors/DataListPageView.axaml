@@ -11,69 +11,12 @@
     <Design.DataContext>
         <vm:DataListPageViewModel />
     </Design.DataContext>
-
-    <!-- // var menu = new ContextMenu -->
-    <!-- // { -->
-    <!-- //     Items = -->
-    <!-- //     { -->
-    <!-- //         new MenuItem { Header = "Re-Index", Command = root.ReIndexCommand, Icon = App.CreateMenuIcon("Icons.ListNumbersFill") }, -->
-    <!-- //         new MenuItem { Header = "Resave all as File", Command = root.ResaveAllAsFileCommand, Icon = App.CreateMenuIcon("Icons.FileFill") }, -->
-    <!-- //         new MenuItem { Header = "Resave all as Diff", Command = root.ResaveAllAsDiffCommand, Icon = App.CreateMenuIcon("Icons.PlusMinusFill") }, -->
-    <!-- //         new Separator(), -->
-    <!-- //         new MenuItem { Header = "Add", Command = root.AddCommand, Icon = App.CreateMenuIcon("Icons.Plus") } -->
-    <!-- //     } -->
-    <!-- // }; -->
-    <!-- // -->
-    <!-- // AttachAndOpenMenu(current, menu, e); -->
-    <Grid RowDefinitions="Auto, 32, Auto, Auto">
+<Grid RowDefinitions="Auto, 32, Auto, Auto">
 
 
         <DockPanel Grid.Row="0" VerticalAlignment="Top">
-            <Menu x:Name="DataListPageViewEditMenu" DockPanel.Dock="Left"
-                  ContextRequested="DataListPageViewEditMenu_OnContextRequested">
-                <!-- <Menu.Styles> -->
-                <!--     <Style Selector="MenuItem"> -->
-                <!--         <Setter Property="Theme" Value="{DynamicResource CustomMenuItemTheme}" /> -->
-                <!--     </Style> -->
-                <!-- </Menu.Styles> -->
-
-
-                <Menu DockPanel.Dock="Top">
-
-
-                    <MenuItem Header="Edit" ItemsSource="{Binding EditMenuItems}">
-                        <MenuItem.DataTemplates>
-                            <!-- <Menu.DataTemplates> -->
-                            <DataTemplate x:DataType="vm:DataOpContainer">
-                                <MenuItem Header="{Binding Name}"
-                                          Command="{Binding Command}" />
-                            </DataTemplate>
-
-                            <!-- </Menu.DataTemplates> -->
-                        </MenuItem.DataTemplates>
-
-
-                    </MenuItem>
-
-                    <!-- <Menu DockPanel.Dock="Top" ItemsSource="{Binding OpList}"> -->
-                    <!--     <Menu.Styles> -->
-                    <!--         <Style Selector="MenuItem"> -->
-                    <!--             <Setter Property="Header" Value="{Binding Name}"/> -->
-                    <!--             <Setter Property="Command" Value="{Binding Command}"/> -->
-                    <!--             <Setter Property="ItemsSource" Value="{Binding Items}"/> -->
-                    <!--         </Style> -->
-                    <!--     </Menu.Styles> -->
-                    <!-- </Menu> -->
-                    <!--   -->
-                    <!-- <Menu.Styles> -->
-                    <!--   <Style Selector="MenuItem"> -->
-                    <!--     <Setter Property="Header" Value="{Binding Name}"/> -->
-                    <!--     <Setter Property="Command" Value="{Binding Command}"/> -->
-                    <!--     <Setter Property="ItemsSource" Value="{Binding Items}"/> -->
-                    <!--   </Style> -->
-                    <!-- </Menu.Styles> -->
-                </Menu>
-
+            <Menu x:Name="DataListPageViewEditMenu" DockPanel.Dock="Left">
+                <MenuItem Header="Edit" ItemsSource="{Binding EditMenuItems}" />
             </Menu>
         </DockPanel>
         <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
@@ -84,7 +27,7 @@
 
             <TextBox Classes="search"
                      Grid.Row="0"
-                     Text="{Binding SearchFilter, Mode=TwoWay}"/>
+                     Text="{Binding SearchFilter, Mode=TwoWay}" />
 
             <ListBox Grid.Row="2"
                      ContextRequested="DataListPageListBox_OnContextRequested"
@@ -106,8 +49,7 @@
                 </Button>
                 <Button Classes="flat" Width="100" Margin="24,0,0,0"
                         Command="{Binding DeleteItem}"
-                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        >
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
                 </Button>
             </StackPanel>

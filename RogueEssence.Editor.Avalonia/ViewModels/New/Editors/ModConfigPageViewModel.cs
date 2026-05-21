@@ -8,16 +8,16 @@ using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class ModConfigPageViewModel : EditorPageViewModel
+public class ModConfigPageViewModel : EditorPageViewModel<ModItemNode>
 {
     public Action OnOKValidAction;
     
-    private string _path;
 
+    public string Path => Node.Path;
     public ModConfigPageViewModel(EditorContext context, ModItemNode node,
         Action<EditorPageViewModel> onPageOpen = null) : base(context, node, onPageOpen)
     {
-        _path = node.Path;
+  
     }
 
     public void LoadDataFromPath()
@@ -27,7 +27,7 @@ public class ModConfigPageViewModel : EditorPageViewModel
         // PathMod.SaveModDetails(fullPath, resultHeader);
 
 
-        ModHeader header = PathMod.GetModDetails(PathMod.FromApp(_path));
+        ModHeader header = PathMod.GetModDetails(PathMod.FromApp(Path));
         Name = header.Name;
         Namespace = header.Namespace;
         Author = header.Author;

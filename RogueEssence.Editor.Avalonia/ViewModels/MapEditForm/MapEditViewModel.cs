@@ -211,8 +211,8 @@ namespace RogueEssence.Dev.ViewModels
                 lock (GameBase.lockObj)
                 {
                     DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                    form.MapEditPage.SilentClose();
-                    form.MapEditPage = null;
+                    form.MapEditorPage.SilentClose();
+                    form.MapEditorPage = null;
                     GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false, MathUtils.Rand.NextUInt64());
                 }
             }

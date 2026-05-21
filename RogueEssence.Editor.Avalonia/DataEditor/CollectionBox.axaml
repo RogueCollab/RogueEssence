@@ -16,8 +16,8 @@
         <ListBox Name="lbxItems" ItemsSource="{Binding Collection}" SelectedIndex="{Binding SelectedIndex}"
                  DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4"
                  CornerRadius="4"
-                 HorizontalAlignment="Stretch"
                  Background="{DynamicResource Brush.ListBox.Background}"
+                 HorizontalAlignment="Stretch"
                  Grid.RowSpan="2" Grid.ColumnSpan="2">
             <ListBox.ItemTemplate>
                 <DataTemplate>

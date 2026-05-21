@@ -88,7 +88,7 @@ namespace RogueEssence.Dev
                 EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "<Priority>";
         
-                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, null, pageViewModel.Node.Icon);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);

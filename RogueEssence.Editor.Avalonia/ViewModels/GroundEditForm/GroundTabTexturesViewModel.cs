@@ -8,9 +8,10 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class GroundTabTexturesViewModel : ViewModelBase
     {
-        public GroundTabTexturesViewModel()
+        private EditorContext _context;
+        public GroundTabTexturesViewModel(EditorContext context)
         {
-            Layers = new TextureLayerBoxViewModel(true);
+            Layers = new TextureLayerBoxViewModel(true, context.DialogService);
             TileBrowser = new TileBrowserViewModel();
             TileBrowser.CanMultiSelect = true;
             AutotileBrowser = new AutotileBrowserViewModel();

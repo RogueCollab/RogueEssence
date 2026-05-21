@@ -11,10 +11,10 @@
     <Design.DataContext>
         <vm:SpritePageViewModel />
     </Design.DataContext>
-    <Grid RowDefinitions="Auto, 32, Auto, 20, Auto">
+    <Grid RowDefinitions="Auto, 32, Auto, 8, Auto">
         <DockPanel Grid.Row="0" VerticalAlignment="Top">
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="_Edit">
+                <MenuItem Header="Edit">
                     <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
                     <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
                     <Separator IsVisible="{Binding IsTileAsset}" />
@@ -84,30 +84,6 @@
                     <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
                 </Button>
             </StackPanel>
-            <!--          -->
-            <!-- <StackPanel Grid.Row="3" Orientation="Horizontal"> -->
-            <!--     <Button Classes="flat" Width="100" -->
-            <!--             Command="{Binding btnImport_Click}" -->
-            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
-            <!--         <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" /> -->
-            <!--     </Button> -->
-            <!--     <Button Classes="flat" Width="100" Margin="24,0,0,0" -->
-            <!--             Command="{Binding btnReImport_Click}" -->
-            <!--             IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"> -->
-            <!--         <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" /> -->
-            <!--     </Button> -->
-            <!--     <Button Classes="flat" Width="100" Margin="24,0,0,0" -->
-            <!--             Command="{Binding btnExport_Click}" -->
-            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
-            <!--         <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" /> -->
-            <!--     </Button> -->
-            <!--     <Button Classes="flat" Width="100" Margin="24,0,0,0" -->
-            <!--             Command="{Binding btnExport_Click}" -->
-            <!--             IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}"> -->
-            <!--         <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" /> -->
-            <!--     </Button> -->
-            <!-- </StackPanel> -->
-
         </Grid>
     </Grid>
 </UserControl>

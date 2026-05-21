@@ -8,14 +8,14 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public partial class MapRetileWindow : ChromelessWindow
+    public partial class MapRetileWindowView : ChromelessWindow
     {
-        public MapRetileWindow()
+        public MapRetileWindowView()
         {
             // var pref = ViewModels.PreferencesWindowViewModel.Instance;
             // DataContext = pref;
             // CloseOnESC = true;
-            // InitializeComponent();
+            this.InitializeComponent();
         }
     
         protected override void OnClosing(WindowClosingEventArgs e)
@@ -36,6 +36,7 @@ namespace RogueEssence.Dev.Views
 
         public void btnCancel_Click(object sender, RoutedEventArgs e)
         {
+            this.Close(false);
         }
     }
 }

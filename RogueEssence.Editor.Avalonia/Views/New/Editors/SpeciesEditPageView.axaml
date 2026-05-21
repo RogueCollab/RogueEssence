@@ -18,7 +18,7 @@
     <Grid RowDefinitions="Auto, 32, Auto Auto">
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="_Edit">
+                <MenuItem Header="Edit">
                     <MenuItem.Styles>
                         <Style Selector="MenuItem">
                             <Setter Property="Template">

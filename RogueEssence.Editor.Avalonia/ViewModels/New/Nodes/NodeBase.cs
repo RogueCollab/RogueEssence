@@ -559,11 +559,7 @@ public class SpriteRootNode : OpenEditorNode
 
     protected virtual ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
         => new SpriteRootAssetTypeStrategy(dialogService, this);
-
-    public async Task AddItem()
-    {
-        await _strategy.ImportAsync();
-    }
+    
 
     public async Task DeleteItem(string key)
     {

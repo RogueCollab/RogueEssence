@@ -185,8 +185,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void AutoTile_Edit(AutoTile element, TileBoxViewModel.EditElementOp op)
         {
-            TileEditForm frmData = new TileEditForm();
-            TileEditViewModel tmv = new TileEditViewModel();
+            TileEditWindowView frmData = new TileEditWindowView();
+            TileEditWindowViewModel tmv = new TileEditWindowViewModel();
             frmData.DataContext = tmv;
             tmv.Name = element.ToString();
 

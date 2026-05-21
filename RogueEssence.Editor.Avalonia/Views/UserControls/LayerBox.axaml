@@ -4,73 +4,48 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             x:DataType="vm:TextureLayerBoxViewModel"
              x:Class="RogueEssence.Dev.Views.LayerBox">
-  <UserControl.Resources>
-  </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="16"/>
-      <RowDefinition/>
-      <RowDefinition Height="34"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="6">Layers:</TextBlock>
-    <ListBox Margin="2" SelectionMode="AlwaysSelected" ItemsSource="{Binding Layers}" SelectedIndex="{Binding ChosenLayer, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="26"/>
-              <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <CheckBox IsChecked="{Binding Path=Visible}" Grid.Column="0"/>
-            <TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" Grid.Column="1"/>
-          </Grid>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <Button Command="{Binding AddLayer}" Margin="2" Grid.Row="2" Grid.Column="0" ToolTip.Tip="Add Layer">
-      <Panel>
-        <Image Source="/Assets/LayerAdd.png" Width="24"
-                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
-      </Panel>
-    </Button>
-    <Button Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1" ToolTip.Tip="Delete Layer">
-      <Panel>
-        <Image Source="/Assets/LayerDelete.png" Width="24"
-                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
-      </Panel>
-    </Button>
-    <Button Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2" ToolTip.Tip="Duplicate Layer">
-      <Panel>
-        <Image Source="/Assets/LayerDupe.png" Width="24"
-                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
-      </Panel>
-    </Button>
-    <Button Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3" ToolTip.Tip="Merge Layer">
-      <Panel>
-        <Image Source="/Assets/LayerMerge.png" Width="24"
-                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
-      </Panel>
-    </Button>
-    <Button Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4" ToolTip.Tip="Move Layer Up">
-      <Panel>
-        <Image Source="/Assets/LayerUp.png" Width="24"
-                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
-      </Panel>
-    </Button>
-    <Button Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5" ToolTip.Tip="Move Layer Down">
-      <Panel>
-        <Image Source="/Assets/LayerDown.png" Width="24"
-                          Height="24" VerticalAlignment="Center" HorizontalAlignment="Center" />
-      </Panel>
-    </Button>
-  </Grid>
+    
+    
+    <Design.DataContext>
+        <vm:TextureLayerBoxViewModel>
+            
+        </vm:TextureLayerBoxViewModel>
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="16,*,34" ColumnDefinitions="*,*,*,*,*,*">
+        <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.ColumnSpan="6">Layers:</TextBlock>
+        <ListBox Margin="2" 
+                 
+                Classes="datalist"
+                SelectionMode="AlwaysSelected" ItemsSource="{Binding Layers}" SelectedIndex="{Binding ChosenLayer, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxItems_DoubleClick" Grid.Row="1" Grid.ColumnSpan="6">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="26,*">
+                        <CheckBox IsChecked="{Binding Path=Visible}"/>
+                        <TextBlock Text="{Binding Path=Name}" VerticalAlignment="Center" Grid.Column="1"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Button Classes="secondary" Command="{Binding AddLayer}" Margin="2" Grid.Row="2" ToolTip.Tip="Add Layer">
+            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.Plus}" />
+        </Button>
+        <Button Classes="secondary" Command="{Binding DeleteLayer}" Margin="2" Grid.Row="2" Grid.Column="1" ToolTip.Tip="Delete Layer" IsEnabled="{Binding CanEdit}">
+            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.TrashFill}" />
+        </Button>
+        <Button Classes="secondary" Command="{Binding DupeLayer}" Margin="2" Grid.Row="2" Grid.Column="2" ToolTip.Tip="Duplicate Layer" IsEnabled="{Binding CanDupe}">
+            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.CopyFill}" />
+        </Button>
+        <Button Classes="secondary" Command="{Binding MergeLayer}" Margin="2" Grid.Row="2" Grid.Column="3" ToolTip.Tip="Merge Layer" IsEnabled="{Binding CanEdit}">
+            <Path Width="10" Height="10" Margin="4, 2, 0, 0" Data="{StaticResource Icons.ArrowsMergeFill}" />
+        </Button>
+        <Button Classes="secondary" Command="{Binding MoveLayerUp}" Margin="2" Grid.Row="2" Grid.Column="4" ToolTip.Tip="Move Layer Up" IsEnabled="{Binding CanMoveUp}">
+            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.CaretUpFill}" />
+        </Button>
+        <Button Classes="secondary" Command="{Binding MoveLayerDown}" Margin="2" Grid.Row="2" Grid.Column="5" ToolTip.Tip="Move Layer Down"  IsEnabled="{Binding CanMoveDown}">
+            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.CaretDownFill}" />
+        </Button>
+    </Grid>
 </UserControl>

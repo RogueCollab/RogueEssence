@@ -13,38 +13,18 @@
     <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
     <converters:MapScriptPathConverter x:Key="MapScriptPathConverter"/>
   </UserControl.Resources>
-  <Grid Margin="4" >
-    <Grid.RowDefinitions>
-      <RowDefinition Height="20"/>
-      <RowDefinition Height="34"/>
-      <RowDefinition Height="20"/>
-      <RowDefinition/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="120"/>
-      <ColumnDefinition Width="120"/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding Path=CurrentFile, Converter={StaticResource MapScriptPathConverter}}"/>
-    <Button Name="btnOpenScriptDir" Command="{Binding btnOpenScriptDir_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1" Grid.Column="0">Open Script Folder</Button>
-    <Button Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1" Grid.Column="1">Reload Scripts</Button>
-    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Map Callbacks</TextBlock>
-    <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="4" BorderThickness="1" BorderBrush="Black">
+  <Grid Margin="4" RowDefinitions="20,34,20,*" ColumnDefinitions="130,130,*">
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.ColumnSpan="3" Text="{Binding Path=CurrentFile, Converter={StaticResource MapScriptPathConverter}}"/>
+    <Button Classes="flat" Width="130" HorizontalContentAlignment="Center" Name="btnOpenScriptDir" Command="{Binding btnOpenScriptDir_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1">Open Script Folder</Button>
+    <Button  Classes="flat" Width="130"  HorizontalContentAlignment="Center" Name="btnReloadScripts" Command="{Binding btnReloadScripts_Click}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}" Margin="4" Grid.Row="1" Grid.Column="1">Reload Scripts</Button>
+    <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="2">Map Callbacks</TextBlock>
+    <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="4" BorderThickness="1" BorderBrush="{DynamicResource Brush.SubStackBorder}">
       <ItemsControl ItemsSource="{Binding ScriptItems}" IsEnabled="{Binding Path=CurrentFile, Converter={StaticResource StringNotEmptyConverter}}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="28"/>
-                <ColumnDefinition/>
-              </Grid.ColumnDefinitions>
-              <CheckBox
-                Margin="4"
-                        IsEnabled="False"
-                        IsChecked="{Binding IsChecked}"/>
-              <TextBlock Margin="0,4" Grid.Column="1" VerticalAlignment="Center"
-                Text="{Binding EventType}"
-                ToolTip.Tip="{Binding Definition}">
+            <Grid ColumnDefinitions="28,*">
+              <CheckBox Margin="4" IsEnabled="False" IsChecked="{Binding IsChecked}"/>
+              <TextBlock Margin="0,4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding EventType}" ToolTip.Tip="{Binding Definition}">
                 <TextBlock.ContextMenu>
                   <ContextMenu>
                     <MenuItem Header="Copy Function" Command="{Binding mnuCopyFun_Click}"/>

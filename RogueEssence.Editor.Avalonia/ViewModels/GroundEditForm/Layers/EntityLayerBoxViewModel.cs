@@ -27,8 +27,10 @@ namespace RogueEssence.Dev.ViewModels
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
+            // bool result = await window.ShowDialog<bool>(form.GroundEditorPage);
 
+            // bool result = await window.ShowDialog<bool>(form.GroundEditorPage);
+            bool result = false;
             lock (GameBase.lockObj)
             {
                 if (result)

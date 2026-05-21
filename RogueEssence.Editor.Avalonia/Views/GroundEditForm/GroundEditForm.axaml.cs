@@ -64,7 +64,7 @@ namespace RogueEssence.Dev.Views
         private IEnumerator<YieldInstruction> exitGroundEdit()
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.GroundEditForm = null;
+            form.GroundEditorPage = null;
 
             //move to the previous scene or the title, if there was none
             if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())

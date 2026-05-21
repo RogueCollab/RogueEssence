@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="RogueEssence.Dev.Views.MapRetileWindow2"
-        Title="Tileset Size" Height="180" Width="280" Opened="Window_Loaded">
+        Title="Tileset Size" Height="200" Width="280" Opened="Window_Loaded">
   <Design.DataContext>
     <vm:MapRetileViewModel/>
   </Design.DataContext>

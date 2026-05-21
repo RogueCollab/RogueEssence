@@ -11,29 +11,16 @@
                     d:DesignHeight="450"
                     x:Class="RogueEssence.Dev.Views.DevForm"
                     x:Name="WindowMain"
+                    MinHeight="400"
+                    MinWidth="600"
                     Opened="Window_Loaded" Closed="Window_Closed"
-                    Title="Avalonia PMD Editor">
+                    Title="PMDO Editor">
 
     <Design.DataContext>
-
-
         <vm:DevFormViewModel />
-
-
     </Design.DataContext>
-    <!-- <v:ChromelessWindow.DataContext> -->
-    <!--   <vm:MainWindowViewModel /> -->
-    <!-- </v:ChromelessWindow.DataContext> -->
-
-    <!-- x:DataType="vm:MainWindowViewModel" -->
-    <!-- Icon="/Assets/avalonia-logo.ico" -->
-    <!-- x:DataType="vm:MainWindowViewModel" -->
-    <!-- <Design.DataContext> -->
-    <!-- <vm:MainWindowViewModel /> -->
-    <!-- </Design.DataContext> -->
     <Window.Resources>
         <c:WindowStateToColumnConverter x:Key="WindowStateToColumnConverter" />
-
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -138,7 +125,7 @@
                                   ShowColumnHeaders="False"
                                   Source="{Binding NodeSource}">
                         <TreeDataGrid.Resources>
-                    
+
                             <DataTemplate x:Key="TreeDataGridNodeBaseTemplate" DataType="vm:NodeBase">
                                 <ContentControl Content="{Binding}">
                                     <ContentControl.DataTemplates>
@@ -149,18 +136,18 @@
                                         <!--                     Icon="{Binding Icon}" -->
                                         <!--                     IconSize="12" /> -->
 
-                                                <!-- <Button Grid.Column="1" HorizontalAlignment="Left" -->
-                                                <!--         Classes="icon_button" -->
-                                                <!--         Padding="4, 0, 0, 0" -->
-                                                <!--         Width="18" Height="18" -->
-                                                <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}" -->
-                                                <!-- -->
-                                                <!--         Command="{Binding AddCommand}"> -->
-                                                <!--     <Path Stretch="Fill" -->
-                                                <!--           Fill="{DynamicResource Brush.FG1}" -->
-                                                <!--           Width="12" Height="12" -->
-                                                <!--           Data="{StaticResource Icons.Plus}" /> -->
-                                                <!-- </Button> -->
+                                        <!-- <Button Grid.Column="1" HorizontalAlignment="Left" -->
+                                        <!--         Classes="icon_button" -->
+                                        <!--         Padding="4, 0, 0, 0" -->
+                                        <!--         Width="18" Height="18" -->
+                                        <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}" -->
+                                        <!-- -->
+                                        <!--         Command="{Binding AddCommand}"> -->
+                                        <!--     <Path Stretch="Fill" -->
+                                        <!--           Fill="{DynamicResource Brush.FG1}" -->
+                                        <!--           Width="12" Height="12" -->
+                                        <!--           Data="{StaticResource Icons.Plus}" /> -->
+                                        <!-- </Button> -->
                                         <!--     </Grid> -->
                                         <!-- </DataTemplate> -->
 
@@ -226,77 +213,29 @@
 
                 </Border>
 
-      <!-- Editor Content -->
-<Panel Grid.Row="1" Background="{DynamicResource Brush.PageBackground}">
-    
-    <!-- Temporary tab still uses ContentControl since it's transient -->
-    <ContentControl Content="{Binding TemporaryTab}"
-                    IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNotNull}}" />
-    
-    <!-- All permanent pages kept alive, just toggling visibility -->
-    <ItemsControl ItemsSource="{Binding Pages}"
-                  IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNull}}">
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <Panel/>
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-            <DataTemplate>
-                <ContentControl Content="{Binding}" IsVisible="{Binding IsActive}"/>
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
-    
-</Panel>
+                <!-- Editor Content -->
+                <Panel Grid.Row="1" Background="{DynamicResource Brush.PageBackground}">
+
+                    <!-- Temporary tab still uses ContentControl since it's transient -->
+                    <ContentControl Content="{Binding TemporaryTab}"
+                                    IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                    <!-- All permanent pages kept alive, just toggling visibility -->
+                    <ItemsControl ItemsSource="{Binding Pages}"
+                                  IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNull}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Panel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ContentControl Content="{Binding}" IsVisible="{Binding IsActive}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Panel>
             </Grid>
         </Grid>
-
     </Grid>
-
 </v:ChromelessWindow>
-
-
-<!-- <views:ChromelessWindow xmlns="https://github.com/avaloniaui" -->
-<!--         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" -->
-<!--         xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia" -->
-<!--         xmlns:views="clr-namespace:RogueEssence.Dev.Views" -->
-<!--         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" -->
-<!--         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" -->
-<!--         xmlns:v="clr-namespace:RogueEssence.Dev.Views" -->
-<!--         mc:Ignorable="d" -->
-<!--         x:Class="RogueEssence.Dev.Views.MainWindow" -->
-<!--         Title="Dev Controls" Height="480" Width="460" Opened="Window_Loaded" Closed="Window_Closed"> -->
-<!--     ~1~Icon="/Assets/app-logo.ico"@1@ -->
-<!--     <Design.DataContext> -->
-<!--         <vm:DevFormViewModel/> -->
-<!--     </Design.DataContext> -->
-<!--     <Grid> -->
-<!--         <TabControl TabStripPlacement="Top" Margin="2"> -->
-<!--             <TabItem Header="Game" > -->
-<!--                 <views:DevTabGame DataContext="{Binding Game}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Player" > -->
-<!--                 <views:DevTabPlayer DataContext="{Binding Player}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Travel" > -->
-<!--                 <views:DevTabTravel DataContext="{Binding Travel}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Data" > -->
-<!--                 <views:DevTabData DataContext="{Binding Data}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Sprites" > -->
-<!--                 <views:DevTabSprites DataContext="{Binding Sprites}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Script" > -->
-<!--                 <views:DevTabScript DataContext="{Binding Script}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Mods" > -->
-<!--                 <views:DevTabMods DataContext="{Binding Mods}"/> -->
-<!--             </TabItem> -->
-<!--             <TabItem Header="Constants" > -->
-<!--                 <views:DevTabConstants DataContext="{Binding Constants}"/> -->
-<!--             </TabItem> -->
-<!--         </TabControl> -->
-<!--     </Grid> -->
-<!-- </views:ChromelessWindow> -->

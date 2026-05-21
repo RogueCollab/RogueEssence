@@ -162,18 +162,18 @@ public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel
 
     public void SetPageTitle(string title, string icon)
     {
-        _title = title;
-        _icon = icon;
+        Title = title;
+        Icon = icon;
     }
     
     public void SetTitle(string title)
     {
-        _title = title;
+        Title = title;
     }
     
     public void SetIcon(string icon)
     {
-        _icon = icon;
+        Icon = icon;
     }
     
     // public RepositoryNode Node

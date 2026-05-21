@@ -6,7 +6,7 @@ namespace RogueEssence.Dev
     public class EmptyEditor : IRootEditor
     {
         public bool LoadComplete => true;
-        public IGroundEditor GroundEditor => null;
+        public IGroundEditor GroundEditor { get; set; }
         public IMapEditor MapEditor { get; set; }
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }

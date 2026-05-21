@@ -109,7 +109,7 @@ namespace RogueEssence.Dev
             services.AddSingleton<DevTabTravelViewModel>();
             services.AddSingleton<DevTabSpritesViewModel>();
             services.AddSingleton<DevTabScriptViewModel>();
-            services.AddSingleton<DevTabModsViewModel>();
+            services.AddSingleton<ModManagerViewModel>();
             services.AddSingleton<DevTabConstantsViewModel>();
         }
 

@@ -35,14 +35,10 @@ public class DevFormViewModel : ViewModelBase
 
     public DevTabGameViewModel Game { get; set; }
     public DevTabPlayerViewModel Player { get; set; }
-    public DevTabDataViewModel Data { get; set; }
     public DevTabTravelViewModel Travel { get; set; }
-    public DevTabSpritesViewModel Sprites { get; set; }
-
     public DevTabScriptViewModel Script { get; set; }
 
-    // public DevTabModsViewModel Mods { get; set; }
-    public DevTabConstantsViewModel Constants { get; set; }
+    public ModManagerViewModel ModsManager { get; set; }
 
 
     public ObservableCollection<ModsNodeViewModel> Mods { get; }
@@ -403,18 +399,12 @@ public class DevFormViewModel : ViewModelBase
         get => _nodes;
         set => this.RaiseAndSetIfChanged(ref _nodes, value);
     }
-    // public DevFormViewModel() : this(new PageFactory(new DesignServiceProvider()),
-    //     new NodeFactory(new DesignServiceProvider()), new DialogService(),
-    //     new TabEvents(new PageFactory(new DesignServiceProvider())), new DevTabGameViewModel(), new DevTabPlayerViewModel())
-    // {
-    // }
-
+    
     private EditorContext _context;
 
     public DevFormViewModel(EditorContext context, DevTabGameViewModel game, DevTabPlayerViewModel player,
-        DevTabDataViewModel data,
         DevTabTravelViewModel travel, DevTabSpritesViewModel sprites, DevTabScriptViewModel script,
-        DevTabModsViewModel mods,
+        ModManagerViewModel mods,
         DevTabConstantsViewModel constants)
     {
         _context = context;
@@ -422,13 +412,10 @@ public class DevFormViewModel : ViewModelBase
         // NOTE: These should all be private readonly
         Game = game;
         Player = player;
-        Data = data;
         Travel = travel;
-        Sprites = sprites;
         Script = script;
-        // Mods = mods;
-        Constants = constants;
-
+        ModsManager = mods;
+        
         InitializeTabEvents();
 
         this.WhenAnyValue(x => x.ActivePage)
@@ -493,9 +480,6 @@ public class DevFormViewModel : ViewModelBase
         Pages.Clear();
         _pageToNodeMap.Clear();
 
-
-       
-
         foreach (var n in Nodes)
         {
             DetachEventsRecursive(n);
@@ -504,22 +488,16 @@ public class DevFormViewModel : ViewModelBase
         Nodes.Clear();
 
         var rootStr = ChosenMod.Name;
-
-        // TODO: change to Mod Edit Page View Model
+        
         var root = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>(rootStr, "Icons.ScrollFill");
 
-
         Root = root;
-        // root.SubNodes.Add(
-        // _nodeFactory.CreateOpenEditorNode("Dev Control",  typeof(DevControlViewModel), "Icons.GameControllerFill"));
-
         var devControlNode =
             _nodeFactory.CreateOpenEditorNode<DevControlViewModel>("Dev Control", "Icons.GameControllerFill");
         root.SubNodes.Add(devControlNode);
         
-        // TODO: Attach the DevControlNode to this tab rather than keeping it null... 
         var tab = _context.PageFactory.CreatePage(typeof(DevControlViewModel), devControlNode);
-        // tab.Icon = "Icons.GameControllerFill";
+        tab.SetPageTitle("Dev Control", "Icons.GameControllerFill");
         AddTopLevelPage(tab);
 
 
@@ -533,19 +511,6 @@ public class DevFormViewModel : ViewModelBase
 
         root.SubNodes.Add(groundEditorNode);
         GroundEditorNode = groundEditorNode;
-        // root.SubNodes.Add(
-        // _nodeFactory.CreateOpenEditorNode("Ground Editor", typeof(GroundEditorPageViewModel), "Icons.MapTrifoldFill"));
-        // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Testing", "Icons.BedFill", "RandomInfo"));
-        // root.SubNodes.Add(_nodeFactory.CreateOpenEditorNode("Tab Test", "Icons.AirplaneFill", "SpritePage"));
-
-        // var particlesRoot = _nodeFactory.CreateSpriteRootNode("particles", "", "Particles", "Icons.PaintBrushFill");
-        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Blue", "SpriteEditor", "Acid_Blue",
-        //     "Icons.PaintBrushFill"));
-        // particlesRoot.SubNodes.Add(_nodeFactory.CreateDataItemNode("Acid_Red", "SpriteEditor", "Acid_Red",
-        //     "Icons.PaintBrushFill"));
-        //
-        // halcyonNode.SubNodes.Add(particlesRoot);
-
 
         CreateDataNode(root);
         CreateConstantsNode(root);
@@ -558,38 +523,7 @@ public class DevFormViewModel : ViewModelBase
         AttachEventsRecursive(root);
         root.IsExpanded = true;
     }
-
-
-    private void OpenItem<T>(string name, T data, Action<T> saveOp, NodeBase parentNode)
-    {
-        lock (GameBase.lockObj)
-        {
-            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(
-                parentNode,
-                vm =>
-                {
-                    var pg = vm as ReflectedDataPageViewModel;
-                    pg.SetPageTitle(name, parentNode.Icon);
-
-
-                    pg.OnLoadAction = (StackPanel stack) => { DataEditor.LoadDataControls("", data, stack); };
-
-                    pg.OnOKAction = async (StackPanel stack) =>
-                    {
-                        lock (GameBase.lockObj)
-                        {
-                            object obj = data;
-                            DataEditor.SaveDataControls(ref obj, stack, new Type[0]);
-                            saveOp((T)obj);
-                        }
-
-                        return true;
-                    };
-                });
-            _context.TabEvents.AddTopLevelTab(newEditor);
-        }
-    }
-
+    
     private Action<ReflectedDataPageViewModel> CreateDataOnOpen<T>(Func<T> getter, Action<T> setter, NodeBase parent)
     {
         return vm =>
@@ -624,7 +558,7 @@ public class DevFormViewModel : ViewModelBase
     private void CreateConstantsNode(NodeBase parent)
     {
         var constantsNode =
-            _context.NodeFactory.CreateReflectedDataNode<MapEditorPageViewModel>("Constants", parent, "Icons.ListFill");
+            _context.NodeFactory.CreateReflectedDataNode<EmptyPageViewModel>("Constants", parent, "Icons.ListFill");
         var startParamsNode = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Start Params",
             parent,
             "Icons.ListFill", CreateDataOnOpen(
@@ -648,47 +582,12 @@ public class DevFormViewModel : ViewModelBase
                 parent));
 
         
-        var stringsNode = _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Strings", "Icons.TableFill");
+        var stringsNode = _context.NodeFactory.CreateOpenEditorNode<EmptyPageViewModel>("Strings", "Icons.TableFill");
         var menuTextNode = _context.NodeFactory.CreateOpenEditorNodeWithParams<StringEditPageViewModel>("Menu Text", [false], "Icons.TableFill");
         var gameplayTextNode = _context.NodeFactory.CreateOpenEditorNodeWithParams<StringEditPageViewModel>("Gameplay Text", [true], "Icons.TableFill");
         stringsNode.SubNodes.Add(menuTextNode);
         stringsNode.SubNodes.Add(gameplayTextNode);
-   
-        //     public async void mnuUniversalFile_Click()
-        //     {
-        //         DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
-        //         if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
-        //         {
-        //             await MessageBox.Show(parent, "Universal data must have saved edits first!", "Error", MessageBox.MessageBoxButtons.Ok);
-        //             return;
-        //         }
-        //
-        //         DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.File);
-        //
-        //         await MessageBox.Show(parent, "Universal is now saved as a file.", "Complete", MessageBox.MessageBoxButtons.Ok);
-        //     }
-        //     public async void mnuUniversalDiff_Click()
-        //     {
-        //         DevForm parent = (DevForm)DiagManager.Instance.DevEditor;
-        //         if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
-        //         {
-        //             await MessageBox.Show(parent, "Universal data must have saved edits first!", "Error", MessageBox.MessageBoxButtons.Ok);
-        //             return;
-        //         }
-        //
-        //         //you can't make a diff for the base game!
-        //         DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT, DataManager.SavePolicy.Diff);
-        //
-        //         if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) == DataManager.ModStatus.Base)
-        //             await MessageBox.Show(parent, "Modded Universal was identical to base. Unneeded patch removed.", "Complete", MessageBox.MessageBoxButtons.Ok);
-        //         else
-        //             await MessageBox.Show(parent, "Universal is now saved as a patch.", "Complete", MessageBox.MessageBoxButtons.Ok);
-        //     }
-        //
- 
-
         constantsNode.SubNodes.Add(startParamsNode);
-        
         constantsNode.SubNodes.Add(universalEventsNode);
         constantsNode.SubNodes.Add(stringsNode);
         
@@ -765,7 +664,7 @@ public class DevFormViewModel : ViewModelBase
     private void CreateDataNode(NodeBase parent)
     {
         var dataNode =
-            _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Datazz", "Icons.FloppyDiskFill");
+            _context.NodeFactory.CreateOpenEditorNode<EmptyPageViewModel>("Data", "Icons.FloppyDiskFill");
         foreach (var type in Enum.GetValues<DataManager.DataType>())
         {
             if (type is DataManager.DataType.All or DataManager.DataType.None)
@@ -778,16 +677,6 @@ public class DevFormViewModel : ViewModelBase
                 type.ToString(),
                 entry.Icon);
             dataNode.SubNodes.Add(dataItemRootNode);
-            // var entries = DataManager.Instance.DataIndices[type].GetLocalStringArray(true);
-            //
-            // foreach (string key in entries.Keys)
-            // {
-            //     var itemNode = _nodeFactory.CreateDataItemNode<DataListPageViewModel>(
-            //         key,
-            //         $"{key}: {entries[key]}",
-            //         type.GetIcon());
-            //     dataItemRootNode.SubNodes.Add(itemNode);
-            // }
         }
 
         parent.SubNodes.Add(dataNode);
@@ -795,9 +684,8 @@ public class DevFormViewModel : ViewModelBase
 
     private void CreateSpriteNode(NodeBase parent)
     {
-        // var spritesViewModel = _pageFactory.GetRequiredService<DevTabSpritesViewModel>();
         var spriteNode =
-            _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Sprites", "Icons.PaintBrushFill");
+            _context.NodeFactory.CreateOpenEditorNode<EmptyPageViewModel>("Sprites", "Icons.PaintBrushFill");
         //
         spriteNode.SubNodes.Add(
             _context.NodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Char Sprites", [true],
@@ -831,57 +719,6 @@ public class DevFormViewModel : ViewModelBase
                         type.GetIcon()));
                 
             }
-            // if (type == GraphicsManager.AssetType.Tile)
-            // {
-            //     var tileRootNode = _nodeFactory.CreateSpriteTileRootNode(
-            //         "",
-            //         type.ToString(),
-            //         type.GetIcon());
-            //     lock (GameBase.lockObj)
-            //     {
-            //         foreach (string name in GraphicsManager.TileIndex.Nodes.Keys.OrderBy(n => n))
-            //         {
-            //             var itemNode = _nodeFactory.CreateDataItemNode(
-            //                 name,
-            //                 "",
-            //                 name,
-            //                 type.GetIcon());
-            //             tileRootNode.SubNodes.Add(itemNode);
-            //         }
-            //     }
-            //
-            //     spriteNode.SubNodes.Add(tileRootNode);
-            //     continue;
-            // }
-            //
-            // string assetPattern = GraphicsManager.GetPattern(type);
-            // string[] dirs = PathMod.GetModFiles(Path.GetDirectoryName(assetPattern),
-            //     String.Format(Path.GetFileName(assetPattern), "*"));
-            //
-            // // var spriteRootNode = _nodeFactory.CreateSpriteRootNode(
-            //     type,
-            //     "TODO",
-            //     type.ToString(),
-            //     type.GetIcon());
-            // // dataNode.SubNodes.Add(dataItemRootNode);
-            // spriteNode.SubNodes.Add(spriteRootNode);
-
-
-            // lock (GameBase.lockObj)
-            // {
-            //     for (int ii = 0; ii < dirs.Length; ii++)
-            //     {
-            //         string filename = Path.GetFileNameWithoutExtension(dirs[ii]);
-            //         // anims.Add(filename);
-            //         var itemNode = _nodeFactory.CreateDataItemNode(
-            //             filename,
-            //             "",
-            //             filename,
-            //             type.GetIcon());
-            //
-            //         spriteRootNode.SubNodes.Add(itemNode);
-            //     }
-            // }
         }
 
 
@@ -1016,6 +853,10 @@ public class DevFormViewModel : ViewModelBase
         page.SetPageTitle("Map Editor", "Icons.StairsFill");
         AddTopLevelPage(page);
     }
-
-    // public TreeSearchViewModel TreeSearch { get; } = new TreeSearchViewModel();
+    public void OpenGroundEditor()
+    {
+        var page = _context.PageFactory.CreatePage<GroundEditorPageViewModel>(GroundEditorNode);
+        page.SetPageTitle("Ground Editor", "Icons.IslandFill");
+        AddTopLevelPage(page);
+    }
 }

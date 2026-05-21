@@ -1,17 +1,18 @@
 ﻿<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="using:RogueEssence.Dev.ViewModels"
-                    x:Class="RogueEssence.Dev.Views.RenameWindowView"
+                    x:Class="RogueEssence.Dev.Views.MapLayerWindowView"
                     xmlns:v="using:RogueEssence.Dev.Views"
-                    x:DataType="vm:RenameWindowViewModel"
+                    x:DataType="vm:MapLayerWindowViewModel"
                     CanResize="False"
                     Width="500"
                     MaxWidth="350"
-                    Height="120"
+                    
+                    Height="210"
                     x:Name="ThisControl">
 
     <Design.DataContext>
-        <vm:RenameWindowViewModel></vm:RenameWindowViewModel>
+        <vm:MapLayerWindowViewModel/>
     </Design.DataContext>
     <Grid RowDefinitions="Auto,*">
         <!-- TitleBar -->
@@ -38,10 +39,14 @@
             
         </Grid>
         
-        <Grid Grid.Row="1" Margin="4" RowDefinitions="42, 42" ColumnDefinitions="*, *">
-            <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
-            <Button Classes="flat" HorizontalContentAlignment="Center" Click="btnCancel_Click" Margin="4" Grid.Row="1" Grid.Column="0">Cancel</Button>
-            <Button Classes="flat primary"  Click="btnOK_Click" Margin="4" Grid.Row="1" Grid.Column="1">OK</Button>
+        <Grid Grid.Row="1" Margin="4" RowDefinitions="20,42,26,26,26,42" ColumnDefinitions="*,*">
+            <TextBlock VerticalAlignment="Bottom" Grid.ColumnSpan="2">Layer Name</TextBlock>
+            <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" Grid.Row="1" Grid.ColumnSpan="2"/>
+            <RadioButton Margin="4,0" IsChecked="{Binding Front}" VerticalAlignment="Center" Grid.Row="2" Grid.ColumnSpan="2">Draw in Front</RadioButton>
+            <RadioButton Margin="4,0" IsChecked="{Binding Mid}" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2">Draw on Terrain</RadioButton>
+            <RadioButton Margin="4,0" IsChecked="{Binding Back}" VerticalAlignment="Center" Grid.Row="4" Grid.ColumnSpan="2">Draw below Terrain</RadioButton>
+            <Button Classes="flat"  Click="btnCancel_Click" Margin="4" Grid.Row="5" Grid.Column="0">Cancel</Button>
+            <Button Classes="flat primary" Grid.Column="1" Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="5">OK</Button>
         </Grid>
     </Grid>
 </v:ChromelessWindow>

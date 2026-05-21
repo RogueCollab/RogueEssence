@@ -67,7 +67,7 @@
                                 <ColumnDefinition Width="64" />
                             </Grid.ColumnDefinitions>
                             <TextBox Text="{Binding UUID}" IsReadOnly="True" VerticalAlignment="Center" Margin="4" />
-                            <Button Command="{Binding btnRegenUUID_Click}" Margin="4" Grid.Column="1">Regen</Button>
+                            <Button Classes="flat" Command="{Binding btnRegenUUID_Click}" Margin="4" Grid.Column="1">Regen</Button>
                         </Grid>
 
                         <TextBlock Margin="4,2" Text="Game Version:" VerticalAlignment="Center"

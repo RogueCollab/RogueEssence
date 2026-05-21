@@ -5,12 +5,12 @@ using System;
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class TileEditViewModel : ViewModelBase
+    public class TileEditWindowViewModel : ViewModelBase
     {
         public event Action SelectedOKEvent;
         public event Action SelectedCancelEvent;
 
-        public TileEditViewModel()
+        public TileEditWindowViewModel()
         {
             TileBrowser = new TileBrowserViewModel();
             TileBrowser.CanMultiSelect = false;

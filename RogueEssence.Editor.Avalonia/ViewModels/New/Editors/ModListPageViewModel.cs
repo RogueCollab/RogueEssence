@@ -14,36 +14,6 @@ using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels;
 
-public class ModsEntryViewModel : ViewModelBase
-{
-    private string _name;
-
-    public string Name
-    {
-        get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
-    }
-
-    private string _editNamespace;
-
-    public string Namespace
-    {
-        get => _editNamespace;
-        set => this.RaiseAndSetIfChanged(ref _editNamespace, value);
-    }
-
-    public string Path;
-
-    public ModsEntryViewModel(string name, string newNamespace, string fullPath)
-    {
-        this._name = name;
-        this._editNamespace = newNamespace;
-        this.Path = fullPath;
-    }
-    
-    public string Display => $"{_editNamespace}: {_name}";
-}
-
 public class ModListPageViewModel : EditorPageViewModel
 {
     private string _searchFilter = string.Empty;
@@ -67,9 +37,7 @@ public class ModListPageViewModel : EditorPageViewModel
     public ObservableCollection<ModsEntryViewModel> Items { get; } = new();
     public ObservableCollection<ModsEntryViewModel> FilteredItems { get; } = new();
 
-    public ObservableCollection<ModsEntryViewModel> EditMenuItems { get; } = new();
-
-
+    
     private string currentMod;
 
     public string CurrentMod
@@ -105,12 +73,16 @@ public class ModListPageViewModel : EditorPageViewModel
 
             DiagManager.Instance.PrintModSettings();
             DiagManager.Instance.SaveModSettings();
+            DiagManager.Instance.DevEditor.MapEditor = null;
+            DiagManager.Instance.DevEditor.GroundEditor = null;
         }
     }
+    ModManagerViewModel _modManager;
 
-    public ModListPageViewModel(EditorContext context, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) :
+    public ModListPageViewModel(EditorContext context, ModManagerViewModel modManager, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) :
         base(context, node, onPageOpen)
     {
+        _modManager = modManager;
     }
     private void UpdateVisibleItems(string filter)
     {
@@ -134,14 +106,11 @@ public class ModListPageViewModel : EditorPageViewModel
     
     public async void btnAdd_Click()
     {
-        ModConfigWindowView window = new ModConfigWindowView();
-        ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(),
-            PathMod.ModType.Mod, new RelatedMod[0] { });
-        ModConfigViewModel2 vm = new ModConfigViewModel2(_context.DialogService, header);
-        window.DataContext = vm;
+       
 
-        DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-        bool result = await window.ShowDialog<bool>(form);
+        ModNameWindowViewModel vm = new ModNameWindowViewModel();
+
+        bool result = await _context.DialogService.ShowDialogAsync<ModNameWindowViewModel, bool>(vm, "Add Mod and Namespace");
         if (!result)
             return;
 
@@ -174,15 +143,15 @@ public class ModListPageViewModel : EditorPageViewModel
             }
         }
 
-        ModsEntryViewModel newNode =
+        ModsEntryViewModel newEntry =
             new ModsEntryViewModel(newName, newNamespace, Path.Combine(PathMod.MODS_FOLDER, newName));
-        string fullPath = PathMod.FromApp(newNode.Path);
+        string fullPath = PathMod.FromApp(newEntry.Path);
         //add all asset folders
         Directory.CreateDirectory(fullPath);
         //create the mod xml
-        ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(),
-            Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version),
-            Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
+        ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), "", "",
+            Text.Sanitize(vm.Namespace).ToLower(), Guid.NewGuid(), new Version(),
+            new Version(), PathMod.ModType.Mod, new RelatedMod[0]);
         PathMod.SaveModDetails(fullPath, newHeader);
 
         //add Strings
@@ -195,8 +164,9 @@ public class ModListPageViewModel : EditorPageViewModel
         LuaEngine.InitScriptFolders(fullPath, vm.Namespace);
 
         //add node
-        Items.Add(newNode);
+        Items.Add(newEntry);
         UpdateVisibleItems(SearchFilter);
+        await AddChildItemUnderParent(newEntry);
     }
     
     public async void btnDelete_Click()
@@ -219,6 +189,8 @@ public class ModListPageViewModel : EditorPageViewModel
 
         //and then delete node
         Items.Remove(SelectedItem);
+        UpdateVisibleItems(SearchFilter);
+        
     }
     
     public async void btnEdit_Click()
@@ -258,7 +230,7 @@ public class ModListPageViewModel : EditorPageViewModel
 
                     page.OnOKValidAction = () =>
                     {
-                        string fullPath = PathMod.FromApp(PathMod.Quest.Path);
+                        string fullPath = PathMod.FromApp(page.Path);
                         ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, page.Name.Trim(), page.Author.Trim(), page.Description.Trim(), Text.Sanitize(page.Namespace).ToLower(), Guid.Parse(page.UUID), Version.Parse(page.Vers), Version.Parse(page.GameVersion), (PathMod.ModType)page.ChosenModType, page.GetRelationshipArray());
                         PathMod.SaveModDetails(fullPath, resultHeader);
                     

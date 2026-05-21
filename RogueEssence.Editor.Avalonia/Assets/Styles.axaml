@@ -9,7 +9,11 @@
             <Button>Hello</Button>
         </StackPanel>
     </Design.PreviewWith>
-
+    
+    <Style Selector="NumericUpDown">
+        <Setter Property="Increment" Value="1"/>
+    </Style>
+    
     <Style Selector="RadioButton">
         <Setter Property="Template">
             <ControlTemplate TargetType="RadioButton">

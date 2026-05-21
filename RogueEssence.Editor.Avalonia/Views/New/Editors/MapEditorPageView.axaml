@@ -10,7 +10,6 @@
   <Design.DataContext>
     <vm:MapEditorPageViewModel></vm:MapEditorPageViewModel>
   </Design.DataContext>
-    <!-- <TextBlock>Hi</TextBlock> -->
   <DockPanel>
     <Menu DockPanel.Dock="Top" IsEnabled="{Binding AllowEdit}">
       <MenuItem Header="_File">

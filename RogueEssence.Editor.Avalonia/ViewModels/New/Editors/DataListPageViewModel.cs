@@ -48,7 +48,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     public ObservableCollection<DataListEntry> Items { get; } = new();
     public ObservableCollection<DataListEntry> FilteredItems { get; } = new();
 
-    public ObservableCollection<DataOpContainer> EditMenuItems { get; } = new();
+    public ObservableCollection<MenuItem> EditMenuItems { get; } = new();
 
     public DataManager.DataType DataType => Node.DataType;
 
@@ -83,16 +83,26 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
 
         EditMenuItems.Clear();
 
-        EditMenuItems.Add(new DataOpContainer("Re-Index", Node.ReIndexAsync));
+        
+        var reIndex = new MenuItem { Header = "Re-Index" };
+        reIndex.Click += async (s, e) => await Node.ReIndexAsync();
+ 
+        
         if (DataType != DataManager.DataType.AutoTile)
         {
-            EditMenuItems.Add(new DataOpContainer("Resave all as File", () => Node.ResaveAllAsync(false)));
-            EditMenuItems.Add(new DataOpContainer("Resave all as Diff", () => Node.ResaveAllAsync(true)));
+            var resaveFile = new MenuItem { Header = "Resave all as File" };
+            resaveFile.Click += async (s, e) => await Node.ResaveAllAsync(false);
+            EditMenuItems.Add(resaveFile);
+
+            var resaveDiff = new MenuItem { Header = "Resave all as Diff" };
+            resaveDiff.Click += async (s, e) => await Node.ResaveAllAsync(true);
+            EditMenuItems.Add(resaveDiff);
         }
         else
         {
-            EditMenuItems.Add(new DataOpContainer("Import DTEF", ImportDtefAsync));
-            // EditMenuItems.Add(new DataOpContainer("Export as DTEF", ExportDtefAsync));
+            var importDtef = new MenuItem { Header = "Import DTEF" };
+            importDtef.Click += async (s, e) => await ImportDtefAsync();
+            EditMenuItems.Add(importDtef);
         }
     }
 
@@ -319,7 +329,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         DataListEntry data = new(vm.Name, "");
         Items.Add(data);
         UpdateVisibleItems(SearchFilter);
-
+        AddChildItemUnderParent(data);
 
         // TODO: Determine whether to add the new item to the tree
         // SubNodes.Add(_nodeFactory.CreateDataItemNode<DevEditPageViewModel>(assetName, $"{assetName}:", "Icons.GhostFill"));

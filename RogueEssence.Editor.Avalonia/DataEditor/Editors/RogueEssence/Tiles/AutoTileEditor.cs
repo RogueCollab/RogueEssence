@@ -26,9 +26,8 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             mv.OnEditItem += (AutoTile element, TileBoxViewModel.EditElementOp op) =>
             {
-                TileEditForm frmData = new TileEditForm();
-                TileEditViewModel tmv = new TileEditViewModel();
-                frmData.DataContext = tmv;
+    
+                TileEditWindowViewModel tmv = new TileEditWindowViewModel();
                 tmv.Name = name + "/" + type.Name;
 
                 //load as if eyedropping
@@ -39,15 +38,14 @@ namespace RogueEssence.Dev
                 {
                     element = tmv.GetTile();
                     op(element);
-                    frmData.Close();
+                    // frmData.Close();
                 };
                 tmv.SelectedCancelEvent += () =>
                 {
-                    frmData.Close();
+                    // frmData.Close();
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.DialogService.ShowDialogAsync<TileEditWindowViewModel, bool>(tmv, "Auto Tile Editor");
             };
             mv.LoadFromSource(member);
             control.Children.Add(cbxValue);

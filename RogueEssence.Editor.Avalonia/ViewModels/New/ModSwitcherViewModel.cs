@@ -56,8 +56,6 @@ public class ModSwitcherViewModel : ViewModelBase
 
     public bool IsCurrent(ModsNodeViewModel head)
     { 
-        Console.WriteLine("0" + _mainWindow.ChosenMod);
-        Console.WriteLine("1" + head.Namespace);
         return head.Namespace == _mainWindow.ChosenMod.Namespace;
     }
     
@@ -75,6 +73,8 @@ public class ModSwitcherViewModel : ViewModelBase
 
             DiagManager.Instance.PrintModSettings();
             DiagManager.Instance.SaveModSettings();
+            DiagManager.Instance.DevEditor.MapEditor = null;
+            // DiagManager.Instance.DevEditor.GroundEditor = null;
         }
     }
 }

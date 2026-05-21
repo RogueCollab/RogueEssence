@@ -9,13 +9,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev.ViewModels
 {
     public class GroundTabPropertiesViewModel : ViewModelBase
     {
-        public GroundTabPropertiesViewModel()
+        EditorContext _context;
+        GroundEditorPageViewModel _parent;
+        public GroundTabPropertiesViewModel(EditorContext context, GroundEditorPageViewModel parent)
         {
+            _context = context;
+            _parent = parent;
+            
             ScrollEdges = new ObservableCollection<string>();
             for (int ii = 0; ii <= (int)Map.ScrollEdge.Wrap; ii++)
                 ScrollEdges.Add(((Map.ScrollEdge)ii).ToLocal());
@@ -103,22 +109,30 @@ namespace RogueEssence.Dev.ViewModels
         {
             Type type = typeof(IBackgroundSprite);
             string elementName = type.Name;
-            DataEditForm frmData = new DataEditRootForm();
-            frmData.Title = DataEditor.GetWindowTitle(ZoneManager.Instance.CurrentGround.AssetName, elementName, element, type, new object[0]);
 
-            DataEditor.LoadClassControls(frmData.ControlPanel, ZoneManager.Instance.CurrentGround.AssetName, null, elementName, type, new object[0], element, true, new Type[0], advancedEdit);
-            DataEditor.TrackTypeSize(frmData, type);
+ 
+            NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, _parent.Node, _parent.Icon);
+            _parent.Node.AddNodeIfNotExists(node);
+            NodeHelper.ExpandParents(node, true);
 
-            frmData.SelectedOKEvent += async () =>
+            ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+            newEditor.SetPageTitle(elementName, _parent.Node.Icon);
+            newEditor.SetRootPage(true);
+            newEditor.SetRemoveNode(true);
+
+            newEditor.OnLoadAction = stack =>
             {
-                element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, type, new object[0], true, new Type[0], advancedEdit);
+                DataEditor.LoadClassControls(stack, ZoneManager.Instance.CurrentGround.AssetName, null, elementName, type, new object[0], element, true, new Type[0], advancedEdit);
+            };
+
+            newEditor.OnOKAction = async stack =>
+            {
+                element = DataEditor.SaveClassControls(stack, elementName, type, new object[0], true, new Type[0], advancedEdit);
                 op(element);
                 return true;
             };
 
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.GroundEditForm.RegisterChild(frmData);
-            frmData.Show();
+            _context.TabEvents.AddChildPage(_parent, newEditor);
         }
 
 
@@ -129,8 +143,8 @@ namespace RogueEssence.Dev.ViewModels
 
         public void AutoTile_Edit(AutoTile element, TileBoxViewModel.EditElementOp op)
         {
-            TileEditForm frmData = new TileEditForm();
-            TileEditViewModel tmv = new TileEditViewModel();
+            TileEditWindowView frmData = new TileEditWindowView();
+            TileEditWindowViewModel tmv = new TileEditWindowViewModel();
             frmData.DataContext = tmv;
             tmv.Name = element.ToString();
 
@@ -151,7 +165,7 @@ namespace RogueEssence.Dev.ViewModels
             };
 
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            form.GroundEditForm.RegisterChild(frmData);
+            // form.GroundEditorPage.RegisterChild(frmData);
             frmData.Show();
         }
 

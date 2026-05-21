@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
@@ -27,7 +28,7 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
         lock (GameBase.lockObj)
         {
             Views.DevForm form = (Views.DevForm)DiagManager.Instance.DevEditor;
-            if (form.MapEditPage == null)
+            if (form.MapEditorPage == null)
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
@@ -39,8 +40,6 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
         }
     }
     public bool Active { get; private set; }
-    
-    
 
     public UndoStack Edits { get; }
 
@@ -67,6 +66,8 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
         Edits = new UndoStack();
     }
 
+   
+  
     private void _reload()
     {
         AllowEdit = true;
@@ -74,7 +75,7 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
 
         DevForm.ExecuteOrInvoke(() =>
         {
-            Textures = new MapTabTexturesViewModel();
+            Textures = new MapTabTexturesViewModel(_context);
             Decorations = new MapTabDecorationsViewModel();
             Terrain = new MapTabTerrainViewModel();
             Tiles = new MapTabTilesViewModel(_context, this);
@@ -107,6 +108,9 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
     public override void OnPageLoad()
     {
         _reload();
+        this.WhenAnyValue(x => x.CurrentFile)
+            .Select(file => string.IsNullOrEmpty(file) ? "New File" : Path.GetFileNameWithoutExtension(file))
+            .Subscribe(SetTitle);
     }
 
     public MapTabTexturesViewModel Textures { get; set; }
@@ -398,8 +402,8 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
             lock (GameBase.lockObj)
             {
                 DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                form.MapEditPage.SilentClose();
-                form.MapEditPage = null;
+                form.MapEditorPage.SilentClose();
+                form.MapEditorPage = null;
                 GameManager.Instance.SceneOutcome =
                     GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentMap.AssetName, false,
                         MathUtils.Rand.NextUInt64());
@@ -454,31 +458,27 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
 
     public async void mnuReSize_Click()
     {
-        MapResizeWindow window = new MapResizeWindow();
-        MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentMap.Width,
+        MapResizeWindowViewModel vm = new MapResizeWindowViewModel(ZoneManager.Instance.CurrentMap.Width,
             ZoneManager.Instance.CurrentMap.Height);
-        window.DataContext = viewModel;
-
-        DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-        //
-        // bool result = await window.ShowDialog<bool>(form.MapEditPage);
-        //
-        // lock (GameBase.lockObj)
-        // {
-        //     if (result)
-        //     {
-        //         //TODO: support undo for this
-        //         DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
-        //
-        //         DiagManager.Instance.LoadMsg = "Resizing Map...";
-        //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-        //
-        //         ZoneManager.Instance.CurrentMap.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight,
-        //             viewModel.ResizeDir);
-        //
-        //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-        //     }
-        // }
+        
+        
+        bool result = await _context.DialogService.ShowDialogAsync<MapResizeWindowViewModel, bool>(vm, "Resize Map");
+        
+        lock (GameBase.lockObj)
+        {
+            if (result)
+            {
+                //TODO: support undo for this
+                DiagManager.Instance.DevEditor.MapEditor.Edits.Clear();
+        
+                DiagManager.Instance.LoadMsg = "Resizing Map...";
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+        
+                ZoneManager.Instance.CurrentMap.ResizeJustified(vm.MapWidth, vm.MapHeight, vm.ResizeDir);
+        
+                DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+            }
+        }
     }
 
     public void mnuUndo_Click()
@@ -864,14 +864,14 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
         Active = false;
         if (!silentClose)
             GameManager.Instance.SceneOutcome = exitMapEdit();
-        
+        Node.SubNodes.Clear();
     }
     
     
     private IEnumerator<YieldInstruction> exitMapEdit()
     {
         DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-        form.MapEditPage = null;
+        form.MapEditorPage = null;
 
         //move to the previous scene or the title, if there was none
         if (DataManager.Instance.Save != null && DataManager.Instance.Save.NextDest.IsValid())
@@ -882,6 +882,7 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
     
     public void Close()
     {
+        DiagManager.Instance.DevEditor.MapEditor = null;
         _context.TabEvents.RemoveTab(this);
     }
 

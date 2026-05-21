@@ -1,17 +1,17 @@
 ﻿<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="using:RogueEssence.Dev.ViewModels"
-                    x:Class="RogueEssence.Dev.Views.RenameWindowView"
+                    x:Class="RogueEssence.Dev.Views.ModNameWindowView"
                     xmlns:v="using:RogueEssence.Dev.Views"
-                    x:DataType="vm:RenameWindowViewModel"
+                    x:DataType="vm:ModNameWindowViewModel"
                     CanResize="False"
                     Width="500"
                     MaxWidth="350"
-                    Height="120"
+                    Height="160"
                     x:Name="ThisControl">
 
     <Design.DataContext>
-        <vm:RenameWindowViewModel></vm:RenameWindowViewModel>
+        <vm:ModNameWindowViewModel></vm:ModNameWindowViewModel>
     </Design.DataContext>
     <Grid RowDefinitions="Auto,*">
         <!-- TitleBar -->
@@ -38,10 +38,17 @@
             
         </Grid>
         
-        <Grid Grid.Row="1" Margin="4" RowDefinitions="42, 42" ColumnDefinitions="*, *">
-            <TextBox Text="{Binding Name}" VerticalAlignment="Center" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
-            <Button Classes="flat" HorizontalContentAlignment="Center" Click="btnCancel_Click" Margin="4" Grid.Row="1" Grid.Column="0">Cancel</Button>
-            <Button Classes="flat primary"  Click="btnOK_Click" Margin="4" Grid.Row="1" Grid.Column="1">OK</Button>
+        <Grid Grid.Row="1" Margin="4" RowDefinitions="Auto, Auto">
+            <Grid RowDefinitions="36, 36" ColumnDefinitions="72, *">
+                <TextBlock Margin="4,2" Text="Name:" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                <TextBox Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Margin="4" />
+                <TextBlock  Grid.Row="1" Margin="4,2" Text="Namespace:" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Namespace}" VerticalAlignment="Center" Margin="4" />
+            </Grid>
+            <Grid Grid.Row="1" Margin="4" ColumnDefinitions="*, *">
+                <Button Classes="flat" HorizontalContentAlignment="Center" Click="btnCancel_Click" Margin="4" Grid.Column="0">Cancel</Button>
+                <Button Classes="flat primary"  Click="btnOK_Click" Margin="4" Grid.Column="1">OK</Button>
+            </Grid>    
         </Grid>
     </Grid>
 </v:ChromelessWindow>

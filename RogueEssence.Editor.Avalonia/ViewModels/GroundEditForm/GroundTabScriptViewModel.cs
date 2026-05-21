@@ -23,8 +23,11 @@ namespace RogueEssence.Dev.ViewModels
 {
     public class GroundTabScriptViewModel : ViewModelBase
     {
-        public GroundTabScriptViewModel()
+        
+        private EditorContext _context;
+        public GroundTabScriptViewModel(EditorContext context)
         {
+            _context = context;
             ScriptItems = new ObservableCollection<ScriptItem>();
             foreach (LuaEngine.EMapCallbacks v in LuaEngine.EnumerateCallbackTypes())
                 ScriptItems.Add(new ScriptItem(v, false));
@@ -37,12 +40,12 @@ namespace RogueEssence.Dev.ViewModels
         {
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
 
-            string file = Path.GetFileNameWithoutExtension(((GroundEditViewModel)form.GroundEditForm.DataContext).CurrentFile);
+            string file = Path.GetFileNameWithoutExtension(((GroundEditorPageViewModel)form.GroundEditorPage).CurrentFile);
             string mapscriptdir = LuaEngine.MakeGroundMapScriptPath(file, "");
 
             if (!Directory.Exists(mapscriptdir))
             {
-                await MessageBox.Show(form.GroundEditForm, String.Format("This map has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_context.DialogService, String.Format("This map has not been saved under the current mod-under-edit.  Please switch to the desired mod and save it first."), "Invalid Operation", MessageBoxWindowView.MessageBoxButtons.Ok);
             }
             else
             {

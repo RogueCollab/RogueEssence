@@ -29,18 +29,24 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 {
     public bool LoadComplete { get; private set; }
 
-        public MapEditorPageViewModel MapEditPage;
-        public GroundEditForm GroundEditForm;
+        public MapEditorPageViewModel MapEditorPage;
+        public GroundEditorPageViewModel GroundEditorPage;
 
         private Action pendingEditorAction;
         private Exception pendingException;
 
         public IMapEditor MapEditor 
         { 
-            get { return MapEditPage; }
-            set { MapEditPage = (MapEditorPageViewModel)value; }
+            get { return MapEditorPage; }
+            set { MapEditorPage = (MapEditorPageViewModel)value; }
         }
-        public IGroundEditor GroundEditor { get { return GroundEditForm; } }
+        
+        public IGroundEditor GroundEditor 
+        { 
+            get { return GroundEditorPage; }
+            set { GroundEditorPage = (GroundEditorPageViewModel)value; }
+        }
+        
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
 
@@ -177,15 +183,15 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                     }
                     devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm);
                 }
-                if (GroundEditForm != null)
+                if (GroundEditorPage != null)
                 {
-                    ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
+                    ViewModels.GroundEditorPageViewModel vm = GroundEditorPage;
                     vm.Textures.TileBrowser.UpdateFrame();
                 }
-                if (MapEditPage != null)
+                if (MapEditorPage != null)
                 {
 
-                    MapEditorPageViewModel vm = MapEditPage;
+                    MapEditorPageViewModel vm = MapEditorPage;
                     vm.Textures.TileBrowser.UpdateFrame();
                     vm.Terrain.TileBrowser.UpdateFrame();
                 }
@@ -203,11 +209,8 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
         private void openGround()
         {
-            GroundEditForm = new GroundEditForm();
-            ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel();
-            GroundEditForm.DataContext = vm;
-            vm.LoadFromCurrentGround();
-            GroundEditForm.Show();
+            DevFormViewModel vm  = (DevFormViewModel)this.DataContext;
+            vm.OpenGroundEditor();
         }
 
         public void OpenMap()
@@ -219,7 +222,6 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         {
             DevFormViewModel vm  = (DevFormViewModel)this.DataContext;
             vm.OpenMapEditor();
-
         }
 
         public void groundEditorClosed(object sender, EventArgs e)
@@ -235,22 +237,22 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
         private IEnumerator<YieldInstruction> resetEditors()
         {
-            GroundEditForm = null;
-            MapEditPage = null;
+            GroundEditorPage = null;
+            MapEditorPage = null;
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }
         
 
         public void CloseGround()
         {
-            if (GroundEditForm != null)
-                GroundEditForm.Close();
+            if (GroundEditorPage != null)
+                GroundEditorPage.Close();
         }
 
         public void CloseMap()
         {
-            if (MapEditPage != null)
-                MapEditPage.Close();
+            if (MapEditorPage != null)
+                MapEditorPage.Close();
         }
         
         void LoadGame()
@@ -610,7 +612,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
         {
             var selectedItem = (OpenEditorNode)treeView.RowSelection.SelectedItem;
-            if (selectedItem != null)
+            if (selectedItem != null && selectedItem.EditorType != typeof(EmptyPageViewModel))
             {
                 vm.AddPageFromTreeNode(selectedItem);
             }

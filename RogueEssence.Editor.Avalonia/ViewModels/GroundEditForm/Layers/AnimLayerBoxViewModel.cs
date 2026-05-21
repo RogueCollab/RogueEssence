@@ -33,7 +33,7 @@ namespace RogueEssence.Dev.ViewModels
                 AnimLayerWindow window = new AnimLayerWindow();
                 window.DataContext = vm;
 
-                result = await window.ShowDialog<bool>(form.GroundEditForm);
+                // result = await window.ShowDialog<bool>(form.GroundEditorPage);
             }
             else
             {
@@ -43,6 +43,8 @@ namespace RogueEssence.Dev.ViewModels
                 // result = await window.ShowDialog<bool>(form.MapEditPage);
                 result = true;
             }
+
+            result = false;
 
             lock (GameBase.lockObj)
             {

@@ -9,6 +9,7 @@ using RogueEssence.Content;
 using Avalonia.Controls;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -17,14 +18,16 @@ namespace RogueEssence.Dev.ViewModels
     public class TextureLayerBoxViewModel : LayerBoxViewModel<MapLayer>
     {
         private bool groundMode;
-        public TextureLayerBoxViewModel(bool groundMode) : base(groundMode ? DiagManager.Instance.DevEditor.GroundEditor.Edits : DiagManager.Instance.DevEditor.MapEditor.Edits)
+        private IDialogService _dialogService;
+        public TextureLayerBoxViewModel(bool groundMode, IDialogService dialogService) : base(groundMode ? DiagManager.Instance.DevEditor.GroundEditor.Edits : DiagManager.Instance.DevEditor.MapEditor.Edits)
         {
+            _dialogService = dialogService;
             this.groundMode = groundMode;
         }
 
         public override async Task EditLayer()
         {
-            MapLayerViewModel vm = new MapLayerViewModel(Layers[ChosenLayer]);
+            MapLayerWindowViewModel vm = new MapLayerWindowViewModel(Layers[ChosenLayer]);
             DevForm form = (DevForm)DiagManager.Instance.DevEditor;
             bool result;
             if (groundMode)
@@ -32,18 +35,24 @@ namespace RogueEssence.Dev.ViewModels
                 GroundLayerWindow window = new GroundLayerWindow();
                 window.DataContext = vm;
 
-                result = await window.ShowDialog<bool>(form.GroundEditForm);
+                // result = await window.ShowDialog<bool>(form.GroundEditorPage);
             }
             else
             {
-                MapLayerWindow window = new MapLayerWindow();
-                window.DataContext = vm;
-
-
+                
+                Console.WriteLine(_dialogService);
+                bool animResult = await _dialogService.ShowDialogAsync<MapLayerWindowViewModel, bool>(vm, "Map Layer");
+                if (!animResult)
+                    return;
+                // MapLayerWindow window = new MapLayerWindow();
+                // window.DataContext = vm;
+                // result = true;
                 result = true;
                 // result = await window.ShowDialog<bool>(form.MapEditPage);
             }
 
+            
+            result = false;
             lock (GameBase.lockObj)
             {
                 if (result)

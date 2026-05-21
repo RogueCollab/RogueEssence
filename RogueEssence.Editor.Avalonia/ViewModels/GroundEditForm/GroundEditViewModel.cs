@@ -26,14 +26,14 @@ namespace RogueEssence.Dev.ViewModels
     {
         public GroundEditViewModel()
         {
-            Textures = new GroundTabTexturesViewModel();
-            Decorations = new GroundTabDecorationsViewModel();
-            Walls = new GroundTabWallsViewModel();
-            Entities = new GroundTabEntitiesViewModel();
-            Properties = new GroundTabPropertiesViewModel();
-            Strings = new GroundTabStringsViewModel();
-            Script = new GroundTabScriptViewModel();
-            CurrentFile = "";
+            // Textures = new GroundTabTexturesViewModel(null);
+            // Decorations = new GroundTabDecorationsViewModel();
+            // Walls = new GroundTabWallsViewModel();
+            // Entities = new GroundTabEntitiesViewModel();
+            // Properties = new GroundTabPropertiesViewModel();
+            // Strings = new GroundTabStringsViewModel();
+            // Script = new GroundTabScriptViewModel();
+            // CurrentFile = "";
         }
 
         public GroundTabTexturesViewModel Textures { get; set; }
@@ -74,48 +74,48 @@ namespace RogueEssence.Dev.ViewModels
         public async void mnuOpen_Click()
         {
 
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                IReadOnlyList<IStorageFile> results = await form.GroundEditForm.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                {
-                    Title = "Open .rsground File",
-                    SuggestedStartLocation = directory,
-                    AllowMultiple = false,
-                    FileTypeFilter =
-                    [
-                        new FilePickerFileType("Ground Files")
-                        {
-                            Patterns = ["*." + DataManager.GROUND_EXT.Substring(1)]
-                        }
-                    ]
-                });
-                
-                if (results.Count > 0)
-                {
-                    IStorageFile result = results.First();
-                   
-                    bool legalPath = false;
-                    foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
-                    {
-                        if (comparePaths(proposedPath, Path.GetDirectoryName(result.Path.LocalPath)))
-                            legalPath = true;
-                    }
-
-                    if (!legalPath)
-                        await MessageBox.Show(form.GroundEditForm,
-                            String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.",
-                                PathMod.ModPath(DataManager.GROUND_PATH)), "Error",
-                            MessageBox.MessageBoxButtons.Ok);
-                    else
-                    {
-                        lock (GameBase.lockObj)
-                            DoLoad(Path.GetFileNameWithoutExtension(result.Name));
-                    }
-                }
-            });
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            // IStorageFolder directory = await form.GroundEditorPage.StorageProvider.TryGetFolderFromPathAsync(mapDir);
+            // await Dispatcher.UIThread.InvokeAsync(async () =>
+            // {
+            //     IReadOnlyList<IStorageFile> results = await form.GroundEditorPage.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            //     {
+            //         Title = "Open .rsground File",
+            //         SuggestedStartLocation = directory,
+            //         AllowMultiple = false,
+            //         FileTypeFilter =
+            //         [
+            //             new FilePickerFileType("Ground Files")
+            //             {
+            //                 Patterns = ["*." + DataManager.GROUND_EXT.Substring(1)]
+            //             }
+            //         ]
+            //     });
+            //     
+            //     if (results.Count > 0)
+            //     {
+            //         IStorageFile result = results.First();
+            //        
+            //         bool legalPath = false;
+            //         foreach (string proposedPath in PathMod.FallbackPaths(DataManager.GROUND_PATH))
+            //         {
+            //             if (comparePaths(proposedPath, Path.GetDirectoryName(result.Path.LocalPath)))
+            //                 legalPath = true;
+            //         }
+            //
+            //         if (!legalPath)
+            //             await MessageBox.Show(form.GroundEditorPage,
+            //                 String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.",
+            //                     PathMod.ModPath(DataManager.GROUND_PATH)), "Error",
+            //                 MessageBox.MessageBoxButtons.Ok);
+            //         else
+            //         {
+            //             lock (GameBase.lockObj)
+            //                 DoLoad(Path.GetFileNameWithoutExtension(result.Name));
+            //         }
+            //     }
+            // });
         }
 
         public async Task<bool> mnuSave_Click()
@@ -136,86 +136,87 @@ namespace RogueEssence.Dev.ViewModels
         }
         public async Task<bool> mnuSaveAs_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Directory = mapDir;
-
-            FileDialogFilter filter = new FileDialogFilter();
-            filter.Name = "Ground Files";
-            filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
-            saveFileDialog.Filters.Add(filter);
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            string result = await saveFileDialog.ShowAsync(form.GroundEditForm);
-
-            if (!String.IsNullOrEmpty(result))
-            {
-                string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
-                if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
-                    await MessageBox.Show(form.GroundEditForm, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
-                else if (Path.GetFileName(result).Contains(" "))
-                    await MessageBox.Show(form.GroundEditForm, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
-                else
-                {
-                    lock (GameBase.lockObj)
-                    {
-                        string oldFilename = CurrentFile;
-
-                        //Schedule saving the map
-                        DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
-                    }
-                    return true;
-                }
-            }
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
+            // SaveFileDialog saveFileDialog = new SaveFileDialog();
+            // saveFileDialog.Directory = mapDir;
+            //
+            // FileDialogFilter filter = new FileDialogFilter();
+            // filter.Name = "Ground Files";
+            // filter.Extensions.Add(DataManager.GROUND_EXT.Substring(1));
+            // saveFileDialog.Filters.Add(filter);
+            //
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            // string result = await saveFileDialog.ShowAsync(form.GroundEditorPage);
+            //
+            // if (!String.IsNullOrEmpty(result))
+            // {
+            //     string reqDir = PathMod.HardMod(DataManager.GROUND_PATH);
+            //     if (!comparePaths(reqDir, Path.GetDirectoryName(result)))
+            //         await MessageBox.Show(form.GroundEditorPage, String.Format("Map can only be saved to:\n{0}", reqDir), "Error", MessageBox.MessageBoxButtons.Ok);
+            //     else if (Path.GetFileName(result).Contains(" "))
+            //         await MessageBox.Show(form.GroundEditorPage, String.Format("Save file should not contain white space:\n{0}", Path.GetFileName(result)), "Error", MessageBox.MessageBoxButtons.Ok);
+            //     else
+            //     {
+            //         lock (GameBase.lockObj)
+            //         {
+            //             string oldFilename = CurrentFile;
+            //
+            //             //Schedule saving the map
+            //             DoSave(ZoneManager.Instance.CurrentGround, result, oldFilename);
+            //         }
+            //         return true;
+            //     }
+            // }
+            // return false;
             return false;
         }
 
         public async void mnuTest_Click()
         {
-            bool saved = await mnuSave_Click();
-            if (saved)
-            {
-                lock (GameBase.lockObj)
-                {
-                    DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-                    form.GroundEditForm.SilentClose();
-                    form.GroundEditForm = null;
-                    GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentGround.AssetName, true, MathUtils.Rand.NextUInt64());
-                }
-            }
+            // bool saved = await mnuSave_Click();
+            // if (saved)
+            // {
+            //     lock (GameBase.lockObj)
+            //     {
+            //         DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //         form.GroundEditorPage.SilentClose();
+            //         form.GroundEditorPage = null;
+            //         GameManager.Instance.SceneOutcome = GameManager.Instance.TestWarp(ZoneManager.Instance.CurrentGround.AssetName, true, MathUtils.Rand.NextUInt64());
+            //     }
+            // }
         }
 
         public async void mnuImportFromPng_Click()
         {
-            string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
-
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            
-            IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                IReadOnlyList<IStorageFile> results = await form.GroundEditForm.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions 
-                    {
-                        Title = "Open .png File",
-                        SuggestedStartLocation = directory,
-                        AllowMultiple = false,
-                        FileTypeFilter =
-                        [
-                            new FilePickerFileType("PNG Files")
-                            {
-                                Patterns = ["*.PNG"]
-                            }
-                        ]
-                    }
-                );
-                
-                if (results.Count > 0)
-                    DoImportPng(results.First().Path.LocalPath);
-  
-            });
+            // string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.GROUND_PATH));
+            //
+            //
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            //
+            // IStorageFolder directory = await form.GroundEditorPage.StorageProvider.TryGetFolderFromPathAsync(mapDir);
+            // await Dispatcher.UIThread.InvokeAsync(async () =>
+            // {
+            //     IReadOnlyList<IStorageFile> results = await form.GroundEditorPage.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions 
+            //         {
+            //             Title = "Open .png File",
+            //             SuggestedStartLocation = directory,
+            //             AllowMultiple = false,
+            //             FileTypeFilter =
+            //             [
+            //                 new FilePickerFileType("PNG Files")
+            //                 {
+            //                     Patterns = ["*.PNG"]
+            //                 }
+            //             ]
+            //         }
+            //     );
+            //     
+            //     if (results.Count > 0)
+            //         DoImportPng(results.First().Path.LocalPath);
+            //
+            // });
         }
 
 
@@ -228,77 +229,77 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void mnuImportFromTileset_Click()
         {
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            if (Textures.TileBrowser.CurrentTileset == "")
-                await MessageBox.Show(form.GroundEditForm, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
-            else
-            {
-                lock (GameBase.lockObj)
-                    DoImportTileset(Textures.TileBrowser.CurrentTileset);
-            }
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            // if (Textures.TileBrowser.CurrentTileset == "")
+            //     await MessageBox.Show(form.GroundEditorPage, String.Format("No tileset to import!"), "Error", MessageBox.MessageBoxButtons.Ok);
+            // else
+            // {
+            //     lock (GameBase.lockObj)
+            //         DoImportTileset(Textures.TileBrowser.CurrentTileset);
+            // }
         }
 
 
         public async void mnuReSize_Click()
         {
 
-            MapResizeWindow window = new MapResizeWindow();
-            MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
-            window.DataContext = viewModel;
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
-
-            lock (GameBase.lockObj)
-            {
-                if (result)
-                {
-                    //TODO: support undo for this
-                    DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
-
-                    DiagManager.Instance.LoadMsg = "Resizing Map...";
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-
-                    ZoneManager.Instance.CurrentGround.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight, viewModel.ResizeDir);
-
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-                }
-            }
+            // MapResizeWindow window = new MapResizeWindow();
+            // MapResizeViewModel viewModel = new MapResizeViewModel(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+            // window.DataContext = viewModel;
+            //
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            // bool result = await window.ShowDialog<bool>(form.GroundEditorPage);
+            //
+            // lock (GameBase.lockObj)
+            // {
+            //     if (result)
+            //     {
+            //         //TODO: support undo for this
+            //         DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+            //
+            //         DiagManager.Instance.LoadMsg = "Resizing Map...";
+            //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+            //
+            //         ZoneManager.Instance.CurrentGround.ResizeJustified(viewModel.MapWidth, viewModel.MapHeight, viewModel.ResizeDir);
+            //
+            //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+            //     }
+            // }
         }
 
         public async void mnuReTile_Click()
         {
-            MapRetileWindow window = new MapRetileWindow();
-            MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize, "Tile size must be divisible by 8. All textures will be erased from all layers upon completing this operation.");
-            window.DataContext = viewModel;
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-
-            bool result = await window.ShowDialog<bool>(form.GroundEditForm);
-
-            lock (GameBase.lockObj)
-            {
-                bool sizeChanged = viewModel.TileSize != ZoneManager.Instance.CurrentGround.TileSize;
-                if (result && sizeChanged)
-                {
-                    //TODO: support undo for this
-                    DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
-
-                    DiagManager.Instance.LoadMsg = "Retiling Map...";
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
-
-                    ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
-
-                    Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
-                    Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
-                    ZoneManager.Instance.CurrentGround.BlankBG = new AutoTile();
-                    Properties.BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);
-
-                    DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
-                }
-            }
+            // MapRetileWindow window = new MapRetileWindow();
+            // MapRetileViewModel viewModel = new MapRetileViewModel(ZoneManager.Instance.CurrentGround.TileSize, "Tile size must be divisible by 8. All textures will be erased from all layers upon completing this operation.");
+            // window.DataContext = viewModel;
+            //
+            // DevForm form = (DevForm)DiagManager.Instance.DevEditor;
+            //
+            // bool result = await window.ShowDialog<bool>(form.GroundEditorPage);
+            //
+            // lock (GameBase.lockObj)
+            // {
+            //     bool sizeChanged = viewModel.TileSize != ZoneManager.Instance.CurrentGround.TileSize;
+            //     if (result && sizeChanged)
+            //     {
+            //         //TODO: support undo for this
+            //         DiagManager.Instance.DevEditor.GroundEditor.Edits.Clear();
+            //
+            //         DiagManager.Instance.LoadMsg = "Retiling Map...";
+            //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Content);
+            //
+            //         ZoneManager.Instance.CurrentGround.Retile(viewModel.TileSize / GraphicsManager.TEX_SIZE);
+            //
+            //         Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            //         Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
+            //         ZoneManager.Instance.CurrentGround.BlankBG = new AutoTile();
+            //         Properties.BlankBG.LoadFromSource(ZoneManager.Instance.CurrentGround.BlankBG);
+            //
+            //         DevForm.EnterLoadPhase(GameBase.LoadPhase.Ready);
+            //     }
+            // }
         }
 
         public void mnuUndo_Click()

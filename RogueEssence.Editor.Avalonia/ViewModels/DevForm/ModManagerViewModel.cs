@@ -13,6 +13,37 @@ using RogueEssence.Data;
 using RogueEssence.Content;
 using RogueEssence.Dev.Views;
 using Avalonia.Controls;
+using RogueEssence.Dev;
+
+public class ModsEntryViewModel : ViewModelBase
+{
+    private string _name;
+
+    public string Name
+    {
+        get => _name;
+        set => this.RaiseAndSetIfChanged(ref _name, value);
+    }
+
+    private string _editNamespace;
+
+    public string Namespace
+    {
+        get => _editNamespace;
+        set => this.RaiseAndSetIfChanged(ref _editNamespace, value);
+    }
+
+    public string Path;
+
+    public ModsEntryViewModel(string name, string newNamespace, string fullPath)
+    {
+        this._name = name;
+        this._editNamespace = newNamespace;
+        this.Path = fullPath;
+    }
+    
+    public string Display => $"{_editNamespace}: {_name}";
+}
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -34,22 +65,22 @@ namespace RogueEssence.Dev.ViewModels
 
         public string Path;
 
-        public ObservableCollection<ModsNodeViewModel> Nodes { get; }
+        public ObservableCollection<ModsNodeViewModel> ModList { get; }
 
         public ModsNodeViewModel(string name, string newNamespace, string fullPath)
         {
             this.name = name;
             this.editNamespace = newNamespace;
             this.Path = fullPath;
-            Nodes = new ObservableCollection<ModsNodeViewModel>();
+            ModList = new ObservableCollection<ModsNodeViewModel>();
         }
 
     }
 
-    public class DevTabModsViewModel : ViewModelBase
+    public class ModManagerViewModel : ViewModelBase
     {
         private EditorContext _context;
-        public DevTabModsViewModel(EditorContext context)
+        public ModManagerViewModel(EditorContext context)
         {
             currentMod = null;
             _context = context;

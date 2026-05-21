@@ -1,14 +1,14 @@
 ﻿<v:ChromelessWindow xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="using:RogueEssence.Dev.ViewModels"
-                    x:Class="RogueEssence.Dev.Views.MapRetileWindow"
+                    x:Class="RogueEssence.Dev.Views.MapRetileWindowView"
                     x:DataType="vm:MapRetileWindowViewModel"
                     xmlns:v="using:RogueEssence.Dev.Views"
                     CanResize="False"
-                    MaxWidth="400"
-                    MinWidth="300"
-                    x:Name="ThisControl"
-                    SizeToContent="WidthAndHeight">
+      
+                    Height="240"
+                    Width="300"
+                    x:Name="ThisControl">
 
     <Design.DataContext>
         <vm:MapRetileWindowViewModel />
@@ -28,7 +28,7 @@
                   IsVisible="{OnPlatform True, macOS=False}" />
 
             <TextBlock Classes="bold"
-                       Text="{Binding Title}"
+                       Text="{Binding !#ThisControl.Title}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        IsHitTestVisible="False" />
 
@@ -37,16 +37,15 @@
                               IsVisible="{OnPlatform True, macOS=False}" />
 
         </Grid>
-        <Grid Grid.Row="1" Margin="4" RowDefinitions="20, 42, *, 42" ColumnDefinitions="*, *">
+        <Grid Grid.Row="1" Margin="4" RowDefinitions="20, 42, *, 30" ColumnDefinitions="*, *">
             <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">Tile Size (Pixels)</TextBlock>
-            <NumericUpDown Value="{Binding TileSize}" Minimum="1" Maximum="256" Margin="4" Grid.Row="1" Grid.Column="0"
+            <NumericUpDown Increment="1" Value="{Binding TileSize}" Minimum="1" Maximum="256" Margin="4" Grid.Row="1" Grid.Column="0"
                            Grid.ColumnSpan="2">
             </NumericUpDown>
             <TextBlock Margin="4" TextWrapping="Wrap" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                        Text="{Binding Message}" />
-            <Button Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="0">OK</Button>
-            <Button Click="btnCancel_Click" Margin="4" Grid.Row="3" Grid.Column="1">Cancel</Button>
+            <Button Classes="flat" Click="btnCancel_Click" Margin="4" Grid.Row="3" Grid.Column="0">Cancel</Button>
+            <Button Classes="flat primary" Click="btnOK_Click" IsEnabled="{Binding AllowConfirm}" Margin="4" Grid.Row="3" Grid.Column="1">OK</Button>
         </Grid>
     </Grid>
-
 </v:ChromelessWindow>

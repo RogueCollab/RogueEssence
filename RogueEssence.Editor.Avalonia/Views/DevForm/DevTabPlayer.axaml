@@ -24,18 +24,11 @@
     <NumericUpDown  Name="nudLevel" Value="{Binding Level}" Minimum="1" Maximum="100" Increment="1" Grid.Row="1" Grid.Column="0"/>
     <Button Classes="flat" Name="btnRollSkill" Command="{Binding btnRollSkill_Click}" Grid.Row="1" Grid.Column="1">Reroll Skills</Button>
     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="0">Species</TextBlock>
-    <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition/>
-        <ColumnDefinition Width="40"/>
-      </Grid.ColumnDefinitions>
+    <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="*, Auto">
 	  <views:SearchComboBox Name="cbDexNum" ItemsSource="{Binding Monsters}" SelectedIndex="{Binding ChosenMonster}" Margin="4"/>
-	  <Button Classes="icon_button" Name="btnChangeOrder" Command="{Binding btnChangeOrder_Click}"  Grid.Column="1" ToolTip.Tip="Switch Ordering">
-        <Panel>
-          <Image Source="/Assets/AssetOrder.png" Width="20"
-                          Height="20" VerticalAlignment="Center" HorizontalAlignment="Center" />
-        </Panel>
-	  </Button>
+	    <Button Padding="8" Classes="secondary" Height="28" Width="28" Name="btnChangeOrder" Command="{Binding btnChangeOrder_Click}"  Grid.Column="1" ToolTip.Tip="Switch Ordering">
+          <Path Height="16" Width="16" Data="{StaticResource Icons.NumIndexChange}"></Path>
+	    </Button>
     </Grid>
     <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="4">Form</TextBlock>
 	  <views:SearchComboBox Name="cbForm" ItemsSource="{Binding Forms}" SelectedIndex="{Binding ChosenForm}" Margin="4" Grid.Row="5" Grid.ColumnSpan="2"/>

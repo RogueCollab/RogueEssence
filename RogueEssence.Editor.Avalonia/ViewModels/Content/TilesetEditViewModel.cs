@@ -87,7 +87,7 @@ namespace RogueEssence.Dev.ViewModels
 
                 string folder = results.First().Path.LocalPath;
                 
-                MapRetileWindow window = new MapRetileWindow();
+                MapRetileWindowView window = new MapRetileWindowView();
                 MapRetileViewModel viewModel = new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
                 window.DataContext = viewModel;
 
@@ -202,7 +202,7 @@ namespace RogueEssence.Dev.ViewModels
                         return;
                 }
 
-                MapRetileWindow window = new MapRetileWindow();
+                MapRetileWindowView window = new MapRetileWindowView();
                 MapRetileViewModel viewModel =
                     new MapRetileViewModel(GraphicsManager.TileSize, "Tile size must be divisible by 8.");
                 window.DataContext = viewModel;
