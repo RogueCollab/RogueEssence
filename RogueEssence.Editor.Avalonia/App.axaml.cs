@@ -62,13 +62,12 @@ namespace RogueEssence.Dev
             collection.AddSingleton<ViewLocator>();
             collection.AddSingleton<IDialogService, DialogService>();
 
-            collection.AddTransient<DevControlViewModel>();
-            collection.AddTransient<MapEditorPageViewModel>();
+            collection.AddTransient<DevControlPageViewModel>();
+            collection.AddTransient<MapEditPageViewModel>();
             collection.AddTransient<RandomInfoPageViewModel>();
             collection.AddTransient<SpritePageViewModel>();
             collection.AddTransient<ModListPageViewModel>();
             collection.AddTransient<ModConfigPageViewModel>();
-            collection.AddTransient<DevEditPageViewModel>();
             collection.AddTransient<SpeciesEditPageViewModel>();
             collection.AddTransient<DataListPageViewModel>();
             collection.AddTransient<ReflectedDataPageViewModel>();
@@ -87,7 +86,7 @@ namespace RogueEssence.Dev
             services.AddTransient<MapTabSpawnsViewModel>();
             services.AddTransient<MapTabEffectsViewModel>();
             services.AddTransient<MapTabPropertiesViewModel>();
-            services.AddTransient<MapEditorPageViewModel>();
+            services.AddTransient<MapEditPageViewModel>();
         }
         
         private static void AddGroundEditViewModels(this IServiceCollection services)
@@ -98,34 +97,30 @@ namespace RogueEssence.Dev
             services.AddTransient<GroundTabPropertiesViewModel>();
             services.AddTransient<GroundTabStringsViewModel>();
             services.AddTransient<GroundTabScriptViewModel>();
-            services.AddTransient<GroundEditorPageViewModel>();
+            services.AddTransient<GroundEditPageViewModel>();
         }
         
         private static void AddDevTabViewModels(this IServiceCollection services)
         {
             services.AddSingleton<DevTabGameViewModel>();
             services.AddSingleton<DevTabPlayerViewModel>();
-            services.AddSingleton<DevTabDataViewModel>();
             services.AddSingleton<DevTabTravelViewModel>();
-            services.AddSingleton<DevTabSpritesViewModel>();
             services.AddSingleton<DevTabScriptViewModel>();
             services.AddSingleton<ModManagerViewModel>();
-            services.AddSingleton<DevTabConstantsViewModel>();
         }
 
         public static void RegisterPages(this IServiceProvider provider)
         {
             var pageFactory = provider.GetRequiredService<PageFactory>();
 
-            pageFactory.Register<DevControlViewModel>();
-            pageFactory.Register<MapEditorPageViewModel>();
+            pageFactory.Register<DevControlPageViewModel>();
+            pageFactory.Register<MapEditPageViewModel>();
             pageFactory.Register<ReflectedDataPageViewModel>();
-            pageFactory.Register<GroundEditorPageViewModel>();
+            pageFactory.Register<GroundEditPageViewModel>();
             pageFactory.Register<RandomInfoPageViewModel>();
             pageFactory.Register<SpritePageViewModel>();
             pageFactory.Register<ModListPageViewModel>();
             pageFactory.Register<ModConfigPageViewModel>();
-            pageFactory.Register<DevEditPageViewModel>();
             pageFactory.Register<SpeciesEditPageViewModel>();
             pageFactory.Register<DataListPageViewModel>();
             pageFactory.Register<StringEditPageViewModel>();

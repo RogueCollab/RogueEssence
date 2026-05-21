@@ -21,9 +21,6 @@
     <PackageReference Include="Tabalonia" Version="0.10.7" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="DataEditor\DataEditRootForm.axaml.cs">
-      <DependentUpon>DataEditRootForm.axaml</DependentUpon>
-    </Compile>
     <Compile Update="DataEditor\RankedCollectionBox.axaml.cs">
       <DependentUpon>RankedCollectionBox.axaml</DependentUpon>
     </Compile>
@@ -63,26 +60,8 @@
     <Compile Update="DataEditor\DataEditForm.axaml.cs">
       <DependentUpon>DataEditForm.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Content\StringsEditForm.axaml.cs">
-      <DependentUpon>StringsEditForm.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Content\TilesetEditForm.axaml.cs">
-      <DependentUpon>TilesetEditForm.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Content\AnimEditForm.axaml.cs">
-      <DependentUpon>AnimEditForm.axaml</DependentUpon>
-    </Compile>
     <Compile Update="DataEditor\ClassBox.axaml.cs">
       <DependentUpon>ClassBox.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Content\SpeciesEditForm.axaml.cs">
-      <DependentUpon>SpeciesEditForm.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\DataListForm.axaml.cs">
-      <DependentUpon>DataListForm.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\DialogBoxes\ModConfigWindow.axaml.cs">
-      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\GroundEditForm\Layers\GroundLayerWindow.axaml.cs">
       <DependentUpon>GroundLayerWindow.axaml</DependentUpon>
@@ -101,12 +80,6 @@
     </Compile>
     <Compile Update="Views\DevForm\DevTabMods.axaml.cs">
       <DependentUpon>DevTabMods.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\DialogBoxes\AnimChoiceWindow.axaml.cs">
-      <DependentUpon>AnimChoiceWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\DialogBoxes\RenameWindow.axaml.cs">
-      <DependentUpon>RenameWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\GroundEditForm\GroundTabScript.axaml.cs">
       <DependentUpon>GroundTabScript.axaml</DependentUpon>
@@ -150,9 +123,6 @@
     <Compile Update="Views\MapEditForm\MapTabTextures.axaml.cs">
       <DependentUpon>MapTabTextures.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\MapEditForm\MapEditForm.axaml.cs">
-      <DependentUpon>MapEditForm.axaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\SearchListBox.axaml.cs">
       <DependentUpon>SearchListBox.axaml</DependentUpon>
     </Compile>
@@ -183,56 +153,154 @@
     <Compile Update="DataEditor\Editors\RogueEssence\Tiles\TileBrowser.axaml.cs">
       <DependentUpon>TileBrowser.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\New\Editors\DevControl\DevControlView.axaml.cs">
-      <DependentUpon>DevControlView.axaml</DependentUpon>
+    <Compile Update="Views\Pages\MapEditPage\MapEditPageView.axaml.cs">
+      <DependentUpon>MapEditPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\Editors\DevControl\DevTabGame.axaml.cs">
+    <Compile Update="Views\Pages\GroundEditPage\GroundEditPageView.axaml.cs">
+      <DependentUpon>GroundEditPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\DevControlPage\DevControlPageView.axaml.cs">
+      <DependentUpon>DevControlPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\DevControlPage\DevTabGame.axaml.cs">
       <DependentUpon>DevTabGame.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\MapRetileWindowView.axaml.cs">
-      <DependentUpon>MapRetileWindow.axaml</DependentUpon>
+    <Compile Update="Views\Pages\DevControlPage\DevTabPlayer.axaml.cs">
+      <DependentUpon>DevTabPlayer.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\Editors\SpeciesEditPageView.axaml.cs">
-      <DependentUpon>SpeciesEditPageView.axaml</DependentUpon>
+    <Compile Update="Views\Pages\DevControlPage\DevTabTravel.axaml.cs">
+      <DependentUpon>DevTabTravel.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\ModConfigWindowView.axaml.cs">
-      <DependentUpon>ModConfigWindow.axaml</DependentUpon>
+    <Compile Update="Views\Pages\DevControlPage\DevTabScript.axaml.cs">
+      <DependentUpon>DevTabScript.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\Editors\DataListPageView.axaml.cs">
+    <Compile Update="Views\Pages\DataListPageView.axaml.cs">
       <DependentUpon>DataListPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\AnimChoiceWindowView.axaml.cs">
-      <DependentUpon>AnimChoiceWindowView.axaml</DependentUpon>
+    <Compile Update="Views\Pages\DevEditPageView.axaml.cs">
+      <DependentUpon>DevEditPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\Editors\StringEditPageView.axaml.cs">
-      <DependentUpon>StringEditPageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\New\Editors\ModConfigPageView.axaml.cs">
+    <Compile Update="Views\Pages\ModConfigPageView.axaml.cs">
       <DependentUpon>ModConfigPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\MapLayerWindowView.axaml.cs">
-      <DependentUpon>MapLayerWindowView.axaml</DependentUpon>
+    <Compile Update="Views\Pages\ModListPageView.axaml.cs">
+      <DependentUpon>ModListPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\MapResizeWindowView.axaml.cs">
+    <Compile Update="Views\Pages\RandomInfoPageView.axaml.cs">
+      <DependentUpon>RandomInfoPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\ReflectedDataPageView.axaml.cs">
+      <DependentUpon>ReflectedDataPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\SpeciesEditPageView.axaml.cs">
+      <DependentUpon>SpeciesEditPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\SpritePageView.axaml.cs">
+      <DependentUpon>SpritePageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Pages\StringEditPageView.axaml.cs">
+      <DependentUpon>StringEditPageView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DevForm\CaptionButtons.axaml.cs">
+      <DependentUpon>CaptionButtons.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DevForm\DevForm.axaml.cs">
+      <DependentUpon>DevForm.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DevForm\ModSwitcherView.axaml.cs">
+      <DependentUpon>ModSwitcherView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DevForm\TabBarView.axaml.cs">
+      <DependentUpon>TabBarView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DevForm\TabSwitcherView.axaml.cs">
+      <DependentUpon>TabSwitcherView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\UserControls\IconText.axaml.cs">
+      <DependentUpon>IconText.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\AnimChoiceWindowView.axaml.cs">
+      <DependentUpon>AnimChoiceWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\PreferencesWindowView.axaml.cs">
+      <DependentUpon>PreferencesWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\RenameWindowView.axaml.cs">
+      <DependentUpon>RenameWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\MessageBoxWindowView.axaml.cs">
+      <DependentUpon>MessageBoxWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\ModNameWindowView.axaml.cs">
+      <DependentUpon>ModNameWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\MapResizeWindowView.axaml.cs">
       <DependentUpon>MapResizeWindowView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\New\DialogBoxes\ModNameWindowView.axaml.cs">
-      <DependentUpon>ModNameWindowView.axaml</DependentUpon>
+    <Compile Update="Views\DialogBoxes\MapRetileWindowView.axaml.cs">
+      <DependentUpon>MapRetileWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DialogBoxes\MapLayerWindowView.axaml.cs">
+      <DependentUpon>MapLayerWindowView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\EntityBrowser.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundEditForm.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabDecorations.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabEntities.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabProperties.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabScript.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabStrings.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabTextures.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabWalls.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\Layers\AnimLayerWindow.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\Layers\EntityLayerWindow.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\Layers\GroundLayerWindow.axaml" />
+    <AdditionalFiles Include="Views\Pages\GroundEditPage\Layers\MapLayerWindow.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabDecorations.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabEffects.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabEntities.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabEntrances.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabItems.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabProperties.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabSpawns.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabTerrain.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabTextures.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\MapTabTiles.axaml" />
+    <AdditionalFiles Include="Views\Pages\MapEditPage\Teams\TeamWindow.axaml" />
   </ItemGroup>
 </Project>

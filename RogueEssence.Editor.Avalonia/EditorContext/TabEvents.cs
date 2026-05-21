@@ -32,8 +32,7 @@ namespace RogueEssence.Dev
         {
             CloseTabsForEntry?.Invoke(key, dataType);
         }
-
-        // Navigate tab to ID
+        
 
         public TabEvents(PageFactory pageFactory)
         {

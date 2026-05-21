@@ -23,11 +23,11 @@ namespace RogueEssence.Dev.Views
             if (SelectedOKEvent != null)
                 await SelectedOKEvent.Invoke();
         }
-
+    
         public override async void Window_Closing(object sender, WindowClosingEventArgs e)
         {
             base.Window_Closing(sender, e);
-
+    
             DevDataManager.SaveEditorSettings();
         }
     }

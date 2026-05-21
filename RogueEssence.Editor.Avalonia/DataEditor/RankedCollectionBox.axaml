@@ -41,7 +41,7 @@
         <Path Width="10" Height="10" Margin="0,2,0,0" Data="{StaticResource Icons.Plus}" />
       </Button>
       <Button Command="{Binding DeleteItemAsync}" Classes="secondary" Margin="0,0" Padding="4,3">
-        <Path Width="10" Height="10" Data="{StaticResource Icons.CactusFill}" />
+        <Path Width="10" Height="10" Data="{StaticResource Icons.CaretDownFill}" />
       </Button>
     </StackPanel>
 
