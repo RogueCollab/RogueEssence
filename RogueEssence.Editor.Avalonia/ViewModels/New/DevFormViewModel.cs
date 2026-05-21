@@ -420,7 +420,7 @@ public class DevFormViewModel : ViewModelBase
 
         var rootStr = ModsManager.CurrentModString;
         
-        var root = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>(rootStr, "Icons.ScrollFill");
+        var root = _nodeFactory.CreateOpenEditorNode<EmptyPageViewModel>(rootStr, "Icons.ScrollFill");
 
         Root = root;
         ModsManager.WhenAnyValue(x => x.CurrentMod.Name)
@@ -627,7 +627,7 @@ public class DevFormViewModel : ViewModelBase
         );
         spriteNode.SubNodes.Add(
             _context.NodeFactory.CreateOpenEditorNodeWithParams<SpeciesEditPageViewModel>("Portraits", [false],
-                "Icons.PersonFill")
+                "Icons.UserSquareFill")
         );
      
         foreach (var type in Enum.GetValues<GraphicsManager.AssetType>())

@@ -33,7 +33,7 @@ namespace RogueEssence.Data
             Register(DataManager.DataType.Item, typeof(ItemData), DataManager.Instance.GetItem, () => new ItemData(), "Icons.JarLabelFill");
             Register(DataManager.DataType.Intrinsic, typeof(IntrinsicData), DataManager.Instance.GetIntrinsic, () => new IntrinsicData(), "Icons.SwordFill");
             Register(DataManager.DataType.Status, typeof(StatusData), DataManager.Instance.GetStatus, () => new StatusData(), "Icons.HeartFill");
-            Register(DataManager.DataType.MapStatus, typeof(MapStatusData), DataManager.Instance.GetMapStatus, () => new MapStatusData(), "Icons.HeartFill");
+            Register(DataManager.DataType.MapStatus, typeof(MapStatusData), DataManager.Instance.GetMapStatus, () => new MapStatusData(), "Icons.CloudRainFill");
             Register(DataManager.DataType.Terrain, typeof(TerrainData), DataManager.Instance.GetTerrain, () => new TerrainData(), "Icons.MountainsFill");
             Register(DataManager.DataType.Tile, typeof(TileData), DataManager.Instance.GetTile, () => new TileData(), "Icons.SquaresFourFill");
             Register(DataManager.DataType.Zone, typeof(ZoneData), DataManager.Instance.GetZone, () => new ZoneData(), "Icons.StairsFill");
@@ -43,7 +43,7 @@ namespace RogueEssence.Data
             Register(DataManager.DataType.GrowthGroup, typeof(GrowthData), DataManager.Instance.GetGrowth, () => new GrowthData(), "Icons.TrendUpFill");
             Register(DataManager.DataType.SkillGroup, typeof(SkillGroupData), DataManager.Instance.GetSkillGroup, () => new SkillGroupData(), "Icons.ListFill");
             Register(DataManager.DataType.AI, typeof(AITactic), DataManager.Instance.GetAITactic, () => new AITactic(), "Icons.BrainFill");
-            Register(DataManager.DataType.Rank, typeof(RankData), DataManager.Instance.GetRank, () => new RankData(), "Icons.BinaryFill");
+            Register(DataManager.DataType.Rank, typeof(RankData), DataManager.Instance.GetRank, () => new RankData(), "Icons.RankingFill");
             Register(DataManager.DataType.Skin, typeof(SkinData), DataManager.Instance.GetSkin, () => new SkinData(), "Icons.SparkleFill");
         }
 
