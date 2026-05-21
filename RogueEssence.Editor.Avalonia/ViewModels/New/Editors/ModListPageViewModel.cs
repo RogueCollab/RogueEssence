@@ -14,6 +14,7 @@ using RogueEssence.Script;
 
 namespace RogueEssence.Dev.ViewModels;
 
+
 public class ModListPageViewModel : EditorPageViewModel
 {
     private string _searchFilter = string.Empty;
@@ -32,51 +33,20 @@ public class ModListPageViewModel : EditorPageViewModel
         get => _selectedItem;
         set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
     }
-
-
-    public ObservableCollection<ModsEntryViewModel> Items { get; } = new();
-    public ObservableCollection<ModsEntryViewModel> FilteredItems { get; } = new();
-
     
-    private string currentMod;
-
-    public string CurrentMod
-    {
-        get => currentMod;
-        set => this.SetIfChanged(ref currentMod, value);
-    }
-
+    public ObservableCollection<ModsEntryViewModel> FilteredItems { get; } = new();
+    
     public async void btnSwitch_Click()
     {
-        //give a pop up warning that the game will be reloaded and wait for confirmation
-        MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_context.DialogService,
-            $"The game will be reloaded to use content from {SelectedItem.Namespace}.\nClick OK to proceed.", "Are you sure?",
-            MessageBoxWindowView.MessageBoxButtons.OkCancel);
-        if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
-            return;
+        bool isCurrentMod = await _modManager.CheckIsCurrentMod(SelectedItem);
 
-        DevForm.ExecuteOrPend(doSwitch);
-    }
-
-    private void doSwitch()
-    {
-        //modify and reload
-        lock (GameBase.lockObj)
+        if (!isCurrentMod)
         {
-            LuaEngine.Instance.BreakScripts();
-            MenuManager.Instance.ClearMenus();
-            if (!String.IsNullOrEmpty(SelectedItem.Path))
-                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(SelectedItem.Path)),
-                    new ModHeader[0] { }, new List<int>() { -1 });
-            else
-                GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
-
-            DiagManager.Instance.PrintModSettings();
-            DiagManager.Instance.SaveModSettings();
-            DiagManager.Instance.DevEditor.MapEditor = null;
-            DiagManager.Instance.DevEditor.GroundEditor = null;
+            await _modManager.AskSwitchTo(SelectedItem);
         }
     }
+
+  
     ModManagerViewModel _modManager;
 
     public ModListPageViewModel(EditorContext context, ModManagerViewModel modManager, NodeBase node, Action<EditorPageViewModel> onPageOpen = null) :
@@ -88,26 +58,19 @@ public class ModListPageViewModel : EditorPageViewModel
     {
         FilteredItems.Clear();
         var strategy = new BeginningTitleFilterStrategy();
-        foreach (var item in Items.Where(e => strategy.Matches(e.Name, filter) || strategy.Matches(e.Namespace, filter)))
+        foreach (var item in _modManager.ModsList.Where(e => strategy.Matches(e.Name, filter) || strategy.Matches(e.Namespace, filter)))
             FilteredItems.Add(item);
     }
 
     public override void OnPageLoad()
     {
         base.OnPageLoad();
-        currentMod = null;
         this.WhenAnyValue(x => x.SearchFilter).Subscribe(UpdateVisibleItems);
-
-        // Items = new ObservableCollection<ModsEntryViewModel>();
-        reloadMods();
-       
     }
 
     
     public async void btnAdd_Click()
     {
-       
-
         ModNameWindowViewModel vm = new ModNameWindowViewModel();
 
         bool result = await _context.DialogService.ShowDialogAsync<ModNameWindowViewModel, bool>(vm, "Add Mod and Namespace");
@@ -124,7 +87,7 @@ public class ModListPageViewModel : EditorPageViewModel
             return;
 
         //check for children name conflicts
-        foreach (ModsEntryViewModel child in Items)
+        foreach (ModsEntryViewModel child in _modManager.ModsList)
         {
             if (String.Equals(child.Name, newName, StringComparison.OrdinalIgnoreCase))
             {
@@ -164,7 +127,7 @@ public class ModListPageViewModel : EditorPageViewModel
         LuaEngine.InitScriptFolders(fullPath, vm.Namespace);
 
         //add node
-        Items.Add(newEntry);
+        _modManager.ModsList.Add(newEntry);
         UpdateVisibleItems(SearchFilter);
         await AddChildItemUnderParent(newEntry);
     }
@@ -172,7 +135,7 @@ public class ModListPageViewModel : EditorPageViewModel
     public async void btnDelete_Click()
     {
         //prohibit the deletion of the current node or the base node
-        if (SelectedItem == Items[0])
+        if (SelectedItem == _modManager.ModsList[0])
         {
             await MessageBoxWindowView.Show(_context.DialogService, "Cannot delete the root mod!", "Delete Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
             return;
@@ -187,37 +150,15 @@ public class ModListPageViewModel : EditorPageViewModel
         //delete folder
         Directory.Delete(fullPath, true);
 
-        //and then delete node
-        Items.Remove(SelectedItem);
+        //and then delete mod
+        _modManager.RemoveMod(SelectedItem);
         UpdateVisibleItems(SearchFilter);
         
     }
     
-    public async void btnEdit_Click()
-    {
-        ModConfigWindowView window = new ModConfigWindowView();
-        ModHeader header = PathMod.Quest;
-        ModConfigViewModel2 vm = new ModConfigViewModel2(_context.DialogService, header);
-        window.DataContext = vm;
-
-        DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-        bool result = await window.ShowDialog<bool>(form);
-
-        if (result)
-        {
-            //save the mod data
-            string fullPath = PathMod.FromApp(PathMod.Quest.Path);
-            ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
-            PathMod.SaveModDetails(fullPath, resultHeader);
-
-            reloadMods();
-            DevForm.ExecuteOrPend(doSwitch);
-        }
-    }
-
     public async Task AddChildItemUnderParent(ModsEntryViewModel entry)
     {
-        if (entry == Items[0])
+        if (entry == _modManager.ModsList[0])
         {
             await MessageBoxWindowView.Show(_context.DialogService, "Cannot edit the root mod!", "Edit Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
             
@@ -234,37 +175,13 @@ public class ModListPageViewModel : EditorPageViewModel
                         ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, page.Name.Trim(), page.Author.Trim(), page.Description.Trim(), Text.Sanitize(page.Namespace).ToLower(), Guid.Parse(page.UUID), Version.Parse(page.Vers), Version.Parse(page.GameVersion), (PathMod.ModType)page.ChosenModType, page.GetRelationshipArray());
                         PathMod.SaveModDetails(fullPath, resultHeader);
                     
-                        reloadMods();
-                        // DevForm.ExecuteOrPend(doSwitch);
+                        _modManager.ReloadMods();
+                        UpdateVisibleItems(SearchFilter);
                     };
                 }));
             NodeHelper.ExpandParents(Node, true);
         }
 
-    }
-    
-    private void reloadMods()
-    {
-        Items.Clear();
-        Items.Add(new ModsEntryViewModel("Origin", PathMod.BaseNamespace, ""));
-        string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-        ModsEntryViewModel chosenModel = null;
-        foreach (string modPath in modsPath)
-        {
-            ModHeader header = PathMod.GetModDetails(modPath);
-            Items.Add(new ModsEntryViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
-            if (PathMod.Quest.Path == header.Path)
-                chosenModel = Items[Items.Count - 1];
-        }
-        SelectedItem = chosenModel;
-        UpdateVisibleItems(SearchFilter);
-    }
-
-    private static string getModName(ModHeader mod)
-    {
-        if (!mod.IsValid())
-            return null;
-        return mod.GetMenuName();
     }
 
 }

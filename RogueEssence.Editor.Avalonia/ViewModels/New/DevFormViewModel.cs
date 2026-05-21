@@ -39,77 +39,8 @@ public class DevFormViewModel : ViewModelBase
     public DevTabScriptViewModel Script { get; set; }
 
     public ModManagerViewModel ModsManager { get; set; }
-
-
-    public ObservableCollection<ModsNodeViewModel> Mods { get; }
-
-
-    private ModsNodeViewModel _chosenMod;
-
-    public ModsNodeViewModel ChosenMod
-    {
-        get => _chosenMod;
-        set { this.RaiseAndSetIfChanged(ref _chosenMod, value); }
-    }
-
-    private string currentMod;
-
-    public string CurrentMod
-    {
-        get => currentMod;
-        set => this.SetIfChanged(ref currentMod, value);
-    }
-
-    public void UpdateMod()
-    {
-        CurrentMod = _getModName(PathMod.Quest);
-    }
-
-    private void _reloadMods()
-    {
-        Mods.Clear();
-
-        string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-        ModsNodeViewModel chosenModel = new ModsNodeViewModel("Origins", PathMod.BaseNamespace, "");
-        Mods.Add(chosenModel);
-        foreach (string modPath in modsPath)
-        {
-            ModHeader header = PathMod.GetModDetails(modPath);
-            Mods.Add(new ModsNodeViewModel(_getModName(header), header.Namespace,
-                Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
-            if (PathMod.Quest.Path == header.Path)
-            {
-                chosenModel = Mods[Mods.Count - 1];
-            }
-        }
-
-        ChosenMod = chosenModel;
-    }
-
-    private void DoSwitch()
-    {
-        //modify and reload
-        lock (GameBase.lockObj)
-        {
-            LuaEngine.Instance.BreakScripts();
-            MenuManager.Instance.ClearMenus();
-            if (!String.IsNullOrEmpty(_chosenMod.Path))
-                GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(_chosenMod.Path)),
-                    new ModHeader[0] { }, new List<int>() { -1 });
-            else
-                GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
-
-            DiagManager.Instance.PrintModSettings();
-            DiagManager.Instance.SaveModSettings();
-        }
-    }
-
-    private static string _getModName(ModHeader mod)
-    {
-        if (!mod.IsValid())
-            return null;
-        return mod.GetMenuName();
-    }
+    
+ 
 
     private bool _isTreeView;
 
@@ -403,18 +334,17 @@ public class DevFormViewModel : ViewModelBase
     private EditorContext _context;
 
     public DevFormViewModel(EditorContext context, DevTabGameViewModel game, DevTabPlayerViewModel player,
-        DevTabTravelViewModel travel, DevTabSpritesViewModel sprites, DevTabScriptViewModel script,
-        ModManagerViewModel mods,
-        DevTabConstantsViewModel constants)
+        DevTabTravelViewModel travel, DevTabScriptViewModel script,
+        ModManagerViewModel mods)
     {
         _context = context;
-        Mods = new ObservableCollection<ModsNodeViewModel>();
-        // NOTE: These should all be private readonly
         Game = game;
         Player = player;
         Travel = travel;
         Script = script;
         ModsManager = mods;
+        
+        
         
         InitializeTabEvents();
 
@@ -422,6 +352,8 @@ public class DevFormViewModel : ViewModelBase
             .Where(activePage => activePage != null)
             .Subscribe(_ => TemporaryTab = null);
 
+    
+        
         Pages = new ObservableCollection<EditorPageViewModel>();
         TopLevelPages = new ObservableCollection<PageNode>();
         _pageToNodeMap = new Dictionary<EditorPageViewModel, PageNode>();
@@ -473,7 +405,6 @@ public class DevFormViewModel : ViewModelBase
     {
         NodeFactory _nodeFactory = _context.NodeFactory;
         Filter = "";
-        _reloadMods();
 
         ActivePage = null;
         TopLevelPages.Clear();
@@ -487,11 +418,14 @@ public class DevFormViewModel : ViewModelBase
 
         Nodes.Clear();
 
-        var rootStr = ChosenMod.Name;
+        var rootStr = ModsManager.CurrentModString;
         
         var root = _nodeFactory.CreateOpenEditorNode<DevEditPageViewModel>(rootStr, "Icons.ScrollFill");
 
         Root = root;
+        ModsManager.WhenAnyValue(x => x.CurrentMod.Name)
+            .Subscribe(str => Root.Title = str ?? "Origin");
+        
         var devControlNode =
             _nodeFactory.CreateOpenEditorNode<DevControlViewModel>("Dev Control", "Icons.GameControllerFill");
         root.SubNodes.Add(devControlNode);

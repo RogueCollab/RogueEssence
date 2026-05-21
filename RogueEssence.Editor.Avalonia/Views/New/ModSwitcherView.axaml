@@ -55,7 +55,7 @@
             
 
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="vm:ModsNodeViewModel">
+                <DataTemplate DataType="vm:ModsEntryViewModel">
                     <!-- Tapped="OnItemTapped" -->
                     <Grid RowDefinitions="Auto, Auto" Background="Transparent" Tapped="OnItemTapped" >
                         <TextBlock FontSize="14" Classes="primary"  Text="{Binding Name}" ></TextBlock>

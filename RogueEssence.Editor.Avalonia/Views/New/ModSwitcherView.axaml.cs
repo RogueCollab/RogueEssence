@@ -34,11 +34,15 @@ public partial class ModSwitcherView : UserControl
         if (e.Key != Key.Enter || DataContext is not ViewModels.ModSwitcherViewModel switcher)
             return;
 
-        var selected = ModsListBox.SelectedItem as ModsNodeViewModel;
+        var selected = ModsListBox.SelectedItem as ModsEntryViewModel;
         if (selected is null)
             return;
+
+
+        bool isCurrentMod = await switcher.CheckIsCurrentMod(selected);
         
-        if (switcher.IsCurrent(selected))
+        // Don't prompt if the mod is already selected.
+        if (isCurrentMod)
         {
             switcher.CloseSwitcher();
             e.Handled = true;
@@ -47,13 +51,7 @@ public partial class ModSwitcherView : UserControl
         
         switcher.CloseSwitcher();
         await switcher.ConfirmModSwitchAsync();
-        // if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
-        //     return;
-        
-        // switcher.CurrentMod = selected;
-      
 
-        // DevForm.ExecuteOrPend(() => _doSwitch(selected));
         e.Handled = true;
     }
 
@@ -82,17 +80,18 @@ public partial class ModSwitcherView : UserControl
         if (DataContext is not ModSwitcherViewModel switcher)
             return;
 
-        var selected = ModsListBox.SelectedItem as ModsNodeViewModel;
+        var selected = ModsListBox.SelectedItem as ModsEntryViewModel;
         if (selected is null)
             return;
         
-        if (switcher.IsCurrent(selected))
+        bool isCurrentMod = await switcher.CheckIsCurrentMod(selected);
+        if (isCurrentMod)
         {
             switcher.CloseSwitcher();
             e.Handled = true;
             return;
         }
-        
+    
         switcher.CloseSwitcher();
         await switcher.ConfirmModSwitchAsync();
         

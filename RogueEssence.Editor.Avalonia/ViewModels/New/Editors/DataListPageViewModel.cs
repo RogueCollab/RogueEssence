@@ -236,6 +236,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
             FilteredItems.Add(item);
     }
     
+    
     public void AddChildItemUnderParent(DataListEntry entry)
     {
         Node.AddNodeIfNotExists(
@@ -336,25 +337,7 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         // IsExpanded = true;
         // Console.WriteLine($"Added {DataType} item: {vm.Name}");
     }
-
-    // private async Task ReIndexAsync()
-    // {
-    //     await Task.Run(() =>
-    //     {
-    //         lock (GameBase.lockObj)
-    //         {
-    //             DevHelper.RunIndexing(DataType);
-    //             DevHelper.RunExtraIndexing(DataType);
-    //             DataManager.Instance.LoadIndex(DataType);
-    //             DataManager.Instance.LoadUniversalIndices();
-    //             DataManager.Instance.ClearCache(DataType);
-    //             DiagManager.Instance.DevEditor.ReloadData(DataType);
-    //             ReloadEntries();
-    //         }
-    //     });
-    // }
-
-
+    
     public async Task DeleteItem()
     {
         var key = SelectedItem?.Key;

@@ -152,7 +152,7 @@ public class GroundEditorPageViewModel : EditorPageViewModel, IGroundEditor, IPr
             AllowMultiple = false,
             FileTypeFilter =
             [
-                new FilePickerFileType("Ground Files")
+                new FilePickerFileType(".rsground")
                 {
                     Patterns = ["*." + DataManager.GROUND_EXT.Substring(1)]
                 }

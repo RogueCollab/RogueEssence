@@ -9,74 +9,48 @@ using RogueEssence.Dungeon;
 using RogueEssence.Menu;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using RogueEssence.Data;
 using RogueEssence.Content;
 using RogueEssence.Dev.Views;
 using Avalonia.Controls;
 using RogueEssence.Dev;
 
-public class ModsEntryViewModel : ViewModelBase
-{
-    private string _name;
 
-    public string Name
-    {
-        get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
-    }
-
-    private string _editNamespace;
-
-    public string Namespace
-    {
-        get => _editNamespace;
-        set => this.RaiseAndSetIfChanged(ref _editNamespace, value);
-    }
-
-    public string Path;
-
-    public ModsEntryViewModel(string name, string newNamespace, string fullPath)
-    {
-        this._name = name;
-        this._editNamespace = newNamespace;
-        this.Path = fullPath;
-    }
-    
-    public string Display => $"{_editNamespace}: {_name}";
-}
 
 namespace RogueEssence.Dev.ViewModels
 {
-    public class ModsNodeViewModel : ViewModelBase
+    
+    public class ModsEntryViewModel : ViewModelBase
     {
-        private string name;
+        private string _name;
+
         public string Name
         {
-            get => name;
-            set => this.SetIfChanged(ref name, value);
+            get => _name;
+            set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
-        private string editNamespace;
+        private string _editNamespace;
+
         public string Namespace
         {
-            get => editNamespace;
-            set => this.SetIfChanged(ref editNamespace, value);
+            get => _editNamespace;
+            set => this.RaiseAndSetIfChanged(ref _editNamespace, value);
         }
 
         public string Path;
 
-        public ObservableCollection<ModsNodeViewModel> ModList { get; }
-
-        public ModsNodeViewModel(string name, string newNamespace, string fullPath)
+        public ModsEntryViewModel(string name, string newNamespace, string fullPath)
         {
-            this.name = name;
-            this.editNamespace = newNamespace;
+            this._name = name;
+            this._editNamespace = newNamespace;
             this.Path = fullPath;
-            ModList = new ObservableCollection<ModsNodeViewModel>();
         }
-
+    
+        public string Display => $"{_editNamespace}: {_name}";
     }
-
+    
     public class ModManagerViewModel : ViewModelBase
     {
         private EditorContext _context;
@@ -85,178 +59,111 @@ namespace RogueEssence.Dev.ViewModels
             currentMod = null;
             _context = context;
 
-            Mods = new ObservableCollection<ModsNodeViewModel>();
-            reloadMods();
+            ModsList = new ObservableCollection<ModsEntryViewModel>();
+            ReloadMods();
         }
+        
+        
+        private string currentModString;
 
-        private string currentMod;
-        public string CurrentMod
+        public string CurrentModString
         {
-            get => currentMod;
-            set => this.SetIfChanged(ref currentMod, value);
+            get => currentModString;
+            set => this.SetIfChanged(ref currentModString, value);
         }
-
-        private ModsNodeViewModel chosenMod;
-        public ModsNodeViewModel ChosenMod
-        {
-            get => chosenMod;
-            set => this.SetIfChanged(ref chosenMod, value);
-        }
-
-        public ObservableCollection<ModsNodeViewModel> Mods { get; }
 
         public void UpdateMod()
         {
-            CurrentMod = getModName(PathMod.Quest);
+            CurrentModString = _getModName(PathMod.Quest);
+        }
+    
+        private static string _getModName(ModHeader mod)
+        {
+            if (!mod.IsValid())
+                return "Origin";
+            return mod.GetMenuName();
+        }
+        
+        
+
+        private ModsEntryViewModel currentMod;
+        public ModsEntryViewModel CurrentMod
+        {
+            get => currentMod;
+            set
+            {
+                this.SetIfChanged(ref currentMod, value);
+            }
         }
 
-        public async void btnSwitch_Click()
+        public ObservableCollection<ModsEntryViewModel> ModsList { get; }
+        
+        public async Task AskSwitchTo(ModsEntryViewModel mod)
         {
+            
             //give a pop up warning that the game will be reloaded and wait for confirmation
-            MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "The game will be reloaded to use content from the new path.\nClick OK to proceed.", "Are you sure?",
-                MessageBox.MessageBoxButtons.OkCancel);
-            if (result == MessageBox.MessageBoxResult.Cancel)
+            MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_context.DialogService, $"The game will be reloaded to use content from {mod.Name}.\nClick OK to proceed.", "Are you sure?",
+                MessageBoxWindowView.MessageBoxButtons.OkCancel);
+            if (result == MessageBoxWindowView.MessageBoxResult.Cancel)
                 return;
 
-            DevForm.ExecuteOrPend(doSwitch);
+            DevForm.ExecuteOrPend(() => _switchTo(mod));
         }
+        
+        public async Task<bool> CheckIsCurrentMod(ModsEntryViewModel mod)
+        {
+            if (mod.Namespace == CurrentMod.Namespace)
+            {
+                await MessageBoxWindowView.Show(_context.DialogService, $"{CurrentMod.Name} is already currently active", "Switch Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
+                return true;
+            }
 
-        private void doSwitch()
+            return false;
+        }
+        
+        private void _switchTo(ModsEntryViewModel mod)
         {
             //modify and reload
             lock (GameBase.lockObj)
             {
                 LuaEngine.Instance.BreakScripts();
                 MenuManager.Instance.ClearMenus();
-                if (!String.IsNullOrEmpty(chosenMod.Path))
-                    GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(chosenMod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
+                if (!String.IsNullOrEmpty(mod.Path))
+                    GameManager.Instance.SetQuest(PathMod.GetModDetails(PathMod.FromApp(mod.Path)), new ModHeader[0] { }, new List<int>() { -1 });
                 else
                     GameManager.Instance.SetQuest(ModHeader.Invalid, new ModHeader[0] { }, new List<int>() { });
 
                 DiagManager.Instance.PrintModSettings();
                 DiagManager.Instance.SaveModSettings();
+                DiagManager.Instance.DevEditor.MapEditor = null;
+                DiagManager.Instance.DevEditor.GroundEditor = null;
             }
+      
         }
 
-        public async void btnAdd_Click()
+        public void ReloadMods()
         {
-            ModConfigWindowView window = new ModConfigWindowView();
-            ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
-            ModConfigViewModel2 vm = new ModConfigViewModel2(_context.DialogService, header);
-            window.DataContext = vm;
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            bool result = await window.ShowDialog<bool>(form);
-            if (!result)
-                return;
-
-            string newName = Text.Sanitize(vm.Name);
-            string newNamespace = Text.Sanitize(vm.Namespace).ToLower();
-
-            //sanitize name and check for name conflicts
-            if (String.IsNullOrWhiteSpace(newName))
-                return;
-            if (String.IsNullOrWhiteSpace(newNamespace))
-                return;
-
-            //check for children name conflicts
-            foreach (ModsNodeViewModel child in Mods)
-            {
-                if (String.Equals(child.Name, newName, StringComparison.OrdinalIgnoreCase))
-                {
-                    //already exists, pop up message
-                    await MessageBox.Show((Window)DiagManager.Instance.DevEditor, newName + " already exists!", "Add Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-                if (String.Equals(child.Namespace, newNamespace, StringComparison.OrdinalIgnoreCase))
-                {
-                    //already exists, pop up message
-                    await MessageBox.Show((Window)DiagManager.Instance.DevEditor, newName + " (Namespace) already exists!", "Add Failed", MessageBox.MessageBoxButtons.Ok);
-                    return;
-                }
-            }
-
-            ModsNodeViewModel newNode = new ModsNodeViewModel(newName, newNamespace, Path.Combine(PathMod.MODS_FOLDER, newName));
-            string fullPath = PathMod.FromApp(newNode.Path);
-            //add all asset folders
-            Directory.CreateDirectory(fullPath);
-            //create the mod xml
-            ModHeader newHeader = new ModHeader(fullPath, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
-            PathMod.SaveModDetails(fullPath, newHeader);
-
-            //add Strings
-            Directory.CreateDirectory(Path.Join(fullPath, "Strings"));
-            //Content
-            GraphicsManager.InitContentFolders(fullPath);
-            //Data
-            DataManager.InitDataDirs(fullPath);
-            //Script
-            LuaEngine.InitScriptFolders(fullPath, vm.Namespace);
-
-            //add node
-            Mods.Add(newNode);
-        }
-
-        public async void btnDelete_Click()
-        {
-            //prohibit the deletion of the current node or the base node
-            if (chosenMod == Mods[0])
-            {
-                await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "Cannot delete the root mod!", "Delete Failed", MessageBox.MessageBoxButtons.Ok);
-                return;
-            }
-            //ask for confirmation
-            MessageBox.MessageBoxResult result = await MessageBox.Show((Window)DiagManager.Instance.DevEditor, "Are you sure you want to delete the mod in directory:\n" + chosenMod.Path, "Are you sure?",
-                MessageBox.MessageBoxButtons.YesNo);
-            if (result == MessageBox.MessageBoxResult.No)
-                return;
-
-            string fullPath = PathMod.FromApp(chosenMod.Path);
-            //delete folder
-            Directory.Delete(fullPath, true);
-
-            //and then delete node
-            Mods.Remove(chosenMod);
-        }
-
-        public async void btnEdit_Click()
-        {
-            ModConfigWindowView window = new ModConfigWindowView();
-            ModHeader header = PathMod.Quest;
-            ModConfigViewModel2 vm = new ModConfigViewModel2(_context.DialogService, header);
-            window.DataContext = vm;
-
-            DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-            bool result = await window.ShowDialog<bool>(form);
-
-            if (result)
-            {
-                //save the mod data
-                string fullPath = PathMod.FromApp(PathMod.Quest.Path);
-                ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
-                PathMod.SaveModDetails(fullPath, resultHeader);
-
-                reloadMods();
-                DevForm.ExecuteOrPend(doSwitch);
-            }
-        }
-
-        private void reloadMods()
-        {
-            Mods.Clear();
-            Mods.Add(new ModsNodeViewModel(null, PathMod.BaseNamespace, ""));
+            ModsList.Clear();
+            ModsList.Add(new ModsEntryViewModel("Origin", PathMod.BaseNamespace, ""));
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
-            ModsNodeViewModel chosenModel = null;
+            ModsEntryViewModel chosenModel = null;
             foreach (string modPath in modsPath)
             {
                 ModHeader header = PathMod.GetModDetails(modPath);
-                Mods.Add(new ModsNodeViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
+                ModsList.Add(new ModsEntryViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
                 if (PathMod.Quest.Path == header.Path)
-                    chosenModel = Mods[Mods.Count - 1];
+                    chosenModel = ModsList[ModsList.Count - 1];
             }
-            ChosenMod = chosenModel;
+
+ 
+            CurrentMod = chosenModel;
         }
 
+        public void RemoveMod(ModsEntryViewModel mod)
+        {
+            ModsList.Remove(mod);
+        }
+        
         private static string getModName(ModHeader mod)
         {
             if (!mod.IsValid())

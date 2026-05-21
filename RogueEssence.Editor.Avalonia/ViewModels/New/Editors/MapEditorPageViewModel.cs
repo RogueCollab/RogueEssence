@@ -164,7 +164,7 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
             AllowMultiple = false,
             FileTypeFilter =
             [
-                new FilePickerFileType("Map Files")
+                new FilePickerFileType(".rsmap")
                 {
                     Patterns = [$"*{DataManager.MAP_EXT}"]
                 }
@@ -313,7 +313,7 @@ public class MapEditorPageViewModel : EditorPageViewModel, IMapEditor, IPreCreat
         {
             FileTypeChoices =
             [
-                new FilePickerFileType("Map Files")
+                new FilePickerFileType(".rsmap")
                 {
                     Patterns = [$"*{DataManager.MAP_EXT}"]
                 }

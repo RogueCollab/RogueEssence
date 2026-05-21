@@ -55,7 +55,7 @@
                         ToolTip.Tip="testing tooltip">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
-                        <TextBlock Padding="0,0,6,0" Text="{Binding ChosenMod.Name}"
+                        <TextBlock Padding="0,0,6,0" Text="{Binding ModsManager.CurrentMod.Name, FallbackValue='Origin'}"
                                    MaxWidth="200"
                                    TextTrimming="CharacterEllipsis" />
                         <Path HorizontalAlignment="Center" Width="10" Height="10" Margin="0,2,0,0"
