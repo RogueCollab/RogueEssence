@@ -144,7 +144,8 @@ namespace RogueEssence.Dev.ViewModels
         public void ReloadMods()
         {
             ModsList.Clear();
-            ModsList.Add(new ModsEntryViewModel("Origin", PathMod.BaseNamespace, ""));
+            CurrentMod = new ModsEntryViewModel("Origin", PathMod.BaseNamespace, "");
+            ModsList.Add(CurrentMod);
             string[] modsPath = Directory.GetDirectories(PathMod.MODS_PATH);
             ModsEntryViewModel chosenModel = null;
             foreach (string modPath in modsPath)
@@ -152,11 +153,11 @@ namespace RogueEssence.Dev.ViewModels
                 ModHeader header = PathMod.GetModDetails(modPath);
                 ModsList.Add(new ModsEntryViewModel(getModName(header), header.Namespace, Path.Combine(PathMod.MODS_FOLDER, Path.GetFileName(modPath))));
                 if (PathMod.Quest.Path == header.Path)
-                    chosenModel = ModsList[ModsList.Count - 1];
+                {
+                    CurrentMod = ModsList[ModsList.Count - 1];
+                    break;
+                }
             }
-
- 
-            CurrentMod = chosenModel;
         }
 
         public void RemoveMod(ModsEntryViewModel mod)
