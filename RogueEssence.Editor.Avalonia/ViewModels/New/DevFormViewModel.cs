@@ -526,7 +526,7 @@ public class DevFormViewModel : ViewModelBase
         constantsNode.SubNodes.Add(stringsNode);
         
         var effectsNode =
-            _context.NodeFactory.CreateOpenEditorNode<MapEditorPageViewModel>("Effects", "Icons.SparkleFill");
+            _context.NodeFactory.CreateOpenEditorNode<EmptyPageViewModel>("Effects", "Icons.SparkleFill");
         effectsNode.SubNodes.Add(_context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>("Heal FX",
             effectsNode,
             "Icons.SparkleFill", CreateFXOnOpen(() => DataManager.Instance.HealFX, fx => DataManager.Instance.HealFX = fx, "Heal", parent)));
