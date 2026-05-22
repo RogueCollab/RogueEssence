@@ -1,27 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform.Storage;
-using Avalonia.ReactiveUI;
-using Avalonia.Threading;
-using DynamicData;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
 using RogueEssence.Content;
 using RogueEssence.Data;
 using RogueEssence.Dev.Views;
-using RogueEssence.Script;
 
 
 namespace RogueEssence.Dev.ViewModels;
@@ -242,40 +229,6 @@ public class OpenEditorNodeWithParams : OpenEditorNode
         ExtraParams = extraParams;
     }
 }
-
-
-// public class OpenEditorNodeWithParams : OpenEditorNode
-// {
-//     public object[] ExtraParams { get; }
-//
-//     public OpenEditorNodeWithParams(
-//         string title,
-//         Type? editorType,
-//         object[] extraParams,
-//         string? icon = null,
-//         Action<EditorPageViewModel>? onPageLoad = null)
-//         : base(title, editorType, icon, onPageLoad)
-//     {
-//         ExtraParams = extraParams;
-//     }
-// }
-// public abstract class ItemRootNode : OpenEditorNode
-// {
-//     
-//     public ReactiveCommand<NodeBase, Unit> DeleteCommand { get; }
-//
-// // In constructor:
-//
-//     public abstract Task AddItem();
-//     public abstract Task DeleteItem(string key);
-//
-//     protected ItemRootNode(string title, Type? editorKey, string icon = null, Action<EditorPageViewModel>? onPageLoad = null)
-//         : base(title, editorKey, icon, onPageLoad)
-//     {
-//         DeleteCommand = ReactiveCommand.Create<NodeBase>(RemoveNode);
-//         
-//     }
-// }
 
 public class UniversalNode : OpenEditorNode
 {
@@ -509,20 +462,11 @@ public class DataItemNode : OpenEditorNode
     }
 }
 
-// SpriteRootNode have additional properties like mass exporting
 public class SpriteRootNode : OpenEditorNode
 {
-    protected ISpriteRootOperationStrategy _strategy;
+    public ISpriteRootOperationStrategy Strategy;
 
     public readonly GraphicsManager.AssetType AssetType;
-
-
-    public ReactiveCommand<Unit, Unit> MassExportCommand { get; }
-
-    public ReactiveCommand<Unit, Unit> MassImportCommand { get; }
-    // public ReactiveCommand<DataItemNode, Unit> ExportCommand { get; }
-    // public ReactiveCommand<Unit, Unit> ImportCommand { get; }
-    // public ReactiveCommand<Unit, Unit> ReImportCommand { get; }
 
     private string _cachedPath;
 
@@ -532,10 +476,8 @@ public class SpriteRootNode : OpenEditorNode
         set => this.RaiseAndSetIfChanged(ref _cachedPath, value);
     }
 
-
     public SpriteRootNode(
         IDialogService dialogService,
-        NodeFactory nodeFactory,
         GraphicsManager.AssetType assetType,
         Type? editorType,
         string title,
@@ -543,53 +485,24 @@ public class SpriteRootNode : OpenEditorNode
         : base(title, editorType, icon ?? "", onPageLoad)
     {
         AssetType = assetType;
-        // _dialogService = dialogService;
-        // _nodeFactory = nodeFactory;
-
-
-        _strategy = CreateStrategy(dialogService);
-        // _strategy = new SpriteRootTileStrategy(dialogService, nodeFactory, this);
-
-        MassExportCommand = ReactiveCommand.CreateFromTask(MassExportAsync);
-        MassImportCommand = ReactiveCommand.CreateFromTask(MassImportAsync);
-        // ExportCommand = ReactiveCommand.CreateFromTask<DataItemNode>(ExportSpriteAsync);
-        // ImportCommand = ReactiveCommand.CreateFromTask(ImportSpriteAsync);
-        // ReImportCommand = ReactiveCommand.CreateFromTask(ReImportSpriteAsync);
+        Strategy = CreateStrategy(dialogService);
     }
 
     protected virtual ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
-        => new SpriteRootAssetTypeStrategy(dialogService, this);
+    {
+        if (AssetType == GraphicsManager.AssetType.Beam)
+            return new SpriteRootBeamStrategy(dialogService, this);
+
+        return new SpriteRootAssetTypeStrategy(dialogService, this);
+    }
+
+    public async Task MassExportAsync() => await Strategy.MassExportAsync();
+    public async Task MassImportAsync() => await Strategy.MassImportAsync();
+    public async Task ReImportAsync() => await Strategy.ReImportAsync();
+    public async Task DeleteAsync(string key) => await Strategy.DeleteAsync(key);
+    public async Task ExportAsync(string key) => await Strategy.ExportAsync(key);
     
-
-    public async Task DeleteItem(string key)
-    {
-        // await _strategy.DeleteAsync(node);
-    }
-
-    public async Task MassExportAsync()
-    {
-        await _strategy.MassExportAsync();
-    }
-
-    public async Task MassImportAsync()
-    {
-        await _strategy.MassImportAsync();
-    }
-
-    // private async Task ExportSpriteAsync(DataItemNode node)
-    // {
-    //     await _strategy.ExportAsync(node);
-    // }
-
-    // private async Task ImportSpriteAsync()
-    // {
-    //     await _strategy.ImportAsync();
-    // }
-    //
-    // private async Task ReImportSpriteAsync()
-    // {
-    //     await _strategy.ReImportAsync();
-    // }
+    public async Task ImportAsync(ObservableCollection<string> items) => await Strategy.ImportAsync(items);
 }
 
 
@@ -597,9 +510,9 @@ public class SpriteTileRootNode : SpriteRootNode
 {
     private readonly IDialogService _dialogService;
 
-    public SpriteTileRootNode(IDialogService dialogService, NodeFactory nodeFactory, Type? editorType, string title,
+    public SpriteTileRootNode(IDialogService dialogService, Type? editorType, string title,
         string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
-        : base(dialogService, nodeFactory, GraphicsManager.AssetType.Tile, editorType, title, icon, onPageLoad)
+        : base(dialogService, GraphicsManager.AssetType.Tile, editorType, title, icon, onPageLoad)
     {
         _dialogService = dialogService;
         
@@ -640,50 +553,6 @@ public class SpriteTileRootNode : SpriteRootNode
         }
     }
 }
-
-// public class ModRootNode : ItemRootNode
-// {
-//     private readonly NodeFactory _nodeFactory;
-//
-//     private readonly IDialogService _dialogService;
-//     public ModRootNode(NodeFactory nodeFactory, IDialogService dialogService,
-//         Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
-//         : base(title, editorType, icon ?? "", onPageLoad)
-//     {
-//         _nodeFactory = nodeFactory;
-//         _dialogService = dialogService;
-//         
-//     }
-//
-//     public override async Task AddItem()
-//     {
-//         ModHeader header = new ModHeader("", "", "", "", "", Guid.NewGuid(), new Version(), new Version(), PathMod.ModType.Mod, new RelatedMod[0] { });
-//         var vm = new ModConfigWindowViewModel(_dialogService, header);
-//         bool result = await _dialogService.ShowDialogAsync<ModConfigWindowViewModel, bool>(vm, "Mod Config");
-//         
-//         if (!result)
-//             return;
-//         
-//         // SubNodes.Add(_nodeFactory.CreateDataItemNode(vm.Name, "MonsterEditor", $"{vm.Name}:", "Icons.GhostFill"));
-//         // IsExpanded = true;
-//         // Console.WriteLine($"Added {DataType} item: {vm.Name}");
-//     }
-//
-//     public override async Task DeleteItem(string key)
-//     {
-//         // if (node is null)
-//         //     return;
-//         //
-//         // var res = await MessageBoxWindowView.Show(_dialogService,
-//         //     $"Deleting {node.ItemKey} will reset it back to the base game.", $"Delete {node.ItemKey}", MessageBoxWindowView.MessageBoxButtons.YesNo, true);
-//         //
-//         // if (res != MessageBoxWindowView.MessageBoxResult.Yes)
-//         //     return;
-//         //
-//         // SubNodes.Remove(node);
-//         // Console.WriteLine($"Deleted {node.Title} of type {DataType}");
-//     }
-// }
 
 // Used by TabSwitcher
 public class PageNode : NodeBase

@@ -70,7 +70,7 @@
                 </Button>
                 <Button Classes="flat" Width="100" Margin="24,0,0,0"
                         Command="{Binding btnReImport_Click}"
-                        IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        IsEnabled="{Binding Node.CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                     <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
                 </Button>
                 <Button Classes="flat" Width="100" Margin="24,0,0,0"
