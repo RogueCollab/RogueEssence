@@ -471,6 +471,5 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
-
     }
 }

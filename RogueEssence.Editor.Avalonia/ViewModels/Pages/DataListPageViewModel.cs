@@ -82,11 +82,10 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         this.WhenAnyValue(x => x.SearchFilter).Subscribe(UpdateVisibleItems);
 
         EditMenuItems.Clear();
-
         
         var reIndex = new MenuItem { Header = "Re-Index" };
         reIndex.Click += async (s, e) => await Node.ReIndexAsync();
- 
+        EditMenuItems.Add(reIndex);
         
         if (DataType != DataManager.DataType.AutoTile)
         {
@@ -101,85 +100,11 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
         else
         {
             var importDtef = new MenuItem { Header = "Import DTEF" };
-            importDtef.Click += async (s, e) => await ImportDtefAsync();
+            importDtef.Click += async (s, e) => await ((AutoTileRootNode)Node).ImportDtefAsync();
             EditMenuItems.Add(importDtef);
         }
     }
-
-    private void tryImportDtef(string folder, string animName)
-    {
-        lock (GameBase.lockObj)
-        {
-            string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
-            DtefImportHelper.ImportDtef(folder, destFile);
-
-            //reindex graphics
-            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
-            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
-            DevDataManager.ClearCaches();
-
-            //reindex data
-            DevHelper.RunIndexing(DataManager.DataType.AutoTile);
-            DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
-            DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);
-            DataManager.Instance.LoadUniversalIndices();
-            DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
-            DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
-            ReloadEntries();
-        }
-    }
-
-    private async Task ImportDtefAsync()
-    {
-        //remember addresses in registry
-        string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
-
-        string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = "Select DTEF folder",
-            AllowMultiple = false,
-        }, folderName);
-
-        if (folder is null)
-            return;
-
-        string animName = Path.GetFileNameWithoutExtension(folder);
-
-        bool conflict = false;
-        foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
-        {
-            if (name.ToLower() == animName.ToLower())
-            {
-                conflict = true;
-                break;
-            }
-        }
-
-        if (conflict)
-        {
-            var result = await MessageBoxWindowView.Show(_context.DialogService,
-                $"Are you sure you want to overwrite the existing sheet:\n{animName}",
-                "Tileset already exists.", MessageBoxWindowView.MessageBoxButtons.YesNo);
-
-            if (result == MessageBoxWindowView.MessageBoxResult.No)
-                return;
-        }
-
-        DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
-
-        try
-        {
-            DevForm.ExecuteOrPend(() => { tryImportDtef(folder, animName); });
-        }
-        catch (Exception ex)
-        {
-            DiagManager.Instance.LogError(ex, false);
-            await MessageBoxWindowView.Show(_context.DialogService, $"Error importing from\n{folder}\n\n{ex.Message}",
-                "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
-            return;
-        }
-    }
-
+    
     private async Task ExportDtefAsync()
     {
         if (SelectedItem != null)

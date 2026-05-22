@@ -34,6 +34,7 @@ public class ContextMenuHelper
     
     public static ContextMenu CreateDataRootMenu(DataRootNode node)
     {
+        
         var menu = CreateContextMenu(
             CreateMenuItem("Re-Index", "Icons.FileFill", async () => await node.ReIndexAsync())
         );
@@ -43,6 +44,10 @@ public class ContextMenuHelper
             menu.Items.Add(new Separator());
             menu.Items.Add(CreateMenuItem("Resave all as File", "Icons.FileFill", () => node.ResaveAllAsync(false)));
             menu.Items.Add(CreateMenuItem("Resave all as Patch", "Icons.FileTextFill", () => node.ResaveAllAsync(true)));
+        }
+        else
+        {
+            menu.Items.Add(CreateMenuItem("Import DTEF", "Icons.DownloadFill", () => ((AutoTileRootNode)node).ImportDtefAsync()));
         }
         return menu;
     }

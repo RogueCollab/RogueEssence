@@ -11,7 +11,6 @@
         <vm:ReflectedDataPageViewModel></vm:ReflectedDataPageViewModel>
     </Design.DataContext>
     <Grid RowDefinitions="*, Auto, 32" ColumnDefinitions="*, *">
-        <!--ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2"-->
         <ScrollViewer Grid.ColumnSpan="2">
             <StackPanel Name="stkContent" Margin="12, 4">
         

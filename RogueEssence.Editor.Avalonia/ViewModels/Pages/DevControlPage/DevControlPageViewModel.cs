@@ -24,11 +24,4 @@ public class DevControlPageViewModel : EditorPageViewModel
         Travel = travel;
         Script = script;
     }
-
-    // public DevControlViewModel() : base(new PageFactory(new DesignServiceProvider()),
-    //     new TabEvents(new PageFactory(new DesignServiceProvider())), new DialogService())
-    // {
-    //     // Title = "Dev Control";
-    //     Fruits = new TestComboBoxViewModel();
-    // }
 }

@@ -22,11 +22,6 @@ public class ModConfigPageViewModel : EditorPageViewModel<ModItemNode>
 
     public void LoadDataFromPath()
     {
-        // string fullPath = PathMod.FromApp(PathMod.Quest.Path);
-        // ModHeader resultHeader = new ModHeader(PathMod.Quest.Path, vm.Name.Trim(), vm.Author.Trim(), vm.Description.Trim(), Text.Sanitize(vm.Namespace).ToLower(), Guid.Parse(vm.UUID), Version.Parse(vm.Version), Version.Parse(vm.GameVersion), (PathMod.ModType)vm.ChosenModType, vm.GetRelationshipArray());
-        // PathMod.SaveModDetails(fullPath, resultHeader);
-
-
         ModHeader header = PathMod.GetModDetails(PathMod.FromApp(Path));
         Name = header.Name;
         Namespace = header.Namespace;
@@ -52,29 +47,7 @@ public class ModConfigPageViewModel : EditorPageViewModel<ModItemNode>
         base.OnPageLoad();
         LoadDataFromPath();
     }
-
-
-    // public ModConfigWindowViewModel(IDialogService dialogService, ModHeader header)
-    // {
-    //     Name = header.Name;
-    //     Namespace = header.Namespace;
-    //     Author = header.Author;
-    //     Description = header.Description;
-    //     UUID = header.UUID.ToString().ToUpper();
-    //     Version = header.Version.ToString();
-    //     GameVersion = header.GameVersion.ToString();
-    //
-    //     ModTypes = new ObservableCollection<string>();
-    //     for (int ii = 0; ii < (int)PathMod.ModType.Count; ii++)
-    //         ModTypes.Add(((PathMod.ModType)ii).ToLocal());
-    //     ChosenModType = (int)header.ModType;
-    //
-    //     DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-    //     Relationships = new CollectionBoxViewModel(dialogService, new StringConv(typeof(RelatedMod), new object[0]));
-    //     Relationships.OnEditItem += Relationships_EditItem;
-    //     Relationships.LoadFromList(header.Relationships);
-    // }
-
+    
     private string name;
 
     public string Name

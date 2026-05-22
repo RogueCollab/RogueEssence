@@ -60,19 +60,6 @@
                     <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
                 </Button>
             </StackPanel>
-            <!-- -->
-            <!-- <Button Command="{Binding btnSwitch_Click}" Margin="4" Grid.Row="2" Grid.Column="0">Switch To</Button> -->
-            <!-- <Button Command="{Binding btnAdd_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Add New</Button> -->
-            <!-- <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="2">Delete</Button> -->
-            <!-- -->
-            <!-- <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4"> -->
-            <!--     <Button Command="{Binding AddItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
-            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Plus}" /> -->
-            <!--     </Button> -->
-            <!--     <Button Command="{Binding DeleteItem}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3"> -->
-            <!--         <Path Width="14" Height="14" Data="{StaticResource Icons.Minus}" /> -->
-            <!--     </Button> -->
-            <!-- </StackPanel> -->
         </Grid>
     </Grid>
     

@@ -13,8 +13,6 @@ namespace RogueEssence.Dev.ViewModels;
 
 public class ModSwitcherViewModel : ViewModelBase
 {
-
-    // private readonly IDialogService _dialogService;
     private readonly DevFormViewModel _mainWindow;
     private ModsEntryViewModel _selectedMod;
     private ModManagerViewModel _modManager;

@@ -185,10 +185,6 @@
       <DependentUpon>DataListPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\Pages\DevEditPageView.axaml.cs">
-      <DependentUpon>DevEditPageView.axaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Views\Pages\ModConfigPageView.axaml.cs">
       <DependentUpon>ModConfigPageView.axaml</DependentUpon>
       <SubType>Code</SubType>
@@ -279,7 +275,6 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="Views\Pages\GroundEditPage\EntityBrowser.axaml" />
-    <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundEditForm.axaml" />
     <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabDecorations.axaml" />
     <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabEntities.axaml" />
     <AdditionalFiles Include="Views\Pages\GroundEditPage\GroundTabProperties.axaml" />

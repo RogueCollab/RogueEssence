@@ -39,15 +39,7 @@
             
         </Grid>
         
-        <Grid Margin="4" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="42"/>
-                <RowDefinition Height="42"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+        <Grid Margin="4" RowDefinitions="42, 42" ColumnDefinitions="*, *">
             <v:SearchComboBox ItemsSource="{Binding Anims}" SelectedIndex="{Binding ChosenAnim}" Margin="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
             <Button Click="btnOK_Click" Margin="4" Grid.Row="1" Grid.Column="0">OK</Button>
             <Button Click="btnCancel_Click" Margin="4" Grid.Row="1" Grid.Column="1">Cancel</Button>

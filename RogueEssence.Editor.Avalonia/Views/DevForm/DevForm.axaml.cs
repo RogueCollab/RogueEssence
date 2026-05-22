@@ -662,10 +662,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
                 break;
         }
     }
-
-    private async void LeftTreeDataGrid_OnLoaded(object sender, RoutedEventArgs e)
-    {
-    }
+    
 
     // Show the sprite in-game when the user clicks on the sprite node in the tree
     private void LeftTreeDataGrid_OnPointerPressed(object? sender, PointerPressedEventArgs e)

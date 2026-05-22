@@ -71,6 +71,13 @@ public class NodeFactory
         where TEditor : EditorPageViewModel
         => Create<DataRootNode>(dataType, typeof(TEditor), title, icon, CreateCallback(onOpen));
 
+    public AutoTileRootNode CreateAutoTileRootNode<TEditor>(
+        string title,
+        string? icon = null,
+        Action<TEditor>? onOpen = null)
+        where TEditor : EditorPageViewModel
+        => Create<AutoTileRootNode>(typeof(TEditor), title, icon, CreateCallback(onOpen));
+
     // public ModRootNode CreateModRootNode<TEditor>(
     //     string title,
     //     string? icon = null,

@@ -117,7 +117,6 @@
                     <TreeDataGrid Grid.Row="2"
                                   MinHeight="200" MinWidth="200"
                                   x:Name="LeftTreeDataGrid"
-                                  Loaded="LeftTreeDataGrid_OnLoaded"
                                   DoubleTapped="LeftTreeDataGrid_OnDoubleTapped"
                                   ContextRequested="LeftTreeDataGrid_OnContextRequested"
                                   PointerPressed="LeftTreeDataGrid_OnPointerPressed"
@@ -129,65 +128,11 @@
                             <DataTemplate x:Key="TreeDataGridNodeBaseTemplate" DataType="vm:NodeBase">
                                 <ContentControl Content="{Binding}">
                                     <ContentControl.DataTemplates>
-                                        <!-- <DataTemplate DataType="vm:ItemRootNode"> -->
-                                        <!--     <Grid ColumnDefinitions="*, 32" Height="16" Margin="8, 0, 0, 0"> -->
-                                        <!--         <v:IconText Grid.Column="0" Grid.ColumnSpan="2" -->
-                                        <!--                     Text="{Binding Title}" -->
-                                        <!--                     Icon="{Binding Icon}" -->
-                                        <!--                     IconSize="12" /> -->
-
-                                        <!-- <Button Grid.Column="1" HorizontalAlignment="Left" -->
-                                        <!--         Classes="icon_button" -->
-                                        <!--         Padding="4, 0, 0, 0" -->
-                                        <!--         Width="18" Height="18" -->
-                                        <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}" -->
-                                        <!-- -->
-                                        <!--         Command="{Binding AddCommand}"> -->
-                                        <!--     <Path Stretch="Fill" -->
-                                        <!--           Fill="{DynamicResource Brush.FG1}" -->
-                                        <!--           Width="12" Height="12" -->
-                                        <!--           Data="{StaticResource Icons.Plus}" /> -->
-                                        <!-- </Button> -->
-                                        <!--     </Grid> -->
-                                        <!-- </DataTemplate> -->
-
-                                        <DataTemplate DataType="vm:DataItemNode">
-                                            <Grid ColumnDefinitions="*,32" Height="16" Margin="8, 0, 0, 0">
-                                                <v:IconText Text="{Binding Title}"
-                                                            Icon="{Binding Icon}"
-                                                            IconSize="12" />
-                                                <!-- -->
-                                                <!-- <Button Grid.Column="1" -->
-                                                <!--         Padding="4, 0, 0, 0" -->
-                                                <!--         HorizontalAlignment="Left" -->
-                                                <!--         Command="{Binding ((vm:ItemRootNode)Parent).DeleteCommand}" -->
-                                                <!--         CommandParameter="{Binding}" -->
-                                                <!--         IsVisible="{Binding IsPointerOver, RelativeSource={RelativeSource AncestorType=TreeDataGridRow}}" -->
-                                                <!--         Classes="icon_button" -->
-                                                <!--         Width="18" Height="18" -->
-                                                <!--         VerticalAlignment="Center"> -->
-                                                <!--     <Path Stretch="Fill" -->
-                                                <!--           Fill="{DynamicResource Brush.FG1}" -->
-                                                <!--           Width="12" Height="12" -->
-                                                <!--           Data="{StaticResource Icons.Minus}" /> -->
-                                                <!-- </Button> -->
-                                            </Grid>
-                                        </DataTemplate>
-
-
-                                        <DataTemplate DataType="vm:OpenEditorNode">
-                                            <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
-                                                        Icon="{Binding Icon}"
-                                                        IconSize="12" />
-                                        </DataTemplate>
-
-
                                         <DataTemplate DataType="vm:NodeBase">
                                             <v:IconText Margin="8, 0, 0, 0" Text="{Binding Title}"
                                                         Icon="{Binding Icon}"
                                                         IconSize="12" />
                                         </DataTemplate>
-
                                     </ContentControl.DataTemplates>
                                 </ContentControl>
                             </DataTemplate>
@@ -215,12 +160,9 @@
 
                 <!-- Editor Content -->
                 <Panel Grid.Row="1" Background="{DynamicResource Brush.PageBackground}">
-
-                    <!-- Temporary tab still uses ContentControl since it's transient -->
                     <ContentControl Content="{Binding TemporaryTab}"
                                     IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNotNull}}" />
-
-                    <!-- All permanent pages kept alive, just toggling visibility -->
+                    
                     <ItemsControl ItemsSource="{Binding Pages}"
                                   IsVisible="{Binding TemporaryTab, Converter={x:Static ObjectConverters.IsNull}}">
                         <ItemsControl.ItemsPanel>

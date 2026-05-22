@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using RogueEssence.Dev.Services;
 using ReactiveUI;
 using RogueEssence.Content;
@@ -183,6 +186,8 @@ public class OpenEditorNode : NodeBase
 
 public class ReflectedDataNode : OpenEditorNode
 {
+    // Used to ID each individual node, so up the tree and take each title and concat to 
+    // form the identifier. NOTE: When adding items (onEdit) use the last index (not the selected index) so pages don't get messed up?
     private string BuildIdentifier(NodeBase? parent)
     {
         var parts = new List<string> { Title };
@@ -213,7 +218,6 @@ public class ReflectedDataNode : OpenEditorNode
     protected override int GetHashCodeCore() => _identifier.GetHashCode();
 }
 
-// TODO: Remove
 public class OpenEditorNodeWithParams : OpenEditorNode
 {
     public object[] ExtraParams { get; }
@@ -355,12 +359,11 @@ public class DataRootNode : OpenEditorNode
         });
     }
     
-    public DataRootNode(NodeFactory nodeFactory, IDialogService dialogService, DataManager.DataType dataType,
+    public DataRootNode(DataManager.DataType dataType,
         Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
         : base(title, editorType, icon ?? "", onPageLoad)
     {
-        _nodeFactory = nodeFactory;
-        _dialogService = dialogService;
+    
         DataType = dataType;
     }
 
@@ -433,10 +436,101 @@ public class DataRootNode : OpenEditorNode
             await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a patch.", key),
                 "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
     }
-    
-    
 }
 
+public class AutoTileRootNode : DataRootNode
+{
+    private readonly EditorContext _context;
+    public AutoTileRootNode(EditorContext context, Type? editorType, string title, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(DataManager.DataType.AutoTile, editorType, title, icon, onPageLoad)
+    {
+        _context = context;
+    }
+    
+    
+    public async Task ImportDtefAsync()
+    {
+        //remember addresses in registry
+        string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+        var options = new FolderPickerOpenOptions
+        {
+            Title = "Select DTEF folder",
+            AllowMultiple = false,
+        };
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            string? folder = await _context.DialogService.ShowFolderPickerAsync(options, folderName);
+
+
+
+            if (folder is null)
+                return;
+
+            string animName = Path.GetFileNameWithoutExtension(folder);
+
+            bool conflict = false;
+            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
+            {
+                if (name.ToLower() == animName.ToLower())
+                {
+                    conflict = true;
+                    break;
+                }
+            }
+
+            if (conflict)
+            {
+                var result = await MessageBoxWindowView.Show(_context.DialogService,
+                    $"Are you sure you want to overwrite the existing sheet:\n{animName}",
+                    "Tileset already exists.", MessageBoxWindowView.MessageBoxButtons.YesNo);
+
+                if (result == MessageBoxWindowView.MessageBoxResult.No)
+                    return;
+            }
+
+            DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+            try
+            {
+                DevForm.ExecuteOrPend(() => { _tryImportDtef(folder, animName); });
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                await MessageBoxWindowView.Show(_context.DialogService,
+                    $"Error importing from\n{folder}\n\n{ex.Message}",
+                    "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
+                return;
+            }
+        });
+    }
+    
+    
+    private void _tryImportDtef(string folder, string animName)
+    {
+        lock (GameBase.lockObj)
+        {
+            string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
+            DtefImportHelper.ImportDtef(folder, destFile);
+
+            //reindex graphics
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+            DevDataManager.ClearCaches();
+
+            //reindex data
+            DevHelper.RunIndexing(DataManager.DataType.AutoTile);
+            DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
+            DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);
+            DataManager.Instance.LoadUniversalIndices();
+            DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
+            DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
+            // TODO: Reload
+        }
+    }
+}
 // Children of the DataRootNode
 public class DataItemNode : OpenEditorNode
 {

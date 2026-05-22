@@ -198,52 +198,6 @@ public class MapEditPageViewModel : EditorPageViewModel, IMapEditor, IPreCreateP
             }
         });
     }
-    // public async void mnuOpen_Click()
-    // {
-    //     string mapDir = Path.GetFullPath(PathMod.ModPath(DataManager.MAP_PATH));
-    //     DevForm form = (DevForm)DiagManager.Instance.DevEditor;
-    //     IStorageFolder directory = await form.GroundEditForm.StorageProvider.TryGetFolderFromPathAsync(mapDir);
-    //
-    //     await Dispatcher.UIThread.InvokeAsync(async () =>
-    //     {
-    //         IReadOnlyList<IStorageFile> results = await form.StorageProvider.OpenFilePickerAsync(
-    //             new FilePickerOpenOptions
-    //             {
-    //                 Title = "Open .rsmap File",
-    //                 SuggestedStartLocation = directory,
-    //                 AllowMultiple = false,
-    //                 FileTypeFilter =
-    //                 [
-    //                     new FilePickerFileType("Map Files")
-    //                     {
-    //                         Patterns = ["*." + DataManager.MAP_EXT.Substring(1)]
-    //                     }
-    //                 ]
-    //             });
-    //         if (results.Count > 0)
-    //         {
-    //             IStorageFile result = results.First();
-    //
-    //             bool legalPath = false;
-    //             foreach (string proposedPath in PathMod.FallbackPaths(DataManager.MAP_PATH))
-    //             {
-    //                 if (comparePaths(proposedPath, Path.GetDirectoryName(result.Path.LocalPath)))
-    //                     legalPath = true;
-    //             }
-    //
-    //             if (!legalPath)
-    //                 await MessageBox.Show(form.MapEditForm,
-    //                     String.Format("Map can only be loaded from:\n{0}\nOr one of its parents.",
-    //                         PathMod.ModPath(DataManager.MAP_PATH)), "Error", MessageBox.MessageBoxButtons.Ok);
-    //             else
-    //             {
-    //                 lock (GameBase.lockObj)
-    //                     DoLoad(Path.GetFileNameWithoutExtension(results.First().Name));
-    //             }
-    //         }
-    //     });
-    // }
-
 
     public async void mnuExportAsGround_Click()
     {

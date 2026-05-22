@@ -14,7 +14,7 @@ namespace RogueEssence.Dev.ViewModels
     public class DevTabScriptViewModel : ViewModelBase
     {
         private Stack<string> m_lastcommands;
-        private int m_cntDownArrow;   //counts the ammount of times the down arrow has been pressed in a row, for looking through the last commands!
+        private int m_cntDownArrow;   //counts the amount of times the down arrow has been pressed in a row, for looking through the last commands!
 
         public DevTabScriptViewModel()
         {

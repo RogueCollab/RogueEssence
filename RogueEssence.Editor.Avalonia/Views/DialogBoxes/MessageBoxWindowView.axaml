@@ -10,6 +10,9 @@
                     x:Name="ThisControl"
                     SizeToContent="WidthAndHeight">
 
+    <Design.DataContext>
+        <vm:MessageBoxWindowViewModel/>
+    </Design.DataContext>
     <Grid RowDefinitions="Auto,*">
         <!-- TitleBar -->
         <Grid Grid.Row="0" Height="28" IsVisible="{Binding !#ThisControl.UseSystemWindowFrame}">
