@@ -16,7 +16,7 @@
 
         <DockPanel Grid.Row="0" VerticalAlignment="Top">
             <Menu x:Name="DataListPageViewEditMenu" DockPanel.Dock="Left">
-                <MenuItem Header="Edit" ItemsSource="{Binding EditMenuItems}" />
+                <MenuItem Header="Edit" Classes="menuright" ItemsSource="{Binding EditMenuItems}" />
             </Menu>
         </DockPanel>
         <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"

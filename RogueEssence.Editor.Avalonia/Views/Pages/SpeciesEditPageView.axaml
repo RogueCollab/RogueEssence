@@ -18,95 +18,8 @@
     <Grid RowDefinitions="Auto, 32, Auto Auto">
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="Edit">
-                    <MenuItem.Styles>
-                        <Style Selector="MenuItem">
-                            <Setter Property="Template">
-                                <ControlTemplate>
-                                    <Panel>
-                                        <Border Name="PART_LayoutRoot"
-                                                Padding="{TemplateBinding Padding}"
-                                                Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="{TemplateBinding CornerRadius}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"
-                                                                      SharedSizeGroup="ToggleIcon" />
-                                                    <ColumnDefinition Width="Auto"
-                                                                      SharedSizeGroup="MenuItemIcon" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto"
-                                                                      SharedSizeGroup="MenuItemIGT" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <ContentControl Grid.Column="0"
-                                                                x:Name="PART_ToggleIconPresenter"
-                                                                IsVisible="False"
-                                                                Theme="{StaticResource FluentMenuItemIconTheme}"
-                                                                Margin="{DynamicResource MenuIconPresenterMargin}" />
-
-                                                <ContentControl Grid.Column="1"
-                                                                x:Name="PART_IconPresenter"
-                                                                IsVisible="False"
-                                                                Theme="{StaticResource FluentMenuItemIconTheme}"
-                                                                Content="{TemplateBinding Icon}"
-                                                                Margin="{DynamicResource MenuIconPresenterMargin}" />
-
-                                                <ContentPresenter Name="PART_HeaderPresenter"
-                                                                  Content="{TemplateBinding Header}"
-                                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                                                  VerticalAlignment="Center"
-                                                                  HorizontalAlignment="Stretch"
-                                                                  Grid.Column="2" />
-                                                <TextBlock x:Name="PART_InputGestureText"
-                                                           Grid.Column="3"
-                                                           Margin="{DynamicResource MenuInputGestureTextMargin}"
-                                                           Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" />
-                                            </Grid>
-                                        </Border>
-                                        <Popup Name="PART_Popup"
-                                               WindowManagerAddShadowHint="False"
-                                               Placement="RightEdgeAlignedTop"
-                                               MaxHeight="400"
-                                               IsLightDismissEnabled="False"
-                                               HorizontalOffset="-4"
-                                               VerticalOffset="-4"
-                                               IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-                                            <Grid>
-                                                <Border Background="{DynamicResource Brush.Popup}" Margin="4"
-                                                        CornerRadius="{DynamicResource OverlayCornerRadius}">
-                                                    <Border.Effect>
-                                                        <DropShadowEffect OffsetX="0" OffsetY="0" Color="Black"
-                                                                          BlurRadius="4" Opacity=".6" />
-                                                    </Border.Effect>
-                                                </Border>
-
-                                                <Border BorderThickness="0" Margin="8,4" MaxHeight="400">
-                                                    <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
-                                                        <ItemsPresenter Name="PART_ItemsPresenter"
-                                                                        Margin="{DynamicResource MenuFlyoutScrollerMargin}"
-                                                                        Grid.IsSharedSizeScope="True">
-                                                            <ItemsPresenter.ItemsPanel>
-                                                                <ItemsPanelTemplate>
-                                                                    <VirtualizingStackPanel Orientation="Vertical" />
-                                                                </ItemsPanelTemplate>
-                                                            </ItemsPresenter.ItemsPanel>
-                                                        </ItemsPresenter>
-                                                    </ScrollViewer>
-                                                </Border>
-                                            </Grid>
-                                        </Popup>
-                                    </Panel>
-                                </ControlTemplate>
-                            </Setter>
-                        </Style>
-
-                    </MenuItem.Styles>
+                <MenuItem Header="Edit" Classes="menuright">
+                    
                     <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
                     <MenuItem Header="Re-Index" Command="{Binding mnuReIndex_Click}" />
                     <Separator />
@@ -117,9 +30,7 @@
         </DockPanel>
         <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
                    Text="{Binding HeaderText}" />
-
-        <!-- Text="{Binding SearchFilter, Mode=TwoWay}" -->
-        <!-- Search Grid -->
+        
         <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 8, Auto" Margin="64, 8" MinWidth="600">
 
             <TextBox Classes="search"

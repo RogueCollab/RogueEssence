@@ -14,22 +14,13 @@
     <Grid RowDefinitions="Auto, 32, Auto, 8, Auto">
         <DockPanel Grid.Row="0" VerticalAlignment="Top">
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="Edit">
+                <MenuItem Header="Edit" Classes="menuright">
                     <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
                     <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
                     <Separator IsVisible="{Binding IsTileAsset}" />
                     <MenuItem IsVisible="{Binding IsTileAsset}" Header="Re-Index" Command="{Binding mnuReIndex_Click}" />
                 </MenuItem>
             </Menu>
-
-
-            <!-- <Grid RowDefinitions="*, 34" ColumnDefinitions="*, *, *, *"> -->
-            <!--     <views:SearchListBox DataContext="{Binding Anims}" Margin="4" Grid.ColumnSpan="4"/> -->
-            <!--     <Button Command="{Binding btnImport_Click}" Margin="4" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Import</Button> -->
-            <!--     <Button Command="{Binding btnReImport_Click}" Margin="4" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">Re-Import</Button> -->
-            <!--     <Button Command="{Binding btnExport_Click}" Margin="4" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Export</Button> -->
-            <!--     <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="1" Grid.Column="3" IsEnabled="{Binding ChosenAnim, Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button> -->
-            <!-- </Grid> -->
         </DockPanel>
         <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
                    Text="{Binding AssetType}" />

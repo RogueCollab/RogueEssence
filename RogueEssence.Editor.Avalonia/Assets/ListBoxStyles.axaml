@@ -17,8 +17,6 @@
         <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
     </Style>
     
-    
-    
     <Style Selector="ListBox.borderless">
         <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
         <Setter Property="ItemContainerTheme" Value="{StaticResource CompactListBoxItem}" />

@@ -17,7 +17,7 @@
                 <ResourceInclude Source="/Assets/Icons.axaml"/>
                 <ResourceInclude Source="/Assets/Themes.axaml"/>
                 <ResourceInclude Source="/Assets/NodeTemplates.axaml"/>
-                <ResourceInclude Source="/Assets/MenuItemStyles.axaml" />
+                <ResourceInclude Source="/Assets/MenuItemStylesResource.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
@@ -46,6 +46,7 @@
          <fluent:CustomTheme/>
          <StyleInclude Source="/Assets/Styles.axaml"/>
          <StyleInclude Source="/Assets/ListBoxStyles.axaml"/>
+         <StyleInclude Source="/Assets/MenuItemStyles.axaml"/>
          <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
          <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
          <StyleInclude Source="/Assets/TreeStyles.axaml"/>
