@@ -356,43 +356,6 @@ namespace RogueEssence.Dev
                     
                             
                     _context.TabEvents.AddChildPage(vm, newEditor);
-
-                    // _context.OpenElementEditor(vm, title, elementName, elementType, attributes, element, advancedEdit, op);
-                    // DataEditForm frmData = new DataEditForm();
-                    // frmData.Title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
-                    //
-                    // DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0], advancedEdit);
-                    // DataEditor.TrackTypeSize(frmData, type);
-                    //
-                    // frmData.SelectedOKEvent += async () =>
-                    // {
-                    //     element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0], advancedEdit);
-                    //     op(element);
-                    //     return true;
-                    // };
-                    //
-                    // control.GetOwningForm().RegisterChild(frmData);
-                    // frmData.Show();
-
-
-
-                    // string title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
-                    // var (node, editor) = vm.AddNewNodeAndTab(title);
-                    // DataEditForm frmData = new DataEditForm();
-                    // frmData.Title = DataEditor.GetWindowTitle(parent, name, element, type, ReflectionExt.GetPassableAttributes(0, attributes));
-                    //
-                    // DataEditor.LoadClassControls(frmData.ControlPanel, parent, parentType, name, type, ReflectionExt.GetPassableAttributes(0, attributes), element, true, new Type[0], advancedEdit);
-                    // DataEditor.TrackTypeSize(frmData, type);
-                    //
-                    // frmData.SelectedOKEvent += async () =>
-                    // {
-                    //     element = DataEditor.SaveClassControls(frmData.ControlPanel, name, type, ReflectionExt.GetPassableAttributes(0, attributes), true, new Type[0], advancedEdit);
-                    //     op(element);
-                    //     return true;
-                    // };
-                    //
-                    // control.GetOwningForm().RegisterChild(frmData);
-                    // frmData.Show();
                 };
 
                 {
