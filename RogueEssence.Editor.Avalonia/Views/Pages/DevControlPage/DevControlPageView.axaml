@@ -13,6 +13,17 @@
     <Design.DataContext>
         <vm:DevControlPageViewModel/>
     </Design.DataContext>
+    
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="10"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Padding" Value="8"></Setter>
+        </Style>
+    </UserControl.Styles>
     <Border>
         <TabControl>
             <TabItem Header="Game">
