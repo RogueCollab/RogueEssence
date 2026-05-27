@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using ReactiveUI;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev.ViewModels;
 
@@ -21,12 +24,25 @@ public class StringEditPageViewModel : EditorPageViewModel
         GameStrings = new ObservableCollection<MapString>();
         IsMenuText = (bool)node.ExtraParams[0];
         HeaderText = node.Title;
+        this.WhenAnyValue(x => x.SearchFilter).Subscribe(UpdateVisibleItems);
     }
     public override void OnPageLoad()
     {
-        LoadStringEntries();
+        LoadStrings();
     }
-    
+
+    private void UpdateVisibleItems(string filter)
+    {
+        FilteredItems.Clear();
+        var strategy = new BeginningTitleFilterStrategy();
+        foreach (var item in GameStrings.Where(e =>
+                     strategy.Matches(e.Key, filter) || strategy.Matches(e.String, filter)))
+        {
+            Console.WriteLine(item.Key);
+            FilteredItems.Add(item);
+        }
+    }
+
     protected override bool IsSamePage(EditorPageViewModel other)
     {
         if (other is not StringEditPageViewModel stringPage)
@@ -35,6 +51,14 @@ public class StringEditPageViewModel : EditorPageViewModel
         return this.IsMenuText == stringPage.IsMenuText;
     }
         
+    private string _searchFilter = string.Empty;
+
+    public string SearchFilter
+    {
+        get => _searchFilter;
+        set => this.RaiseAndSetIfChanged(ref _searchFilter, value);
+    }
+
     
     public string Name
     {
@@ -45,6 +69,8 @@ public class StringEditPageViewModel : EditorPageViewModel
     // Later: implement variable length columns workaround https://github.com/AvaloniaUI/Avalonia/issues/2781
     public ObservableCollection<MapString> GameStrings { get; set; }
 
+    public ObservableCollection<MapString> FilteredItems { get; } = new();
+    
     private int currentString;
 
     public int CurrentString
@@ -53,38 +79,17 @@ public class StringEditPageViewModel : EditorPageViewModel
         set { this.SetIfChanged(ref currentString, value); }
     }
 
-
-    public void btnAddString_Click()
-    {
-        string defname = String.Format("String_{0}", GameStrings.Count);
-        //if (CurrentString > -1)
-        //    GameStrings.Insert(CurrentString, new MapString(defname, "", ""));
-        //else
-        GameStrings.Add(new MapString(defname, "", ""));
-    }
-
-    public void btnDeleteString_Click()
-    {
-        GameStrings.RemoveAt(CurrentString);
-    }
-
-    
-
-    public void LoadStringEntries()
-    {
-        LoadStrings();
-    }
-
-
     public void btnAdd_Click()
     {
         string defname = String.Format("STRING_{0}", GameStrings.Count);
         GameStrings.Add(new MapString(defname, "", ""));
+        UpdateVisibleItems(SearchFilter);
     }
 
     public void btnDelete_Click()
     {
         GameStrings.RemoveAt(CurrentString);
+        UpdateVisibleItems(SearchFilter);
     }
 
     public void btnSave_Click()
@@ -99,7 +104,11 @@ public class StringEditPageViewModel : EditorPageViewModel
     /// <param name="stringsdir">Directory in which string resx files are stored!</param>
     public void LoadStrings()
     {
-        populateStringTable(GameStrings, false);
+        Dispatcher.UIThread.Post(() =>
+        {
+            populateStringTable(GameStrings, false);
+            UpdateVisibleItems(SearchFilter);
+        });
     }
 
     private void populateStringTable(IList<MapString> strings, bool skipTopMod)

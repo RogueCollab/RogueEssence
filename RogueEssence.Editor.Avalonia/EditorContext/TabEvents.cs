@@ -14,6 +14,9 @@ namespace RogueEssence.Dev
         public event Action<EditorPageViewModel>? RemoveTabEvent;
         public event Action<EditorPageViewModel>? NavigateToTabEvent;
         
+        public event Action<OpenEditorNode>? AddPageFromTreeNodeEvent;
+
+        
         // Used for closing tabs when a data entry is deleted
         public event Action<string, DataManager.DataType>? CloseTabsForEntry;
         
@@ -65,6 +68,10 @@ namespace RogueEssence.Dev
         // TODO: remove this?
         public void NavigateToTab(EditorPageViewModel page)
             => NavigateToTabEvent?.Invoke(page);
+        
+        // TODO: remove this?
+        public void AddPageFromTreeNode(OpenEditorNode node)
+            => AddPageFromTreeNodeEvent?.Invoke(node);
 
     }
 }

@@ -11,19 +11,22 @@
         <vm:ModListPageViewModel/>
     </Design.DataContext>
     <Grid RowDefinitions="64, Auto, Auto, Auto">
-        <TextBlock Grid.Row="1" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
-                   Text="Mods" />
+
 
         <!-- Search Grid -->
-        <Grid Grid.Row="2" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8" MinWidth="600">
+        <Grid Grid.Row="2" RowDefinitions="Auto, Auto, Auto, Auto" Margin="64, 8">
 
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                       Text="Mods" />
+            
             <TextBox Classes="search"
-                     Grid.Row="0"
+                     Grid.Row="1"
                      Text="{Binding SearchFilter, Mode=TwoWay}"/>
 
          
             <ListBox Grid.Row="2"
                      DoubleTapped="ModListPageListBox_OnDoubleTapped"
+                     Margin="0, 16, 0, 8"
                      Background="{DynamicResource Brush.ListBox.Background}"
                      x:Name="ModListPageListBox" SelectedItem="{Binding SelectedItem}"
                      ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
@@ -44,7 +47,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
 
-            <StackPanel Grid.Row="4" Orientation="Horizontal">
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
                 <Button Classes="flat" Width="100"
                         Command="{Binding btnSwitch_Click}"
                         IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">

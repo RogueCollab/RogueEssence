@@ -15,7 +15,7 @@
     <UserControl.Resources>
         <converters:OXConverter x:Key="OXConverter" />
     </UserControl.Resources>
-    <Grid RowDefinitions="Auto, 32, Auto Auto">
+    <Grid RowDefinitions="Auto, 32, Auto, Auto">
         <DockPanel>
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="Edit" Classes="menuright">
@@ -28,16 +28,18 @@
                 </MenuItem>
             </Menu>
         </DockPanel>
-        <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
-                   Text="{Binding HeaderText}" />
-        
-        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 8, Auto" Margin="64, 8" MinWidth="600">
 
+        <Grid Grid.Row="3" RowDefinitions="Auto, Auto, Auto, Auto" Margin="64, 8">
+
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                       Text="{Binding HeaderText}" />
+
+            
             <TextBox Classes="search"
-                     Grid.Row="0"
+                     Grid.Row="1"
                      Text="{Binding Filter, Mode=TwoWay}"/>
 
-            <TreeDataGrid x:Name="SpeciesEditTreeDataGrid" Background="{DynamicResource Brush.Contents}"
+            <TreeDataGrid Margin="0, 16, 0, 8" x:Name="SpeciesEditTreeDataGrid" Background="{DynamicResource Brush.Contents}"
                           SelectionChanging="SpeciesEditTreeDataGrid_OnSelectionChanging" ShowColumnHeaders="False"
                           Grid.Row="2" Source="{Binding NodeSource}" Grid.ColumnSpan="4" Height="400"
                           BorderBrush="{DynamicResource Brush.Border2}" BorderThickness="1">
@@ -66,7 +68,7 @@
                     </ContextMenu>
                 </TreeDataGrid.ContextMenu>
             </TreeDataGrid>
-            <StackPanel Grid.Row="4" Orientation="Horizontal">
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
                 <Button Classes="flat" Width="100"
                         Command="{Binding btnImport_Click}"
                         IsEnabled="{Binding ChosenMonster, Converter={x:Static ObjectConverters.IsNotNull}}">

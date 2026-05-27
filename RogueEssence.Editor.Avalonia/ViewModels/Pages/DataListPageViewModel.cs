@@ -168,6 +168,18 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
             _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon, _configurePage));
         NodeHelper.ExpandParents(Node, true);
     }
+    
+      
+    public void AddChildItemUnderParentAndNavigate(DataListEntry entry)
+    {
+        OpenEditorNode node =
+            _context.NodeFactory.CreateDataItemNode<ReflectedDataPageViewModel>(entry.Key, entry.Title, Node.Icon,
+                _configurePage);
+        var n = Node.AddNodeIfNotExists(node);
+        NodeHelper.ExpandParents(Node, true);
+        
+        _context.TabEvents.AddPageFromTreeNode((OpenEditorNode)n);
+    }
 
     private void _configurePage(EditorPageViewModel vm)
     {

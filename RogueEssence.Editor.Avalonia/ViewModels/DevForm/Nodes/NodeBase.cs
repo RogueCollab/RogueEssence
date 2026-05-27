@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -122,17 +123,14 @@ public class NodeBase : ViewModelBase, IEquatable<NodeBase>
         }
     }
 
-    public bool AddNodeIfNotExists(NodeBase node)
+    public NodeBase AddNodeIfNotExists(NodeBase node)
     {
-        bool added = false;
+        var existing = SubNodes.FirstOrDefault(n => n.Equals(node));
+        if (existing != null)
+            return existing;
 
-        if (!SubNodes.Contains(node))
-        {
-            SubNodes.Add(node);
-            added = true;
-        }
-
-        return added;
+        SubNodes.Add(node);
+        return node;
     }
 
     public void RemoveNode(NodeBase node)

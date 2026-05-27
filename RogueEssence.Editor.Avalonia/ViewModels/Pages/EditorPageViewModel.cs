@@ -54,6 +54,10 @@ public class EditorPageViewModel : ViewModelBase, IEquatable<EditorPageViewModel
         PageRemoved?.Invoke(this, EventArgs.Empty);
     }
     
+    public virtual void OnPageActivated() { }
+
+    public virtual void OnPageDeactivated() { }
+
     // Whether to add a new tab when this page is added
     public virtual bool AddNewTab => true;
     

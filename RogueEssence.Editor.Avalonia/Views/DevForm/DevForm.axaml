@@ -22,6 +22,10 @@
     <Window.Resources>
         <c:WindowStateToColumnConverter x:Key="WindowStateToColumnConverter" />
     </Window.Resources>
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Cmd+W" Command="{Binding TryCloseCurrentTab}" />
+    </Window.KeyBindings>
+    <!-- </Window.KeyBindings> -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="{Binding #WindowMain.CaptionHeight}" />

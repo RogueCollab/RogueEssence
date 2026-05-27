@@ -11,70 +11,164 @@
     <Design.DataContext>
         <vm:SpritePageViewModel />
     </Design.DataContext>
-    <Grid RowDefinitions="Auto, 32, Auto, 8, Auto">
+
+    <Grid RowDefinitions="Auto, 32, *, Auto">
         <DockPanel Grid.Row="0" VerticalAlignment="Top">
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="Edit" Classes="menuright">
                     <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
                     <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
                     <Separator IsVisible="{Binding IsTileAsset}" />
-                    <MenuItem IsVisible="{Binding IsTileAsset}" Header="Re-Index" Command="{Binding mnuReIndex_Click}" />
+                    <MenuItem IsVisible="{Binding IsTileAsset}" Header="Re-Index"
+                              Command="{Binding mnuReIndex_Click}" />
                 </MenuItem>
             </Menu>
         </DockPanel>
-        <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
-                   Text="{Binding AssetType}" />
 
-        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8" MinWidth="600">
 
-            <TextBox Classes="search"
-                     Grid.Row="0"
-                     Text="{Binding SearchFilter, Mode=TwoWay}" />
+        <Grid Grid.Row="2" ColumnDefinitions="300, 64, 200" Margin="64, 8" ShowGridLines="True">
+            <Grid Grid.Row="0" RowDefinitions="Auto, Auto, 16, Auto, 12, Auto"  MinWidth="300">
 
-            <ListBox Grid.Row="2"
-                     x:Name="SpritePageListBox"
-                     SelectionChanged="SpritePageListBox_OnSelectionChanged"
-                     ContextRequested="SpritePageListBox_OnContextRequested"
-                     Background="{DynamicResource Brush.ListBox.Background}"
-                     SelectedItem="{Binding SelectedItem}"
-                     ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
-                     BorderThickness="1">
-                <ListBox.Styles>
-                    <Style Selector="ListBoxItem">
-                        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
-                    </Style>
-                </ListBox.Styles>
-                <ListBox.ItemContainerTheme>
-                    <StaticResource ResourceKey="CompactListBoxItem" />
-                </ListBox.ItemContainerTheme>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" Padding="4" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                           Text="{Binding AssetType}" />
 
-            <StackPanel Grid.Row="4" Orientation="Horizontal">
-                <Button Classes="flat" Width="100"
-                        Command="{Binding btnImport_Click}">
-                    <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
-                </Button>
-                <Button Classes="flat" Width="100" Margin="24,0,0,0"
-                        Command="{Binding btnReImport_Click}"
-                        IsEnabled="{Binding Node.CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
-                </Button>
-                <Button Classes="flat" Width="100" Margin="24,0,0,0"
-                        Command="{Binding btnExport_Click}"
-                        IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
-                </Button>
-                <Button Classes="flat" Width="100" Margin="24,0,0,0"
-                        Command="{Binding btnDelete_Click}"
-                        IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
-                </Button>
-            </StackPanel>
+                <TextBox Classes="search"
+                         Grid.Row="1"
+                         Text="{Binding SearchFilter, Mode=TwoWay}" />
+
+                <ListBox Grid.Row="3"
+                         x:Name="SpritePageListBox"
+                         SelectionChanged="SpritePageListBox_OnSelectionChanged"
+                         ContextRequested="SpritePageListBox_OnContextRequested"
+                         Background="{DynamicResource Brush.ListBox.Background}"
+                         SelectedItem="{Binding SelectedItem}"
+                         ItemsSource="{Binding FilteredItems}" Height="400"
+                         BorderBrush="{DynamicResource Brush.Border2}"
+                         BorderThickness="1">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemContainerTheme>
+                        <StaticResource ResourceKey="CompactListBoxItem" />
+                    </ListBox.ItemContainerTheme>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Padding="4" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Grid.Row="5" Orientation="Horizontal">
+                    <Button Classes="flat" Width="100"
+                            Command="{Binding btnImport_Click}">
+                        <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                            Command="{Binding btnReImport_Click}"
+                            IsEnabled="{Binding Node.CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                            Command="{Binding btnExport_Click}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                            Command="{Binding btnDelete_Click}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            
+            <Grid Grid.Column="2" RowDefinitions="Auto, Auto">
+                <Border HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Height="400"
+                        CornerRadius="4"
+                        Background="{DynamicResource Brush.ListBox.Background}"
+                        BorderThickness="1"
+                        Padding="8">
+                    <DockPanel>
+                        <Slider DockPanel.Dock="Bottom"
+                                Minimum="0.25"
+                                Maximum="8"
+                                Value="{Binding ZoomLevel}"
+                                TickFrequency="0.25"
+                                IsSnapToTickEnabled="True"
+                                Width="200"
+                                HorizontalAlignment="Center"
+                                Margin="0,4" />
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      x:Name="SpritePagePreviewScrollViewer"
+                                      VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer.GestureRecognizers>
+                                <PinchGestureRecognizer />
+                            </ScrollViewer.GestureRecognizers>
+                            <Image Source="{Binding PreviewBitmap}"
+                                   RenderOptions.BitmapInterpolationMode="None"
+                                   x:Name="SpritePagePreviewImage"
+                                   Width="{Binding PreviewWidth}"
+                                   Height="{Binding PreviewHeight}"
+                                   Stretch="Fill" >
+                                <Image.GestureRecognizers>
+                                    <PinchGestureRecognizer/>
+                                </Image.GestureRecognizers>
+                            </Image>
+                        </ScrollViewer>
+                    </DockPanel>
+                    <!-- <Panel> -->
+                    <!--     <Viewbox Stretch="Uniform"> -->
+                    <!--         <Image Source="{Binding PreviewBitmap}" -->
+                    <!--                RenderOptions.BitmapInterpolationMode="None" /> -->
+                    <!--     </Viewbox> -->
+                    <!-- -->
+                    <!-- </Panel> -->
+                
+                    <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" -->
+                    <!--               VerticalScrollBarVisibility="Auto"> -->
+                    <!--     <Image Source="{Binding PreviewBitmap}" -->
+                    <!--            RenderOptions.BitmapInterpolationMode="None" -->
+                    <!--            HorizontalAlignment="Center" -->
+                    <!--            VerticalAlignment="Center" -->
+                    <!--            Stretch="None"> -->
+                    <!--         <Image.RenderTransform> -->
+                    <!--             <ScaleTransform ScaleX="2" ScaleY="2" /> -->
+                    <!--         </Image.RenderTransform> -->
+                    <!--     </Image> -->
+                    <!-- </ScrollViewer> -->
+                </Border>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" IsVisible="{Binding HasAnimation}">
+                    <TextBlock Text="Speed:" VerticalAlignment="Center" />
+                    <Slider Minimum="1" Maximum="60"
+                            Value="{Binding PreviewFps}"
+                            Width="120"
+                            VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PreviewFps, StringFormat={}{0:F0} fps}"
+                               VerticalAlignment="Center" />
+                    <Button Classes="secondary" Command="{Binding TogglePreview}">
+                        <Panel>
+                            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.PauseFill}" IsVisible="{Binding !IsPaused}" />
+                            <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.PlayFill}" IsVisible="{Binding IsPaused}" />
+                        </Panel>
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Grid>
+  
+  
+        <!-- MaxWidth="256" MaxHeight="256" -->
+        <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" -->
+        <!--               VerticalScrollBarVisibility="Auto"> -->
+        <!-- -->
+        <!--     <Image Source="{Binding PreviewBitmap}" -->
+        <!-- -->
+        <!--            VerticalAlignment="Center" -->
+        <!--            HorizontalAlignment="Center" -->
+        <!--            Stretch="None" /> -->
+        <!-- </ScrollViewer> -->
     </Grid>
 </UserControl>

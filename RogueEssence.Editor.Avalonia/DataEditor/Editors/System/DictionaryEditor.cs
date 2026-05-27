@@ -52,17 +52,17 @@ namespace RogueEssence.Dev
             {
                 EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + key.ToString() + "]";
-                string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType,
-                    ReflectionExt.GetPassableAttributes(2, attributes));
+                // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType,
+                    // ReflectionExt.GetPassableAttributes(2, attributes));
 
                 NodeBase node =
-                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(title, pageViewModel.Node, pageViewModel.Node.Icon);
+                    _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);
                 ReflectedDataPageViewModel
                     newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
-                newEditor.SetPageTitle(title, pageViewModel.Node.Icon);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
 
                 newEditor.OnLoadAction = (StackPanel stack) =>
                 {

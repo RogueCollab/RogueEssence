@@ -121,23 +121,19 @@
             </Style>
         </Style>
 
-
-        <!-- 1. default hidden -->
+        
         <Style Selector="Button#CloseTabButton">
             <Setter Property="Opacity" Value="0" />
         </Style>
-
-        <!-- 2. show on any tab hover -->
+        
         <Style Selector="controls|DragTabItem:pointerover Button#CloseTabButton">
             <Setter Property="Opacity" Value="1" />
         </Style>
-
-        <!-- 3. hide on selected (not hovered) -->
+        
         <Style Selector="controls|DragTabItem:selected Button#CloseTabButton">
             <Setter Property="Opacity" Value="0" />
         </Style>
-
-        <!-- 4. show on selected + hovered -->
+        
         <Style Selector="controls|DragTabItem:selected:pointerover Button#CloseTabButton">
             <Setter Property="Opacity" Value="1" />
         </Style>
@@ -246,6 +242,14 @@
                               ToolTip.Tip="{Binding Title}"
                               IsHitTestVisible="True"
                               HorizontalAlignment="Left">
+                            
+                            <Grid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Close" Click="OnCloseTab" />
+                                    <MenuItem Header="Close Others" />
+                                    <MenuItem Header="Close All" />
+                                </ContextMenu>
+                            </Grid.ContextMenu>
                             <Border IsHitTestVisible="True" ToolTip.Tip="{Binding Title}" Padding="8, 0, 16, 0"
                                     Background="Transparent" BorderBrush="{DynamicResource Color.Window}"
                                     BorderThickness="0 0 0 1"

@@ -15,12 +15,19 @@ public partial class SpritePageView : UserControl
     public SpritePageView()
     {
         InitializeComponent();
+        SpritePagePreviewScrollViewer.AddHandler(Gestures.PinchEvent, OnPinchUpdated);
+        
+        SpritePagePreviewImage.AddHandler(Gestures.PinchEvent, (s, e) => { Console.WriteLine("Pinch"); });
+        SpritePagePreviewImage.AddHandler(Gestures.PinchEndedEvent, (s, e) => { Console.WriteLine("PinchEnded"); });
+
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-
+        
+    
+        
         if (DataContext is SpritePageViewModel vm)
         {
             vm.OnPageRemovedAction = () =>
@@ -75,4 +82,18 @@ public partial class SpritePageView : UserControl
             DungeonScene.Instance.DebugAnim = debugAnim;
         }
     }
+    private void OnPinchUpdated(object? sender, PinchEventArgs e)
+    {
+        Console.WriteLine("Pinch: " + e.Scale);
+        // var vm = DataContext as SpritePageViewModel;
+        // if (vm == null) return;
+        //
+        // if (e.Scale == 1)
+        //     _pinchStartZoom = vm.ZoomLevel;
+        //
+        // vm.ZoomLevel = Math.Clamp(_pinchStartZoom * e.Scale, 0.25, 8);
+    }
+    
+
+    
 }

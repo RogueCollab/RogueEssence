@@ -10,19 +10,27 @@
     <Design.DataContext>
         <vm:StringEditPageViewModel/>
     </Design.DataContext>
-    <Grid RowDefinitions="64, Auto, Auto, Auto">
-        <TextBlock Grid.Row="1" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
-                   Text="{Binding HeaderText}" />
+    <Grid RowDefinitions="64, Auto">
+        
+        
+        <Grid Grid.Row="1" RowDefinitions="Auto, Auto, Auto, Auto" Margin="64, 8">
+            
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                       Text="{Binding HeaderText}" />
+            
+            <TextBox Classes="search"
+                     Grid.Row="1"
+                     Text="{Binding SearchFilter, Mode=TwoWay}" />
 
-        <Grid Grid.Row="2" RowDefinitions="Auto, 16, Auto, 32, Auto" Margin="64, 8" MinWidth="600">
-            <DataGrid x:Name="StringDataGrid" Grid.Row="2" ItemsSource="{Binding GameStrings}" Classes="default" 
+            <DataGrid x:Name="StringDataGrid" Grid.Row="2" 
+                      Margin="0, 16, 0, 8"
+                      ItemsSource="{Binding FilteredItems}" Classes="default" 
                       SelectedIndex="{Binding CurrentString, Mode=TwoWay}"
                       CanUserResizeColumns="True" 
                       HorizontalScrollBarVisibility="Disabled" 
                       Height="400"
                       BorderBrush="{DynamicResource Brush.Border2}" 
-                      BorderThickness="1"
-                      Margin="4">
+                      BorderThickness="1">
                 <DataGrid.Styles>
                     <Style Selector="TextBlock">
                         <Setter Property="TextWrapping" Value="WrapWithOverflow" />

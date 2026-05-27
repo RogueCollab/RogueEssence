@@ -31,7 +31,7 @@ namespace RogueEssence.Data
             Register(DataManager.DataType.Monster, typeof(MonsterData), DataManager.Instance.GetMonster, () => new MonsterData(), "Icons.GhostFill");
             Register(DataManager.DataType.Skill, typeof(SkillData), DataManager.Instance.GetSkill, () => new SkillData(), "Icons.SwordFill");
             Register(DataManager.DataType.Item, typeof(ItemData), DataManager.Instance.GetItem, () => new ItemData(), "Icons.JarLabelFill");
-            Register(DataManager.DataType.Intrinsic, typeof(IntrinsicData), DataManager.Instance.GetIntrinsic, () => new IntrinsicData(), "Icons.SwordFill");
+            Register(DataManager.DataType.Intrinsic, typeof(IntrinsicData), DataManager.Instance.GetIntrinsic, () => new IntrinsicData(), "Icons.ShieldCheckeredFill");
             Register(DataManager.DataType.Status, typeof(StatusData), DataManager.Instance.GetStatus, () => new StatusData(), "Icons.HeartFill");
             Register(DataManager.DataType.MapStatus, typeof(MapStatusData), DataManager.Instance.GetMapStatus, () => new MapStatusData(), "Icons.CloudRainFill");
             Register(DataManager.DataType.Terrain, typeof(TerrainData), DataManager.Instance.GetTerrain, () => new TerrainData(), "Icons.MountainsFill");

@@ -248,40 +248,68 @@ public class DevFormViewModel : ViewModelBase
         return current;
     }
 
+    // public void RemoveTab(EditorPageViewModel page)
+    // {
+    //     // Console.WriteLine($"Removing tab {page}" + "hmmm");
+    //     if (!_pageToNodeMap.TryGetValue(page, out var node))
+    //         return;
+    //
+    //     int removeIdx = Pages.IndexOf(page);
+    //
+    //     // Console.WriteLine($"Removing tab {page} at index {removeIdx}");
+    //
+    //     ClosePageAndChildren(node);
+    //
+    //
+    //     // TODO:
+    //     // We want to prioritize setting the left tab to be the active tab since our editors open stuff to the right first
+    //     // Maybe we want to set the active page to be the parent if it exists?
+    //     // For after deleting Datatype entries, should it go back to the last previously visited tab?
+    //
+    //
+    //   Console.WriteLine(ActivePage);
+    //     Console.WriteLine(page.Equals(ActivePage) + "same!!?");
+    //
+    //     if (Pages.Count == 0)
+    //     {
+    //         ActivePage = null;
+    //     }
+    //     else if (page.Equals(ActivePage))
+    //     {
+    //         if (removeIdx < Pages.Count)
+    //         {
+    //             ActivePage = Pages[removeIdx];
+    //         }
+    //         else
+    //         {
+    //             ActivePage = Pages[removeIdx - 1];
+    //         }
+    //     }
+    // }
+    
     public void RemoveTab(EditorPageViewModel page)
     {
-        // Console.WriteLine($"Removing tab {page}" + "hmmm");
         if (!_pageToNodeMap.TryGetValue(page, out var node))
             return;
 
         int removeIdx = Pages.IndexOf(page);
-
-        // Console.WriteLine($"Removing tab {page} at index {removeIdx}");
+        bool wasActive = page.Equals(ActivePage); // capture before removal
 
         ClosePageAndChildren(node);
 
-
-        // TODO:
-        // We want to prioritize setting the left tab to be the active tab since our editors open stuff to the right first
-        // Maybe we want to set the active page to be the parent if it exists?
-        // For after deleting Datatype entries, should it go back to the last previously visited tab?
         if (Pages.Count == 0)
         {
             ActivePage = null;
         }
-        else
+        else if (wasActive)
         {
-            if (removeIdx > 0 && removeIdx - 1 < Pages.Count)
+            if (removeIdx < Pages.Count)
             {
-                ActivePage = Pages[removeIdx - 1];
-            }
-            else if (removeIdx > 0)
-            {
-                ActivePage = Pages[Pages.Count - 1];
+                ActivePage = Pages[removeIdx];
             }
             else
             {
-                ActivePage = Pages[0];
+                ActivePage = Pages[removeIdx - 1];
             }
         }
     }
@@ -299,6 +327,7 @@ public class DevFormViewModel : ViewModelBase
         }
     }
 
+    
     private void ClosePageAndChildren(PageNode node)
     {
         var children = node.SubNodes.Cast<PageNode>().ToList();
@@ -365,6 +394,14 @@ public class DevFormViewModel : ViewModelBase
 
         this.WhenAnyValue(x => x.Filter).Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(ApplyFilter);
 
+        EditorPageViewModel? previousPage = null;
+        this.WhenAnyValue(x => x.ActivePage).Subscribe(page =>
+        {
+            previousPage?.OnPageDeactivated();
+            page?.OnPageActivated();
+            previousPage = page;
+        });
+        
         NodeSource = new HierarchicalTreeDataGridSource<NodeBase>(Nodes)
         {
             Columns =
@@ -699,6 +736,7 @@ public class DevFormViewModel : ViewModelBase
             AddChildPage(parent, child);
             ActivePage = child;
         };
+        _tabEvents.AddPageFromTreeNodeEvent += AddPageFromTreeNode;
 
         _tabEvents.SaveChildrenEvent += SaveChildren;
 
@@ -785,6 +823,13 @@ public class DevFormViewModel : ViewModelBase
         }
     }
 
+    public async Task TryCloseCurrentTab()
+    {
+        if (ActivePage != null)
+        { 
+            await TryCloseTabAsync(ActivePage);
+        }
+    }
     public async Task<bool> TryCloseTabAsync(EditorPageViewModel page)
     {
         if (PageHasChildren(page))

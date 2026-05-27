@@ -21,7 +21,11 @@ public partial class DataListPageView : UserControl
     private void DataListPageListBox_OnDoubleTapped(object sender, TappedEventArgs e)
     {
         if (DataContext is DataListPageViewModel vm)
-            vm.AddChildItemUnderParent(vm.SelectedItem);
+        {
+            vm.AddChildItemUnderParentAndNavigate(vm.SelectedItem);
+        }
+
+  
     }
 
 
@@ -52,5 +56,19 @@ public partial class DataListPageView : UserControl
 
         var contextMenu = ContextMenuHelper.CreateDataItemMenu(vm.Node, entry.Key);
         contextMenu.Open(this);
+    }
+
+    private void DataListPageListBox_OnTapped(object sender, TappedEventArgs e)
+    {
+        KeyModifiers modifiers = e.KeyModifiers;
+        bool navigate = modifiers.HasFlag(KeyModifiers.Shift);
+
+        if (DataContext is DataListPageViewModel vm)
+        {
+            if (navigate)
+            {
+                vm.AddChildItemUnderParent(vm.SelectedItem);
+            }
+        }
     }
 }
