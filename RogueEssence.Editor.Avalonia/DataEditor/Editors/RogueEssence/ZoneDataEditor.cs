@@ -23,7 +23,7 @@ namespace RogueEssence.Dev
         {
             base.LoadWindowControls(control, parent, parentType, name, type, attributes, obj, subGroupStack);
 
-            LoadLabelControl(control, "Script Events", "Events that can be created in the lua script for this zone.");
+            LoadLabelControl(control, "Script Events", "Events that can be created in the lua script for this zone.", attributes);
 
             Button btnTest = new Button();
             btnTest.Margin = new Thickness(0, 4, 0, 0);

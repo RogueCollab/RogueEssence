@@ -206,6 +206,7 @@
         <Grid ColumnDefinitions="*">
             <controls:TabsControl SelectedItem="{Binding ActivePage}"
                                   ShowDefaultCloseButton="False"
+                                  x:Name="TabsControl"
                                   ShowDefaultAddButton="False"
                                   TabItemWidth="175"
                                   ScrollViewer.HorizontalScrollBarVisibility="Visible"
@@ -243,13 +244,8 @@
                               IsHitTestVisible="True"
                               HorizontalAlignment="Left">
                             
-                            <Grid.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Close" Click="OnCloseTab" />
-                                    <MenuItem Header="Close Others" />
-                                    <MenuItem Header="Close All" />
-                                </ContextMenu>
-                            </Grid.ContextMenu>
+                       
+                        
                             <Border IsHitTestVisible="True" ToolTip.Tip="{Binding Title}" Padding="8, 0, 16, 0"
                                     Background="Transparent" BorderBrush="{DynamicResource Color.Window}"
                                     BorderThickness="0 0 0 1"

@@ -132,7 +132,7 @@ namespace RogueEssence.Dev
             }
             else
             {
-                LoadLabelControl(control, name, desc);
+                LoadLabelControl(control, name, desc, attributes);
                 control.Children.Add(lbxValue);
             }
         }

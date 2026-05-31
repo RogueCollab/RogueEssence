@@ -118,13 +118,14 @@
                             Height="1"
                             Background="{DynamicResource Brush.Border2}"
                             HorizontalAlignment="Stretch" />
+                    <!-- LostFocus="LeftTreeDataGrid_OnLostFocus" -->
                     <TreeDataGrid Grid.Row="2"
                                   MinHeight="200" MinWidth="200"
                                   x:Name="LeftTreeDataGrid"
                                   DoubleTapped="LeftTreeDataGrid_OnDoubleTapped"
                                   ContextRequested="LeftTreeDataGrid_OnContextRequested"
                                   PointerPressed="LeftTreeDataGrid_OnPointerPressed"
-                                  LostFocus="LeftTreeDataGrid_OnLostFocus"
+                              
                                   ShowColumnHeaders="False"
                                   Source="{Binding NodeSource}">
                         <TreeDataGrid.Resources>

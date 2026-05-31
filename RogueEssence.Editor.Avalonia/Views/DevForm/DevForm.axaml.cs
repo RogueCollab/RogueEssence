@@ -512,7 +512,8 @@ public partial class DevForm : ChromelessWindow, IRootEditor
         base.OnDataContextChanged(e);
         if (DataContext is DevFormViewModel vm)
         {
-            vm.ModSwitcherClosed += () => ModSwitcherFlyoutButton.Flyout?.Hide();;
+            vm.ModSwitcherClosed += () => ModSwitcherFlyoutButton.Flyout?.Hide();
+            vm.ActivePageSet += OnActivePageSet;
         }
     }
     
@@ -702,34 +703,99 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
     }
 
-    private void LeftTreeDataGrid_OnLostFocus(object sender, RoutedEventArgs e)
+    public void OnActivePageSet(EditorPageViewModel page)
     {
-        
-        if (sender is not TreeDataGrid grid)
-            return;
-        
-        
-        if (grid.IsKeyboardFocusWithin)
-            return;
-        
-        if (grid.ContextMenu?.IsOpen == true)
-            return;
-        
-        var window = grid.GetVisualRoot() as Window;
-        if (window is { IsActive: false })
-            return; 
-        // (grid.RowSelection.SelectedItem as DataItemNode)?.Parent?.ResaveAsFile(grid.RowSelection.SelectedItem as DataItemNode)
-        // Not sure why it doesn't clear the grid...
-        grid.RowSelection.Clear();
-        
-        lock (GameBase.lockObj)
+        Console.WriteLine("OnActivePageSet: " + page.Title);
+        if (DataContext is DevFormViewModel vm)
         {
-            if (DungeonScene.Instance != null)
+            if (vm.Pages.Count == 0)
             {
-                DungeonScene.Instance.DebugAsset = GraphicsManager.AssetType.None;
-                DungeonScene.Instance.DebugAnim = null;
+                return;
             }
+            
+            var path = FindIndexPath<NodeBase>(vm.NodeSource.Items, page.Node, n => n.SubNodes);
+            Console.WriteLine("Page?: " + path);
+            if (path.HasValue)
+                // Dispatcher.UIThread.Post(() =>
+                // {
+                //     Dispatcher.UIThread.Post(() =>
+                //     {[[[
+                //         LeftTreeDataGrid.RowSelection.Select(path.Value);
+                //     }, DispatcherPriority.Background);
+                // }, DispatcherPriority.Background);
+                Dispatcher.UIThread.Invoke(() => LeftTreeDataGrid.RowSelection.Select(path.Value), DispatcherPriority.Background);
+        
         }
     }
+    //
+    // var source = LeftTreeDataGrid.Source as HierarchicalTreeDataGridSource<NodeBase>;
+    //     if (source == null) return;
+    //
+    // for (int i = 0; i < source.Rows.Count; i++)
+    // {
+    //     if (source.Rows[i] is IRow<NodeBase> row && row.Model.Equals(page.Node))
+    //     {
+    //         Dispatcher.UIThread.Invoke(() =>
+    //         {
+    //             LeftTreeDataGrid.RowSelection!.Select(new IndexPath(i));
+    //                    
+    //         });
+    //         break;
+    //     }
+    // }
+    //
+    
+
+    // Example: IndexPath: [0, 2] means the first root node, then the third node under the root
+    // Perhaps NodeBase should maintain the IndexPath?
+    public static IndexPath? FindIndexPath<T>(IEnumerable<T> items, T target, Func<T, IEnumerable<T>> getChildren, IndexPath current = default) where T : class
+    {
+        int i = 0;
+        foreach (var item in items)
+        {
+            var path = current.Append(i);
+            if (item == target)
+                return path;
+
+            var children = getChildren(item);
+            if (children != null)
+            {
+                var found = FindIndexPath(children, target, getChildren, path);
+                if (found.HasValue)
+                    return found;
+            }
+            i += 1;
+        }
+        return null;
+    }
+    // private void LeftTreeDataGrid_OnLostFocus(object sender, RoutedEventArgs e)
+    // {
+    //     
+    //     if (sender is not TreeDataGrid grid)
+    //         return;
+    //     
+    //     
+    //     if (grid.IsKeyboardFocusWithin)
+    //         return;
+    //     
+    //     if (grid.ContextMenu?.IsOpen == true)
+    //         return;
+    //     
+    //     var window = grid.GetVisualRoot() as Window;
+    //     if (window is { IsActive: false })
+    //         return; 
+    //     // (grid.RowSelection.SelectedItem as DataItemNode)?.Parent?.ResaveAsFile(grid.RowSelection.SelectedItem as DataItemNode)
+    //     // Not sure why it doesn't clear the grid...
+    //     grid.RowSelection.Clear();
+    //     
+    //     lock (GameBase.lockObj)
+    //     {
+    //         if (DungeonScene.Instance != null)
+    //         {
+    //             DungeonScene.Instance.DebugAsset = GraphicsManager.AssetType.None;
+    //             DungeonScene.Instance.DebugAnim = null;
+    //         }
+    //     }
+    // }
 
 }

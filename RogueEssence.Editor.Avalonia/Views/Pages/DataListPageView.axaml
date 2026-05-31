@@ -23,7 +23,7 @@
                    Text="{Binding Node.DataType}" />
 
         <!-- Search Grid -->
-        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8" MinWidth="600">
+        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8">
 
             <TextBox Classes="search"
                      Grid.Row="0"

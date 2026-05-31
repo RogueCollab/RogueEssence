@@ -134,6 +134,10 @@ public class DataListPageViewModel : EditorPageViewModel<DataRootNode>
     //     }
     // }
 
+    public override int GetHashCode()
+    {
+        return DataType.GetHashCode();
+    }
 
 
 

@@ -155,11 +155,22 @@
                             <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.PlayFill}" IsVisible="{Binding IsPaused}" />
                         </Panel>
                     </Button>
-                </StackPanel>
+                </StackPanel>               
             </Grid>
         </Grid>
   
-  
+        <Border Grid.Row="3"
+                Background="{DynamicResource B}"
+                Padding="8,4">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="White"
+                           Text="{Binding PreviewBitmap.Size, StringFormat='Size: {0}'}" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="White"
+                           Text="{Binding CurrentFrameDisplay}" />
+            </StackPanel>
+        </Border>
         <!-- MaxWidth="256" MaxHeight="256" -->
         <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" -->
         <!--               VerticalScrollBarVisibility="Auto"> -->

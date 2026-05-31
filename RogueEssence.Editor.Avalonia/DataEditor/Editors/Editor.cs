@@ -48,11 +48,17 @@ namespace RogueEssence.Dev
         /// </summary>
         public virtual bool SimpleEditor => false;
 
-        public static void LoadLabelControl(StackPanel control, string name, string desc)
+        public static void LoadLabelControl(StackPanel control, string name, string desc, object[] attributes)
         {
             TextBlock lblName = new TextBlock();
             lblName.Margin = new Thickness(0, 4, 0, 0);
-            lblName.Text = Text.GetMemberTitle(name) + ":";
+
+            // Check for RenameLabel override first
+            RenameLabelAttribute renameAtt = ReflectionExt.FindAttribute<RenameLabelAttribute>(attributes);
+            if (renameAtt != null)
+                lblName.Text = renameAtt.Label + ":";
+            else
+                lblName.Text = Text.GetMemberTitle(name) + ":";
 
             if (desc != null)
                 ToolTip.SetTip(lblName, desc);
@@ -298,7 +304,7 @@ namespace RogueEssence.Dev
             if (!subGroup)
             {
                 string desc = DevDataManager.GetMemberDoc(parentType, name);
-                LoadLabelControl(control, name, desc);
+                LoadLabelControl(control, name, desc, attributes);
                 if (member == null)
                 {
                     Type[] children;
@@ -440,7 +446,7 @@ namespace RogueEssence.Dev
                     if (includeLabel)
                     {
                         string desc = DevDataManager.GetMemberDoc(parentType, name);
-                        LoadLabelControl(control, name, desc);
+                        LoadLabelControl(control, name, desc, attributes);
                     }
 
                     if (includeDecoration)
@@ -526,7 +532,7 @@ namespace RogueEssence.Dev
                     if (includeLabel)
                     {
                         string desc = DevDataManager.GetMemberDoc(parentType, name);
-                        LoadLabelControl(control, name, desc);
+                        LoadLabelControl(control, name, desc, attributes);
                     }
 
 

@@ -131,8 +131,12 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
         Node.Strategy.OnReload -= () => LoadDataEntries(AssetType);
         base.OnPageRemoved();
     }
-    
 
+
+    public override int GetHashCode()
+    {
+        return AssetType.GetHashCode();
+    }
 
     public override void OnPageLoad()
     {

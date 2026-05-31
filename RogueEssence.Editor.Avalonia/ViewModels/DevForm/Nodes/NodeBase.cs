@@ -595,6 +595,11 @@ public class SpriteRootNode : OpenEditorNode
     public async Task ExportAsync(string key) => await Strategy.ExportAsync(key);
     
     public async Task ImportAsync(ObservableCollection<string> items) => await Strategy.ImportAsync(items);
+    
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode() ^ AssetType.GetHashCode();
+    }
 }
 
 

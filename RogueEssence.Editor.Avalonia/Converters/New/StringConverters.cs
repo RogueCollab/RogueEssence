@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
 using Avalonia.Styling;
 
 namespace RogueEssence.Dev.Converters
@@ -45,6 +46,9 @@ namespace RogueEssence.Dev.Converters
                 return (value as ThemeVariant)?.Key;
             }
         }
+        
+        public static readonly FuncValueConverter<KeyGesture, string> FromKeyGesture =
+            new FuncValueConverter<KeyGesture, string>(v => v?.ToString("p", null) ?? string.Empty);
 
         public static readonly ToThemeConverter ToTheme = new ToThemeConverter();
     }

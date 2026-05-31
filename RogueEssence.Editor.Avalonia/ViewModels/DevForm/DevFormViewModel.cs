@@ -25,6 +25,8 @@ namespace RogueEssence.Dev.ViewModels;
 
 public class DevFormViewModel : ViewModelBase
 {
+    
+    
     private HierarchicalTreeDataGridSource<NodeBase> _nodeSource;
 
     public HierarchicalTreeDataGridSource<NodeBase> NodeSource
@@ -54,6 +56,15 @@ public class DevFormViewModel : ViewModelBase
         TabSwitcher = _context.PageFactory.GetRequiredService<TabSwitcherViewModel>();
     }
 
+    
+    public event Action<EditorPageViewModel>? ActivePageSet;
+    
+    public void OnActivePageSet(EditorPageViewModel page)
+    {
+       ActivePageSet?.Invoke(page);
+    }
+    
+    
     public event Action? TabSwitcherClosed;
 
     public void CloseTabSwitcher()
@@ -248,54 +259,127 @@ public class DevFormViewModel : ViewModelBase
         return current;
     }
 
-    // public void RemoveTab(EditorPageViewModel page)
-    // {
-    //     // Console.WriteLine($"Removing tab {page}" + "hmmm");
-    //     if (!_pageToNodeMap.TryGetValue(page, out var node))
-    //         return;
-    //
-    //     int removeIdx = Pages.IndexOf(page);
-    //
-    //     // Console.WriteLine($"Removing tab {page} at index {removeIdx}");
-    //
-    //     ClosePageAndChildren(node);
-    //
-    //
-    //     // TODO:
-    //     // We want to prioritize setting the left tab to be the active tab since our editors open stuff to the right first
-    //     // Maybe we want to set the active page to be the parent if it exists?
-    //     // For after deleting Datatype entries, should it go back to the last previously visited tab?
-    //
-    //
-    //   Console.WriteLine(ActivePage);
-    //     Console.WriteLine(page.Equals(ActivePage) + "same!!?");
-    //
-    //     if (Pages.Count == 0)
-    //     {
-    //         ActivePage = null;
-    //     }
-    //     else if (page.Equals(ActivePage))
-    //     {
-    //         if (removeIdx < Pages.Count)
-    //         {
-    //             ActivePage = Pages[removeIdx];
-    //         }
-    //         else
-    //         {
-    //             ActivePage = Pages[removeIdx - 1];
-    //         }
-    //     }
-    // }
-    
-    public void RemoveTab(EditorPageViewModel page)
+    public bool CanCloseLeft(EditorPageViewModel page = null)
     {
-        if (!_pageToNodeMap.TryGetValue(page, out var node))
+        return Pages.IndexOf(page) > 0;
+    }
+
+    public bool CanCloseRight(EditorPageViewModel page = null)
+    {
+        return Pages.IndexOf(page) < Pages.Count - 1;
+    }
+
+    public bool CanCloseOthers()
+    {
+        return Pages.Count > 1;
+    }
+    
+    private async Task<bool> ClosePages(IEnumerable<EditorPageViewModel> pages)
+    {
+        var toClose = pages.ToList();
+        var toCloseNodes = toClose.Select(p => p.Node).ToHashSet();
+
+        var sorted = toClose.OrderBy(p =>
+        {
+            int depth = 0;
+            var parent = p.Node.Parent;
+            while (parent != null)
+            {
+                depth++;
+                parent = parent.Parent;
+            }
+            return depth;
+        }).ToList();
+
+        foreach (var page in sorted)
+        {
+            if (!Pages.Contains(page)) continue;
+
+            if ((page is ReflectedDataPageViewModel rdp && rdp.IsRootPage) || page is ModListPageViewModel)
+            {
+                await TryCloseTabAsync(page, true);
+                continue;
+            }
+
+            var parent = page.Node.Parent;
+            bool hasAncestorInSet = false;
+            
+            if (toCloseNodes.Contains(parent))
+            {
+                continue;
+        
+                
+            }
+            
+
+            await TryCloseTabAsync(page, true);
+        }
+
+        return true;
+    }
+    public async Task<bool> CloseLeftAsync(EditorPageViewModel? relativeTo = null)
+    {
+        relativeTo ??= ActivePage;
+        int idx = Pages.IndexOf(relativeTo);
+        return await ClosePages(Pages.Take(idx));
+    }
+
+    public async Task<bool> CloseRightAsync(EditorPageViewModel? relativeTo = null)
+    {
+        relativeTo ??= ActivePage;
+        int idx = Pages.IndexOf(relativeTo);
+        return await ClosePages(Pages.Skip(idx + 1));
+    }
+
+    public async Task<bool> CloseOthersAsync(EditorPageViewModel? relativeTo = null)
+    {
+        relativeTo ??= ActivePage;
+        var pagesToClose = Pages.Where(p => !p.Equals(relativeTo));
+        Console.WriteLine("Closing pages: " + string.Join(", ", pagesToClose.Select(p => p.Title)));
+        Console.WriteLine(pagesToClose.Count() + " pages to close");
+        return await ClosePages(pagesToClose);
+    }
+    public async Task<bool> CloseAllAsync()
+    {
+        Console.WriteLine("Closing all pages");
+        return await ClosePages(Pages);
+    }
+
+    public void TryNavigateToParent(EditorPageViewModel page)
+    {
+        if (!_pageToNodeMap.TryGetValue(page, out PageNode node))
+            return;
+        
+        var parent = node.Parent;
+        if (parent != null)
+        {
+            ActivePage = parent.Page;
+        }
+        
+    }
+    
+    public void RemoveTab(EditorPageViewModel page, bool tryNavigateToParent = false)
+    {
+        if (!_pageToNodeMap.TryGetValue(page, out PageNode node))
             return;
 
         int removeIdx = Pages.IndexOf(page);
-        bool wasActive = page.Equals(ActivePage); // capture before removal
+        bool wasActive = page.Equals(ActivePage);
 
         ClosePageAndChildren(node);
+
+
+        if (tryNavigateToParent)
+        {
+            var parent = node.Parent;
+            if (parent != null)
+            {
+                ActivePage = parent.Page;
+                return;
+            }
+        }
+        
+        
 
         if (Pages.Count == 0)
         {
@@ -303,6 +387,7 @@ public class DevFormViewModel : ViewModelBase
         }
         else if (wasActive)
         {
+            // try right tab, then left tab
             if (removeIdx < Pages.Count)
             {
                 ActivePage = Pages[removeIdx];
@@ -365,6 +450,7 @@ public class DevFormViewModel : ViewModelBase
         DevTabTravelViewModel travel, DevTabScriptViewModel script,
         ModManagerViewModel mods)
     {
+        Console.WriteLine("DevFormViewModel created");
         _context = context;
         Game = game;
         Player = player;
@@ -384,6 +470,7 @@ public class DevFormViewModel : ViewModelBase
         TopLevelPages = new ObservableCollection<PageNode>();
         _pageToNodeMap = new Dictionary<EditorPageViewModel, PageNode>();
 
+        
         this.WhenAnyValue(x => x.ActivePage)
             .Buffer(2, 1)
             .Subscribe(pair =>
@@ -397,8 +484,10 @@ public class DevFormViewModel : ViewModelBase
         EditorPageViewModel? previousPage = null;
         this.WhenAnyValue(x => x.ActivePage).Subscribe(page =>
         {
+            Console.WriteLine("Active page changed: " + page?.Title);
             previousPage?.OnPageDeactivated();
             page?.OnPageActivated();
+            OnActivePageSet(page);
             previousPage = page;
         });
         
@@ -743,6 +832,8 @@ public class DevFormViewModel : ViewModelBase
         _tabEvents.AddTopLevelTabEvent += (tab) => { AddTopLevelPage(tab); };
 
         _tabEvents.RemoveTabEvent += (tab) => { RemoveTab(tab); };
+        
+        _tabEvents.TryNavigateToParentTabEvent += (tab) => { TryNavigateToParent(tab); };
 
         _tabEvents.NavigateToTabEvent += (tab) => { ActivePage = tab; };
 
@@ -827,14 +918,18 @@ public class DevFormViewModel : ViewModelBase
     {
         if (ActivePage != null)
         { 
-            await TryCloseTabAsync(ActivePage);
+            await TryCloseTabAsync(ActivePage, false);
         }
     }
-    public async Task<bool> TryCloseTabAsync(EditorPageViewModel page)
+    public async Task<bool> TryCloseTabAsync(EditorPageViewModel page, bool navigateToBeforeClosing)
     {
         if (PageHasChildren(page))
         {
-            // TODO: Add a can close method and check if any of the subtabs has any unsaved changes.
+            if (navigateToBeforeClosing)
+            {
+                ActivePage = page;
+            }
+            // TODO: Add a can close method and check if any of the subtabs has any unsaved changes?
             var result = await MessageBoxWindowView.Show(_context.DialogService,
                 "Are you sure you want to close all subtabs?  Your changes will not be saved.", "Confirm Close",
                 MessageBoxWindowView.MessageBoxButtons.YesNo);
@@ -842,6 +937,8 @@ public class DevFormViewModel : ViewModelBase
             if (result != MessageBoxWindowView.MessageBoxResult.Yes)
                 return false;
         }
+        
+        
 
         RemoveTab(page);
         page.OnPageRemoved();
