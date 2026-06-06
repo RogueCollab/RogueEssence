@@ -198,11 +198,11 @@ namespace RogueEssence.Dev.ViewModels
             CurrentElement = index;
         }
 
-        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        public void gridCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
-            KeyModifiers modifiers = e.KeyModifiers;
+            KeyModifiers modifiers = e.PointerPressedEventArgs.KeyModifiers;
             bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             if (index > -1)
             {

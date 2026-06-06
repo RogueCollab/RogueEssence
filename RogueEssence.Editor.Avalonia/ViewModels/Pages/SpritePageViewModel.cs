@@ -58,6 +58,25 @@ public static class PreviewHelper
         Color[] data = BaseSheet.GetData(sheet, frameX, frameY, width, height);
         return FromColors(data, width, height);
     }
+    
+    public static Bitmap FromPortraitSheet(PortraitSheet sheet, int frameX, int frameY, int width, int height)
+    {
+        Color[] data = PortraitSheet.GetData(sheet, frameX, frameY, width, height);
+        return FromColors(data, width, height);
+    }
+    
+    public static Bitmap FromBeamSheet(BeamSheet sheet, int frameX, int frameY, int width, int height)
+    {
+        Color[] data = BeamSheet.GetData(sheet, frameX, frameY, width, height);
+        return FromColors(data, width, height);
+    }
+    
+    // NOTE: For rendering char sheet, you need consider what animation type is it, how long each frame lasts, so we need the current frame, which anim index or name too, then for the preview we need to tick the correct amount
+    // public static Bitmap FromCharSheet(CharSheet sheet, int frameX, int frameY, int width, int height)
+    // {
+    //     Color[] data = CharSheet.GetData(sheet, frameX, frameY, width, height);
+    //     return FromColors(data, width, height);
+    // };
 }
 
 public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
@@ -170,6 +189,11 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
                 _animTimer?.Stop();
             else
                 _animTimer?.Start();
+        });
+        
+        this.WhenAnyValue(x => x.CurrentFrame).Subscribe(paused =>
+        {
+            _updateBitmap();
         });
         
         this.WhenAnyValue(x => x.PreviewFps).Subscribe(fps =>
@@ -304,9 +328,27 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
 
     private DispatcherTimer? _animTimer;
     private DirSheet? _currentSheet;
+    
+    
     private int _currentFrame;
+    public int CurrentFrame
+    {
+        get => _currentFrame;
+        set => this.RaiseAndSetIfChanged(ref _currentFrame, Math.Clamp(value, 0, TotalFrames - 1));
+    }
+
+    public int CurrentFrameDisplay
+    {
+        get => CurrentFrame + 1;
+        set => CurrentFrame = Math.Clamp(value - 1, 0, TotalFrames);
+    }
     
-    
+    private int _totalFrames = 1;
+    public int TotalFrames
+    {
+        get => _totalFrames;
+        set => this.RaiseAndSetIfChanged(ref _totalFrames, value);
+    }
     
     
     private BaseSheet _currentBaseSheet;
@@ -342,27 +384,22 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
                             _ => GraphicsManager.GetDirSheet(AssetType, item)
                         };
                         _currentSheet = sheet;
-                        _currentFrame = 0;
                         Dispatcher.UIThread.Post(() =>
                         {
                             PreviewBitmap = PreviewHelper.FromSheet(sheet, 0, 0, sheet.TileWidth, sheet.TileHeight);
                             HasAnimation = sheet.TotalX > 1;
-    
-                            if (sheet.TotalX > 1)
+                            TotalFrames = sheet.TotalX;
+                            if (_hasAnimation)
                             {
                                 _animTimer = new DispatcherTimer(DispatcherPriority.Render);
                                 _animTimer.Interval = TimeSpan.FromSeconds(1.0 / PreviewFps);
                            
                                 _animTimer.Tick += (_, _) =>
                                 {
-                                  
-                                    _currentFrame = (_currentFrame + 1) % sheet.TotalX;
-                                    int frameX = _currentFrame * sheet.TileWidth;
-                                    PreviewBitmap = PreviewHelper.FromSheet(sheet, frameX, 0, sheet.TileWidth, sheet.TileHeight);
-                                    this.RaisePropertyChanged(nameof(CurrentFrameDisplay));
+                                    CurrentFrame = (CurrentFrame + 1) % sheet.TotalX;
                                 };
-                                _animTimer.Start();
-                     
+                                if (!IsPaused)
+                                    _animTimer.Start();
                             }
                         });
                     }
@@ -375,6 +412,13 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
         });
     }
 
+    private void _updateBitmap()
+    {
+        if (_currentSheet == null) return;
+        int frameX = CurrentFrame * _currentSheet.TileWidth;
+        this.RaisePropertyChanged(nameof(CurrentFrameDisplay));
+        PreviewBitmap = PreviewHelper.FromSheet(_currentSheet, frameX, 0, _currentSheet.TileWidth, _currentSheet.TileHeight);
+    }
     /*private void UpdatePreviewFrame()
     {
         if (_currentSheet == null)
@@ -389,38 +433,44 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
         Console.WriteLine($"UpdatePreviewFrame: PreviewBitmap set to {PreviewBitmap?.Size}");
     }*/
     
-    private void UpdatePreviewFrame()
-    {
-        if (_currentSheet == null)
-        {
-            Console.WriteLine("UpdatePreviewFrame: _currentSheet is null");
-            return;
-        }
-        Console.WriteLine($"UpdatePreviewFrame: frame={_currentFrame}");
-        int frameX = (_currentFrame % _currentSheet.TotalX) * _currentSheet.TileWidth;
-        PreviewBitmap = PreviewHelper.FromSheet(_currentSheet, frameX, 0, _currentSheet.TileWidth, _currentSheet.TileHeight);
-    }
+    // private void UpdatePreviewFrame()
+    // {
+    //     if (_currentSheet == null)
+    //     {
+    //         Console.WriteLine("UpdatePreviewFrame: _currentSheet is null");
+    //         return;
+    //     }
+    //     Console.WriteLine($"UpdatePreviewFrame: frame={_currentFrame}");
+    //     int frameX = (_currentFrame % _currentSheet.TotalX) * _currentSheet.TileWidth;
+    //     PreviewBitmap = PreviewHelper.FromSheet(_currentSheet, frameX, 0, _currentSheet.TileWidth, _currentSheet.TileHeight);
+    // }
 
     private void StopPreview()
     {
         _animTimer?.Stop();
         _animTimer = null;
         _currentSheet = null;
-        _currentFrame = 0;
+        CurrentFrameDisplay = 1;
     }
     
     public override void OnPageActivated()
     {
-        ResumePreview();
+        if (_wasAnimating)
+        {
+            ResumePreview();
+        }
     }
 
     public override void OnPageDeactivated()
     {
+        _wasAnimating = !_isPaused;
         PausePreview();
     }
+
+    private bool _wasAnimating;
     
-    private double _previewFps = 12;
-    public double PreviewFps
+    private int _previewFps = 12;
+    public int PreviewFps
     {
         get => _previewFps;
         set => this.RaiseAndSetIfChanged(ref _previewFps, value);
@@ -442,15 +492,52 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
   
     public void TogglePreview()
     {
-        IsPaused = !IsPaused;
+        if (HasAnimation)
+        {
+            IsPaused = !IsPaused;
+        }
     }
     
+    
+    public void StepForward()
+    {
+        if (HasAnimation)
+        {
+            PausePreview();
+            CurrentFrame = (CurrentFrame + 1) % TotalFrames;
+        }
+    }
+    
+    public void StepBackward()
+    {
+        if (HasAnimation)
+        {
+            PausePreview();
+            CurrentFrame = (CurrentFrame - 1) % TotalFrames;
+        }
+    }
+
+    public void GoBeginningFrame()
+    {
+        if (HasAnimation)
+        {
+            PausePreview();
+            CurrentFrame = 0;
+        }
+    }
+    
+    public void GoEndFrame()
+    {
+        if (HasAnimation)
+        {
+            PausePreview();
+            CurrentFrame = TotalFrames - 1;
+        }
+    }
+
     public void ResumePreview() => IsPaused = false;
 
     public void PausePreview() => IsPaused = true;
     
-    public string CurrentFrameDisplay => _currentSheet != null 
-        ? $"Frame: {_currentFrame + 1} / {_currentSheet.TotalX}" 
-        : "Frame: -";
-    
+
 }

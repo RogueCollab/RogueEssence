@@ -348,57 +348,72 @@ public class DevFormViewModel : ViewModelBase
     public void TryNavigateToParent(EditorPageViewModel page)
     {
         if (!_pageToNodeMap.TryGetValue(page, out PageNode node))
-            return;
-        
-        var parent = node.Parent;
-        if (parent != null)
         {
-            ActivePage = parent.Page;
+            Console.Write("Could not find node for page: " + page.Title);
         }
-        
+            return;
+        PageNode parent = node.Parent;
+        if (parent != null)
+            ActivePage = parent.Page;
     }
-    
+
+    // private PageNode FindNode(IEnumerable<PageNode> nodes, EditorPageViewModel page)
+    // {
+    //     foreach (var node in nodes)
+    //     {
+    //         if (node.Page.Equals(page))
+    //             return node;
+    //
+    //         var found = FindNode(node.SubNodes.Cast<PageNode>(), page);
+    //         if (found != null)
+    //             return found;
+    //     }
+    //     return null;
+    // }
+    //
     public void RemoveTab(EditorPageViewModel page, bool tryNavigateToParent = false)
     {
         if (!_pageToNodeMap.TryGetValue(page, out PageNode node))
             return;
 
-        int removeIdx = Pages.IndexOf(page);
-        bool wasActive = page.Equals(ActivePage);
-
-        ClosePageAndChildren(node);
-
-
-        if (tryNavigateToParent)
+        PageNode parent = node.Parent;
+        HashSet<EditorPageViewModel> toRemoveSet = CollectPages(node).ToHashSet();
+        
+        bool activeIsAffected = toRemoveSet.Contains(ActivePage);
+        if (activeIsAffected)
         {
-            var parent = node.Parent;
-            if (parent != null)
+            bool navigateToParent = tryNavigateToParent && parent != null && !toRemoveSet.Contains(parent.Page);
+            int removeIdx = Pages.IndexOf(page);
+
+            
+            // First try the parent tab
+            if (navigateToParent)
             {
                 ActivePage = parent.Page;
-                return;
             }
-        }
-        
-        
-
-        if (Pages.Count == 0)
-        {
-            ActivePage = null;
-        }
-        else if (wasActive)
-        {
-            // try right tab, then left tab
-            if (removeIdx < Pages.Count)
-            {
-                ActivePage = Pages[removeIdx];
-            }
+            
+            // Then try the right tab or left tab, whichever is available first and is NOT being removed when closing the current tab
             else
             {
-                ActivePage = Pages[removeIdx - 1];
+                EditorPageViewModel rightTab = Pages.Skip(removeIdx + 1).FirstOrDefault(p => !toRemoveSet.Contains(p));
+                EditorPageViewModel leftTab = Pages.Take(removeIdx).LastOrDefault(p => !toRemoveSet.Contains(p));
+                ActivePage = rightTab ?? leftTab;
             }
         }
+        
+        // Finally, we can close all the tabs now
+        ClosePageAndChildren(node);
     }
 
+    private List<EditorPageViewModel> CollectPages(PageNode node)
+    {
+        var result = new List<EditorPageViewModel>();
+        foreach (var child in node.SubNodes.Cast<PageNode>())
+            result.AddRange(CollectPages(child));
+        result.Add(node.Page);
+        return result;
+    }
+    
     public async Task SaveChildren(EditorPageViewModel page)
     {
         if (!_pageToNodeMap.TryGetValue(page, out var pageNode))
@@ -415,25 +430,18 @@ public class DevFormViewModel : ViewModelBase
     
     private void ClosePageAndChildren(PageNode node)
     {
-        var children = node.SubNodes.Cast<PageNode>().ToList();
-        foreach (var child in children)
+        var allPages = CollectPages(node);
+
+        foreach (var page in allPages)
         {
-            ClosePageAndChildren(child);
+            Pages.Remove(page);
+            _pageToNodeMap.Remove(page);
         }
-
-        Pages.Remove(node.Page);
-
 
         if (node.IsTopLevel)
-        {
             TopLevelPages.Remove(node);
-        }
         else
-        {
             node.Parent.RemoveChild(node);
-        }
-
-        _pageToNodeMap.Remove(node.Page);
     }
 
     private ObservableCollection<NodeBase> _nodes = new();
@@ -484,7 +492,7 @@ public class DevFormViewModel : ViewModelBase
         EditorPageViewModel? previousPage = null;
         this.WhenAnyValue(x => x.ActivePage).Subscribe(page =>
         {
-            Console.WriteLine("Active page changed: " + page?.Title);
+            // Console.WriteLine("Active page changed: " + page?.Title);
             previousPage?.OnPageDeactivated();
             page?.OnPageActivated();
             OnActivePageSet(page);
@@ -833,8 +841,15 @@ public class DevFormViewModel : ViewModelBase
 
         _tabEvents.RemoveTabEvent += (tab) => { RemoveTab(tab); };
         
-        _tabEvents.TryNavigateToParentTabEvent += (tab) => { TryNavigateToParent(tab); };
-
+       
+        _tabEvents.GetPageNodeFunc += page =>
+        {
+            if (!_pageToNodeMap.TryGetValue(page, out var node))
+                return null;
+            return node;
+        };
+        
+        
         _tabEvents.NavigateToTabEvent += (tab) => { ActivePage = tab; };
 
         // TODO: Check if this works if the page is a children of a tab. What if it closes the children first before the parent...
@@ -902,6 +917,7 @@ public class DevFormViewModel : ViewModelBase
 
     public void AddPageFromTreeNode(OpenEditorNode node)
     {
+        // For the Ground/Map Editor, the game needs to move to it's own editor first
         if (node.EditorType.IsAssignableTo(typeof(IPreCreatePage)))
             node.EditorType.GetMethod("OnPreCreate")?.Invoke(null, null);
 
@@ -940,7 +956,7 @@ public class DevFormViewModel : ViewModelBase
         
         
 
-        RemoveTab(page);
+        RemoveTab(page, true);
         page.OnPageRemoved();
         return true;
     }

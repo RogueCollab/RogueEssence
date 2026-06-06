@@ -46,6 +46,7 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
         await _context.TabEvents.SaveChildren(this);
         if (AttachedView is ISaveable saveable)
             return await saveable.Save();
+        
         return true;
     }
 
@@ -74,5 +75,17 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
             return false;
         
         return otherPage.Node.Equals(Node);
+    }
+
+    public PageNode GetPageNode()
+    { 
+        PageNode node = _context.TabEvents.GetPageNode(this);
+        return node;
+    }
+    public void NavigateToTab(EditorPageViewModel page)
+    {
+      
+        _context.TabEvents.NavigateToTab(page);
+        
     }
 }

@@ -269,6 +269,10 @@
       <DependentUpon>MapLayerWindowView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\DialogBoxes\ReflectedDataWindowView.axaml.cs">
+      <DependentUpon>ReflectedDataWindowView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

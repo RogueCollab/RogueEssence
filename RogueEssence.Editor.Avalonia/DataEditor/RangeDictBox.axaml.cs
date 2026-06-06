@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Reactive.Subjects;
 using Avalonia.VisualTree;
 using Avalonia.Input;
+using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
@@ -18,41 +19,38 @@ namespace RogueEssence.Dev.Views
             this.InitializeComponent();
         }
         
-
-        bool doubleclick;
-        public void doubleClickStart(object sender, RoutedEventArgs e)
+        
+        public void SetListContextMenu(ContextMenu menu)
         {
-            doubleclick = true;
+            RangeDictBoxDataGrid.ContextMenu = menu;
         }
 
-        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        private void RangeDictBoxDataGrid_OnCellPointerPressed(object sender, DataGridCellPointerPressedEventArgs e)
         {
-            if (!doubleclick)
-                return;
-            doubleclick = false;
+            if (e.PointerPressedEventArgs.ClickCount != 2) return;
+            if (e.Column.DisplayIndex != 2) return; // Value column only
 
-            ViewModels.RangeDictBoxViewModel viewModel = (ViewModels.RangeDictBoxViewModel)DataContext;
-            if (viewModel == null)
-                return;
+            RangeDictBoxViewModel viewModel = (RangeDictBoxViewModel)DataContext;
+            if (viewModel == null) return;
             viewModel.lbxCollection_DoubleClick(sender, e);
         }
 
-        public void nudStart_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
+        private void RangeDictBoxDataGrid_OnCellEditEnded(object sender, DataGridCellEditEndedEventArgs e)
         {
-            ViewModels.RangeDictBoxViewModel viewModel = (ViewModels.RangeDictBoxViewModel)DataContext;
-            viewModel.AdjustOtherLimit((int)e.NewValue, false);
-        }
+            if (e.EditAction != DataGridEditAction.Commit) return;
 
-        public void nudEnd_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
-        {
-            ViewModels.RangeDictBoxViewModel viewModel = (ViewModels.RangeDictBoxViewModel)DataContext;
-            viewModel.AdjustOtherLimit((int)e.NewValue, true);
-        }
+            var element = (RangeDictElement)e.Row.DataContext;
+            var columnIndex = e.Column.DisplayIndex;
 
-        public void SetListContextMenu(ContextMenu menu)
-        {
-            DataGrid lbx = this.FindControl<DataGrid>("gridItems");
-            lbx.ContextMenu = menu;
+            RangeDictBoxViewModel viewModel = (RangeDictBoxViewModel)DataContext;
+            if (viewModel == null) return;
+
+            // Start
+            if (columnIndex == 0) 
+                viewModel.AdjustOtherLimit(element.DisplayStart, false);
+            // End
+            else if (columnIndex == 1)
+                viewModel.AdjustOtherLimit(element.DisplayEnd, true);
         }
     }
 }

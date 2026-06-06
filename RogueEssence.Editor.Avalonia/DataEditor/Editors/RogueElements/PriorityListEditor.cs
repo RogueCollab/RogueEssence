@@ -83,32 +83,6 @@ namespace RogueEssence.Dev
                 _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
             
-            vm.OnEditPriority = (Priority priority, int index, bool advancedEdit, PriorityListBoxViewModel.EditPriorityOp op) =>
-            {
-                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
-                string elementName = name + "<Priority>";
-        
-                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
-                pageViewModel.Node.AddNodeIfNotExists(node);
-
-                NodeHelper.ExpandParents(node, true);
-                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
-                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
-
-                newEditor.OnLoadAction = (StackPanel stack) =>
-                {
-                    DataEditor.LoadClassControls(stack, parent, null, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), priority, true, new Type[0], advancedEdit);
-                };
-
-                newEditor.OnOKAction = async (StackPanel stack) =>
-                {
-                    object priorityObj = DataEditor.SaveClassControls(stack, elementName, typeof(Priority), ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
-                    op(priority, index, (Priority)priorityObj);
-                    return true;
-                };
-
-                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
-            };
             vm.LoadFromList(member);
 
 

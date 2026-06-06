@@ -705,7 +705,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
 
     public void OnActivePageSet(EditorPageViewModel page)
     {
-        Console.WriteLine("OnActivePageSet: " + page.Title);
+        // Console.WriteLine("OnActivePageSet: " + page.Title);
         if (DataContext is DevFormViewModel vm)
         {
             if (vm.Pages.Count == 0)
@@ -714,7 +714,7 @@ public partial class DevForm : ChromelessWindow, IRootEditor
             }
             
             var path = FindIndexPath<NodeBase>(vm.NodeSource.Items, page.Node, n => n.SubNodes);
-            Console.WriteLine("Page?: " + path);
+            // Console.WriteLine("Page?: " + path);
             if (path.HasValue)
                 // Dispatcher.UIThread.Post(() =>
                 // {

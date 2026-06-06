@@ -17,7 +17,6 @@ public interface ISaveable
 public partial class ReflectedDataPageView : UserControl, ISaveable
 {
     public StackPanel ControlPanel { get; }
-
     
     public ReflectedDataPageView()
     {
@@ -29,8 +28,8 @@ public partial class ReflectedDataPageView : UserControl, ISaveable
     {
         if (DataContext is ReflectedDataPageViewModel vm && vm.OnOKAction != null)
         {
-            return await vm.OnOKAction(ControlPanel);
-            
+            bool result = await vm.OnOKAction(ControlPanel);
+            return result;
         }
         return true;
     }
@@ -44,38 +43,40 @@ public partial class ReflectedDataPageView : UserControl, ISaveable
     {
         if (DataContext is ReflectedDataPageViewModel vm)
         {
+            PageNode pageNode = vm.GetPageNode();
+            PageNode parent = pageNode.Parent;
             bool close = await vm.ApplySave();
             if (close)
                 vm.Close();
+            if (parent != null)
+            {
+                vm.NavigateToTab(parent.Page);
+            }
         }
     }
     
     public void btnCancel_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is ReflectedDataPageViewModel vm)
+        {
+            PageNode pageNode = vm.GetPageNode();
+            PageNode parent = pageNode.Parent;
             vm.Close();
+            if (parent != null)
+            {
+                vm.NavigateToTab(parent.Page);
+            }
+        }
     }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        DataContextChanged += OnDataContextChanged;
-        OnDataContextChanged(this, EventArgs.Empty);
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        DataContextChanged -= OnDataContextChanged;
-    }
-
-    private void OnDataContextChanged(object? sender, EventArgs e)
-    {
-        if (DataContext is not EditorPageViewModel vm) return;
     
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (DataContext is not EditorPageViewModel vm) return;
+
         vm.AttachedView = this;
 
-        if (DataContext is ReflectedDataPageViewModel reflectedVm && reflectedVm.OnLoadAction != null)
+        if (vm is ReflectedDataPageViewModel reflectedVm && reflectedVm.OnLoadAction != null)
             reflectedVm.OnLoadAction(ControlPanel);
     }
     
@@ -129,9 +130,5 @@ public partial class ReflectedDataPageView : UserControl, ISaveable
     //     Close();
     // }
     //
-    // public void SetViewOnly()
-    // {
-    //     Button button = this.FindControl<Button>("btnOK");
-    //     button.IsEnabled = false;
-    // }
+  
 }

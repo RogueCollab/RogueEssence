@@ -8,6 +8,7 @@
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             x:DataType="vm:PriorityListBoxViewModel"
              x:Class="RogueEssence.Dev.Views.PriorityListBox">
     <UserControl.Resources>
     </UserControl.Resources>
@@ -16,13 +17,14 @@
     </Design.DataContext>
     <Grid RowDefinitions="*, 40, *" ColumnDefinitions="*, *, 30">
         <DataGrid
-            Name="gridItems"
-            IsReadOnly="true"
+            x:Name="PriorityListBoxDataGrid"
             HorizontalAlignment="Stretch"
             ItemsSource="{Binding Collection}"
             SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
-            DoubleTapped="doubleClickStart"
-            PointerReleased="lbxCollection_DoubleClick"
+        
+            CellPointerPressed="PriorityListBoxDataGrid_OnCellPointerPressed"
+            CellEditEnding="PriorityListBoxDataGrid_OnCellEditEnding"
+            
             Margin="4" Grid.RowSpan="3"
             Grid.ColumnSpan="2"
             MinHeight="50"
@@ -30,9 +32,11 @@
             Classes="default">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Priority"
+                                    IsReadOnly="False"
                                     Binding="{Binding PriorityObj}"
                                     Width="80" />
                 <DataGridTextColumn Header="Value"
+                                    IsReadOnly="True"
                                     Binding="{Binding Path=DisplayValue}"
                                     Width="*" />
             </DataGrid.Columns>
@@ -50,15 +54,10 @@
                 </Button>
             </StackPanel>
             <StackPanel>
-                <Button Command="{Binding btnUp_Click}" IsEnabled="{Binding CanMoveUp}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                <Button Command="{Binding btnUp_Click}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
                     <Path Width="10" Height="10" Margin="0, 2,0,0" Data="{StaticResource Icons.CaretUpFill}" />
                 </Button>
-                <Button x:Name="PriorityListBoxEditButton"
-                        PointerReleased="PriorityListBoxEditButton_OnPointerReleased" IsEnabled="{Binding HasSelection}" Classes="secondary" Margin="0, 0"
-                        Padding="4,3, 4, 3">
-                    <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.SortDescendingFill}" />
-                </Button>
-                <Button Command="{Binding btnDown_Click}" IsEnabled="{Binding CanMoveDown}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
+                <Button Command="{Binding btnDown_Click}" Classes="secondary" Margin="0, 0" Padding="4,3, 4, 3">
                     <Path Width="10" Height="10" Margin="0,0,0,0" Data="{StaticResource Icons.CaretDownFill}" />
                 </Button>
             </StackPanel>

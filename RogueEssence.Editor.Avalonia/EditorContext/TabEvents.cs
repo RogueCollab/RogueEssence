@@ -16,13 +16,12 @@ namespace RogueEssence.Dev
         
         public event Action<OpenEditorNode>? AddPageFromTreeNodeEvent;
 
-        public event Action<EditorPageViewModel>? TryNavigateToParentTabEvent;
-        
-        public void TryNavigateToParentTab(EditorPageViewModel page)
-        {
-            TryNavigateToParentTabEvent?.Invoke(page);
-        }
+        public event Func<EditorPageViewModel, PageNode>? GetPageNodeFunc;
 
+        public PageNode GetPageNode(EditorPageViewModel page)
+        {
+            return GetPageNodeFunc?.Invoke(page);
+        }
         
         // Used for closing tabs when a data entry is deleted
         public event Action<string, DataManager.DataType>? CloseTabsForEntry;

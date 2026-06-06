@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using RogueElements;
 using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
@@ -39,14 +40,22 @@ namespace RogueEssence.Dev.ViewModels
         public int DisplayStart
         {
             get { return start + addMin; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                start = value - addMin;
+                this.RaisePropertyChanged();
+            }
         }
+
         public int DisplayEnd
         {
             get { return end + addMax; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                end = value - addMax;
+                this.RaisePropertyChanged();
+            }
         }
-
         private int weight;
         public int Weight
         {
@@ -253,15 +262,37 @@ namespace RogueEssence.Dev.ViewModels
             Collection.Insert(index, new SpawnRangeListElement(StringConv, AddMin, AddMax, start, end, rate, element));
             CurrentElement = index;
         }
+        
+        // public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        // {
+        //     var source = e.Source as Control;
+        //     var cell = source?.FindAncestorOfType<DataGridCell>();
+        //     if (cell == null) return;
+        //     
+        //     Console.WriteLine(cell);
+        //     // cell.
+        //
+        //     // var columnIndex = ((DataGrid)sender).Columns.;
+        //     // if (columnIndex != 3) return; // Value column only
+        //
+        //     int index = CurrentElement;
+        //     if (index > -1)
+        //     {
+        //         SpawnRangeListElement element = Collection[index];
+        //         bool advancedEdit = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        //         OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
+        //     }
+        // }
+        //
 
-        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        public void gridCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
             if (index > -1)
             {
                 SpawnRangeListElement element = Collection[index];
-                KeyModifiers modifiers = e.KeyModifiers;
+                KeyModifiers modifiers = e.PointerPressedEventArgs.KeyModifiers;
                 bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
                 OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
             }

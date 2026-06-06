@@ -42,14 +42,22 @@ namespace RogueEssence.Dev.ViewModels
         public int DisplayStart
         {
             get { return start + addMin; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                start = value - addMin;
+                this.RaisePropertyChanged();
+            }
         }
+
         public int DisplayEnd
         {
             get { return end + addMax; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                end = value - addMax;
+                this.RaisePropertyChanged();
+            }
         }
-
         private object value;
         public object Value
         {
@@ -298,7 +306,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
+        public void lbxCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int index = lbxDictionary.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;

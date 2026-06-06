@@ -155,7 +155,7 @@
                           BorderThickness="0,0,1,0" />
 
             <!-- Editor Panel -->
-            <Grid Margin="2, 0, 0, 0" Grid.Column="2" RowDefinitions="Auto, *">
+            <Grid Margin="2, 0, 0, 0" Grid.Column="2" RowDefinitions="Auto, *" ZIndex="10">
                 <Border BorderThickness="0, 0, 0, 1" BorderBrush="{DynamicResource Brush.Border0}"
                         Background="{DynamicResource TabControlWindowActiveBackgroundBrush}">
                     <!-- Tab Bar -->

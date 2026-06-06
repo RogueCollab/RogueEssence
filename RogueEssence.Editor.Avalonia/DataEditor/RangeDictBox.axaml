@@ -17,22 +17,22 @@
 
   <Grid RowDefinitions="*, 42" ColumnDefinitions="*, 30">
 
-    <DataGrid Name="gridItems"
-              IsReadOnly="true"
+    <DataGrid x:Name="RangeDictBoxDataGrid"
+              IsReadOnly="False"
               HorizontalAlignment="Stretch"
               ItemsSource="{Binding Collection}"
               SelectedIndex="{Binding CurrentElement, Mode=TwoWay}"
-              DoubleTapped="doubleClickStart"
-              PointerReleased="lbxCollection_DoubleClick"
+              CellPointerPressed="RangeDictBoxDataGrid_OnCellPointerPressed"
+              CellEditEnded="RangeDictBoxDataGrid_OnCellEditEnded"
               Margin="4"
               Grid.Row="0"
               Grid.Column="0"
               MinHeight="60"
               Classes="default">
       <DataGrid.Columns>
-        <DataGridTextColumn Header="Start" Binding="{Binding DisplayStart}" Width="60" />
-        <DataGridTextColumn Header="End"   Binding="{Binding DisplayEnd}"   Width="60" />
-        <DataGridTextColumn Header="Value" Binding="{Binding Path=DisplayValue}" Width="*" />
+        <DataGridTextColumn Header="Start" Binding="{Binding DisplayStart}" Width="60" IsReadOnly="False" />
+        <DataGridTextColumn Header="End"   Binding="{Binding DisplayEnd}"   Width="60" IsReadOnly="False" />
+        <DataGridTextColumn Header="Value" Binding="{Binding DisplayValue}" Width="*"  IsReadOnly="True" />
       </DataGrid.Columns>
     </DataGrid>
 
@@ -49,20 +49,20 @@
       </Button>
     </StackPanel>
 
-    <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto, *, Auto, *">
-      <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="0">Start:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}"
-                     Value="{Binding CurrentStart}"
-                     Increment="1"
-                     ValueChanged="nudStart_ValueChanged"
-                     Margin="4" Grid.Column="1"/>
-      <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="2">End:</TextBlock>
-      <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}"
-                     Value="{Binding CurrentEnd}"
-                     Increment="1"
-                     ValueChanged="nudEnd_ValueChanged"
-                     Margin="4" Grid.Column="3"/>
-    </Grid>
+    <!-- <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto, *, Auto, *"> -->
+    <!--   <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="0">Start:</TextBlock> -->
+    <!--   <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" -->
+    <!--                  Value="{Binding CurrentStart}" -->
+    <!--                  Increment="1" -->
+    <!--                  ValueChanged="nudStart_ValueChanged" -->
+    <!--                  Margin="4" Grid.Column="1"/> -->
+    <!--   <TextBlock VerticalAlignment="Center" Margin="4,0" Grid.Column="2">End:</TextBlock> -->
+    <!--   <NumericUpDown IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}" -->
+    <!--                  Value="{Binding CurrentEnd}" -->
+    <!--                  Increment="1" -->
+    <!--                  ValueChanged="nudEnd_ValueChanged" -->
+    <!--                  Margin="4" Grid.Column="3"/> -->
+    <!-- </Grid> -->
 
   </Grid>
 </UserControl>

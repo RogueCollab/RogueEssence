@@ -137,10 +137,6 @@
         <Style Selector="controls|DragTabItem:selected:pointerover Button#CloseTabButton">
             <Setter Property="Opacity" Value="1" />
         </Style>
-      
-        <Style Selector="controls|DragTabItem:selected /template/ controls|LeftPressedThumb#PART_Thumb">
-            <Setter Property="IsHitTestVisible" Value="False" />
-        </Style>
         <Style Selector="Button#CloseTabButton">
             <Setter Property="Opacity" Value="0" />
         </Style>
@@ -186,7 +182,8 @@
                         <Grid ColumnDefinitions="Auto, *, Auto">
                             <Thumb Grid.Column="0" Name="PART_LeftDragWindowThumb"
                                    MinWidth="{TemplateBinding LeftThumbWidth}" />
-                            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden"
+                            <ScrollViewer x:Name="TabBarViewScrollViewer" Grid.Column="1" HorizontalScrollBarVisibility="Hidden"
+                                          PointerWheelChanged="TabBarViewScrollViewer_OnPointerWheelChanged"
                                           VerticalScrollBarVisibility="Disabled">
                                 <ItemsPresenter Name="PART_ItemsPresenter"
                                                 ItemsPanel="{TemplateBinding ItemsPanel}" Margin="0, 0, 0, 0" />

@@ -36,7 +36,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return conv.GetString(value); }
         }
-
+        
         private StringConv conv;
 
 
@@ -50,8 +50,6 @@ namespace RogueEssence.Dev.ViewModels
 
     public class PriorityListBoxViewModel : ViewModelBase
     {
-        public bool CanMoveUp => SelectedIndex > 0;
-        public bool CanMoveDown => SelectedIndex >= 0 && SelectedIndex < Collection.Count - 1;
         public bool HasSelection => SelectedIndex >= 0 && SelectedIndex < Collection.Count;
         public ObservableCollection<PriorityElement> Collection { get; }
 
@@ -65,13 +63,9 @@ namespace RogueEssence.Dev.ViewModels
 
         public delegate void EditElementOp(Priority priority, int index, object element);
         public delegate void ElementOp(Priority priority, int index, object element, bool advancedEdit, EditElementOp op);
-
-        public delegate void EditPriorityOp(Priority priority, int index, Priority newPriority);
-        public delegate void PriorityOp(Priority priority, int index, bool advancedEdit, EditPriorityOp op);
-
+        
         public ElementOp OnEditItem;
-        public PriorityOp OnEditPriority;
-
+      
         public StringConv StringConv;
         
         private IDialogService _dialogService;
@@ -86,15 +80,11 @@ namespace RogueEssence.Dev.ViewModels
             
             this.WhenAnyValue(x => x.SelectedIndex).Subscribe(_ =>
             {
-                this.RaisePropertyChanged(nameof(CanMoveUp));
-                this.RaisePropertyChanged(nameof(CanMoveDown));
                 this.RaisePropertyChanged(nameof(HasSelection));
             });
 
             Collection.CollectionChanged += (_, _) =>
             {
-                this.RaisePropertyChanged(nameof(CanMoveUp));
-                this.RaisePropertyChanged(nameof(CanMoveDown));
                 this.RaisePropertyChanged(nameof(HasSelection));
             };
         }
@@ -171,11 +161,19 @@ namespace RogueEssence.Dev.ViewModels
             return Collection.Count;
         }
 
-        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        public void ChangePriority(Priority newPriority)
+        {
+            if (SelectedIndex >= 0)
+            {
+                changePriority(SelectedIndex, newPriority);
+            }
+        }
+        
+        public void lbxCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
             int boxIndex = SelectedIndex;
-            KeyModifiers modifiers = e.KeyModifiers;
+            KeyModifiers modifiers = e.PointerPressedEventArgs.KeyModifiers;
             bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             if (boxIndex > -1)
             {
@@ -276,7 +274,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void changePriority(Priority priority, int index, Priority newPriority)
+        private void changePriority(int index, Priority newPriority)
         {
             PriorityElement item = Collection[index];
             Collection.RemoveAt(index);
@@ -285,17 +283,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection.Insert(newBoxIndex, new PriorityElement(StringConv, newPriority, item.Value));
             SelectedIndex = newBoxIndex;
         }
-
-        public void btnEditKey_Click(bool advancedEdit)
-        {
-            if (SelectedIndex > -1)
-            {
-                Priority priority = Collection[SelectedIndex].Priority;
-                OnEditPriority(priority, SelectedIndex, advancedEdit, changePriority);
-            }
-        }
-
-
+        
         /// <summary>
         /// Gets the lowest tier in which the two priorities differ.
         /// If two priorities are the same up to the last tier of one of them, that tier is selected instead.

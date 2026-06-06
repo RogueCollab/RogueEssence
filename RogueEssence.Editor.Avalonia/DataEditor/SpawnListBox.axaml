@@ -19,23 +19,23 @@
     <Grid RowDefinitions="*, 42" ColumnDefinitions="*, 30">
 
         <DataGrid Name="gridItems"
-                  IsReadOnly="true"
+                  x:Name="SpawnListBoxDataGrid"
                   HorizontalAlignment="Stretch"
                   ItemsSource="{Binding Collection}"
                   SelectedIndex="{Binding CurrentElement, Mode=TwoWay}"
-                  DoubleTapped="doubleClickStart"
-                  PointerReleased="gridCollection_DoubleClick"
+                  CellEditEnded="SpawnListBoxDataGrid_OnCellEditEnded"
+                  CellPointerPressed="SpawnListBoxDataGrid_OnCellPointerPressed"
                   Margin="4"
                   Grid.Row="0"
                   Grid.Column="0"
                   MinHeight="50"
                   Classes="default">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Weight" Binding="{Binding Weight}" Width="70" />
-                <DataGridTextColumn Header="Chance"
+                <DataGridTextColumn IsReadOnly="False" Header="Weight" Binding="{Binding Weight}" Width="70" />
+                <DataGridTextColumn IsReadOnly="True" Header="Chance"
                                     Binding="{Binding Path=Chance, Converter={StaticResource PercentConverter}, Mode=OneWay}"
                                     Width="80" />
-                <DataGridTextColumn Header="Value" Binding="{Binding Path=DisplayValue}" Width="*" />
+                <DataGridTextColumn IsReadOnly="True" Header="Value" Binding="{Binding Path=DisplayValue}" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
 
@@ -66,17 +66,7 @@
                 </Button>
             </StackPanel>
         </StackPanel>
-
-        <Grid Grid.Row="1" Grid.Column="0" ColumnDefinitions="*, Auto">
-            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4" Grid.Column="0">Weight:</TextBlock>
-            <NumericUpDown Increment="1"
-                           IsEnabled="{Binding Path=CurrentElement, Converter={StaticResource ValidIdxConverter}, ConverterParameter=false}"
-                           Value="{Binding CurrentWeight}"
-                           Minimum="1"
-                           Margin="4" Grid.Column="1"
-                           Width="100" />
-        </Grid>
-
+        
     </Grid>
 
 </UserControl>

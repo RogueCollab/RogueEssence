@@ -305,31 +305,34 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
-            //open window to choose directory
-            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                Title = "Select sprite folder to mass import",
-                AllowMultiple = false,
-            }, folderName);
+                //open window to choose directory
+                string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Select sprite folder to mass import",
+                    AllowMultiple = false,
+                }, folderName);
 
-            if (string.IsNullOrEmpty(folder))
-                return;
+                if (string.IsNullOrEmpty(folder))
+                    return;
 
-            DevForm.SetConfig(Name + "Dir", folder);
-            CachedPath = folder + "/";
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
 
-            try
-            {
-                MassImport(CachedPath);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(_context.DialogService,
-                    $"Error importing from\n{CachedPath}\n\n{ex.Message}",
-                    "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
-                return;
-            }
+                try
+                {
+                    MassImport(CachedPath);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        $"Error importing from\n{CachedPath}\n\n{ex.Message}",
+                        "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
+                    return;
+                }
+            });
         }
 
         public void mnuMassExportMulti_Click()
@@ -347,22 +350,27 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
-            //open window to choose directory
-            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                Title = "Select folder to mass export to",
-                AllowMultiple = false,
-            }, folderName);
+                //open window to choose directory
+                string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Select folder to mass export to",
+                    AllowMultiple = false,
+                }, folderName);
 
-            if (string.IsNullOrEmpty(folder))
-                return;
-            DevForm.SetConfig(Name + "Dir", folder);
-            CachedPath = folder + "/";
+                if (string.IsNullOrEmpty(folder))
+                    return;
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
 
-            bool success = MassExport(CachedPath, singleSheet);
-            if (!success)
-                await MessageBoxWindowView.Show(_context.DialogService,"Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.", "Mass Export Failed",
-                    MessageBoxWindowView.MessageBoxButtons.Ok);
+                bool success = MassExport(CachedPath, singleSheet);
+                if (!success)
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        "Errors found exporting to\n" + CachedPath + "\n\nCheck logs for more info.",
+                        "Mass Export Failed",
+                        MessageBoxWindowView.MessageBoxButtons.Ok);
+            });
         }
 
         public async void mnuReIndex_Click()
@@ -409,31 +417,34 @@ namespace RogueEssence.Dev.ViewModels
             //remember addresses in registry
             string folderName = DevForm.GetConfig(Name + "Dir", Directory.GetCurrentDirectory());
 
-            //open window to choose directory
-            string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                Title = "Select folder to import from",
-                AllowMultiple = false,
-            }, folderName);
+                //open window to choose directory
+                string? folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Select folder to import from",
+                    AllowMultiple = false,
+                }, folderName);
 
-            if (string.IsNullOrEmpty(folder))
-                return;
+                if (string.IsNullOrEmpty(folder))
+                    return;
 
-            DevForm.SetConfig(Name + "Dir", folder);
-            CachedPath = folder + "/";
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
 
-            try
-            {
-                Import(CachedPath, formdata);
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(_context.DialogService,
-                    "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed",
-                    MessageBoxWindowView.MessageBoxButtons.Ok);
-                return;
-            }
+                try
+                {
+                    Import(CachedPath, formdata);
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        "Error importing from\n" + CachedPath + "\n\n" + ex.Message, "Import Failed",
+                        MessageBoxWindowView.MessageBoxButtons.Ok);
+                    return;
+                }
+            });
         }
 
         public async void btnReImport_Click()
@@ -480,30 +491,33 @@ namespace RogueEssence.Dev.ViewModels
 
             //open window to choose directory
 
-            string folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+            await Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                Title = "Select folder to export to",
-                AllowMultiple = false,
-            }, folderName);
+                string folder = await _context.DialogService.ShowFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Select folder to export to",
+                    AllowMultiple = false,
+                }, folderName);
 
-            if (String.IsNullOrEmpty(folder))
-                return;
+                if (String.IsNullOrEmpty(folder))
+                    return;
 
-            DevForm.SetConfig(Name + "Dir", folder);
-            CachedPath = folder + "/";
+                DevForm.SetConfig(Name + "Dir", folder);
+                CachedPath = folder + "/";
 
-            try
-            {
-                DevForm.ExecuteOrPend(() => { Export(CachedPath, formdata, singleSheet); });
-            }
-            catch (Exception ex)
-            {
-                DiagManager.Instance.LogError(ex, false);
-                await MessageBoxWindowView.Show(_context.DialogService,
-                    "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed",
-                    MessageBoxWindowView.MessageBoxButtons.Ok);
-                return;
-            }
+                try
+                {
+                    DevForm.ExecuteOrPend(() => { Export(CachedPath, formdata, singleSheet); });
+                }
+                catch (Exception ex)
+                {
+                    DiagManager.Instance.LogError(ex, false);
+                    await MessageBoxWindowView.Show(_context.DialogService,
+                        "Error exporting to\n" + CachedPath + "\n\n" + ex.Message, "Export Failed",
+                        MessageBoxWindowView.MessageBoxButtons.Ok);
+                    return;
+                }
+            });
         }
 
         public async void btnDelete_Click()
