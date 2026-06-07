@@ -40,6 +40,9 @@ namespace RogueEssence.Dev.ViewModels
         }
     }
 
+    
+    // TODO: Allow the user to edit primitive types (probably just numbers and strings) directly through the DataGrid
+    // Check for the type of the object in the key and value and have some ifs...
     public class DictionaryBoxViewModel : ViewModelBase
     {
         public ObservableCollection<DictionaryElement> Collection { get; }

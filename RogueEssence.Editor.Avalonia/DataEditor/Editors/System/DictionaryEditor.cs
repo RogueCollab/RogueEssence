@@ -85,7 +85,7 @@ namespace RogueEssence.Dev
             vm.OnEditKey += (object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op) =>
             {
                 EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
-                string elementName = name + "<Key>";
+                string elementName = name + "<KeySSS>";
                 string title = DataEditor.GetWindowTitle(parent, elementName, key, keyType,
                     ReflectionExt.GetPassableAttributes(1, attributes));
 
@@ -94,10 +94,11 @@ namespace RogueEssence.Dev
                 pageViewModel.Node.AddNodeIfNotExists(node);
 
                 NodeHelper.ExpandParents(node, true);
-                ReflectedDataPageViewModel
-                    newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                ReflectedDataPageViewModel 
+                newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
                 newEditor.SetPageTitle(title, pageViewModel.Node.Icon);
 
+                newEditor.ShouldNavigateAfterClosing(false);
                 newEditor.OnLoadAction = (StackPanel stack) =>
                 {
                     DataEditor.LoadClassControls(stack, parent, null, elementName, keyType,

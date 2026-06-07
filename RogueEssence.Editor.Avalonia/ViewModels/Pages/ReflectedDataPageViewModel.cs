@@ -16,6 +16,7 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
     public Func<StackPanel, Task<bool>> OnOKAction;
     
     private bool _shouldRemoveNode = true;
+    private bool _shouldNavigateAfterClosing = true;
     
     public ReflectedDataPageViewModel(EditorContext context,
         NodeBase node, Action<EditorPageViewModel> onPageLoad) : base(context, node, onPageLoad)
@@ -26,6 +27,14 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
     public void SetRemoveNode(bool remove)
     {
         _shouldRemoveNode = remove;
+    }
+    
+    // Whether to navigate to a tab after closing. This is only used in the DictionaryEditor since
+    // it requires adding two consecutive pages -- one for adding a key and another for adding the value
+    // We don't want to navigate back to the parent after adding a key
+    public void ShouldNavigateAfterClosing(bool navigate)
+    {
+        _shouldNavigateAfterClosing = navigate;
     }
     
     private bool _isRootPage;
@@ -82,10 +91,11 @@ public class ReflectedDataPageViewModel : EditorPageViewModel<NodeBase>
         PageNode node = _context.TabEvents.GetPageNode(this);
         return node;
     }
-    public void NavigateToTab(EditorPageViewModel page)
+    public void TryNavigateToTab(EditorPageViewModel page)
     {
-      
-        _context.TabEvents.NavigateToTab(page);
-        
+        if (_shouldNavigateAfterClosing)
+        {
+            _context.TabEvents.NavigateToTab(page);
+        }
     }
 }

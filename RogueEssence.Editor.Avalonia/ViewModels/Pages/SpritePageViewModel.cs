@@ -360,7 +360,9 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
         StopPreview();
         if (item == null) return;
 
-        DevForm.ExecuteOrPend(() =>
+        // DevForm.ExecuteOrPend(() =>
+        // {
+        Dispatcher.UIThread.InvokeAsync(() =>
         {
             lock (GameBase.lockObj)
             {
@@ -393,11 +395,8 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
                             {
                                 _animTimer = new DispatcherTimer(DispatcherPriority.Render);
                                 _animTimer.Interval = TimeSpan.FromSeconds(1.0 / PreviewFps);
-                           
-                                _animTimer.Tick += (_, _) =>
-                                {
-                                    CurrentFrame = (CurrentFrame + 1) % sheet.TotalX;
-                                };
+
+                                _animTimer.Tick += (_, _) => { CurrentFrame = (CurrentFrame + 1) % sheet.TotalX; };
                                 if (!IsPaused)
                                     _animTimer.Start();
                             }
@@ -410,6 +409,7 @@ public class SpritePageViewModel : EditorPageViewModel<SpriteRootNode>
                 }
             }
         });
+        // });
     }
 
     private void _updateBitmap()

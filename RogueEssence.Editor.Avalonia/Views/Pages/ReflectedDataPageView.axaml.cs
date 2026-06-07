@@ -50,7 +50,7 @@ public partial class ReflectedDataPageView : UserControl, ISaveable
                 vm.Close();
             if (parent != null)
             {
-                vm.NavigateToTab(parent.Page);
+                vm.TryNavigateToTab(parent.Page);
             }
         }
     }
@@ -64,7 +64,7 @@ public partial class ReflectedDataPageView : UserControl, ISaveable
             vm.Close();
             if (parent != null)
             {
-                vm.NavigateToTab(parent.Page);
+                vm.TryNavigateToTab(parent.Page);
             }
         }
     }
