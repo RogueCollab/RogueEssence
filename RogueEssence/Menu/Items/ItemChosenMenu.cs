@@ -12,8 +12,8 @@ namespace RogueEssence.Menu
     public class ItemChosenMenu : SingleStripMenu
     {
 
-        private int slot;
-        private bool held;
+        public int slot {get; private set;}
+        public bool held {get; private set;}
 
         public ItemChosenMenu(int slot, bool held) : this(MenuLabel.ITEM_CHOSEN_MENU ,slot, held) { }
         public ItemChosenMenu(string label, int slot, bool held)

@@ -14,11 +14,11 @@ namespace RogueEssence.Menu
         public static readonly int SLOTS_PER_PAGE = 6;
         private List<string> Skills = new List<string>();
 
-        Team team;
-        int teamSlot;
-        bool assembly;
-        bool allowAssembly;
-        bool guest;
+        public Team team {get; private set;}
+        public int teamSlot {get; private set;}
+        public bool assembly {get; private set;}
+        public bool allowAssembly {get; private set;}
+        public bool guest {get; private set;}
 
         SkillSummary summaryMenu;
 
