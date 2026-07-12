@@ -11,8 +11,16 @@ namespace RogueEssence.Menu
     public class WithdrawChosenMenu : SingleStripMenu
     {
 
-        private int origIndex;
+        public int origIndex {get; private set;}
         private List<WithdrawSlot> selections;
+        public List<WithdrawSlot> Selections {
+            get
+            {
+                List<WithdrawSlot> newList = new List<WithdrawSlot>();
+                selections.ForEach(elem => newList.Add(new WithdrawSlot(elem.IsBox, elem.ItemID, elem.BoxSlot)));
+                return newList;
+            }
+        }
         WithdrawMenu.OnWithdrawChoice storageChoice;
         bool continueOnChoose;
 

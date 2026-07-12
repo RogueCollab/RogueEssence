@@ -39,7 +39,7 @@ namespace RogueEssence.Menu
         {
             foreach (IChoosable element in Choices)
             {
-                if(element is MenuSetting || SettingsData.ContainsKey((MenuSetting)element))
+                if(element is MenuSetting && SettingsData.ContainsKey((MenuSetting)element))
                 {
                     MenuSetting setting = element as MenuSetting;
                     SettingsData[setting].SaveAction.Invoke(setting);

@@ -10,11 +10,11 @@ namespace RogueEssence.Menu
 {
     public class MemberInfoMenu : InteractableMenu
     {
-        Team team;
-        int teamSlot;
-        bool assembly;
-        bool allowAssembly;
-        bool guest;
+        public Team team {get; private set;}
+        public int teamSlot {get; private set;}
+        public bool assembly {get; private set;}
+        public bool allowAssembly {get; private set;}
+        public bool guest {get; private set;}
 
         public MenuText Title;
         public MenuText PageText;

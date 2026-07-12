@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
         string[] intrinsicChoices;
         OnChooseSlot chooseSlotAction;
         Action refuseAction;
-        Character player;
+        public Character player {get; private set;}
 
         SummaryMenu summaryMenu;
         DialogueText Description;

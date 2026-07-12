@@ -13,8 +13,8 @@ namespace RogueEssence.Menu
     {
         OnChooseSlot learnAction;
         Action refuseAction;
-        Character player;
-        string skillNum;
+        public Character player {get; private set;}
+        public string skillNum {get; private set;}
 
         SkillSummary summaryMenu;
 
