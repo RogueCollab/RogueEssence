@@ -201,6 +201,13 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
+        private int zoomPercent = 200;
+        public int ZoomPercent
+        {
+            get => zoomPercent;
+            set => this.SetIfChanged(ref zoomPercent, Math.Max(50, Math.Min(800, value)));
+        }
+
         public bool CanMultiSelect;
 
 
