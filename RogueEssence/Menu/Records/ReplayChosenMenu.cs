@@ -14,7 +14,7 @@ namespace RogueEssence.Menu
     public class ReplayChosenMenu : SingleStripMenu
     {
 
-        private string recordDir;
+        public string recordDir {get; private set;}
 
         public ReplayChosenMenu(string dir) : this(MenuLabel.REPLAY_CHOSEN_MENU, dir) { }
         public ReplayChosenMenu(string label, string dir)

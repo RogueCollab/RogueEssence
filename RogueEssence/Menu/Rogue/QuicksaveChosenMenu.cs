@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
     public class QuicksaveChosenMenu : SingleStripMenu
     {
 
-        private string recordDir;
+        public string recordDir {get; private set;}
 
         public QuicksaveChosenMenu(string dir) : this(MenuLabel.ROGUE_QUICKSAVE_CHOSEN_MENU, dir) { }
         public QuicksaveChosenMenu(string label, string dir)

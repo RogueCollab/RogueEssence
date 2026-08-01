@@ -10,8 +10,16 @@ namespace RogueEssence.Menu
     public class DepositChosenMenu : SingleStripMenu
     {
 
-        private int origIndex;
+        public int origIndex {get; private set;}
         private List<InvSlot> selections;
+        public List<InvSlot> Selections {
+            get
+            {
+                List<InvSlot> newList = new List<InvSlot>();
+                selections.ForEach(elem => newList.Add(new InvSlot(elem.IsEquipped, elem.Slot)));
+                return newList;
+            }
+        }
 
         public DepositChosenMenu(List<InvSlot> selections, int origIndex) : this(MenuLabel.DEPOSIT_CHOSEN_MENU, selections, origIndex) { }
         public DepositChosenMenu(string label, List<InvSlot> selections, int origIndex)
