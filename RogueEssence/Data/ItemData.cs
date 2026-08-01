@@ -88,6 +88,7 @@ namespace RogueEssence.Data
         /// <summary>
         /// The maximum amount a single slot of this item can be stacked.
         /// 0 is unstackable.
+        /// -1 is infinite use.
         /// </summary>
         public int MaxStack;
 
