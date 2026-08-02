@@ -57,7 +57,7 @@ namespace RogueEssence.Data
         public DataManager.DataType DataType;
 
         /// <summary>
-        /// Elemental typing of attack
+        /// The elemental attribute of the attack.
         /// </summary>
         [JsonConverter(typeof(ElementConverter))]
         [DataType(0, DataManager.DataType.Element, false)]

@@ -74,17 +74,18 @@ namespace RogueEssence.Script
             }
             return resultStr;
         }
+
         /// <summary>
         /// Formats a string.  Will unescape escaped characters and process grammar tags.
         /// </summary>
-        /// <param name="fmt">String to format.</param>
-        /// <param name="para">Arguments</param>
+        /// <param name="fmt">The string to format.</param>
+        /// <param name="args">Additional arguments to pass into the string being formatted.</param>
         /// <returns>The formatted string.</returns>
-        public string Format( string fmt, params object[] para )
+        public string Format( string fmt, params object[] args)
         {
             try
             {
-                return Text.FormatGrammar(System.Text.RegularExpressions.Regex.Unescape(fmt), para);
+                return Text.FormatGrammar(System.Text.RegularExpressions.Regex.Unescape(fmt), args);
             }
             catch (Exception ex)
             {
@@ -94,16 +95,16 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Formats a string given a string key.  Will unescape escaped characters.
+        /// Takes the string key, looks up the string it represents, and formats it.  Will unescape escaped characters and process grammar tags.
         /// </summary>
-        /// <param name="fmt">The string key to format</param>
-        /// <param name="para">string arguments</param>
-        /// <returns></returns>
-        public string FormatKey(string fmt, params object[] para)
+        /// <param name="fmt">The string key to look up and use for formatting.</param>
+        /// <param name="args">Additional arguments to pass into the string being formatted.</param>
+        /// <returns>The formatted string.</returns>
+        public string FormatKey(string fmt, params object[] args)
         {
             try
             {
-                return Text.FormatKey(fmt, para);
+                return Text.FormatKey(fmt, args);
             }
             catch (Exception ex)
             {
@@ -155,6 +156,10 @@ namespace RogueEssence.Script
             return "";
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
+        /// <param name="state"></param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             //TODO

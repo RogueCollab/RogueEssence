@@ -4,6 +4,10 @@ namespace RogueEssence.Data
     [Serializable]
     public class IntrinsicData : ProximityPassive, IDescribedData
     {
+        /// <summary>
+        /// Returns the local string representing the intrinsic.
+        /// </summary>
+        /// <returns>The local string.</returns>
         public override string ToString()
         {
             return Name.ToLocal();

@@ -14,6 +14,7 @@ namespace RogueEssence.Script
         /// </summary>
         /// <param name="ch"></param>
         /// <param name="classpath"></param>
+        /// <param name="args"></param>
         public void SetCharacterAI(GroundChar ch, string classpath, params object[] args)
         {
             try

@@ -17,7 +17,6 @@ namespace RogueEssence.Menu
 
         MenuText menuTimer;
 
-        public List<MenuTextChoice> Choices { get; set; }
         public List<IMenuElement> TitleElements { get; set; }
         public List<IMenuElement> SummaryElements { get; set; }
         
@@ -30,7 +29,6 @@ namespace RogueEssence.Menu
         public MainMenu(string label)
         {
             Label = label;
-            Choices = new List<MenuTextChoice>();
             TitleElements = new List<IMenuElement>();
             SummaryElements = new List<IMenuElement>();
         }
