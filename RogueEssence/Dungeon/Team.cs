@@ -400,6 +400,10 @@ namespace RogueEssence.Dungeon
 
         public int MaxInv;
 
+        [JsonConverter(typeof(ItemConverter))]
+        [DataType(0, DataManager.DataType.Item, false)]
+        public string RegisteredItem;
+
         public EventedList<Character> Assembly;
 
         [JsonConverter(typeof(ItemStorageConverter))]
@@ -425,6 +429,7 @@ namespace RogueEssence.Dungeon
         [JsonConstructor]
         public ExplorerTeam(bool initEvents) : base()
         {
+            RegisteredItem = "";
             Assembly = new EventedList<Character>();
             BoxStorage = new List<InvItem>();
             Storage = new Dictionary<string, int>();
@@ -437,6 +442,7 @@ namespace RogueEssence.Dungeon
         protected ExplorerTeam(ExplorerTeam other) : base(other)
         {
             MaxInv = other.MaxInv;
+            RegisteredItem = other.RegisteredItem;
 
             Assembly = new EventedList<Character>();
             foreach (Character chara in other.Assembly)
@@ -460,6 +466,19 @@ namespace RogueEssence.Dungeon
         }
 
         public override Team Clone() { return new ExplorerTeam(this); }
+
+        public int GetRegisteredItemSlot()
+        {
+            if (String.IsNullOrEmpty(RegisteredItem))
+                return -1;
+
+            for (int ii = 0; ii < GetInvCount(); ii++)
+            {
+                if (GetInv(ii).ID == RegisteredItem)
+                    return ii;
+            }
+            return -1;
+        }
 
         public void SetRank(string rank)
         {

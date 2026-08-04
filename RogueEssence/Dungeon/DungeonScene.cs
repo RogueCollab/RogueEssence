@@ -486,7 +486,15 @@ namespace RogueEssence.Dungeon
                         ProcessMinimapInput(input);
                     else if (input[FrameInput.InputType.Skills])
                     {
-                        if (input[FrameInput.InputType.SkillPreview])
+                        if (!String.IsNullOrEmpty(ActiveTeam.RegisteredItem) && input.JustPressed(FrameInput.InputType.SkillPreview))
+                        {
+                            int itemSlot = ActiveTeam.GetRegisteredItemSlot();
+                            if (itemSlot > -1)
+                                action = new GameAction(GameAction.ActionType.Throw, Dir8.None, itemSlot);
+                            else
+                                GameManager.Instance.SE("Menu/Cancel");
+                        }
+                        else if (String.IsNullOrEmpty(ActiveTeam.RegisteredItem) && input[FrameInput.InputType.SkillPreview])
                         {
                             previewing = true;
                             int skillIndex = ProcessSkillInput(input, true);

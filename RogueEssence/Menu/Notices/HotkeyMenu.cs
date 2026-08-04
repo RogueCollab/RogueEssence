@@ -4,6 +4,7 @@ using RogueElements;
 using Microsoft.Xna.Framework;
 using RogueEssence.Content;
 using RogueEssence.Data;
+using RogueEssence.Dungeon;
 
 namespace RogueEssence.Menu
 {
@@ -105,7 +106,16 @@ namespace RogueEssence.Menu
 
         public void UpdateControls()
         {
-            menuText.SetText(DiagManager.Instance.GetControlString(FrameInput.InputType.SkillPreview) + " [color=#FFFF00]" + Text.FormatKey("MENU_SKILL_PREVIEW") + "[color]");
+            ExplorerTeam team = DataManager.Instance.Save.ActiveTeam;
+            string control = DiagManager.Instance.GetControlString(FrameInput.InputType.SkillPreview);
+            if (!String.IsNullOrEmpty(team.RegisteredItem))
+            {
+                int itemSlot = team.GetRegisteredItemSlot();
+                InvItem item = itemSlot > -1 ? team.GetInv(itemSlot) : new InvItem(team.RegisteredItem, false, 0);
+                menuText.SetText(control + ": " + item.GetDisplayName());
+            }
+            else
+                menuText.SetText(control + " [color=#FFFF00]" + Text.FormatKey("MENU_SKILL_PREVIEW") + "[color]");
             int textLength = MathUtils.DivUp(menuText.GetTextLength(), 4) * 4;
             Bounds = Rect.FromPoints(new Loc(GraphicsManager.ScreenWidth - textLength - 16 - GraphicsManager.MenuBG.TileWidth, 24), new Loc(GraphicsManager.ScreenWidth + GraphicsManager.MenuBG.TileWidth, 24 + LINE_HEIGHT + GraphicsManager.MenuBG.TileHeight * 2));
             menuText.Loc = new Loc(Bounds.Width - GraphicsManager.MenuBG.TileWidth * 2, GraphicsManager.MenuBG.TileHeight);
