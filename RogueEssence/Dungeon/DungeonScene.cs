@@ -494,7 +494,7 @@ namespace RogueEssence.Dungeon
                             else
                                 GameManager.Instance.SE("Menu/Cancel");
                         }
-                        else if (String.IsNullOrEmpty(ActiveTeam.RegisteredItem) && input[FrameInput.InputType.SkillPreview])
+                        else if (input[FrameInput.InputType.LeaderSwapForth])
                         {
                             previewing = true;
                             int skillIndex = ProcessSkillInput(input, true);
