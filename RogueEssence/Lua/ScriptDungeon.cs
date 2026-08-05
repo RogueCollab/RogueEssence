@@ -10,13 +10,13 @@ using System.Collections.Generic;
 
 namespace RogueEssence.Script
 {
-    class ScriptDungeon : ILuaEngineComponent
+    public class ScriptDungeon : ILuaEngineComponent
     {
         /// <summary>
         /// Makes a character turn to face another
         /// </summary>
-        /// <param name="curch"></param>
-        /// <param name="turnto"></param>
+        /// <param name="curch">The character that will turn.</param>
+        /// <param name="turnto">The character being turned to.</param>
         public void CharTurnToChar(Character curch, Character turnto)
         {
             if (curch == null || turnto == null)
@@ -68,6 +68,10 @@ namespace RogueEssence.Script
             return ZoneManager.Instance.CurrentZone.Name.ToLocal();
         }
 
+        /// <summary>
+        /// Used to force-disable the minimap.
+        /// </summary>
+        /// <param name="visible">If false, will force-disable the minimap.</param>
         public void SetMinimapVisible(bool visible)
         {
             ZoneManager.Instance.CurrentMap.HideMinimap = !visible;
@@ -81,7 +85,7 @@ namespace RogueEssence.Script
         /// Set a character's emote in a dungeon map.
         /// </summary>
         /// <param name="chara">Character to emote</param>
-        /// <param name="emoteid">ID of the emote</param>
+        /// <param name="emoteid">ID of the emote. Use a blank string to clear the current emote.</param>
         /// <param name="cycles">The number of times to play the emote.</param>
         public void CharSetEmote(Character chara, string emoteid, int cycles)
         {
@@ -99,15 +103,23 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Set a character's animation.
+        /// This is a LuaFunction and is the recommended way to call the method.
+        /// Consult _CharStartAnim for more parameter info.
         /// </summary>
-        /// <param name="chara">Character to animate</param>
-        /// <param name="anim">Name of the animation</param>
-        /// <param name="loop">Whether to loop the animation</param>
         /// <example>
         /// DUNGEON:CharStartAnim(player, anim, false)
         /// </example>
         public LuaFunction CharStartAnim;
 
+        /// <summary>
+        /// An internal version of CharStartAnim that returns the coroutine to be wrapped in the LuaFunction.
+        /// It is recommended to call the lua function instead.
+        /// Parameter information is the same between the two versions.
+        /// </summary>
+        /// <param name="chara">Character to animate.</param>
+        /// <param name="anim">Name of the animation</param>
+        /// <param name="loop">Whether to loop the animation</param>
+        /// <returns></returns>
         public Coroutine _CharStartAnim(Character chara, string anim, bool loop)
         {
             int animIndex = GraphicsManager.GetAnimIndex(anim);
@@ -117,22 +129,23 @@ namespace RogueEssence.Script
                 return new Coroutine(chara.StartAnim(new CharAnimAction(chara.CharLoc, chara.CharDir, animIndex)));
         }
 
-        public LuaFunction CharSetAction;
-
-        public Coroutine _CharSetAction(Character chara, CharAnimation anim)
-        {
-            return new Coroutine(chara.StartAnim(anim));
-        }
-
         /// <summary>
         /// Stops a character's current animation, reverting them to default idle.
+        /// This is a LuaFunction and is the recommended way to call the method.
+        /// Consult _CharEndAnim for more parameter info.
         /// </summary>
-        /// <param name="chara">Character to stop animating</param>
         /// <example>
         /// DUNGEON:CharEndAnim(player)
         /// </example>
         public LuaFunction CharEndAnim;
 
+        /// <summary>
+        /// An internal version of CharEndAnim that returns the coroutine to be wrapped in the LuaFunction.
+        /// It is recommended to call the lua function instead.
+        /// Parameter information is the same between the two versions.
+        /// </summary>
+        /// <param name="chara">Character to stop animating</param>
+        /// <returns></returns>
         public Coroutine _CharEndAnim(Character chara)
         {
             return new Coroutine(chara.StartAnim(new CharAnimIdle(chara.CharLoc, chara.CharDir)));
@@ -141,23 +154,45 @@ namespace RogueEssence.Script
         /// <summary>
         /// Set a character's animation, and waits until it completed before continue.
         /// </summary>
-        /// <param name="chara">Character to animate</param>
-        /// <param name="anim">Name of the animation</param>
         /// <example>
-        /// DUNGEON:CharStartAnim(player, anim)
+        /// DUNGEON:CharWaitAnim(player, anim)
         /// </example>
         public LuaFunction CharWaitAnim;
+
+        /// <summary>
+        /// [LuaFunction] CharWaitAnim
+        /// </summary>
+        /// <param name="chara">Character to animate</param>
+        /// <param name="anim">Name of the animation</param>
+        /// <returns></returns>
         public Coroutine _CharWaitAnim(Character chara, string anim)
         {
-            return new Coroutine(__CharWaitAnim(chara, anim));
+            return new Coroutine(_charWaitAnim(chara, anim));
         }
-        public IEnumerator<YieldInstruction> __CharWaitAnim(Character chara, string anim)
+
+        private IEnumerator<YieldInstruction> _charWaitAnim(Character chara, string anim)
         {
             int animIndex = GraphicsManager.GetAnimIndex(anim);
             yield return CoroutineManager.Instance.StartCoroutine(chara.StartAnim(new CharAnimAction(chara.CharLoc, chara.CharDir, animIndex)));
             yield return new WaitWhile(chara.OccupiedwithAction);
         }
 
+
+        /// <summary>
+        /// Sets a character's character-animation, taking a CharAnimation object instead of an animation name.
+        /// </summary>
+        public LuaFunction CharSetAction;
+
+        /// <summary>
+        /// [LuaFunction] CharSetAction
+        /// </summary>
+        /// <param name="chara">The character to animate</param>
+        /// <param name="anim">The animation for the character</param>
+        /// <returns></returns>
+        public Coroutine _CharSetAction(Character chara, CharAnimation anim)
+        {
+            return new Coroutine(chara.StartAnim(anim));
+        }
 
         //===================================
         //  VFX
@@ -214,8 +249,19 @@ namespace RogueEssence.Script
         }
 
 
-
+        /// <summary>
+        /// Adds a Map Status to the current map.
+        /// </summary>
+        /// <example>
+        /// DUNGEON:AddMapStatus("rain")
+        /// </example>
         public LuaFunction AddMapStatus;
+
+        /// <summary>
+        /// [LuaFunction] AddMapStatus
+        /// </summary>
+        /// <param name="statusId">The ID of the map status to add to the map.</param>
+        /// <returns></returns>
         public Coroutine _AddMapStatus(string statusId)
         {
             MapStatus status = new MapStatus(statusId);
@@ -223,13 +269,29 @@ namespace RogueEssence.Script
             return new Coroutine(DungeonScene.Instance.AddMapStatus(status));
         }
 
+        /// <summary>
+        /// Removes a Map Status from the current map.
+        /// </summary>
+        /// <example>
+        /// DUNGEON:RemoveMapStatus("rain")
+        /// </example>
         public LuaFunction RemoveMapStatus;
+
+        /// <summary>
+        /// [LuaFunction] RemoveMapStatus
+        /// </summary>
+        /// <param name="statusId">The ID of the map status to remove from the map.</param>
+        /// <returns></returns>
         public Coroutine _RemoveMapStatus(string statusId)
         {
             return new Coroutine(DungeonScene.Instance.RemoveMapStatus(statusId));
         }
 
-
+        /// <summary>
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
+        /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             //Implement stuff that should be written in lua!

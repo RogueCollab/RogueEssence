@@ -26,10 +26,19 @@ namespace RogueEssence.Data
             return GameEventPriority.EventCause.Skill;
         }
 
+        /// <summary>
+        /// Returns the BattleData's ID.
+        /// </summary>
+        /// <returns></returns>
         public override string GetID() { return ID; }
-        //TODO: make this more nuanced for skills, traps, item usages and throws?
+
+        /// <summary>
+        /// Returns a short display name for this BattleData object.
+        /// </summary>
+        /// <returns></returns>
         public override string GetDisplayName()
         {
+            //TODO: make this more nuanced for skills, traps, item usages and throws?
             if (DataType == DataManager.DataType.Skill)
                 return DataManager.Instance.GetSkill(ID).GetIconName();
             else
@@ -39,6 +48,10 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Returns a more descriptive text of what is stored in this BattleData object. 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             ElementData element = DataManager.Instance.GetElement(Element);
@@ -57,19 +70,21 @@ namespace RogueEssence.Data
         public DataManager.DataType DataType;
 
         /// <summary>
-        /// The elemental attribute of the attack.
+        /// The elemental attribute of the attack, item, or trap containing this BattleData.
         /// </summary>
         [JsonConverter(typeof(ElementConverter))]
         [DataType(0, DataManager.DataType.Element, false)]
         public string Element;
 
         /// <summary>
-        /// Category of attack
+        /// The attack's damage category.
         /// </summary>
         public SkillCategory Category;
 
         /// <summary>
-        /// The chance of the attack hitting.
+        /// The percent chance of the attack hitting.
+        /// 0 = Cannot Hit
+        /// -1 = Cannot miss
         /// </summary>
         public int HitRate;
 

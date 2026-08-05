@@ -12,8 +12,16 @@ namespace RogueEssence.Script
     /// </summary>
     public class ScriptStrings : ILuaEngineComponent
     {
+        /// <summary>
+        /// A lookup table of string keys -> strings local to the current ground map.
+        /// </summary>
         public LuaTable MapStrings { get; private set; }
 
+        /// <summary>
+        /// DEPRECATED
+        /// </summary>
+        /// <param name="packagefilepath"></param>
+        /// <returns></returns>
         public LuaTable MakePackageStringTable(string packagefilepath)
         {
             return MapStrings;
@@ -41,6 +49,12 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Loads the string table of the current map to MapStrings.
+        /// Do not call this function from lua.
+        /// It is called automatically on map load.
+        /// </summary>
+        /// <param name="packagefilepath"></param>
         public void LoadPackageStringTable(string packagefilepath)
         {
             LuaTable strings = makePackageStringTable(packagefilepath);
@@ -57,7 +71,13 @@ namespace RogueEssence.Script
             return DiagManager.Instance.CurSettings.Language;
         }
 
-
+        /// <summary>
+        /// Takes all letters of a string and shifts their unicode values forward by a specified amount.
+        /// Useful for special character sets.
+        /// </summary>
+        /// <param name="baseStr">The string to have its letter shifted forward.</param>
+        /// <param name="shift">The amount to shift the letters forward.</param>
+        /// <returns>The shifted string.</returns>
         public string ShiftString(string baseStr, int shift)
         {
             string resultStr = "";
@@ -157,12 +177,13 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Not implemented.
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
         /// </summary>
-        /// <param name="state"></param>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
-            //TODO
+            // not needed.
         }
     }
 }

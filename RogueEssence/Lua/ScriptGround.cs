@@ -14,7 +14,7 @@ namespace RogueEssence.Script
     /// <summary>
     /// Helper interface to regroup everything tied to ground mode under a single object
     /// </summary>
-    class ScriptGround : ILuaEngineComponent
+    public class ScriptGround : ILuaEngineComponent
     {
         //===================================
         // Objects and Characters
@@ -226,7 +226,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Sets the controllable player to use new character data
+        /// Sets the controllable player to use new character data.
         /// </summary>
         /// <param name="charData">The new character data</param>
         public void SetPlayer(CharData charData)
@@ -304,14 +304,18 @@ namespace RogueEssence.Script
         /// Clockwise or counter-clockwise are chosen based on the closest direction.
         /// Waits until the operation is completed.
         /// </summary>
-        /// <param name="curch">Character that is turning</param>
-        /// <param name="turnto">Character to turn to</param>
-        /// <param name="framedur">Time spent on each direction, in frames</param>
         /// <example>
-        /// CharTurnToCharAnimated(charFrom, charTo, 3)
+        /// GROUND:CharTurnToCharAnimated(charFrom, charTo, 3)
         /// </example>
         public LuaFunction CharTurnToCharAnimated;
 
+        /// <summary>
+        /// [LuaFunction] CharTurnToCharAnimated
+        /// </summary>
+        /// <param name="curch">Character that is turning</param>
+        /// <param name="turnto">Character to turn to</param>
+        /// <param name="framedur">Time spent on each direction, in frames</param>
+        /// <returns></returns>
         public Coroutine _CharTurnToCharAnimated(GroundChar curch, GroundChar turnto, int framedur)
         {
             if (curch == null || turnto == null)
@@ -324,30 +328,23 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Makes a ground entity turn to face a direction.
-        /// </summary>
-        /// <param name="ent">The ground entity.  Can be a character or object.</param>
-        /// <param name="direction">The direction to face.</param>
-        public void EntTurn(GroundEntity ent, Dir8 direction)
-        {
-            if (ent == null || direction == Dir8.None)
-                return;
-            ent.Direction = direction;
-        }
-
-        /// <summary>
         /// Makes a character do an animated turn to face a chosen direction over the specified time.
         /// Must specify clockwise or counter-clockwise.
         /// Waits until the operation is completed.
+        /// </summary>
+        /// <example>
+        /// GROUND:CharTurnToCharAnimated(charFrom, Dir8.Left, 3, true)
+        /// </example>
+        public LuaFunction CharAnimateTurn;
+
+        /// <summary>
+        /// [LuaFunction] CharAnimateTurn
         /// </summary>
         /// <param name="ch">The character to turn</param>
         /// <param name="direction">The direction to turn to</param>
         /// <param name="framedur">The time spent in each intermediate direction, in frames</param>
         /// <param name="ccw">false if clockwise, true if counter-clockwise</param>
-        /// <example>
-        /// CharTurnToCharAnimated(charFrom, Dir8.Left, 3, true)
-        /// </example>
-        public LuaFunction CharAnimateTurn;
+        /// <returns></returns>
         public Coroutine _CharAnimateTurn(GroundChar ch, Dir8 direction, int framedur, bool ccw)
         {
             if (ch == null || direction == Dir8.None)
@@ -355,18 +352,21 @@ namespace RogueEssence.Script
             return new Coroutine(_DoAnimatedTurn(ch, _CountDirectionDifference(ch.CharDir, direction), framedur, ccw));
         }
 
-        public LuaFunction CharAnimateTurnTo;
-
         /// <summary>
         /// Makes a character do an animated turn to face a chosen direction over the specified time.
         /// Waits until the operation is completed.
         /// </summary>
+        /// <example>
+        /// GROUND:CharAnimateTurnTo(charFrom, Dir8.Left, 3)
+        /// </example>
+        public LuaFunction CharAnimateTurnTo;
+
+        /// <summary>
+        /// [LuaFunction] CharAnimateTurnTo
+        /// </summary>
         /// <param name="ch">The character to turn</param>
         /// <param name="direction">The direction to turn to</param>
         /// <param name="framedur">The time spent in each intermediate direction, in frames</param>
-        /// <example>
-        /// CharAnimateTurnTo(charFrom, Dir8.Left, 3)
-        /// </example>
         public Coroutine _CharAnimateTurnTo(GroundChar ch, Dir8 direction, int framedur)
         {
             if (ch == null || direction == Dir8.None)
@@ -419,6 +419,19 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Makes a ground entity turn to face a direction.
+        /// Useful for non-character objects.
+        /// </summary>
+        /// <param name="ent">The ground entity.  Can be a character or object.</param>
+        /// <param name="direction">The direction to face.</param>
+        public void EntTurn(GroundEntity ent, Dir8 direction)
+        {
+            if (ent == null || direction == Dir8.None)
+                return;
+            ent.Direction = direction;
+        }
+
+        /// <summary>
         /// Repositions the ground entity in a specified location.
         /// </summary>
         /// <param name="ent">The ground entity to reposition</param>
@@ -459,16 +472,20 @@ namespace RogueEssence.Script
         /// <summary>
         /// Make ground character move in a direction.
         /// </summary>
-        /// <param name="chara">Character to move</param>
-        /// <param name="direction">Direction to move in</param>
-        /// <param name="duration">Duration of movement, in frames</param>
-        /// <param name="run">True if using a running animation, false otherwise</param>
-        /// <param name="speed">Speed in pixels per frame</param>
         /// <example>
         /// GROUND:MoveInDirection(player, Dir8.Down, 24, false, 2)
         /// </example>
         public LuaFunction MoveInDirection;
 
+        /// <summary>
+        /// [LuaFunction] MoveInDirection
+        /// </summary>
+        /// <param name="chara">Character to move</param>
+        /// <param name="direction">Direction to move in</param>
+        /// <param name="duration">Duration of movement, in frames</param>
+        /// <param name="run">True if using a running animation, false otherwise</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <returns></returns>
         public YieldInstruction _MoveInDirection(GroundChar chara, Dir8 direction, int duration, bool run = false, float speed = 2)
         {
             Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * (int)speed);
@@ -479,15 +496,20 @@ namespace RogueEssence.Script
         /// <summary>
         /// Make ground character move to a position.
         /// </summary>
+        /// <example>
+        /// GROUND:MoveInDirection(player, 200, 240, false, 2)
+        /// </example>
+        public LuaFunction MoveToPosition;
+
+        /// <summary>
+        /// [LuaFunction] MoveToPosition
+        /// </summary>
         /// <param name="chara">Character to move</param>
         /// <param name="x">X coordinate of destination</param>
         /// <param name="y">Y  coordinate of destination</param>
         /// <param name="run">True if using a running animation, false otherwise</param>
         /// <param name="speed">Speed in pixels per frame</param>
-        /// <example>
-        /// GROUND:MoveInDirection(player, 200, 240, false, 2)
-        /// </example>
-        public LuaFunction MoveToPosition;
+        /// <returns></returns>
         public YieldInstruction _MoveToPosition(GroundEntity chara, int x, int y, bool run = false, float speed = 2)
         {
             try
@@ -531,14 +553,19 @@ namespace RogueEssence.Script
         /// <summary>
         /// Make ground character move to a ground marker.
         /// </summary>
-        /// <param name="chara">Character to move</param>
-        /// <param name="mark">GroundMarker object ot move to</param>
-        /// <param name="run">True if using a running animation, false otherwise</param>
-        /// <param name="speed">Speed in pixels per frame</param>
         /// <example>
         /// GROUND:MoveInDirection(player, marker, false, 2)
         /// </example>
         public LuaFunction MoveToMarker;
+
+        /// <summary>
+        /// [LuaFunction] MoveToMarker
+        /// </summary>
+        /// <param name="chara">Character to move</param>
+        /// <param name="mark">GroundMarker object ot move to</param>
+        /// <param name="run">True if using a running animation, false otherwise</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <returns></returns>
         public YieldInstruction _MoveToMarker(GroundEntity chara, GroundMarker mark, bool run = false, float speed = 2)
         {
             return _MoveToPosition(chara, mark.X, mark.Y, run, speed);
@@ -548,14 +575,19 @@ namespace RogueEssence.Script
         /// <summary>
         /// Make ground object move to a position.
         /// </summary>
-        /// <param name="ent">Ground Entity to move</param>
-        /// <param name="x">X coordinate of destination</param>
-        /// <param name="y">Y  coordinate of destination</param>
-        /// <param name="speed">Speed in pixels per frame</param>
         /// <example>
         /// GROUND:MoveInDirection(player, 200, 240, 2)
         /// </example>
         public LuaFunction MoveObjectToPosition;
+
+        /// <summary>
+        /// [LuaFunction] MoveObjectToPosition
+        /// </summary>
+        /// <param name="ent">Ground Entity to move</param>
+        /// <param name="x">X coordinate of destination</param>
+        /// <param name="y">Y  coordinate of destination</param>
+        /// <param name="speed">Speed in pixels per frame</param>
+        /// <returns></returns>
         public YieldInstruction _MoveObjectToPosition(GroundEntity ent, int x, int y, int speed)
         {
             try
@@ -583,6 +615,14 @@ namespace RogueEssence.Script
         /// <summary>
         /// Make a ground character move in a direction with custom animation
         /// </summary>
+        /// <example>
+        /// GROUND:AnimateInDirection(player, "Hurt", Dir8.Down, 24, 0.5, 2)
+        /// </example>
+        public LuaFunction AnimateInDirection;
+
+        /// <summary>
+        /// [LuaFunction] AnimateInDirection
+        /// </summary>
         /// <param name="chara">Character to move</param>
         /// <param name="anim">Name of the animation</param>
         /// <param name="animDir">Direction of animation</param>
@@ -590,10 +630,7 @@ namespace RogueEssence.Script
         /// <param name="duration">Duration of movement, in frames</param>
         /// <param name="animSpeed">Speed of animation, where 1.0 represents normal speed</param>
         /// <param name="speed">Speed movement, in pixels per frame</param>
-        /// <example>
-        /// GROUND:AnimateInDirection(player, "Hurt", Dir8.Down, 24, 0.5, 2)
-        /// </example>
-        public LuaFunction AnimateInDirection;
+        /// <returns></returns>
         public YieldInstruction _AnimateInDirection(GroundChar chara, string anim, Dir8 animDir, Dir8 direction, int duration, float animSpeed, float speed)
         {
             Loc endLoc = chara.MapLoc + direction.GetLoc() * (duration * (int)speed);
@@ -603,6 +640,14 @@ namespace RogueEssence.Script
         /// <summary>
         /// Make a ground entity move to a position with custom animation
         /// </summary>
+        /// <example>
+        /// GROUND:AnimateToPosition(player, "Hurt", Dir8.Down, 200, 240, 0.5, 2)
+        /// </example>
+        public LuaFunction AnimateToPosition;
+
+        /// <summary>
+        /// [LuaFunction] AnimateToPosition
+        /// </summary>
         /// <param name="ent">Entity to move</param>
         /// <param name="anim">Name of the animation</param>
         /// <param name="animDir">Direction of animation</param>
@@ -611,10 +656,7 @@ namespace RogueEssence.Script
         /// <param name="animSpeed">Speed of animation, where 1.0 represents normal speed</param>
         /// <param name="speed">Speed movement, in pixels per frame</param>
         /// <param name="height">Height of the destination</param>
-        /// <example>
-        /// GROUND:AnimateToPosition(player, "Hurt", Dir8.Down, 200, 240, 0.5, 2)
-        /// </example>
-        public LuaFunction AnimateToPosition;
+        /// <returns></returns>
         public YieldInstruction _AnimateToPosition(GroundEntity ent, string anim, Dir8 animDir, int x, int y, float animSpeed, float speed, int height)
         {
             try
@@ -652,8 +694,22 @@ namespace RogueEssence.Script
             return null;
         }
 
-
+        /// <summary>
+        /// Make a ground entity action to a position with custom animation
+        /// </summary>
         public LuaFunction ActionToPosition;
+
+        /// <summary>
+        /// [LuaFunction] ActionToPosition
+        /// </summary>
+        /// <param name="ent">Entity to move</param>
+        /// <param name="baseAction">Action for the entity to perform</param>
+        /// <param name="x">X coordinate of the destination</param>
+        /// <param name="y">Y coordinate of the destination</param>
+        /// <param name="animSpeed">Speed of animation, where 1.0 represents normal speed</param>
+        /// <param name="speed">Speed movement, in pixels per frame</param>
+        /// <param name="height">Height of the destination</param>
+        /// <returns></returns>
         public YieldInstruction _ActionToPosition(GroundEntity ent, GroundAction baseAction, int x, int y, float animSpeed, float speed, int height)
         {
             try
@@ -806,12 +862,17 @@ namespace RogueEssence.Script
         /// <summary>
         /// Makes the character perform an animation and waits until it's over.
         /// </summary>
-        /// <param name="ent">Character to animate</param>
-        /// <param name="anim">Animation to play</param>
         /// <example>
         /// GROUND:CharWaitAnim(player, "Hurt")
         /// </example>
         public LuaFunction CharWaitAnim;
+
+        /// <summary>
+        /// [LuaFunction] CharWaitAnim
+        /// </summary>
+        /// <param name="ent">Character to animate</param>
+        /// <param name="anim">Animation to play</param>
+        /// <returns></returns>
         public YieldInstruction _CharWaitAnim(GroundEntity ent, string anim)
         {
             try
@@ -850,12 +911,17 @@ namespace RogueEssence.Script
         /// <summary>
         /// Makes the character perform an action and waits until it's over.
         /// </summary>
-        /// <param name="ent">Character to animate</param>
-        /// <param name="action">Action to perform</param>
         /// <example>
         /// GROUND:CharWaitAction(player, action)
         /// </example>
         public LuaFunction CharWaitAction;
+
+        /// <summary>
+        /// [LuaFunction] CharWaitAction
+        /// </summary>
+        /// <param name="ent">Character to animate</param>
+        /// <param name="action">Action to perform</param>
+        /// <returns></returns>
         public YieldInstruction _CharWaitAction(GroundEntity ent, GroundAction action)
         {
             try
@@ -911,12 +977,17 @@ namespace RogueEssence.Script
         /// <summary>
         /// Waits for the object to reach a specific frame before continuing.
         /// </summary>
-        /// <param name="obj">The object ot wait on</param>
-        /// <param name="frame">The frame of animation to wait on.</param>
         /// <example>
         /// GROUND:WaitObjectAnim(fountain, 3)
         /// </example>
         public LuaFunction ObjectWaitAnimFrame;
+
+        /// <summary>
+        /// [LuaFunction] ObjectWaitAnimFrame
+        /// </summary>
+        /// <param name="obj">The object to wait on</param>
+        /// <param name="frame">The frame of animation to wait on.</param>
+        /// <returns></returns>
         public YieldInstruction _ObjectWaitAnimFrame(GroundObject obj, int frame)
         {
             try
@@ -991,11 +1062,14 @@ namespace RogueEssence.Script
         /// Gives a character a set amount of EXP.
         /// Also handles leveling up and learning new moves.
         /// </summary>
+        public LuaFunction HandoutEXP;
+
+        /// <summary>
+        /// [LuaFunction] HandoutEXP
+        /// </summary>
         /// <param name="character">The characters to level up.</param>
         /// <param name="experience">The amount of EXP to gain.</param>
-       
-        public LuaFunction HandoutEXP;
-        
+        /// <returns></returns>
         public Coroutine _HandoutEXP(Character character, int experience)
         {
             return new Coroutine(GroundScene.Instance.HandoutEXP(character, experience));
@@ -1004,12 +1078,15 @@ namespace RogueEssence.Script
         /// <summary>
         /// Levels up a character a certain amount of times all at once.
         /// Also handles learning new moves.
+        /// </summary>       
+        public LuaFunction LevelUpChar;
+
+        /// <summary>
+        /// [LuaFunction] HandoutEXP
         /// </summary>
         /// <param name="character">The characters to level up.</param>
         /// <param name="numLevelUps">The number of level ups.</param>
-       
-        public LuaFunction LevelUpChar;
-        
+        /// <returns></returns>
         public Coroutine _LevelUpChar(Character character, int numLevelUps)
         {
             return new Coroutine(GroundScene.Instance.LevelUpChar(character, numLevelUps));
@@ -1035,11 +1112,11 @@ namespace RogueEssence.Script
             GroundScene.Instance.RemoveMapStatus(statusIdx);
         }
 
-        //
-        //
-        //
-
-
+        /// <summary>
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
+        /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             //Implement stuff that should be written in lua!

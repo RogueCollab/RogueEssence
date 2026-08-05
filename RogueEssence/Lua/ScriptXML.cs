@@ -10,7 +10,7 @@ namespace RogueEssence.Script
     /*
      * This is meant to provide a memory safe and quick way to load XML files to a lua table for the script engine's use.
     */
-    class ScriptXML : ILuaEngineComponent
+    public class ScriptXML : ILuaEngineComponent
     {
         LuaFunction InsertChildNodeType;
 
@@ -77,6 +77,11 @@ namespace RogueEssence.Script
         //    return curtbl;
         //}
 
+        /// <summary>
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
+        /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             InsertChildNodeType = state.RunString("return function(tbl, nodename, value) table.insert( tbl[nodename], value); end").First() as LuaFunction;

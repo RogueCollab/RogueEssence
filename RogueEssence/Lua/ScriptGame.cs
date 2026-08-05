@@ -10,7 +10,7 @@ using System;
 
 namespace RogueEssence.Script
 {
-    class ScriptGame : ILuaEngineComponent
+    public class ScriptGame : ILuaEngineComponent
     {
         /// <summary>
         /// The game's random object.  Is not recorded in replays.
@@ -25,15 +25,19 @@ namespace RogueEssence.Script
         /// </example>
         public LuaFunction GroundSave;
 
+        /// <summary>
+        /// [LuaFunction] GroundSave
+        /// </summary>
+        /// <returns></returns>
         public Coroutine _GroundSave()
         {
             return new Coroutine(GroundScene.Instance.SaveGame());
         }
 
         /// <summary>
-        /// TODO
+        /// Checks to see if the specified mod has differences from the current save file.
         /// </summary>
-        /// <param name="uuidStr"></param>
+        /// <param name="uuidStr">The UUID of the mod to check for differences.</param>
         /// <returns></returns>
         public ModDiff GetModDiff(string uuidStr)
         {
@@ -78,9 +82,104 @@ namespace RogueEssence.Script
             return ZoneManager.Instance.CurrentZone;
         }
 
+        /// <summary>
+        /// Gets the random seed for the current adventure.
+        /// </summary>
+        /// <returns>The current adventure's seed.</returns>
+        public ulong GetDailySeed()
+        {
+            return DataManager.Instance.Save.Rand.FirstSeed;
+        }
+
+        /// <summary>
+        /// Unlocks a specified dungeon.
+        /// </summary>
+        /// <param name="dungeonid">ID of the dungeon to unlock.</param>
+        public void UnlockDungeon(string dungeonid)
+        {
+            DataManager.Instance.Save.UnlockDungeon(dungeonid);
+        }
+
+        /// <summary>
+        /// Checks if a dungeon is unlocked.
+        /// </summary>
+        /// <param name="dungeonid">ID of the dungeon to check</param>
+        /// <returns>True if unlocked, false otherwise.</returns>
+        public bool DungeonUnlocked(string dungeonid)
+        {
+            return DataManager.Instance.Save.GetDungeonUnlock(dungeonid) != GameProgress.UnlockState.None;
+        }
+
+        /// <summary>
+        /// Checks if the current game is in rogue mode.
+        /// </summary>
+        /// <returns>True if in rogue mode, false otherwise.</returns>
+        public bool InRogueMode()
+        {
+            return DataManager.Instance.Save is RogueProgress;
+        }
+
+
+        /// <summary>
+        /// Leave current map and load up the title screen.
+        /// </summary>
+        public void RestartToTitle()
+        {
+            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
+        }
+
+        /// <summary>
+        /// Restarts a Roguelocke run based on the configuration
+        /// </summary>
+        ///  <param name="config">The configuration of the roguelocke run</param>
+        public void RestartRogue(RogueConfig config)
+        {
+            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToRogue(config);
+        }
+
+
+
+        /// <summary>
+        /// Sets the game in cutscene mode. This prevents characters from taking idle action and hides certain UI.
+        /// </summary>
+        /// <param name="bon">If set to true, turns cutscene mode on. If set to false, turns it off.</param>
+        public void CutsceneMode(bool bon)
+        {
+            int newIdle = bon ? 0 : Content.GraphicsManager.IdleAction;
+
+            //only if switching off non-anim
+            if (newIdle != Content.GraphicsManager.GlobalIdle && Content.GraphicsManager.GlobalIdle == 0)
+            {
+                //iterate all entities on the map that are in an idle anim, and reset their anim
+                if (GameManager.Instance.CurrentScene == GroundScene.Instance)
+                {
+                    GroundMap map = ZoneManager.Instance.CurrentGround;
+                    foreach (GroundChar groundChar in map.IterateCharacters())
+                    {
+                        IdleGroundAction action = groundChar.GetCurrentAction() as IdleGroundAction;
+                        if (action != null)
+                            action.RestartAnim();
+                    }
+                }
+                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
+                {
+                    Map map = ZoneManager.Instance.CurrentMap;
+                    foreach (Character dungeonChar in map.IterateCharacters())
+                    {
+                        //TODO: dungeonChar.StartAnim?
+                        //it's very protected right now.
+                    }
+                }
+            }
+
+            Content.GraphicsManager.GlobalIdle = newIdle;
+            DataManager.Instance.Save.CutsceneMode = bon;
+        }
+
+
 
         //===================================
-        // Enter/leave methods
+        // Adventure Control
         //===================================
 
         /// <summary>
@@ -122,6 +221,14 @@ namespace RogueEssence.Script
         /// <summary>
         /// Enters a zone and begins a new adventure.
         /// </summary>
+        /// <example>
+        /// GAME:EnterDungeon(1, 0, 0, 0, RogueEssence.Data.GameProgress.DungeonStakes.Risk, true, false)
+        /// </example>
+        public LuaFunction EnterDungeon;
+
+        /// <summary>
+        /// [LuaFunction] EnterDungeon
+        /// </summary>
         /// <param name="dungeonid">The id of the dungeon to travel to.</param>
         /// <param name="structureid">The segment within the dungeon to start in.  -1 represents ground maps.</param>
         /// <param name="mapid">The id of the ground map or dungeon map within the dungeon segment.</param>
@@ -129,27 +236,28 @@ namespace RogueEssence.Script
         /// <param name="stakes">Decides what happens when the adventure fails/succeeds.</param>
         /// <param name="recorded">Record the adventure in a replay</param>
         /// <param name="silentRestrict">Make the dungeon restrictions silently</param>
-        /// <example>
-        /// GAME:EnterDungeon(1, 0, 0, 0, RogueEssence.Data.GameProgress.DungeonStakes.Risk, true, false)
-        /// </example>
-        public LuaFunction EnterDungeon;
-
+        /// <returns></returns>
         public Coroutine _EnterDungeon(string dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
         {
             return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), stakes, recorded, silentRestrict));
         }
 
         /// <summary>
-        /// Enters a zone and continues the current adventure.
+        /// Enters a zone and continues the current adventure.  Often used in midpoint rest areas.
+        /// </summary>
+        /// <example>
+        /// GAME:ContinueDungeon(1, 1, 0, 0)
+        /// </example>
+        public LuaFunction ContinueDungeon;
+
+        /// <summary>
+        /// [LuaFunction] ContinueDungeon
         /// </summary>
         /// <param name="dungeonid">The id of the dungeon to travel to.</param>
         /// <param name="structureid">The segment within the dungeon to start in.  -1 represents ground maps.</param>
         /// <param name="mapid">The id of the ground map or dungeon map within the dungeon segment.</param>
         /// <param name="entry">The entry point on the resulting map</param>
-        /// <example>
-        /// GAME:ContinueDungeon(1, 1, 0, 0)
-        /// </example>
-        public LuaFunction ContinueDungeon;
+        /// <returns></returns>
         public Coroutine _ContinueDungeon(string dungeonid, int structureid, int mapid, int entry)
         {
             return new Coroutine(GameManager.Instance.BeginSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), false));
@@ -159,6 +267,14 @@ namespace RogueEssence.Script
         /// <summary>
         /// Ends the current adventure, sending the player to a specified destination.
         /// </summary>
+        /// <example>
+        /// GAME:EndDungeonRun(GameProgress.ResultType.Cleared, 0, -1, 1, 0, true, true)
+        /// </example>
+        public LuaFunction EndDungeonRun;
+
+        /// <summary>
+        /// [LuaFunction] EndDungeonRun
+        /// </summary>
         /// <param name="result">The result of the adventure.</param>
         /// <param name="destzoneid">The id of the dungeon to travel to.</param>
         /// <param name="structureid">The segment within the dungeon to start in.  -1 represents ground maps.</param>
@@ -167,62 +283,12 @@ namespace RogueEssence.Script
         /// <param name="display">Display an epitaph marking the end of the adventure.</param>
         /// <param name="fanfare">Play a fanfare.</param>
         /// <param name="completedZone">Zone to mark as completed. Defaults to current zone.</param>
-        /// <example>
-        /// GAME:EndDungeonRun(GameProgress.ResultType.Cleared, 0, -1, 1, 0, true, true)
-        /// </example>
-        public LuaFunction EndDungeonRun;
-
+        /// <returns></returns>
         public Coroutine _EndDungeonRun(GameProgress.ResultType result, string destzoneid, int structureid, int mapid, int entryid, bool display, bool fanfare, string completedZone = null)
         {
             if (String.IsNullOrEmpty(completedZone))
                 completedZone = ZoneManager.Instance.CurrentZoneID;
             return new Coroutine(DataManager.Instance.Save.EndGame(result, new ZoneLoc(destzoneid, new SegLoc(structureid, mapid), entryid), display, fanfare, completedZone));
-        }
-
-        /// <summary>
-        /// Enters a zone and begins a rescue adventure.
-        /// </summary>
-        /// <param name="sosPath">The path of the sos mail.</param>
-        /// <example>
-        /// GAME:EnterRescue("RESCUE/INBOX/SOS/example.sosmail")
-        /// </example>
-        public LuaFunction EnterRescue;
-        public Coroutine _EnterRescue(string sosPath)
-        {
-            return new Coroutine(GameManager.Instance.BeginRescue(sosPath));
-        }
-
-        /// <summary>
-        /// TODO: WIP
-        /// </summary>
-        /// <param name="remarkIndex"></param>
-        public void AddAOKRemark(int remarkIndex)
-        {
-            AOKMail aok = null;
-            if (DataManager.Instance.Save.GeneratedAOK != null)
-                aok = DataManager.LoadRescueMail(PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER + DataManager.Instance.Save.GeneratedAOK)) as AOKMail;
-            if (aok != null)
-            {
-                aok.FinalStatement = remarkIndex;
-                DataManager.SaveRescueMail(DataManager.Instance.Save.GeneratedAOK, aok);
-            }
-        }
-
-        /// <summary>
-        /// Leave current map and load up the title screen.
-        /// </summary>
-        public void RestartToTitle()
-        {
-            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToTitle();
-        }
-
-        /// <summary>
-        /// Restarts a Roguelocke run based on the configuration
-        /// </summary>
-        ///  <param name="config">The configuration of the roguelocke run</param>
-        public void RestartRogue(RogueConfig config)
-        { 
-            GameManager.Instance.SceneOutcome = GameManager.Instance.RestartToRogue(config);
         }
 
         /// <summary>
@@ -238,17 +304,27 @@ namespace RogueEssence.Script
         }
 
 
+
+        //===================================
+        // Camera Control
+        //===================================
+
+
         /// <summary>
         /// Fade out the screen. Waits to complete before continuing.
         /// This fade specifically comes in front of the menu.
         /// </summary>
-        /// <param name="white">Fade to white if set to true.  Fades to black otherwise.</param>
-        /// <param name="duration">The amount of time to fade in frames.</param>
         /// <example>
         /// GAME:FadeOutFront(false, 60)
         /// </example>
         public LuaFunction FadeOutFront;
 
+        /// <summary>
+        /// [LuaFunction] FadeOutFront
+        /// </summary>
+        /// <param name="white">Fade to white if set to true.  Fades to black otherwise.</param>
+        /// <param name="duration">The amount of time to fade in frames.</param>
+        /// <returns></returns>
         public Coroutine _FadeOutFront(bool white, int duration)
         {
             return new Coroutine(GameManager.Instance.FadeOutFront(white, duration));
@@ -259,12 +335,16 @@ namespace RogueEssence.Script
         /// Fade in the screen. Waits to complete before continuing.
         /// This fade specifically comes in front of the menu.
         /// </summary>
-        /// <param name="duration">The amount of time to fade in frames.</param>
         /// <example>
         /// GAME:FadeOutFront(false, 60)
         /// </example>
         public LuaFunction FadeInFront;
 
+        /// <summary>
+        /// [LuaFunction] FadeInFront
+        /// </summary>
+        /// <param name="duration">The amount of time to fade in frames.</param>
+        /// <returns></returns>
         public Coroutine _FadeInFront(int duration)
         {
             return new Coroutine(GameManager.Instance.FadeInFront(duration));
@@ -274,13 +354,17 @@ namespace RogueEssence.Script
         /// <summary>
         /// Fade out the screen. Waits to complete before continuing.
         /// </summary>
-        /// <param name="white">Fade to white if set to true.  Fades to black otherwise.</param>
-        /// <param name="duration">The amount of time to fade in frames.</param>
         /// <example>
         /// GAME:FadeOut(false, 60)
         /// </example>
         public LuaFunction FadeOut;
 
+        /// <summary>
+        /// [LuaFunction] FadeOut
+        /// </summary>
+        /// <param name="white">Fade to white if set to true.  Fades to black otherwise.</param>
+        /// <param name="duration">The amount of time to fade in frames.</param>
+        /// <returns></returns>
         public Coroutine _FadeOut(bool white, int duration)
         {
             return new Coroutine(GameManager.Instance.FadeOut(white, duration));
@@ -289,11 +373,16 @@ namespace RogueEssence.Script
         /// <summary>
         /// Fade into the screen. Waits to complete before continuing.
         /// </summary>
-        /// <param name="duration">The amount of time to fade in frames.</param>
         /// <example>
         /// GAME:FadeIn(false, 60)
         /// </example>
         public LuaFunction FadeIn;
+
+        /// <summary>
+        /// [LuaFunction] FadeIn
+        /// </summary>
+        /// <param name="duration">The amount of time to fade in frames.</param>
+        /// <returns></returns>
         public Coroutine _FadeIn(int duration)
         {
             return new Coroutine(GameManager.Instance.FadeIn(duration));
@@ -302,15 +391,19 @@ namespace RogueEssence.Script
         /// <summary>
         /// Centers the camera on a position.
         /// </summary>
-        /// <param name="x">X coordinate of the camera center</param>
-        /// <param name="y">Y coordinate of the camera center</param>
-        /// <param name="duration">The amount of time it takes ot move to the destination</param>
-        /// <param name="toPlayer">Destination is in absolute coordinates if false, and relative to the player character if set to true.</param>
         /// <example>
         /// GAME:MoveCamera(200, 240, 60, false)
         /// </example>
         public LuaFunction MoveCamera;
 
+        /// <summary>
+        /// [LuaFunction] MoveCamera
+        /// </summary>
+        /// <param name="x">X coordinate of the camera center</param>
+        /// <param name="y">Y coordinate of the camera center</param>
+        /// <param name="duration">The amount of time it takes ot move to the destination</param>
+        /// <param name="toPlayer">Destination is in absolute coordinates if false, and relative to the player character if set to true.</param>
+        /// <returns></returns>
         public Coroutine _MoveCamera(int x, int y, int duration, bool toPlayer = false)
         {
             return new Coroutine(GroundScene.Instance.MoveCamera(new Loc(x, y), duration, toPlayer));
@@ -321,15 +414,19 @@ namespace RogueEssence.Script
         ///
         /// As we are simply moving the camera to a character, this will simply set ViewCenter and not ViewOffset.
         /// </summary>
-        /// <param name="x">X coordinate of the camera center, as an offset for the chara</param>
-        /// <param name="y">Y coordinate of the camera center, as an offset for the chara</param>
-        /// <param name="duration">The amount of time it takes ot move to the destination</param>
-        /// <param name="chara">The character to center on.</param>
         /// <example>
         /// GAME:MoveCameraToChara(200, 240, 60, false)
         /// </example>
         public LuaFunction MoveCameraToChara;
-        
+
+        /// <summary>
+        /// [LuaFunction] MoveCameraToChara
+        /// </summary>
+        /// <param name="x">X coordinate of the camera center, as an offset for the chara</param>
+        /// <param name="y">Y coordinate of the camera center, as an offset for the chara</param>
+        /// <param name="duration">The amount of time it takes ot move to the destination</param>
+        /// <param name="chara">The character to center on.</param>
+        /// <returns></returns>
         public Coroutine _MoveCameraToChara(int x, int y, int duration, GroundChar chara)
         {
             return new Coroutine(GroundScene.Instance.MoveCameraToChara(new Loc(x, y), duration, chara));
@@ -354,31 +451,6 @@ namespace RogueEssence.Script
             return !ZoneManager.Instance.CurrentGround.ViewCenter.HasValue;
         }
 
-        //===================================
-        // Mail
-        //===================================
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public bool HasSOSMail()
-        {
-            string parentPath = PathMod.FromApp(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER);
-            string[] files = System.IO.Directory.GetFiles(parentPath, "*" + DataManager.SOS_EXTENSION);
-            return files.Length > 0;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public bool HasAOKMail()
-        {
-            string parentPath = PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER);
-            string[] files = System.IO.Directory.GetFiles(parentPath, "*" + DataManager.AOK_EXTENSION);
-            return files.Length > 0;
-        }
 
 
 
@@ -469,69 +541,6 @@ namespace RogueEssence.Script
             return DataManager.Instance.Save.ActiveTeam.Players[index];
         }
 
-        /// <summary>
-        /// Gets the number of guests currently in the player's party.
-        /// </summary>
-        /// <returns>The number of guests</returns>
-        public int GetPlayerGuestCount()
-        {
-            return DataManager.Instance.Save.ActiveTeam.Guests.Count;
-        }
-
-        /// <summary>
-        /// Return the guests as a LuaTable
-        /// </summary>
-        /// <returns>A Lua Table of Characters</returns>
-        public LuaTable GetPlayerGuestTable()
-        {
-            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
-            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
-            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Guests)
-                addfn.Call(tbl, ent);
-            return tbl;
-        }
-
-        /// <summary>
-        /// Gets the character at the specified index within the player's guests.
-        /// </summary>
-        /// <param name="index">The specified index</param>
-        /// <returns>The team member retrieved.</returns>
-        public Character GetPlayerGuestMember(int index)
-        {
-            return DataManager.Instance.Save.ActiveTeam.Guests[index];
-        }
-
-        /// <summary>
-        /// Gets the number of characters currently in the player's assembly.
-        /// </summary>
-        /// <returns>The number of characters</returns>
-        public object GetPlayerAssemblyCount()
-        {
-            return DataManager.Instance.Save.ActiveTeam.Assembly.Count;
-        }
-
-        /// <summary>
-        /// Return the assembly as a LuaTable
-        /// </summary>
-        /// <returns>A Lua Table of Characters</returns>
-        public LuaTable GetPlayerAssemblyTable()
-        {
-            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
-            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
-            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Assembly)
-                addfn.Call(tbl, ent);
-            return tbl;
-        }
-
-        /// <summary>
-        /// Gets the character at the specified index within the player's assembly.
-        /// </summary>
-        /// <param name="index">The specified index</param>
-        /// <returns>The assembly member retrieved.</returns>
-        public Character GetPlayerAssemblyMember(int index)
-        {
-            return DataManager.Instance.Save.ActiveTeam.Assembly[index];
-        }
 
 
         /// <summary>
@@ -604,6 +613,39 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
+        /// Gets the number of guests currently in the player's party.
+        /// </summary>
+        /// <returns>The number of guests</returns>
+        public int GetPlayerGuestCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests.Count;
+        }
+
+        /// <summary>
+        /// Return the guests as a LuaTable
+        /// </summary>
+        /// <returns>A Lua Table of Characters</returns>
+        public LuaTable GetPlayerGuestTable()
+        {
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
+            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Guests)
+                addfn.Call(tbl, ent);
+            return tbl;
+        }
+
+        /// <summary>
+        /// Gets the character at the specified index within the player's guests.
+        /// </summary>
+        /// <param name="index">The specified index</param>
+        /// <returns>The team member retrieved.</returns>
+        public Character GetPlayerGuestMember(int index)
+        {
+            return DataManager.Instance.Save.ActiveTeam.Guests[index];
+        }
+
+
+        /// <summary>
         /// Adds a character to the player's guests.
         /// </summary>
         /// <param name="character">The character to add.</param>
@@ -638,6 +680,40 @@ namespace RogueEssence.Script
                 DataManager.Instance.Save.ActiveTeam.Guests.RemoveAt(slot);
         }
 
+
+        /// <summary>
+        /// Gets the number of characters currently in the player's assembly.
+        /// </summary>
+        /// <returns>The number of characters</returns>
+        public object GetPlayerAssemblyCount()
+        {
+            return DataManager.Instance.Save.ActiveTeam.Assembly.Count;
+        }
+
+        /// <summary>
+        /// Return the assembly as a LuaTable
+        /// </summary>
+        /// <returns>A Lua Table of Characters</returns>
+        public LuaTable GetPlayerAssemblyTable()
+        {
+            LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
+            LuaFunction addfn = LuaEngine.Instance.RunString("return function(tbl, chara) table.insert(tbl, chara) end").First() as LuaFunction;
+            foreach (var ent in DataManager.Instance.Save.ActiveTeam.Assembly)
+                addfn.Call(tbl, ent);
+            return tbl;
+        }
+
+        /// <summary>
+        /// Gets the character at the specified index within the player's assembly.
+        /// </summary>
+        /// <param name="index">The specified index</param>
+        /// <returns>The assembly member retrieved.</returns>
+        public Character GetPlayerAssemblyMember(int index)
+        {
+            return DataManager.Instance.Save.ActiveTeam.Assembly[index];
+        }
+
+
         /// <summary>
         /// Adds a character to the player's assembly.
         /// </summary>
@@ -655,6 +731,12 @@ namespace RogueEssence.Script
         {
             DataManager.Instance.Save.ActiveTeam.Assembly.RemoveAt(slot);
         }
+
+
+        //===================================
+        // Characters
+        //===================================
+
 
         /// <summary>
         /// Sets a character's nickname
@@ -740,18 +822,23 @@ namespace RogueEssence.Script
         /// Checks the levels gained by a character and prompts to learn all skills along the levels.
         /// Waits until all skills have been accepted or declined before continuing.
         /// </summary>
-        /// <param name="chara">The character to prompt for learning.</param>
-        /// <param name="oldLevel">The level that the character leveled up from.</param>
         /// <example>
         /// GAME:CheckLevelSkills(player, 5)
         /// </example>
         public LuaFunction CheckLevelSkills;
+
+        /// <summary>
+        /// [LuaFunction] CheckLevelSkills
+        /// </summary>
+        /// <param name="chara">The character to prompt for learning.</param>
+        /// <param name="oldLevel">The level that the character leveled up from.</param>
+        /// <returns></returns>
         public Coroutine _CheckLevelSkills(Character chara, int oldLevel)
         {
-            return new Coroutine(__CheckLevelSkills(chara, oldLevel));
+            return new Coroutine(_checkLevelSkills(chara, oldLevel));
         }
 
-        private IEnumerator<YieldInstruction> __CheckLevelSkills(Character chara, int oldLevel)
+        private IEnumerator<YieldInstruction> _checkLevelSkills(Character chara, int oldLevel)
         {
             DungeonScene.GetLevelSkills(chara, oldLevel);
 
@@ -772,20 +859,25 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Attempts to give a new skill to the specified character, prompting to replace an old one if they are full.
-        /// Waits until all the skill has been accepted or declined before continuing.
+        /// Waits until the skill has been accepted or declined before continuing.
         /// </summary>
-        /// <param name="chara">The character to learn the skill</param>
-        /// <param name="skill">The skill to learn</param>
         /// <example>
         /// GAME:TryLearnSkill(player, "thunder")
         /// </example>
         public LuaFunction TryLearnSkill;
+
+        /// <summary>
+        /// [LuaFunction] TryLearnSkill
+        /// </summary>
+        /// <param name="chara">The character to learn the skill</param>
+        /// <param name="skill">The skill to learn</param>
+        /// <returns></returns>
         public Coroutine _TryLearnSkill(Character chara, string skill)
         {
-            return new Coroutine(__TryLearnSkill(chara, skill));
+            return new Coroutine(_tryLearnSkill(chara, skill));
         }
 
-        private IEnumerator<YieldInstruction> __TryLearnSkill(Character chara, string skill)
+        private IEnumerator<YieldInstruction> _tryLearnSkill(Character chara, string skill)
         {
             int learn = -1;
             if (DataManager.Instance.CurrentReplay != null)
@@ -1127,7 +1219,7 @@ namespace RogueEssence.Script
         /// Remove the equipped item from a chosen member of the team
         /// </summary>
         /// <param name="slot">The slot of the character on the team from which to remove the item</param>
-        /// <param name="takeAll"></param>
+        /// <param name="takeAll">Removes all stacks if set to true, removes one if set to false.  Has no effect for unstackable items.</param>
         public void TakePlayerEquippedItem(int slot, bool takeAll = false)
         {
             if (!takeAll)
@@ -1148,7 +1240,7 @@ namespace RogueEssence.Script
         /// Remove the equipped item from a chosen guest of the team
         /// </summary>
         /// <param name="slot">The slot of the character on the team's guest list from which to remove the item</param>
-        /// <param name="takeAll"></param>
+        /// <param name="takeAll">Removes all stacks if set to true, removes one if set to false.  Has no effect for unstackable items.</param>
         public void TakeGuestEquippedItem(int slot, bool takeAll = false)
         {
             if (!takeAll)
@@ -1264,10 +1356,6 @@ namespace RogueEssence.Script
             }
         }
 
-        //===================================
-        // Money
-        //===================================
-
         /// <summary>
         /// Gets the amount of money the player currently has on hand.
         /// </summary>
@@ -1323,112 +1411,70 @@ namespace RogueEssence.Script
         }
 
         //===================================
-        // Input
+        // Multiplayer
         //===================================
 
-        /// <summary>
-        /// Checks if a player is making a certain physical keyboard input.
-        /// </summary>
-        /// <param name="keyid">The ID of the input</param>
-        /// <returns>True if the button is currently pressed.  False otherwise.</returns>
-        public bool IsKeyDown(int keyid)
-        {
-            Microsoft.Xna.Framework.Input.Keys curkey = (Microsoft.Xna.Framework.Input.Keys)keyid;
-            return GameManager.Instance.MetaInputManager.BaseKeyDown(curkey);
-        }
 
         /// <summary>
-        /// Checks if a player is making a certain game input.
+        /// Enters a zone and begins a rescue adventure.
         /// </summary>
-        /// <param name="inputid"></param>
-        /// <returns>True if the input is currently pressed.  False otherwise.</returns>
-        public bool IsInputDown(int inputid)
-        {
-            return GameManager.Instance.MetaInputManager[(FrameInput.InputType)inputid];
-        }
+        /// <example>
+        /// GAME:EnterRescue("RESCUE/INBOX/SOS/example.sosmail")
+        /// </example>
+        public LuaFunction EnterRescue;
 
         /// <summary>
-        /// Sets the game in cutscene mode. This prevents characters from taking idle action and hides certain UI.
+        /// [LuaFunction] EnterRescue
         /// </summary>
-        /// <param name="bon">If set to true, turns cutscene mode on. If set to false, turns it off.</param>
-        public void CutsceneMode(bool bon)
+        /// <param name="sosPath">The path of the sos mail.</param>
+        /// <returns></returns>
+        public Coroutine _EnterRescue(string sosPath)
         {
-            int newIdle = bon ? 0 : Content.GraphicsManager.IdleAction;
-
-            //only if switching off non-anim
-            if (newIdle != Content.GraphicsManager.GlobalIdle && Content.GraphicsManager.GlobalIdle == 0)
-            {
-                //iterate all entities on the map that are in an idle anim, and reset their anim
-                if (GameManager.Instance.CurrentScene == GroundScene.Instance)
-                {
-                    GroundMap map = ZoneManager.Instance.CurrentGround;
-                    foreach (GroundChar groundChar in map.IterateCharacters())
-                    {
-                        IdleGroundAction action = groundChar.GetCurrentAction() as IdleGroundAction;
-                        if (action != null)
-                            action.RestartAnim();
-                    }
-                }
-                if (GameManager.Instance.CurrentScene == DungeonScene.Instance)
-                {
-                    Map map = ZoneManager.Instance.CurrentMap;
-                    foreach (Character dungeonChar in map.IterateCharacters())
-                    {
-                        //TODO: dungeonChar.StartAnim?
-                        //it's very protected right now.
-                    }
-                }
-            }
-
-            Content.GraphicsManager.GlobalIdle = newIdle;
-            DataManager.Instance.Save.CutsceneMode = bon;
-        }
-
-
-
-        //
-        // GameProgress
-        //
-
-        /// <summary>
-        /// Gets the random seed for the current adventure.
-        /// </summary>
-        /// <returns>The current adventure's seed.</returns>
-        public ulong GetDailySeed()
-        {
-            return DataManager.Instance.Save.Rand.FirstSeed;
-        }
-
-        /// <summary>
-        /// Unlocks a specified dungeon.
-        /// </summary>
-        /// <param name="dungeonid">ID of the dungeon to unlock.</param>
-        public void UnlockDungeon(string dungeonid)
-        {
-            DataManager.Instance.Save.UnlockDungeon(dungeonid);
-        }
-
-        /// <summary>
-        /// Checks if a dungeon is unlocked.
-        /// </summary>
-        /// <param name="dungeonid">ID of the dungeon to check</param>
-        /// <returns>True if unlocked, false otherwise.</returns>
-        public bool DungeonUnlocked(string dungeonid)
-        {
-            return DataManager.Instance.Save.GetDungeonUnlock(dungeonid) != GameProgress.UnlockState.None;
-        }
-
-        /// <summary>
-        /// Checks if the current game is in rogue mode.
-        /// </summary>
-        /// <returns>True if in rogue mode, false otherwise.</returns>
-        public bool InRogueMode()
-        {
-            return DataManager.Instance.Save is RogueProgress;
+            return new Coroutine(GameManager.Instance.BeginRescue(sosPath));
         }
 
         /// <summary>
         /// TODO: WIP
+        /// </summary>
+        /// <param name="remarkIndex"></param>
+        public void AddAOKRemark(int remarkIndex)
+        {
+            AOKMail aok = null;
+            if (DataManager.Instance.Save.GeneratedAOK != null)
+                aok = DataManager.LoadRescueMail(PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER + DataManager.Instance.Save.GeneratedAOK)) as AOKMail;
+            if (aok != null)
+            {
+                aok.FinalStatement = remarkIndex;
+                DataManager.SaveRescueMail(DataManager.Instance.Save.GeneratedAOK, aok);
+            }
+        }
+
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
+        public bool HasSOSMail()
+        {
+            string parentPath = PathMod.FromApp(DataManager.RESCUE_IN_PATH + DataManager.SOS_FOLDER);
+            string[] files = System.IO.Directory.GetFiles(parentPath, "*" + DataManager.SOS_EXTENSION);
+            return files.Length > 0;
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
+        public bool HasAOKMail()
+        {
+            string parentPath = PathMod.FromApp(DataManager.RESCUE_OUT_PATH + DataManager.AOK_FOLDER);
+            string[] files = System.IO.Directory.GetFiles(parentPath, "*" + DataManager.AOK_EXTENSION);
+            return files.Length > 0;
+        }
+
+
+        /// <summary>
+        /// Returns true if there is at least one server in the server list.
         /// </summary>
         /// <returns></returns>
         public bool HasServerSet()
@@ -1454,6 +1500,33 @@ namespace RogueEssence.Script
         {
             DataManager.Instance.Save.AllowRescue = allowed;
         }
+
+        //===================================
+        // Utils
+        //===================================
+
+
+        /// <summary>
+        /// Checks if a player is making a certain physical keyboard input.
+        /// </summary>
+        /// <param name="keyid">The ID of the input</param>
+        /// <returns>True if the button is currently pressed.  False otherwise.</returns>
+        public bool IsKeyDown(int keyid)
+        {
+            Microsoft.Xna.Framework.Input.Keys curkey = (Microsoft.Xna.Framework.Input.Keys)keyid;
+            return GameManager.Instance.MetaInputManager.BaseKeyDown(curkey);
+        }
+
+        /// <summary>
+        /// Checks if a player is making a certain game input.
+        /// </summary>
+        /// <param name="inputid"></param>
+        /// <returns>True if the input is currently pressed.  False otherwise.</returns>
+        public bool IsInputDown(int inputid)
+        {
+            return GameManager.Instance.MetaInputManager[(FrameInput.InputType)inputid];
+        }
+
 
         /// <summary>
         /// Prepares an event to execute on the next frame.
@@ -1483,18 +1556,19 @@ namespace RogueEssence.Script
             }
         }
 
-        //===================================
-        // Utils
-        //===================================
-
         /// <summary>
         /// Waits for a specified number of frames before continuing.
         /// </summary>
-        /// <param name="frames">The number of frames ot wait.  Each frame is 1/60th of a second.</param>
         /// <example>
         /// GAME:WaitFrames(60)
         /// </example>
         public LuaFunction WaitFrames;
+
+        /// <summary>
+        /// [LuaFunction] WaitFrames
+        /// </summary>
+        /// <param name="frames">The number of frames to wait.  Each frame is 1/60th of a second.</param>
+        /// <returns></returns>
         public YieldInstruction _WaitFrames(int frames)
         {
             return new WaitForFrames(frames);
@@ -1574,8 +1648,10 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Setups any extra functionalities for this object written on the lua side.
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
         /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             GroundSave = state.RunString("return function(_) return coroutine.yield(GAME:_GroundSave()) end").First() as LuaFunction;

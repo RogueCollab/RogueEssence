@@ -14,7 +14,7 @@ using RogueElements;
 
 namespace RogueEssence.Script
 {
-    class ScriptUI : ILuaEngineComponent
+    public class ScriptUI : ILuaEngineComponent
     {
         /// <summary>
         /// Used to store a list of choice and their return value for most multi-choice menus.
@@ -43,7 +43,16 @@ namespace RogueEssence.Script
         private Loc m_curspeakerLoc = SpeakerPortrait.DefaultLoc;
         private Loc m_curchoiceLoc = DialogueChoiceMenu.DefaultLoc;
 
+        public ScriptUI()
+        {
+            ResetSpeaker();
+        }
 
+
+        /// <summary>
+        /// Exports the speaker settings as a lua table.
+        /// </summary>
+        /// <returns></returns>
         public LuaTable ExportSpeakerSettings()
         {
             LuaTable tbl = LuaEngine.Instance.RunString("return {}").First() as LuaTable;
@@ -62,6 +71,11 @@ namespace RogueEssence.Script
             addfn.Call(tbl, "ChoiceLoc", m_curchoiceLoc);
             return tbl;
         }
+
+        /// <summary>
+        /// Imports speaker settings from a lua table.
+        /// </summary>
+        /// <param name="tbl"></param>
         public void ImportSpeakerSettings(LuaTable tbl)
         {
             m_curspeakerID = (MonsterID)tbl["SpeakerID"];
@@ -76,11 +90,6 @@ namespace RogueEssence.Script
             m_curbounds = (Rect)tbl["TextBounds"];
             m_curspeakerLoc = (Loc)tbl["SpeakerLoc"];
             m_curchoiceLoc = (Loc)tbl["ChoiceLoc"];
-        }
-
-        public ScriptUI()
-        {
-            ResetSpeaker();
         }
 
         public void Reset()
@@ -98,12 +107,15 @@ namespace RogueEssence.Script
         /// <summary>
         /// Waits for the player to press a button before continuing.
         /// </summary>
-        /// <param name="anyInput">If false, only the Continue button will let the game continue. If true, any button will work.</param>
         /// <example>
         /// UI:WaitInput(true)
         /// </example>
         public LuaFunction WaitInput;
 
+        /// <summary>
+        /// [LuaFunction] WaitInput
+        /// </summary>
+        /// <param name="anyInput">If false, only the Continue button will let the game continue. If true, any button will work.</param>
         public void EmptyWaitMenu(bool anyInput)
         {
             try
@@ -124,7 +136,6 @@ namespace RogueEssence.Script
         /// Waits for the player to press at least one of the given inputs before continuing.
         /// If an empty table is supplied, then this function behaves like WaitInput.
         /// </summary>
-        /// <param name="inputs">A table of inputs, either as InputTypes or as ints. The game will continue if any one of them are hit. If empty, any button will work.</param>
         /// <example>
         /// local input = RogueEssence.FrameInput.InputType
         /// 
@@ -133,6 +144,10 @@ namespace RogueEssence.Script
         /// </example>
         public LuaFunction WaitForPlayerInput;
 
+        /// <summary>
+        /// [LuaFunction] WaitForPlayerInput
+        /// </summary>
+        /// <param name="inputs">A table of inputs, either as InputTypes or as ints. The game will continue if any one of them are hit. If empty, any button will work.</param>
         public void EmptyWaitInputMenu(LuaTable inputs)
         {
             List<FrameInput.InputType> inputTypes = [];
@@ -156,32 +171,31 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Displays a dialogue box with text, waiting until the player completes it.
-        /// Takes a string as an argument.
+        /// Takes a string and an optional callback as an argument.
         /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
         /// <example>
         /// UI:WaitShowDialogue("Hello World!")
+        /// UI:WaitShowDialogue("Hello World!", callback)
         /// </example>
         public LuaFunction WaitShowDialogue;
 
         /// <summary>
         /// Displays a dialogue box with text, waiting until the specified time has expired.
+        /// Takes a string, integer, and an optional callback as an argument.
         /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="waitTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
-        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
         /// <example>
         /// UI:WaitShowTimedDialogue("Hello World!", 120)
+        /// UI:WaitShowTimedDialogue("Hello World!", 120, callback)
         /// </example>
         public LuaFunction WaitShowTimedDialogue;
 
         /// <summary>
+        /// [LuaFunction] WaitShowTimedDialogue
         /// Sets the current dialogue text to be shown.  Requires WaitDialog to actually display.
         /// </summary>
-        /// <param name="text">The text to display.</param>
+        /// <param name="text">The text to display in the textbox.</param>
         /// <param name="waitTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
-        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
+        /// <param name="callbacks">The Lua table of callbacks that the textbox can call using the [script] tag.</param>
         public void TextDialogue(string text, int waitTime = -1, LuaTable callbacks = null)
         {
             try
@@ -203,124 +217,47 @@ namespace RogueEssence.Script
             }
         }
 
-        /// <summary>
-        /// Displays a voice over, waiting until the player completes it.
-        /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="expireTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
-        /// <param name="x">The X position of the box</param>
-        /// <param name="y">The Y position of the box</param>
-        /// <param name="width">Width of the box</param>
-        /// <param name="height">Height of the box</param>
-        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
-        /// <example>
-        /// UI:WaitShowVoiceOver("Hello World!", 120)
-        /// </example>
-        public LuaFunction WaitShowVoiceOver;
 
         /// <summary>
-        /// Sets the current voice-over text to be shown.  Requires WaitDialog to actually display.
+        /// Ask a question answered by yes or no via character dialogue to the player.
+        /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
+        /// and for execution to suspend until the choice is returned.
+        /// Then to retrieve the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
+        ///
+        /// The Yes/No menu returns 1 for yes, and 0 for no.
         /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="expireTime">The time for the textbox to remain on screen. Pass -1 to wait for layer input.</param>
-        /// <param name="x">The X position of the box</param>
-        /// <param name="y">The Y position of the box</param>
-        /// <param name="width">Width of the box</param>
-        /// <param name="height">Height of the box</param>
+        /// <param name="message">Question to be asked to the user.</param>
+        /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
         /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
-        public void TextVoiceOver(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1, LuaTable callbacks = null)
+        public void ChoiceMenuYesNo(string message, bool bdefaultstono = false, LuaTable callbacks = null)
         {
+            if (DataManager.Instance.CurrentReplay != null)
+            {
+                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI() == 0 ? false : true;
+                return;
+            }
+
             try
             {
                 object[] scripts = DialogueBox.CreateScripts(callbacks);
-                Rect bounds = new Rect(x, y, width, height);
-                if (DataManager.Instance.CurrentReplay == null)
-                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, bounds, scripts, () => { }, text);
+                m_choiceresult = null;
+
+                if (message == null)
+                    message = "";
+
+                m_curchoice = MenuManager.Instance.CreateQuestion(
+                    m_curspeakerID, m_curspeakerName, m_curspeakerEmo, m_curspeakerLoc, message,
+                    m_curspeakerSnd, m_curspeakerSe, m_curspeakTime,
+                    m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
+                    () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
+                    () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
+                    bdefaultstono);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChoiceMenuYesNo({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
             }
         }
-
-        /// <summary>
-        /// Makes text pop up in the bottom-left corner by default. Displays concurrently with any other process.
-        /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="expireTime">The time for the textbox to remain on screen.</param>
-        /// <param name="x">The X position of the box</param>
-        /// <param name="y">The Y position of the box</param>
-        /// <param name="width">Width of the box</param>
-        /// <param name="height">Height of the box</param>
-        /// <param name="centerH">Horizontal centering</param>
-        /// <param name="centerV">Vertical centering</param>
-        public void TextPopUp(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1, bool centerH = false, bool centerV = false)
-        {
-            try
-            {
-                Rect bounds = new Rect(x, y, width, height);
-                GameManager.Instance.TextPopUp.SetMessage(text, expireTime, bounds, centerH, centerV);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextPopUp({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
-            }
-        }
-
-        /// <summary>
-        /// Fades in a title text, waiting until the fade-in is complete.
-        /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="time">The time for the text to fade in.</param>
-        /// <example>
-        /// UI:WaitShowTitle("Hello World!", 60)
-        /// </example>
-        public LuaFunction WaitShowTitle;
-
-        /// <summary>
-        /// Shows text in the format of a title drop.  Requires WaitDialog to actually display.
-        /// </summary>
-        /// <param name="text">The text to display.</param>
-        /// <param name="time">The time for the text to fade in.</param>
-        public void TextShowTitle(string text, int time)
-        {
-            try
-            {
-                m_curdialogue = GameManager.Instance.FadeTitle(true, text, time);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextShowTitle({0}, {1}): Encountered exception", text, time), e), DiagManager.Instance.DevMode);
-            }
-        }
-
-        /// <summary>
-        /// Fades out the currently displayed title, waiting until the fade-out is complete.
-        /// </summary>
-        /// <param name="time">The time for the text to fade in.</param>
-        /// <example>
-        /// UI:WaitHideTitle(60)
-        /// </example>
-        public LuaFunction WaitHideTitle;
-
-        /// <summary>
-        /// Fades out the text set in a title drop.  Requires WaitDialog to actually fade.
-        /// </summary>
-        /// <param name="time">The time for the text to fade in.</param>
-        public void TextFadeTitle(int time)
-        {
-            try
-            {
-                m_curdialogue = GameManager.Instance.FadeTitle(false, "", time);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextFadeTitle({0}, {1}): Encountered exception", time), e), DiagManager.Instance.DevMode);
-            }
-        }
-
-
-
 
         /// <summary>
         /// Displays a custom dialogue of the caller's choice.
@@ -340,59 +277,13 @@ namespace RogueEssence.Script
             }
         }
 
-        /// <summary>
-        /// Fades in a chosen background image, with a chosen framerate, at a certain fade time, waiting until the fade-in is complete.
-        /// </summary>
-        /// <param name="bg">The background to show, from the list of BG textures.</param>
-        /// <param name="frameTime">Framerate of the image animation.</param>
-        /// <param name="fadeInTime">Time taken to fade in the image.</param>
-        /// <example>
-        /// UI:WaitShowBG("TestBG", 3, 60)
-        /// </example>
-        public LuaFunction WaitShowBG;
 
-        /// <summary>
-        /// Sets an image to display.  Requires WaitDialog to actually display.
-        /// </summary>
-        /// <param name="bg">The background to show, from the list of BG textures.</param>
-        /// <param name="frameTime">Framerate of the image animation.</param>
-        /// <param name="fadeInTime">Time taken to fade in the image.</param>
-        public void ShowBG(string bg, int frameTime, int fadeInTime)
-        {
-            try
-            {
-                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), fadeInTime);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception", bg, frameTime, fadeInTime), e), DiagManager.Instance.DevMode);
-            }
-        }
 
-        /// <summary>
-        /// Fades out the current background image, waiting until the fade-out is complete.
-        /// </summary>
-        /// <param name="time">Time taken to fade out the image.</param>
-        /// <example>
-        /// UI:WaitHideBG(60)
-        /// </example>
-        public LuaFunction WaitHideBG;
+        //================================================================
+        // Speakers
+        //================================================================
 
-        /// <summary>
-        /// Prepares a fade-out of the current image.  Requires WaitDialog to actually display.
-        /// </summary>
-        /// <param name="time">Time taken to fade out the image.</param>
-        public void FadeBG(int time)
-        {
-            try
-            {
-                m_curdialogue = GameManager.Instance.FadeBG(false, new BGAnimData(), time);
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowBG({0}): Encountered exception", time), e), DiagManager.Instance.DevMode);
-            }
-        }
+
 
         /// <summary>
         /// Clears the current speaker, so none is displayed the next time TextDialogue is called.
@@ -420,7 +311,7 @@ namespace RogueEssence.Script
         /// Sets the speaker to be displayed during the following calls to the TextDialogue functions.  It resets speaker emotion.
         /// </summary>
         /// <param name="name">Speaker name.</param>
-        /// <param name="keysound">Plays sounds when text appears.</param>
+        /// <param name="keysound">If set to true, plays sounds when text appears.</param>
         /// <param name="specie">Species of the speaker</param>
         /// <param name="form">Form of the speaker</param>
         /// <param name="skin">Skin of the speaker</param>
@@ -434,10 +325,12 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Sets the speaker to be displayed during the following calls to the TextDialogue functions.  It resets speaker emotion.
+        /// Sets the speaker to be displayed during the following calls to the TextDialogue functions.
+        /// It takes an existing GroundChar as a parameter.
+        /// It resets speaker emotion.
         /// </summary>
         /// <param name="chara">Character to set as speaker. This is a character in a ground map.</param>
-        /// <param name="keysound">Plays sounds when text appears.</param>
+        /// <param name="keysound">If set to true, plays sounds when text appears.</param>
         public void SetSpeaker(Ground.GroundChar chara, bool keysound = true)
         {
             if (chara != null)
@@ -456,10 +349,12 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Sets the speaker to be displayed during the following calls to the TextDialogue functions.  It resets speaker emotion.
+        /// Sets the speaker to be displayed during the following calls to the TextDialogue functions.
+        /// It takes an existing Character as a parameter.
+        /// It resets speaker emotion.
         /// </summary>
         /// <param name="chara">Character to set as speaker. This is a character in a dungeon map.</param>
-        /// <param name="keysound">Plays sounds when text appears.</param>
+        /// <param name="keysound">If set to true, plays sounds when text appears.</param>
         public void SetSpeaker(Character chara, bool keysound = true)
         {
             if (chara != null)
@@ -515,60 +410,23 @@ namespace RogueEssence.Script
         {
             m_curbounds = new Rect(x, y, width, height);
         }
-
-        /// <summary>
-        /// Sets the speaker sound effect and speak frames played in the TextDialogue functions. 
-        /// </summary>
-        /// <param name="newSe">The sound effect of the box</param>
-        /// <param name="speakTime">The amount of frames to wait between each sound effect</param>
-        /// <example>
-        /// UI:SetSe("Battle/_UNK_DUN_Water_Drop", 3)
-        /// </example>
-        public void SetSe(string newSe, int speakTime)
-        {
-            m_curspeakerSe = newSe;
-            m_curspeakTime = speakTime;
-        }
-        
-        /// <summary>
-        /// Sets the speaker sound effect played in the TextDialogue functions. 
-        /// </summary>
-        /// <param name="newSe">The sound effect of the box</param>
-        /// <example>
-        /// UI:SetSe("Menu/Unknown-3")
-        /// </example>
-        public void SetSe(string newSe)
-        {
-            m_curspeakerSe = newSe;
-        }
-
-        /// <summary>
-        /// Sets the speak frames played in the TextDialogue functions. 
-        /// </summary>
-        /// <param name="speakTime">The amount of frames to wait between each sound effect</param>
-        /// <example>
-        /// UI:SetSpeakTime(10)
-        /// </example>
-        public void SetSpeakTime(int speakTime)
-        {
-            m_curspeakTime = speakTime;
-        }
-
-        /// <summary>
-        /// Resets to the default speaker sound effect and speaker frames.
-        /// </summary>
-        public void ResetSe()
-        {
-            m_curspeakerSe = DialogueBox.SOUND_EFFECT;
-            m_curspeakTime = DialogueBox.SPEAK_FRAMES;
-        }
-        
         /// <summary>
         /// Resets the position and size of the dialogue box.
         /// </summary>
         public void ResetBounds()
         {
             m_curbounds = DialogueBox.DefaultBounds;
+        }
+
+        /// <summary>
+        /// Sets the centering of the text in the textbox.
+        /// </summary>
+        /// <param name="centerH">Horizontal centering</param>
+        /// <param name="centerV">Vertical centering</param>
+        public void SetCenter(bool centerH, bool centerV = false)
+        {
+            m_curcenter_h = centerH;
+            m_curcenter_v = centerV;
         }
 
         /// <summary>
@@ -602,23 +460,61 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Sets the centering of the text in the textbox.
-        /// </summary>
-        /// <param name="centerH">Horizontal centering</param>
-        /// <param name="centerV">Vertical centering</param>
-        public void SetCenter(bool centerH, bool centerV = false)
-        {
-            m_curcenter_h = centerH;
-            m_curcenter_v = centerV;
-        }
-
-        /// <summary>
         /// Makes the text automatically finish when it shows up.
         /// </summary>
         /// <param name="autoFinish">Auto-finishes text if true.</param>
         public void SetAutoFinish(bool autoFinish)
         {
             m_curautoFinish = autoFinish;
+        }
+
+
+
+        /// <summary>
+        /// Sets the speaker sound effect and speak frames played in the TextDialogue functions. 
+        /// </summary>
+        /// <param name="newSe">The sound effect of the box</param>
+        /// <param name="speakTime">The amount of frames to wait between each sound effect</param>
+        /// <example>
+        /// UI:SetSe("Battle/_UNK_DUN_Water_Drop", 3)
+        /// </example>
+        public void SetSe(string newSe, int speakTime)
+        {
+            m_curspeakerSe = newSe;
+            m_curspeakTime = speakTime;
+        }
+
+        /// <summary>
+        /// Sets the speaker sound effect played in the TextDialogue functions. 
+        /// </summary>
+        /// <param name="newSe">The sound effect of the box</param>
+        /// <example>
+        /// UI:SetSe("Menu/Unknown-3")
+        /// </example>
+        public void SetSe(string newSe)
+        {
+            m_curspeakerSe = newSe;
+        }
+
+        /// <summary>
+        /// Sets the speak frames played in the TextDialogue functions. 
+        /// </summary>
+        /// <param name="speakTime">The amount of frames to wait between each sound effect</param>
+        /// <example>
+        /// UI:SetSpeakTime(10)
+        /// </example>
+        public void SetSpeakTime(int speakTime)
+        {
+            m_curspeakTime = speakTime;
+        }
+
+        /// <summary>
+        /// Resets to the default speaker sound effect and speaker frames.
+        /// </summary>
+        public void ResetSe()
+        {
+            m_curspeakerSe = DialogueBox.SOUND_EFFECT;
+            m_curspeakTime = DialogueBox.SPEAK_FRAMES;
         }
 
 
@@ -630,6 +526,9 @@ namespace RogueEssence.Script
         /// </example>
         public LuaFunction WaitDialog;
 
+        /// <summary>
+        /// [LuaFunction] WaitDialog
+        /// </summary>
         public Coroutine _WaitDialog()
         {
             if (DataManager.Instance.CurrentReplay != null)
@@ -647,60 +546,185 @@ namespace RogueEssence.Script
         }
 
         //================================================================
-        // Menus
+        // Fade-In Effects
         //================================================================
 
-        /// <summary>
-        /// Ask a question answered by yes or no via character dialogue to the player.
-        /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
-        /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
-        ///
-        /// The Yes/No menu returns 1 for yes, and 0 for no.
-        /// </summary>
-        /// <param name="message">Question to be asked to the user.</param>
-        /// <param name="bdefaultstono">Whether the cursor starts on no by default</param>
-        /// <param name="callbacks">The Lua table of callbacks for the textbox to call.</param>
-        public void ChoiceMenuYesNo(string message, bool bdefaultstono = false, LuaTable callbacks = null)
-        {
-            if (DataManager.Instance.CurrentReplay != null)
-            {
-                m_choiceresult = DataManager.Instance.CurrentReplay.ReadUI() == 0 ? false : true;
-                return;
-            }
 
+        /// <summary>
+        /// Displays a voice over, waiting until the player completes it.
+        /// </summary>
+        /// <example>
+        /// UI:WaitShowVoiceOver("Hello World!", 120)
+        /// </example>
+        public LuaFunction WaitShowVoiceOver;
+
+        /// <summary>
+        /// [LuaFunction] WaitShowVoiceOver
+        /// Sets the current voice-over text to be shown.  Requires WaitDialog to actually display.
+        /// </summary>
+        /// <param name="text">The text to display.</param>
+        /// <param name="expireTime">The time for the textbox to remain on screen. Pass -1 to wait for player input.</param>
+        /// <param name="x">The starting X position of the box</param>
+        /// <param name="y">The starting Y position of the box</param>
+        /// <param name="width">The width of the box</param>
+        /// <param name="height">The height of the box</param>
+        /// <param name="callbacks">A Lua table of callbacks that the textbox can call using the [script] tag.</param>
+        public void TextVoiceOver(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1, LuaTable callbacks = null)
+        {
             try
             {
                 object[] scripts = DialogueBox.CreateScripts(callbacks);
-                m_choiceresult = null;
-
-                if (message == null)
-                    message = "";
-
-                m_curchoice = MenuManager.Instance.CreateQuestion(
-                    m_curspeakerID,m_curspeakerName,m_curspeakerEmo,m_curspeakerLoc,message,
-                    m_curspeakerSnd, m_curspeakerSe, m_curspeakTime,
-                    m_curautoFinish, m_curcenter_h, m_curcenter_v, m_curbounds, scripts, m_curchoiceLoc,
-                    () => { m_choiceresult = true; DataManager.Instance.LogUIPlay(1); },
-                    () => { m_choiceresult = false; DataManager.Instance.LogUIPlay(0); },
-                    bdefaultstono);
+                Rect bounds = new Rect(x, y, width, height);
+                if (DataManager.Instance.CurrentReplay == null)
+                    m_curdialogue = MenuManager.Instance.SetTitleDialog(expireTime, m_curautoFinish, bounds, scripts, () => { }, text);
             }
             catch (Exception e)
             {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ChoiceMenuYesNo({0}): Encountered exception.", message), e), DiagManager.Instance.DevMode);
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextVoiceOver({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
             }
         }
+
+        /// <summary>
+        /// Makes text pop up in the bottom-left corner by default. Displays concurrently with any other process.
+        /// </summary>
+        /// <param name="text">The text to display.</param>
+        /// <param name="expireTime">The time for the textbox to remain on screen. Pass -1 to wait for player input.</param>
+        /// <param name="x">The starting X position of the box</param>
+        /// <param name="y">The starting Y position of the box</param>
+        /// <param name="width">The width of the box</param>
+        /// <param name="height">The height of the box</param>
+        /// <param name="centerH">If true, centers the text horizontally.</param>
+        /// <param name="centerV">If true, centers the text vertically.</param>
+        public void TextPopUp(string text, int expireTime, int x = -1, int y = -1, int width = -1, int height = -1, bool centerH = false, bool centerV = false)
+        {
+            try
+            {
+                Rect bounds = new Rect(x, y, width, height);
+                GameManager.Instance.TextPopUp.SetMessage(text, expireTime, bounds, centerH, centerV);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextPopUp({0}, {1}): Encountered exception", text, expireTime), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        /// <summary>
+        /// Fades in text in the format of a title drop, then waits until the fade-in is complete.
+        /// </summary>
+        /// <example>
+        /// UI:WaitShowTitle("Hello World!", 60)
+        /// </example>
+        public LuaFunction WaitShowTitle;
+
+        /// <summary>
+        /// [LuaFunction] WaitShowTitle
+        /// Fades in text in the format of a title drop.  Requires WaitDialog to actually display.
+        /// </summary>
+        /// <param name="text">The text to display.</param>
+        /// <param name="time">The time it takes for the text to fade in, in frames.</param>
+        public void TextShowTitle(string text, int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeTitle(true, text, time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextShowTitle({0}, {1}): Encountered exception", text, time), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        /// <summary>
+        /// Fades out the text set in a title drop, waiting until the fade-out is complete.
+        /// </summary>
+        /// <example>
+        /// UI:WaitHideTitle(60)
+        /// </example>
+        public LuaFunction WaitHideTitle;
+
+        /// <summary>
+        /// [LuaFunction] WaitHideTitle
+        /// Fades out the text set in a title drop.  Requires WaitDialog to actually fade.
+        /// </summary>
+        /// <param name="time">The time it takes for the text to fade out, in frames.</param>
+        public void TextFadeTitle(int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeTitle(false, "", time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextFadeTitle({0}, {1}): Encountered exception", time), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        /// <summary>
+        /// Fades in a chosen background image, with a chosen framerate, at a certain fade time, waiting until the fade-in is complete.
+        /// </summary>
+        /// <example>
+        /// UI:WaitShowBG("TestBG", 3, 60)
+        /// </example>
+        public LuaFunction WaitShowBG;
+
+        /// <summary>
+        /// [LuaFunction] WaitShowBG
+        /// Prepares to fade in a chosen background image, with a chosen framerate, at a certain fade time. Requires WaitDialog to actually display.
+        /// </summary>
+        /// <param name="bg">The background to show, from the list of BG textures.</param>
+        /// <param name="frameTime">Framerate of the image animation.</param>
+        /// <param name="fadeInTime">Time taken to fade in the image.</param>
+        public void ShowBG(string bg, int frameTime, int fadeInTime)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(true, new BGAnimData(bg, frameTime), fadeInTime);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.TextShowBG({0}, {1}, {2}): Encountered exception", bg, frameTime, fadeInTime), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        /// <summary>
+        /// Fades out the current background image, waiting until the fade-out is complete.
+        /// </summary>
+        /// <example>
+        /// UI:WaitHideBG(60)
+        /// </example>
+        public LuaFunction WaitHideBG;
+
+        /// <summary>
+        /// [LuaFunction] WaitHideBG
+        /// Prepares a fade-out of the current image. Requires WaitDialog to actually display.
+        /// </summary>
+        /// <param name="time">Time taken to fade out the image.</param>
+        public void FadeBG(int time)
+        {
+            try
+            {
+                m_curdialogue = GameManager.Instance.FadeBG(false, new BGAnimData(), time);
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.ShowBG({0}): Encountered exception", time), e), DiagManager.Instance.DevMode);
+            }
+        }
+
+        //================================================================
+        // Functional Menus
+        //================================================================
 
         /// <summary>
         /// Displays the name input box.
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the string value indicating the result of the menu, UI:ChoiceResult() must be called.
+        /// Then to retrieve the string value indicating the result of the menu, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="title">The text to show above the input line.</param>
         /// <param name="desc">The text to show below the input line.</param>
-        /// <param name="maxLength">The length of the text in pixels.</param>
+        /// <param name="maxLength">The length limit of the text in pixels.</param>
         /// <param name="defaultName">Name to start the textbox with.</param>
         public void NameMenu(string title, string desc, int maxLength = 116, string defaultName = "")
         {
@@ -721,7 +745,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the boolean value indicating whether the team composition was changed or not, UI:ChoiceResult() must be called.
+        /// Then to retrieve the boolean value indicating whether the team composition was changed or not, UI:ChoiceResult() must be called.
         /// </summary>
         public void AssemblyMenu()
         {
@@ -742,7 +766,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the table indicating the indices of items chosen, UI:ChoiceResult() must be called.
+        /// Then to retrieve the table indicating the indices of items chosen, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="goods">A table of items to be sold.  The format is { Item=InvItem, Price=int } for each item.</param>
         public void ShopMenu(LuaTable goods)
@@ -777,7 +801,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the table indicating the indices of items to sell, UI:ChoiceResult() must be called.
+        /// Then to retrieve the table indicating the indices of items to sell, UI:ChoiceResult() must be called.
         /// </summary>
         public void SellMenu()
         {
@@ -927,7 +951,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the table indicating the indices of items chosen, UI:ChoiceResult() must be called.
+        /// Then to retrieve the table indicating the indices of items chosen, UI:ChoiceResult() must be called.
         /// </summary>
         public void AppraiseMenu()
         {
@@ -952,7 +976,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer representing the chosen team member, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer representing the chosen team member, UI:ChoiceResult() must be called.
         /// </summary>
         public void TutorTeamMenu(LuaFunction eligibleCheck = null)
         {
@@ -988,7 +1012,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer representing the chosen skill, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer representing the chosen skill, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="chara">The character to relearn skills</param>
         public void RelearnMenu(Character chara)
@@ -1020,7 +1044,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer representing the chosen skill, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer representing the chosen skill, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="chara">The character to relearn skills</param>
         /// <param name="skillNum">The new skill</param>
@@ -1050,7 +1074,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer representing the chosen skill, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer representing the chosen skill, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="chara">The character to relearn skills</param>
         public void ForgetMenu(Character chara)
@@ -1079,7 +1103,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer representing the chosen team slot, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer representing the chosen team slot, UI:ChoiceResult() must be called.
         /// </summary>
         public void ShowPromoteMenu()
         {
@@ -1098,8 +1122,10 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Determines if the swap menu has any valid items to display.
         /// </summary>
+        /// <param name="goods">The list of goods to filter for valid items.</param>
+        /// <returns>True if there is at least one item that can be displayed, false otherwise.</returns>
         public bool CanSwapMenu(LuaTable goods)
         {
             List<Tuple<string, string[]>> goodsList = new List<Tuple<string, string[]>>();
@@ -1117,8 +1143,10 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the swap menu with a table of goods and prices.
         /// </summary>
+        /// <param name="goods"></param>
+        /// <param name="prices"></param>
         public void SwapMenu(LuaTable goods, LuaTable prices)
         {
             try
@@ -1154,8 +1182,9 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the tribute menu.
         /// </summary>
+        /// <param name="spaces"></param>
         public void TributeMenu(int spaces)
         {
             try
@@ -1182,7 +1211,7 @@ namespace RogueEssence.Script
         /// 
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the string representing the chosen song, UI:ChoiceResult() must be called.
+        /// Then to retrieve the string representing the chosen song, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="hardMod">Set to true if you want to only include music of the current quest mod.</param>
         /// <param name="spoilerUnlocks">A lua table of strings representing progression flags that have been completed.
@@ -1211,7 +1240,7 @@ namespace RogueEssence.Script
         /// Ask to enter a destintion via character dialogue to the player.
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
         ///
         /// The Yes/No menu returns 1 for yes, and 0 for no.
         /// </summary>
@@ -1238,7 +1267,7 @@ namespace RogueEssence.Script
         /// Marks the start of a choice menu for choosing destinations, showing a preview of restrictions and requirements for dungeons.
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the ZoneLoc indicating the chosen destination, UI:ChoiceResult() must be called.
+        /// Then to retrieve the ZoneLoc indicating the chosen destination, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="destinations">A lua table representing the list of destinations with each element in the format of { Name=string, Dest=ZoneLoc }</param>
         public void DestinationMenu(LuaTable destinations, object defaultChoice)
@@ -1281,9 +1310,12 @@ namespace RogueEssence.Script
             }
         }
 
+        //================================================================
+        // Multiplayer Menus
+        //================================================================
 
         /// <summary>
-        /// TODO
+        /// Displays the Servers menu.
         /// </summary>
         public void ServersMenu()
         {
@@ -1299,7 +1331,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the contacts menu.
         /// </summary>
         public void ContactsMenu()
         {
@@ -1315,7 +1347,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the SOS menu.
         /// </summary>
         public void SOSMenu()
         {
@@ -1331,7 +1363,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the AOK menu.
         /// </summary>
         public void AOKMenu()
         {
@@ -1347,7 +1379,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the Peers menu.
         /// </summary>
         public void PeersMenu()
         {
@@ -1363,7 +1395,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the connection menu.
         /// </summary>
         public void ShowConnectMenu()
         {
@@ -1379,7 +1411,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// TODO
+        /// Displays the current activity of the connected peer.
         /// </summary>
         public void CurrentActivityMenu()
         {
@@ -1410,7 +1442,7 @@ namespace RogueEssence.Script
         /// Marks the start of a choice menu for choosing monsters, showing a preview of their appearances via portrait.
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the string indicating the chosen species, UI:ChoiceResult() must be called.
+        /// Then to retrieve the string indicating the chosen species, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="title">The title of the menu</param>
         /// <param name="choices">A lua table of choices with each element being a MonsterID.</param>
@@ -1454,30 +1486,16 @@ namespace RogueEssence.Script
         }
 
 
-        /// <summary>
-        /// Displays a custom menu of the caller's choice.
-        /// 
-        /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
-        /// and for execution to suspend until the menu is exited.
-        /// </summary>
-        public void SetCustomMenu(InteractableMenu menu)
-        {
-            try
-            {
-                m_choiceresult = null;
-                m_curchoice = menu;
-            }
-            catch (Exception e)
-            {
-                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SetCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
-            }
-        }
+        //================================================================
+        // Generic Menus
+        //================================================================
+
 
         /// <summary>
         /// Marks the start of a multi-choice menu.
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="message">The question to ask the user.</param>
         /// <param name="choicesPairs">A table of choices.  Each choice can be either a string, or { string, bool } representing the text and enabled status.</param>
@@ -1540,7 +1558,7 @@ namespace RogueEssence.Script
         /// Marks the start of a multi-paged choice menu.
         /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
         /// and for execution to suspend until the choice is returned.
-        /// Then to recover the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
+        /// Then to retrieve the integer value indicating the result of the menu, UI:ChoiceResult() must be called.
         /// </summary>
         /// <param name="x">X position of the menu</param>
         /// <param name="y">Y position of the menu</param>
@@ -1606,6 +1624,26 @@ namespace RogueEssence.Script
             }
         }
 
+
+        /// <summary>
+        /// Displays a custom menu of the caller's choice.
+        /// 
+        /// UI:WaitForChoice() must be called afterwards for the menu to be actually displayed,
+        /// and for execution to suspend until the menu is exited.
+        /// </summary>
+        public void SetCustomMenu(InteractableMenu menu)
+        {
+            try
+            {
+                m_choiceresult = null;
+                m_curchoice = menu;
+            }
+            catch (Exception e)
+            {
+                DiagManager.Instance.LogError(new Exception(String.Format("ScriptUI.SetCustomMenu(): Encountered exception."), e), DiagManager.Instance.DevMode);
+            }
+        }
+
         /// <summary>
         /// Get the result of the last choice menu
         /// </summary>
@@ -1616,10 +1654,10 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// It's complicated.
+        /// Creates an action that sets the choice result to a specified object.
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <param name="obj">The object to set the choice result to, if the action was fired.</param>
+        /// <returns>This action will set the choice result.</returns>
         public Action GetChoiceAction(object obj)
         {
             return () =>
@@ -1638,13 +1676,17 @@ namespace RogueEssence.Script
         /// </example>
         public LuaFunction WaitForChoice;
 
+        /// <summary>
+        /// [LuaFunction] WaitForChoice
+        /// </summary>
+        /// <returns></returns>
         public Coroutine _WaitForChoice()
         {
             if (DataManager.Instance.CurrentReplay != null)
                 return new Coroutine(_DummyWait());
 
             if (m_curchoice != null)
-                return new Coroutine(__WaitForChoice());
+                return new Coroutine(_waitForChoice());
             else
                 return new Coroutine(_DummyWait());
 
@@ -1654,14 +1696,20 @@ namespace RogueEssence.Script
         /// Wait for choice and then CLEAN UP m_curchoice
         /// </summary>
         /// <returns></returns>
-        private IEnumerator<YieldInstruction> __WaitForChoice()
+        private IEnumerator<YieldInstruction> _waitForChoice()
         {
             yield return CoroutineManager.Instance.StartCoroutine(MenuManager.Instance.ProcessMenuCoroutine(m_curchoice));
         }
 
-        //================================================================
-        // Menu Utilities
-        //================================================================
+        /// <summary>
+        /// Opens the provided menu and starts the menu coroutine.
+        /// This should be called only from non-coroutine sources.
+        /// </summary>
+        /// <param name="menu"></param>
+        /// <returns></returns>
+        /// <example>
+        /// TASK:WaitTask(UI:ProcessMenuCoroutine(MenuTools.MainMenu))
+        /// </example>
         public Coroutine ProcessMenuCoroutine( object menu )
         {
             try
@@ -1676,9 +1724,11 @@ namespace RogueEssence.Script
             }
         }
 
-        //
-        // Function setup
-        //
+        /// <summary>
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
+        /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             WaitDialog = state.RunString(@"

@@ -9,6 +9,10 @@ namespace RogueEssence.Data
     [Serializable]
     public class ItemData : ProximityPassive, IDescribedData
     {
+        /// <summary>
+        /// Returns the name of the item in the current language.
+        /// </summary>
+        /// <returns>The item name.</returns>
         public override string ToString()
         {
             return Name.ToLocal();
@@ -27,40 +31,51 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// The name of the data
+        /// The name of the item, containing all translations.
+        /// Use the name's ToLocal() function to get the name in current language.
+        /// For proper battle log formatting, use GetIconName() instead.
         /// </summary>
         public LocalText Name { get; set; }
 
         /// <summary>
-        /// How the item looks in the game.
+        /// The name of the image file used for this item's dungeon sprite.
+        /// The extension is excluded.
+        /// The file is loaded from Content/Item relative to the game exe.
         /// </summary>
         [Anim(0, "Item/")]
         public string Sprite;
 
         /// <summary>
-        /// The icon displayed next to the item's name.
+        /// The icon displayed next to the item's name in menus or the message log.
         /// </summary>
         [Alias(0, "Item_Icon")]
         public int Icon;
 
 
         /// <summary>
-        /// The description of the item
+        /// The description of the item, containing all translations.
+        /// Use the name's ToLocal() function to get the name in current language.
         /// </summary>
         [Dev.Multiline(0)]
         public LocalText Desc { get; set; }
 
         /// <summary>
-        /// Is it released and allowed to show up in the game?
+        /// Internal flag to show whether a item is completed and allowed to appear in the game.
+        /// Items that are not released appear with an asterisk next to their names when viewed in the Dev Mode editors. 
         /// </summary>
         public bool Released { get; set; }
 
         /// <summary>
-        /// Comments visible to only developers
+        /// An internal piece of text only visible using the Dev Mode editors, or by calling this property.
+        /// Usually used to take notes on the item if necessary. 
         /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
+        /// <summary>
+        /// Returns an EntrySummary of the item.
+        /// </summary>
+        /// <returns></returns>
         public EntrySummary GenerateEntrySummary()
         {
             ItemEntrySummary summary = new ItemEntrySummary(Name, Released, Comment, SortCategory, Icon, UsageType, MaxStack, CannotDrop, BagEffect);
@@ -70,12 +85,15 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// The number order of the item for sorting
+        /// The numerical order of the item, used when sorting items.
+        /// Lower numbers precede higher numbers.
+        /// In the event of a tie, the item with the lowest lexicographical internal name goes first.
         /// </summary>
         public int SortCategory;
 
         /// <summary>
         /// How much the item sells for.
+        /// Also used to calculate score at the end of runs.
         /// </summary>
         [Dev.NumberRange(0, -1, Int32.MaxValue)]
         public int Price;
@@ -93,12 +111,14 @@ namespace RogueEssence.Data
         public int MaxStack;
 
         /// <summary>
-        /// Cannot be manually dropped, cannot be lost, cannot be stolen.
+        /// If set to true, the item cannot be manually dropped, lost, or stolen.
+        /// The item can still be put in storage, and menu-based shops usually ignore this flag.
         /// </summary>
         public bool CannotDrop;
 
         /// <summary>
-        /// Determines whether the item activates in bag or on equip.
+        /// Determines whether the item provides its effects when in the bag or on equip.
+        /// This only matters for items with passive effects.
         /// </summary>
         public bool BagEffect;
 
@@ -137,7 +157,8 @@ namespace RogueEssence.Data
         public UseType UsageType;
 
         /// <summary>
-        /// Defines whether this item flies in an arc or in a straight line.
+        /// If set to true, this item flies in an arc to strike the target when thrown.
+        /// If set to false, this item flies in a straight line when thrown.
         /// </summary>
         public bool ArcThrow;
 
@@ -171,7 +192,7 @@ namespace RogueEssence.Data
 
 
         /// <summary>
-        /// Gets the colored text string of the item
+        /// Gets the name of the item with appropriate color text code, ideal for use in some menus.
         /// </summary>
         /// <returns></returns>
         public string GetColoredName()
@@ -183,7 +204,8 @@ namespace RogueEssence.Data
         }
 
         /// <summary>
-        /// Gets the colored text string of the item, with icon included
+        /// Gets the name of the item with appropriate color text code, and with icon included.
+        /// This is ideal for use for most menus and the message log.
         /// </summary>
         /// <returns></returns>
         public string GetIconName()

@@ -5,42 +5,51 @@ namespace RogueEssence.Data
     public class IntrinsicData : ProximityPassive, IDescribedData
     {
         /// <summary>
-        /// Returns the local string representing the intrinsic.
+        /// Returns the name of the intrinsic in the current language.
         /// </summary>
-        /// <returns>The local string.</returns>
+        /// <returns>The intrinsic name.</returns>
         public override string ToString()
         {
             return Name.ToLocal();
         }
 
         /// <summary>
-        /// The name of the data
+        /// The name of the intrinsic, containing all translations.
+        /// Use the name's ToLocal() function to get the name in current language.
+        /// For proper battle log formatting, use GetColoredName() instead.
         /// </summary>
         public LocalText Name { get; set; }
 
 
         /// <summary>
-        /// The description of the data
+        /// The description of the intrinsic, containing all translations.
+        /// Use the name's ToLocal() function to get the name in current language.
         /// </summary>
         [Dev.Multiline(0)]
         public LocalText Desc { get; set; }
 
         /// <summary>
-        /// Is it released and allowed to show up in the game?
+        /// Internal flag to show whether a intrinsic is completed and allowed to appear in the game.
+        /// Intrinsics that are not released appear with an asterisk next to their names when viewed in the Dev Mode editors. 
         /// </summary>
         public bool Released { get; set; }
 
         /// <summary>
-        /// Comments visible to only developers
+        /// An internal piece of text only visible using the Dev Mode editors, or by calling this property.
+        /// Usually used to take notes on the intrinsic if necessary. 
         /// </summary>
         [Dev.Multiline(0)]
         public string Comment { get; set; }
 
         /// <summary>
-        /// Index number of the intrinsic for sorting.  Must be unique
+        /// Index number of the intrinsic for sorting.  Must be unique.
         /// </summary>
         public int IndexNum;
 
+        /// <summary>
+        /// Returns an EntrySummary of the intrinsic.
+        /// </summary>
+        /// <returns></returns>
         public EntrySummary GenerateEntrySummary() { return new EntrySummary(Name, Released, Comment, IndexNum); }
 
         public IntrinsicData()
@@ -52,7 +61,7 @@ namespace RogueEssence.Data
 
 
         /// <summary>
-        /// Gets the colored text string of the intrinsic
+        /// Gets the name of the intrinsic with appropriate color text code, ideal for use in menus and the message log.
         /// </summary>
         /// <returns></returns>
         public string GetColoredName()
