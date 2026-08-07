@@ -103,8 +103,6 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Set a character's animation.
-        /// This is a LuaFunction and is the recommended way to call the method.
-        /// Consult _CharStartAnim for more parameter info.
         /// </summary>
         /// <example>
         /// DUNGEON:CharStartAnim(player, anim, false)
@@ -112,9 +110,7 @@ namespace RogueEssence.Script
         public LuaFunction CharStartAnim;
 
         /// <summary>
-        /// An internal version of CharStartAnim that returns the coroutine to be wrapped in the LuaFunction.
-        /// It is recommended to call the lua function instead.
-        /// Parameter information is the same between the two versions.
+        /// [LuaFunction] CharStartAnim
         /// </summary>
         /// <param name="chara">Character to animate.</param>
         /// <param name="anim">Name of the animation</param>
@@ -131,8 +127,6 @@ namespace RogueEssence.Script
 
         /// <summary>
         /// Stops a character's current animation, reverting them to default idle.
-        /// This is a LuaFunction and is the recommended way to call the method.
-        /// Consult _CharEndAnim for more parameter info.
         /// </summary>
         /// <example>
         /// DUNGEON:CharEndAnim(player)
@@ -140,9 +134,7 @@ namespace RogueEssence.Script
         public LuaFunction CharEndAnim;
 
         /// <summary>
-        /// An internal version of CharEndAnim that returns the coroutine to be wrapped in the LuaFunction.
-        /// It is recommended to call the lua function instead.
-        /// Parameter information is the same between the two versions.
+        /// [LuaFunction] CharEndAnim
         /// </summary>
         /// <param name="chara">Character to stop animating</param>
         /// <returns></returns>
