@@ -1,6 +1,7 @@
 ﻿using RogueElements;
 using RogueEssence.Content;
 using RogueEssence.Dungeon;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 
@@ -16,13 +17,16 @@ namespace RogueEssence.Dev.ViewModels
             AutotileBrowser = new AutotileBrowserViewModel();
         }
 
+        private AutoTile[][] copiedRegion;
+
         private TileEditMode texMode;
         public TileEditMode TexMode
         {
             get { return texMode; }
             set
             {
-                this.SetIfChanged(ref texMode, value);
+                if (this.SetIfChanged(ref texMode, value))
+                    CancelStroke();
             }
         }
 
@@ -39,7 +43,8 @@ namespace RogueEssence.Dev.ViewModels
             get => tabIndex;
             set
             {
-                this.SetIfChanged(ref tabIndex, value);
+                if (this.SetIfChanged(ref tabIndex, value))
+                    CancelStroke();
             }
         }
 
@@ -110,7 +115,79 @@ namespace RogueEssence.Dev.ViewModels
                             eyedropTile(tileCoords);
                     }
                     break;
+                case TileEditMode.Copy:
+                    {
+                        CanvasStroke<bool>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => new RectStroke<bool>(tileCoords, true),
+                            () => null,
+                            copyRegion, ref GroundEditScene.Instance.TextureSelectionInProgress);
+                    }
+                    break;
+                case TileEditMode.Paste:
+                    {
+                        CanvasStroke<AutoTile>.ProcessCanvasInput(input, tileCoords, inWindow,
+                            () => copiedRegion == null ? null : new ClusterStroke<AutoTile>(tileCoords, copiedRegion),
+                            () => null,
+                            paintStroke, ref GroundEditScene.Instance.AutoTileInProgress);
+                    }
+                    break;
             }
+        }
+
+        public bool CanPaste => copiedRegion != null;
+
+        public string CopyStatus
+        {
+            get
+            {
+                if (copiedRegion == null)
+                    return "Ctrl+C: drag a region on the map  Ctrl+V: paste it";
+                return String.Format("Copied {0} x {1} tiles from the active texture layer", copiedRegion.Length, copiedRegion[0].Length);
+            }
+        }
+
+        public void BeginCopy()
+        {
+            TexMode = TileEditMode.Copy;
+            CancelStroke();
+        }
+
+        public void BeginPaste()
+        {
+            if (copiedRegion == null)
+                return;
+
+            TexMode = TileEditMode.Paste;
+            CancelStroke();
+        }
+
+        public void CancelStroke()
+        {
+            GroundEditScene.Instance.AutoTileInProgress = null;
+            GroundEditScene.Instance.TextureSelectionInProgress = null;
+        }
+
+        private void copyRegion(CanvasStroke<bool> stroke)
+        {
+            Rect mapBounds = new Rect(0, 0, ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height);
+            Rect selected = Rect.Intersect(stroke.CoveredRect, mapBounds);
+            if (selected.Size.X <= 0 || selected.Size.Y <= 0)
+                return;
+
+            copiedRegion = new AutoTile[selected.Size.X][];
+            for (int xx = 0; xx < selected.Size.X; xx++)
+            {
+                copiedRegion[xx] = new AutoTile[selected.Size.Y];
+                for (int yy = 0; yy < selected.Size.Y; yy++)
+                {
+                    AutoTile tile = ZoneManager.Instance.CurrentGround.Layers[Layers.ChosenLayer].Tiles[selected.X + xx][selected.Y + yy];
+                    copiedRegion[xx][yy] = tile.Copy();
+                }
+            }
+
+            this.RaisePropertyChanged(nameof(CanPaste));
+            this.RaisePropertyChanged(nameof(CopyStatus));
+            TexMode = TileEditMode.Paste;
         }
 
 
@@ -137,15 +214,18 @@ namespace RogueEssence.Dev.ViewModels
         private void paintStroke(CanvasStroke<AutoTile> stroke)
         {
             Dictionary<Loc, AutoTile> brush = new Dictionary<Loc, AutoTile>();
+            Rect appliedBounds = new Rect();
             foreach (Loc loc in stroke.GetLocs())
             {
                 if (!Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, loc))
                     continue;
 
+                appliedBounds = brush.Count == 0 ? Rect.FromPoint(loc) : Rect.IncludeLoc(appliedBounds, loc);
                 brush[loc] = stroke.GetBrush(loc).Copy();
             }
 
-            DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawGroundTexUndo(Layers.ChosenLayer, brush, stroke.CoveredRect));
+            if (brush.Count > 0)
+                DiagManager.Instance.DevEditor.GroundEditor.Edits.Apply(new DrawGroundTexUndo(Layers.ChosenLayer, brush, appliedBounds));
         }
 
         private void eyedropTile(Loc loc)
