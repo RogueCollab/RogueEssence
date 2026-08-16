@@ -117,13 +117,17 @@ namespace RogueEssence
                 false, GraphicsManager.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24Stencil8);
         }
 
-        public void BattleSE(string newSE)
+        public void BattleSE(string newSE) { BattleSE(newSE, 1.0f, 0.0f); }
+        public void BattleSE(string newSE, float volume) { BattleSE(newSE, volume, 0.0f); }
+        public void BattleSE(string newSE, float volume, float pitch)
         {
             if (newSE != "")
-                SE("Battle/" + newSE);
+                SE("Battle/" + newSE, volume, pitch);
         }
 
-        public void SE(string newSE)
+        public void SE(string newSE) { SE(newSE, 1.0f, 0.0f); }
+        public void SE(string newSE, float volume) { SE(newSE, volume, 0.0f); }
+        public void SE(string newSE, float volume, float pitch)
         {
             try
             {
@@ -131,7 +135,7 @@ namespace RogueEssence
                     return;
 
                 if (System.IO.File.Exists(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg")))
-                    SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), 1);
+                    SoundManager.PlaySound(PathMod.ModPath(GraphicsManager.SOUND_PATH + newSE + ".ogg"), Math.Clamp(volume, 0.0f, 1.0f), pitch);
             }
             catch (Exception ex)
             {

@@ -21,6 +21,7 @@ namespace RogueEssence.Content
         static TimeSpan currentTime;
 
         static float bgmVol;
+        static float bgmPitch;
 
         static Dictionary<string, SongSetting> songs;
 
@@ -72,6 +73,7 @@ namespace RogueEssence.Content
                 songs.Add(fileName, new SongSetting(song, volume));
             }
             updateSongVolume();
+            updateSongPitch();
 
             foreach (SongSetting song in songs.Values)
             {
@@ -99,8 +101,20 @@ namespace RogueEssence.Content
                 song.Song.Volume = bgmVol * BGMBalance * (float)Math.Log10(song.CrossVolume * 9f + 1f);
         }
 
+        public static void SetBGMPitch(float pitch)
+        {
+            bgmPitch = pitch;
+            updateSongPitch();
+        }
 
-        public static void PlayLoopedSE(string fileName, float volume = 1.0f)
+        private static void updateSongPitch()
+        {
+            foreach (SongSetting song in songs.Values)
+                song.Song.Pitch = bgmPitch;
+        }
+
+
+        public static void PlayLoopedSE(string fileName, float volume = 1.0f, float pitch = 0.0f)
         {
             if (loopedSE.ContainsKey(fileName))
                 return;
@@ -111,6 +125,7 @@ namespace RogueEssence.Content
                 se.Play();
                 float seVol = volume;
                 se.Volume = seVol * seVol;
+                se.Pitch = pitch;
                 loopedSE.Add(fileName, se);
             }
         }
@@ -137,6 +152,13 @@ namespace RogueEssence.Content
             LoopedSong se;
             if (loopedSE.TryGetValue(fileName, out se))
                 se.Volume = volume * SEBalance;
+        }
+
+        public static void SetLoopedSEPitch(string fileName, float pitch)
+        {
+            LoopedSong se;
+            if (loopedSE.TryGetValue(fileName, out se))
+                se.Pitch = pitch;
         }
 
         public static void NewFrame(GameTime gameTime)
@@ -168,7 +190,7 @@ namespace RogueEssence.Content
 
 
 
-        public static int PlaySound(string fileName, float volume = 1.0f)
+        public static int PlaySound(string fileName, float volume = 1.0f, float pitch = 0.0f)
         {
             if (volume * seBalance <= 0f)
                 return 0;
@@ -192,6 +214,7 @@ namespace RogueEssence.Content
 
             long total_samples = FAudio.stb_vorbis_stream_length_in_samples(stbVorbisData);
             long total_frames = total_samples * 60 / fileInfo.sample_rate;
+            if (pitch != 0.0f) total_frames = Convert.ToInt64(total_frames / Math.Pow(2.0f, pitch));
             float[] chunk = new float[fileInfo.channels * total_samples];
             int framesRead = FAudio.stb_vorbis_get_samples_float_interleaved(stbVorbisData, fileInfo.channels, chunk, fileInfo.channels * (int)total_samples);
             FAudio.stb_vorbis_close(stbVorbisData);
@@ -202,6 +225,7 @@ namespace RogueEssence.Content
                 (fileInfo.channels == 1) ? AudioChannels.Mono : AudioChannels.Stereo
             );
             soundStream.Volume = volume * seBalance;
+            soundStream.Pitch = pitch;
             soundStream.SubmitFloatBufferEXT(chunk, 0, framesRead * fileInfo.channels);
             soundStream.Play();
             sounds.Add(soundStream);
