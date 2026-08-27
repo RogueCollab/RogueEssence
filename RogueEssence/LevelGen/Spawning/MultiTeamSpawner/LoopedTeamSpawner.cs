@@ -16,7 +16,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// Builds the team to be spawned.
         /// </summary>
-        public TeamSpawner Picker;
+        public TeamSpawner Picker { get; set; }
 
         /// <summary>
         /// Decides how many teams to spawn.
@@ -63,6 +63,7 @@ namespace RogueEssence.LevelGen
 
     public interface ILoopedTeamSpawner
     {
+        TeamSpawner Picker { get; set; }
         IRandPicker<int> AmountSpawner { get; set; }
     }
 }
