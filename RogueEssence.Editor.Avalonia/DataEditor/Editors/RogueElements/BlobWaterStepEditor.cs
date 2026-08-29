@@ -18,6 +18,9 @@ namespace RogueEssence.Dev
 {
     public class BlobWaterStepEditor : Editor<IBlobWaterStep>
     {
+        
+        public BlobWaterStepEditor(EditorContext context) : base(context) { }
+        
         public override string GetString(IBlobWaterStep obj, Type type, object[] attributes)
         {
             PropertyInfo blobInfo = typeof(IBlobWaterStep).GetProperty(nameof(obj.Blobs));

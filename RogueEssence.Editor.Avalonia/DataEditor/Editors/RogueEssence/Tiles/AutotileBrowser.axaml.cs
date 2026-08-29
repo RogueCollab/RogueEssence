@@ -9,17 +9,12 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class AutotileBrowser : UserControl
+    public partial class AutotileBrowser : UserControl
     {
         public AutotileBrowser()
         {
             this.InitializeComponent();
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
     }
 }

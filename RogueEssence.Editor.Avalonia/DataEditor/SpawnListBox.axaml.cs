@@ -12,43 +12,18 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class SpawnListBox : UserControl
+    public partial class SpawnListBox : UserControl
     {
         
         public SpawnListBox()
         {
             this.InitializeComponent();
-            Button button = this.FindControl<Button>("SpawnListBoxAddButton");
-            button.AddHandler(PointerReleasedEvent, SpawnListBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
+            SpawnListBoxAddButton.AddHandler(PointerReleasedEvent, SpawnListBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        bool doubleclick;
-        public void doubleClickStart(object sender, RoutedEventArgs e)
-        {
-            doubleclick = true;
-        }
-
-        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
-        {
-            if (!doubleclick)
-                return;
-            doubleclick = false;
-
-            ViewModels.SpawnListBoxViewModel viewModel = (ViewModels.SpawnListBoxViewModel)DataContext;
-            if (viewModel == null)
-                return;
-            viewModel.gridCollection_DoubleClick(sender, e);
-        }
-
+        
         public void SetListContextMenu(ContextMenu menu)
         {
-            DataGrid lbx = this.FindControl<DataGrid>("gridItems");
-            lbx.ContextMenu = menu;
+            gridItems.ContextMenu = menu;
         }
 
         private void SpawnListBoxAddButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
@@ -57,6 +32,29 @@ namespace RogueEssence.Dev.Views
             bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             SpawnListBoxViewModel vm = (SpawnListBoxViewModel) DataContext;
             vm.btnAdd_Click(advancedEdit);
+        }
+
+        private void SpawnListBoxDataGrid_OnCellEditEnded(object sender, DataGridCellEditEndedEventArgs e)
+        {
+            if (e.EditAction != DataGridEditAction.Commit) return;
+    
+            var element = (SpawnListElement)e.Row.DataContext;
+            var columnIndex = e.Column.DisplayIndex;
+
+            ViewModels.SpawnListBoxViewModel viewModel = (ViewModels.SpawnListBoxViewModel)DataContext;
+            if (viewModel == null) return;
+            viewModel.CurrentWeight = element.Weight;
+        }
+
+        private void SpawnListBoxDataGrid_OnCellPointerPressed(object sender, DataGridCellPointerPressedEventArgs e)
+        {
+            if (e.PointerPressedEventArgs.ClickCount != 2) return;
+            if (e.Column.DisplayIndex != 2) return;
+
+            ViewModels.SpawnListBoxViewModel viewModel = (ViewModels.SpawnListBoxViewModel)DataContext;
+            if (viewModel == null)
+                return;
+            viewModel.gridCollection_DoubleClick(sender, e);
         }
     }
 }

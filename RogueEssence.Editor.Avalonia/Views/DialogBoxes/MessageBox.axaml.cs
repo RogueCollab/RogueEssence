@@ -6,7 +6,7 @@ using Avalonia;
 
 namespace RogueEssence.Dev.Views
 {
-    public class MessageBox : Window
+    public partial class MessageBox : Window
     {
         public enum MessageBoxButtons
         {
@@ -27,16 +27,8 @@ namespace RogueEssence.Dev.Views
         public MessageBox()
         {
             this.InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         // https://stackoverflow.com/questions/55706291/how-to-show-a-message-box-in-avaloniaui-beta
         public static Task<MessageBoxResult> Show(Window parent, string text, string title, MessageBoxButtons buttons)
         {

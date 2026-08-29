@@ -10,6 +10,7 @@ namespace RogueEssence.Dev
 {
     public class StaticAnimEditor : TestableEditor<StaticAnim>
     {
+        public StaticAnimEditor(EditorContext context) : base(context) { }
         protected override void RunTest(StaticAnim data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

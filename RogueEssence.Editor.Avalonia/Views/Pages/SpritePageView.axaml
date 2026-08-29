@@ -1,0 +1,253 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="using:RogueEssence.Dev.Views"
+             xmlns:conv="using:RogueEssence.Dev.Converters"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SpritePageViewModel"
+             x:Class="RogueEssence.Dev.Views.SpritePageView">
+    <Design.DataContext>
+        <vm:SpritePageViewModel />
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <conv:MathAdd x:Key="AddConverter" />
+    </UserControl.Resources>
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Enter" Command="{Binding TogglePreview}" />
+        <KeyBinding Gesture="Left" Command="{Binding StepBackward}" />
+        <KeyBinding Gesture="Right" Command="{Binding StepForward}" />
+        <KeyBinding Gesture="Home" Command="{Binding GoBeginningFrame}" />
+        <KeyBinding Gesture="End" Command="{Binding GoEndFrame}" />
+    </UserControl.KeyBindings>
+    <Grid RowDefinitions="Auto, 32, *, Auto">
+        <DockPanel Grid.Row="0" VerticalAlignment="Top">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="Edit" Classes="menuright">
+                    <MenuItem Header="Mass Import" Command="{Binding mnuMassImport_Click}" />
+                    <MenuItem Header="Mass Export" Command="{Binding mnuMassExport_Click}" />
+                    <Separator IsVisible="{Binding IsTileAsset}" />
+                    <MenuItem IsVisible="{Binding IsTileAsset}" Header="Re-Index"
+                              Command="{Binding mnuReIndex_Click}" />
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+        <Grid Grid.Row="2" ColumnDefinitions="Auto, 64, 380" RowDefinitions="Auto, Auto, 16, Auto, 12, Auto" Margin="64, 8">
+           
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                           Text="{Binding AssetType}" />
+
+                <TextBox Classes="search"
+                         Grid.Row="1"
+                         Text="{Binding SearchFilter, Mode=TwoWay}" />
+
+                <ListBox Grid.Row="3"
+                         x:Name="SpritePageListBox"
+                         SelectionChanged="SpritePageListBox_OnSelectionChanged"
+                         ContextRequested="SpritePageListBox_OnContextRequested"
+                         Background="{DynamicResource Brush.ListBox.Background}"
+                         SelectedItem="{Binding SelectedItem}"
+                         ItemsSource="{Binding FilteredItems}" Height="400"
+                         BorderBrush="{DynamicResource Brush.Border2}"
+                         BorderThickness="1">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemContainerTheme>
+                        <StaticResource ResourceKey="CompactListBoxItem" />
+                    </ListBox.ItemContainerTheme>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Padding="4" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Grid.Row="5" Orientation="Horizontal">
+                    <Button Classes="flat" Width="100"
+                            Command="{Binding btnImport_Click}">
+                        <v:IconText Text="Import" Icon="Icons.DownloadFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                            Command="{Binding btnReImport_Click}"
+                            IsEnabled="{Binding Node.CachedPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Re-Import" Icon="Icons.RepeatFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                            Command="{Binding btnExport_Click}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Export" Icon="Icons.ExportFill" IconSize="12" />
+                    </Button>
+                    <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                            Command="{Binding btnDelete_Click}"
+                            IsEnabled="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                    </Button>
+                </StackPanel>
+     
+                <Border Grid.Column="2" Grid.Row="3" HorizontalAlignment="Stretch"
+                        VerticalAlignment="Bottom"
+                        Height="300"
+                        CornerRadius="4"
+                        Background="{DynamicResource Brush.ListBox.Background}"
+                        BorderThickness="1"
+                        Padding="8">
+                
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto"
+                                      Focusable="True"
+                                      PointerWheelChanged="SpritePagePreviewScrollViewer_OnPointerWheelChanged"
+                                      x:Name="SpritePagePreviewScrollViewer">
+                       
+                            <Image Source="{Binding PreviewBitmap}"
+                                   Width="{Binding PreviewWidth}"
+                                   Height="{Binding PreviewHeight}"
+                                   x:Name="SpritePagePreviewImage"
+                                   RenderOptions.BitmapInterpolationMode="None" >
+                                <Image.GestureRecognizers>
+                                    <PinchGestureRecognizer/>
+                                    <ScrollGestureRecognizer ScrollStartDistance="0" CanHorizontallyScroll="True" CanVerticallyScroll="True"/>
+                                </Image.GestureRecognizers>
+                            </Image>
+                    
+                        </ScrollViewer>
+         
+                    <!-- <Panel> -->
+                    <!--     <Viewbox Stretch="Uniform"> -->
+                    <!--         <Image Source="{Binding PreviewBitmap}" -->
+                    <!--                RenderOptions.BitmapInterpolationMode="None" /> -->
+                    <!--     </Viewbox> -->
+                    <!-- -->
+                    <!-- </Panel> -->
+                
+                    <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" -->
+                    <!--               VerticalScrollBarVisibility="Auto"> -->
+                    <!--     <Image Source="{Binding PreviewBitmap}" -->
+                    <!--            RenderOptions.BitmapInterpolationMode="None" -->
+                    <!--            HorizontalAlignment="Center" -->
+                    <!--            VerticalAlignment="Center" -->
+                    <!--            Stretch="None"> -->
+                    <!--         <Image.RenderTransform> -->
+                    <!--             <ScaleTransform ScaleX="2" ScaleY="2" /> -->
+                    <!--         </Image.RenderTransform> -->
+                    <!--     </Image> -->
+                    <!-- </ScrollViewer> -->
+                </Border>
+            </Grid>
+  
+        <Border Grid.Row="3"
+        Background="{DynamicResource Brush.Window}"
+        BorderThickness="0, 1, 0, 0"
+        BorderBrush="{DynamicResource Brush.Border0}"
+        Padding="8,4">
+    <Grid ColumnDefinitions="*, 510, Auto">
+        
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center"
+                    IsVisible="{Binding SelectedItem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock VerticalAlignment="Center" Text="{Binding SelectedItem}" />
+            <v:IconText Text="{Binding PreviewBitmap.Size}" Icon="Icons.ResizeFill" IconSize="12" />
+        </StackPanel>
+        
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16">
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" IsVisible="{Binding HasAnimation}">
+                <Button Classes="secondary" Command="{Binding GoBeginningFrame}">
+                    <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.SkipBackFill}" />
+                </Button>
+                
+                <Button Classes="secondary" Command="{Binding StepBackward}" Padding="7, 4, 7, 3">
+                    <Path Width="12" Height="12" Margin="0, 4, 0, 0" Data="{StaticResource Icons.RewindFill}" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding TogglePreview}">
+                    <Panel>
+                        <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.PauseFill}" IsVisible="{Binding !IsPaused}" />
+                        <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.PlayFill}" IsVisible="{Binding IsPaused}" />
+                    </Panel>
+                </Button>
+                <Button Classes="secondary" Command="{Binding StepForward}" Padding="7, 4, 7, 3">
+                    <Path Width="12" Height="12" Margin="0, 4, 0, 0" Data="{StaticResource Icons.FastForwardFill}" />
+                </Button>
+                <Button Classes="secondary" Command="{Binding GoEndFrame}">
+                    <Path Width="10" Height="10" Margin="0, 2, 0, 0" Data="{StaticResource Icons.SkipForwardFill}" />
+                </Button>
+               
+            </StackPanel>
+
+            
+            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasAnimation}">
+                <TextBlock VerticalAlignment="Center" Text="Speed:" />
+                <TextBox VerticalAlignment="Center"
+                         MaxLength="3"
+                         MinWidth="50"
+                         PointerWheelChanged="SpritePageViewFPSTextBox_OnPointerWheelChanged"
+                         x:Name="SpritePageViewFPSTextBox"
+                         TextAlignment="Right"
+                         Text="{Binding PreviewFps}">
+                    <TextBox.InnerRightContent>
+                        <TextBlock Margin="0,10,4,0"
+                                   Foreground="{DynamicResource Brush.FG2}"
+                                   FontSize="10"
+                                   Text="fps" />
+                    </TextBox.InnerRightContent>
+                </TextBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasAnimation}">
+                <TextBlock VerticalAlignment="Center" Text="Frame:" />
+                <TextBox VerticalAlignment="Center"
+                         MaxLength="3"
+                         MinWidth="50"
+                         TextAlignment="Right"
+                         PointerWheelChanged="SpritePageViewFrameTextBox_OnPointerWheelChanged"
+                         x:Name="SpritePageViewFrameTextBox"
+                         Text="{Binding CurrentFrameDisplay}">
+                    <TextBox.InnerRightContent>
+                        <TextBlock Margin="0,10,4,0"
+                                   Foreground="{DynamicResource Brush.FG2}"
+                                   FontSize="10"
+                                   Text="{Binding TotalFrames, StringFormat='/{0}', FallbackValue='1'}" />
+                    </TextBox.InnerRightContent>
+                </TextBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock VerticalAlignment="Center" Text="Zoom:" />
+                <TextBox VerticalAlignment="Center"
+                         MaxLength="6"
+                         x:Name="SpritePageViewZoomTextBox"
+                         MinWidth="70"
+                         TextAlignment="Right"
+                         PointerWheelChanged="SpritePageViewZoomTextBox_OnPointerWheelChanged"
+                         Padding="4, 4, 8, 4"
+                         Text="{Binding ZoomLevel}">
+                    <TextBox.InnerRightContent>
+                        <TextBlock Margin="-3,5,4,0"
+                                   Padding="0"
+                                   Foreground="{DynamicResource Brush.FG2}"
+                                   FontSize="10"
+                                   Text="x" />
+                    </TextBox.InnerRightContent>
+                </TextBox>
+            </StackPanel>
+
+        </StackPanel>
+    </Grid>
+</Border>
+
+        <!-- MaxWidth="256" MaxHeight="256" -->
+        <!-- <ScrollViewer HorizontalScrollBarVisibility="Auto" -->
+        <!--               VerticalScrollBarVisibility="Auto"> -->
+        <!-- -->
+        <!--     <Image Source="{Binding PreviewBitmap}" -->
+        <!-- -->
+        <!--            VerticalAlignment="Center" -->
+        <!--            HorizontalAlignment="Center" -->
+        <!--            Stretch="None" /> -->
+        <!-- </ScrollViewer> -->
+    </Grid>
+</UserControl>

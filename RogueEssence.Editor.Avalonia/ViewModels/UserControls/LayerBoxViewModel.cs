@@ -22,7 +22,34 @@ namespace RogueEssence.Dev.ViewModels
         {
             this.edits = stack;
             Layers = new WrappedObservableCollection<T>();
+           
+            this.WhenAnyValue(x => x.ChosenLayer)
+                .Subscribe(_ =>
+                {
+                    _raiseChanges();
+                });
+            
+            Layers.CollectionChanged += (_, _) =>
+            {
+                _raiseChanges();
+
+            };
+            ChosenLayer = 0;
         }
+
+
+        private void _raiseChanges()
+        {
+            this.RaisePropertyChanged(nameof(CanMoveUp));
+            this.RaisePropertyChanged(nameof(CanMoveDown));
+            this.RaisePropertyChanged(nameof(CanDupe));
+            this.RaisePropertyChanged(nameof(CanEdit));
+        }
+        public bool CanMoveUp => chosenLayer > 0;
+        public bool CanMoveDown => chosenLayer < Layers.Count - 1;
+        public bool CanDupe => chosenLayer >= 0;
+        public bool CanEdit => CanDupe && Layers.Count > 1;
+
 
         public WrappedObservableCollection<T> Layers { get; }
         public void SetLayer(int idx, T val)

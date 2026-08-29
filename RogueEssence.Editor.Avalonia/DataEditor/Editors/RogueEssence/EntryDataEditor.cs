@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 
     public class EntryDataEditor : StringEditor
     {
+        public EntryDataEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -28,7 +29,6 @@ namespace RogueEssence.Dev
             DataTypeAttribute dataAtt = ReflectionExt.FindAttribute<DataTypeAttribute>(attributes);
 
             ComboBox cbValue = new SearchComboBox();
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
 
 
             List<string> items = new List<string>();
@@ -46,7 +46,7 @@ namespace RogueEssence.Dev
                 items.Add(key + ": " + nameIndex.Get(key).GetLocalString(true));
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbValue.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             cbValue.SelectedIndex = Math.Min(Math.Max(0, chosenIndex), items.Count - 1);
             control.Children.Add(cbValue);

@@ -12,11 +12,13 @@ using System.Collections;
 using Avalonia;
 using System.Reactive.Subjects;
 using System.IO;
+using Avalonia.Layout;
 
 namespace RogueEssence.Dev
 {
     public class StringEditor : Editor<String>
     {
+        public StringEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
         public override bool DefaultDecoration => false;
@@ -31,6 +33,8 @@ namespace RogueEssence.Dev
             {
                 txtValue.AcceptsReturn = true;
                 txtValue.Height = 80;
+                txtValue.HorizontalContentAlignment = HorizontalAlignment.Left;
+                txtValue.VerticalContentAlignment = VerticalAlignment.Top;
                 //txtValue.Size = new Size(0, 80);
             }
             //else

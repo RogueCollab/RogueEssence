@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class TeamSpawnZoneStepEditor : Editor<TeamSpawnZoneStep>
     {
+        public TeamSpawnZoneStepEditor(EditorContext context) : base(context) { }
         public override string GetString(TeamSpawnZoneStep obj, Type type, object[] attributes)
         {
             return String.Format("{0} [{1}]", "Spawn NPCs", obj.Spawns.Count.ToString());

@@ -10,7 +10,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class CollectionBox : UserControl
+    public partial class CollectionBox : UserControl
     {
         public CollectionBox()
         {
@@ -18,12 +18,7 @@ namespace RogueEssence.Dev.Views
             Button button = this.FindControl<Button>("CollectionBoxAddButton");
             button.AddHandler(PointerReleasedEvent, CollectionBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         //TODO: there has to be some way to set the ItemTemplate's text binding in code-behind...
         //public void SetConv(IValueConverter conv)
         //{

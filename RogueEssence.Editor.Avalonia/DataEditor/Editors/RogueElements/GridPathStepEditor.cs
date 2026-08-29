@@ -18,6 +18,8 @@ namespace RogueEssence.Dev
 {
     public class GridPathCircleEditor : Editor<IGridPathCircle>
     {
+        public GridPathCircleEditor(EditorContext context) : base(context) { }
+        
         public override string GetString(IGridPathCircle obj, Type type, object[] attributes)
         {
             PropertyInfo fillInfo = typeof(IGridPathCircle).GetProperty(nameof(obj.CircleRoomRatio));
@@ -30,6 +32,7 @@ namespace RogueEssence.Dev
 
     public class GridPathBranchEditor : Editor<IGridPathBranch>
     {
+        public GridPathBranchEditor(EditorContext context) : base(context) { }
         public override string GetString(IGridPathBranch obj, Type type, object[] attributes)
         {
             PropertyInfo fillInfo = typeof(IGridPathBranch).GetProperty(nameof(obj.RoomRatio));
@@ -42,6 +45,7 @@ namespace RogueEssence.Dev
 
     public class GridPathGridEditor : Editor<IGridPathGrid>
     {
+        public GridPathGridEditor(EditorContext context) : base(context) { }
         public override string GetString(IGridPathGrid obj, Type type, object[] attributes)
         {
             PropertyInfo fillInfo = typeof(IGridPathGrid).GetProperty(nameof(obj.RoomRatio));

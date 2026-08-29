@@ -16,7 +16,7 @@ using System.Transactions;
 
 namespace RogueEssence.Dev.Views
 {
-    public class DataEditForm : ParentForm
+    public partial class DataEditForm : ParentForm
     {
         public delegate Task<bool> OKEvent();
         public OKEvent SelectedOKEvent;
@@ -30,17 +30,8 @@ namespace RogueEssence.Dev.Views
             InitializeComponent();
 
             ControlPanel = this.FindControl<StackPanel>("stkContent");
-            
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
-
-        protected virtual void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         public async Task SaveChildren()
         {
             for (int ii = children.Count - 1; ii >= 0; ii--)
@@ -65,7 +56,7 @@ namespace RogueEssence.Dev.Views
             this.Width = this.Width + 10;
         }
 
-        public virtual async void Window_Closing(object sender, CancelEventArgs e)
+        public virtual async void Window_Closing(object sender, WindowClosingEventArgs e)
         {
             if (Design.IsDesignMode)
                 return;

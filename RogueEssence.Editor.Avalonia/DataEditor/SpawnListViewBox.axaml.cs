@@ -11,17 +11,12 @@ using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
-    public class SpawnListViewBox : UserControl
+    public partial class SpawnListViewBox : UserControl
     {
         
         public SpawnListViewBox()
         {
             this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

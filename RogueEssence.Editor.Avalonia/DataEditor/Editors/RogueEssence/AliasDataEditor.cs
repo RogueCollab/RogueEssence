@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class AliasDataEditor : IntEditor
     {
+        public AliasDataEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -34,7 +35,6 @@ namespace RogueEssence.Dev
             }
             
             ComboBox cbValue = new SearchComboBox();
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
             int chosenIndex = -1;
 
             List<string> items = new List<string>();
@@ -46,7 +46,7 @@ namespace RogueEssence.Dev
             }
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbValue.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             if (chosenIndex > -1)
                 cbValue.SelectedIndex = chosenIndex;

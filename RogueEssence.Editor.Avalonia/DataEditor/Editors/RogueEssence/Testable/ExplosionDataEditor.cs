@@ -11,6 +11,7 @@ namespace RogueEssence.Dev
 {
     public class ExplosionDataEditor : TestableEditor<ExplosionData>
     {
+        public ExplosionDataEditor(EditorContext context) : base(context) { }
         protected override void RunTest(ExplosionData data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

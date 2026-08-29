@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:DataListPageViewModel"
+             x:Class="RogueEssence.Dev.Views.DataListPageView">
+
+    <Design.DataContext>
+        <vm:DataListPageViewModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="Auto, 32, Auto, Auto">
+
+
+        <DockPanel Grid.Row="0" VerticalAlignment="Top">
+            <Menu x:Name="DataListPageViewEditMenu" DockPanel.Dock="Left">
+                <MenuItem Header="Edit" Classes="menuright" ItemsSource="{Binding EditMenuItems}" />
+            </Menu>
+        </DockPanel>
+        <TextBlock Grid.Row="2" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                   Text="{Binding Node.DataType}" />
+
+        <!-- Search Grid -->
+        <Grid Grid.Row="3" RowDefinitions="Auto, 16, Auto, 12, Auto" Margin="64, 8">
+
+            <TextBox Classes="search"
+                     Grid.Row="0"
+                     Text="{Binding SearchFilter, Mode=TwoWay}" />
+
+            <ListBox Grid.Row="2"
+                     ContextRequested="DataListPageListBox_OnContextRequested"
+                     x:Name="DataListPageListBox" SelectedItem="{Binding SelectedItem}"
+                     ItemsSource="{Binding FilteredItems}" Height="400"
+                     Classes="datalist"
+                     Tapped="DataListPageListBox_OnTapped"
+                     DoubleTapped="DataListPageListBox_OnDoubleTapped">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" Padding="4" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Button Classes="flat" Width="100"
+                        Command="{Binding AddItem}">
+                    <v:IconText Text="Add" Icon="Icons.Plus" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding DeleteItem}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
