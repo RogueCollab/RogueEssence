@@ -64,6 +64,7 @@ namespace RogueEssence.Dungeon
         public string Music;
         public SightRange TileSight;
         public SightRange CharSight;
+        public int SightRadius;
 
         [JsonConverter(typeof(MapStatusDictConverter))]
         public Dictionary<string, MapStatus> Status;
@@ -161,6 +162,7 @@ namespace RogueEssence.Dungeon
 
             TileSight = SightRange.Clear;
             CharSight = SightRange.Clear;
+            SightRadius = -1;
 
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
