@@ -2302,13 +2302,9 @@ namespace RogueEssence.Dungeon
 
         public int GetSightRadius()
         {
-            
             int radius = SightRadius;
-            int mapRadius = ZoneManager.Instance.CurrentMap.SightRadius;
             if (radius < 0)
-                return mapRadius;
-            if (mapRadius >= 0)
-                return Math.Min(radius, mapRadius);
+                radius = ZoneManager.Instance.CurrentMap.SightRadius;
             return radius;
         }
 
