@@ -580,6 +580,26 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Runs the zone's custom restriction code
+        /// </summary>
+        /// <param name="zoneID">The id of the zone</param>
+        /// <param name="zoneSummary">The zone summary</param>
+        /// <param name="noRestrict">General noRestrict parameter that CAN be used by the restriction to decide if it should skip processing. Restrictions may choose to ignore it</param>
+        /// <param name="preSave">If true, only run pre-save restrictions. If false, only run post-save restrictions</param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> RunCustomRestrictions(string zoneID, ZoneEntrySummary zoneSummary, bool noRestrict, bool preSave)
+        {
+            foreach (var kvPair in zoneSummary.CustomRestrictions)
+            {
+                ZoneRestriction restriction = kvPair.Value;
+                if(restriction.ApplyBeforeAutosave() == preSave)
+                {
+                    yield return CoroutineManager.Instance.StartCoroutine(restriction.Apply(zoneID, zoneSummary, noRestrict));
+                }
+            }
+        }
+
         public void PrepAdventureStates()
         {
             MidAdventure = true;
@@ -1144,6 +1164,8 @@ namespace RogueEssence.Data
             if (!noRestrict)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
             
+            yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, noRestrict, true));
+
             Stakes = stakes;
 
             PrepAdventureStates();
@@ -1157,6 +1179,8 @@ namespace RogueEssence.Data
             //need to mention the instance on save directly since it has been backed up and changed
             if (!noRestrict && zone.LevelCap)
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
+
+            yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, noRestrict, false));
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;

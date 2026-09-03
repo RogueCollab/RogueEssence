@@ -367,6 +367,8 @@ namespace RogueEssence.Script
         public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
         public const string EVENT_AI_SWITCH_NAME = "AI_SWITCH_SCRIPT";
         public const string EVENT_AI_THINK_NAME = "AI_THINK_SCRIPT";
+        public const string ZONE_RULE_NAME_NAME = "ZONE_RULE_NAME_SCRIPT";
+        public const string ZONE_RULE_SCRIPT_NAME = "ZONE_RULE_SCRIPT";
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -731,6 +733,8 @@ namespace RogueEssence.Script
             LuaState.NewTable(EVENT_AI_INIT_NAME);
             LuaState.NewTable(EVENT_AI_SWITCH_NAME);
             LuaState.NewTable(EVENT_AI_THINK_NAME);
+            LuaState.NewTable(ZONE_RULE_NAME_NAME);
+            LuaState.NewTable(ZONE_RULE_SCRIPT_NAME);
 
             //Make empty script variable table
             LuaState.NewTable(SCRIPT_VARS_NAME);
