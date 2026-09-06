@@ -585,17 +585,16 @@ namespace RogueEssence.Data
         /// </summary>
         /// <param name="zoneID">The id of the zone</param>
         /// <param name="zoneSummary">The zone summary</param>
-        /// <param name="noRestrict">General noRestrict parameter that CAN be used by the restriction to decide if it should skip processing. Restrictions may choose to ignore it</param>
         /// <param name="preSave">If true, only run pre-save restrictions. If false, only run post-save restrictions</param>
         /// <returns></returns>
-        public IEnumerator<YieldInstruction> RunCustomRestrictions(string zoneID, ZoneEntrySummary zoneSummary, bool noRestrict, bool preSave)
+        public IEnumerator<YieldInstruction> RunCustomRestrictions(string zoneID, ZoneEntrySummary zoneSummary, bool preSave)
         {
             foreach (var kvPair in zoneSummary.CustomRestrictions)
             {
                 ZoneRestriction restriction = kvPair.Value;
                 if(restriction.IsPreAutosave() == preSave)
                 {
-                    yield return CoroutineManager.Instance.StartCoroutine(restriction.Apply(zoneID, zoneSummary, noRestrict));
+                    yield return CoroutineManager.Instance.StartCoroutine(restriction.Apply(zoneID, zoneSummary));
                 }
             }
         }
@@ -1161,10 +1160,10 @@ namespace RogueEssence.Data
             ZoneEntrySummary zone = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zoneID);
 
             //restrict team size/bag size/etc
-            if (!noRestrict)
+            if (!noRestrict) {
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
-            
-            yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, noRestrict, true));
+                yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, true));
+            }
 
             Stakes = stakes;
 
@@ -1177,10 +1176,10 @@ namespace RogueEssence.Data
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
-            if (!noRestrict && zone.LevelCap)
+            if (!noRestrict && zone.LevelCap) {
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
-
-            yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, noRestrict, false));
+                yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, false));
+            }
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;

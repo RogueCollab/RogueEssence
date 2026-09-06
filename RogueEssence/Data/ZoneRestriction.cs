@@ -11,7 +11,7 @@ namespace RogueEssence.Data
     {
         public abstract bool IsPreAutosave();
         public abstract string GetDisplayName(string index, ZoneEntrySummary zoneEntry, bool showRestrict);
-        public abstract IEnumerator<YieldInstruction> Apply(string zoneID, ZoneEntrySummary zoneSummary, bool noRestrict);
+        public abstract IEnumerator<YieldInstruction> Apply(string zoneID, ZoneEntrySummary zoneSummary);
     }
 
     /// <summary>
@@ -58,10 +58,10 @@ namespace RogueEssence.Data
             return "";
         }
 
-        public override IEnumerator<YieldInstruction> Apply(string zoneID, ZoneEntrySummary zoneSummary, bool noRestrict)
+        public override IEnumerator<YieldInstruction> Apply(string zoneID, ZoneEntrySummary zoneSummary)
         {
             LuaTable args = LuaEngine.Instance.RunString("return " + ZoneRuleEffectArgs).First() as LuaTable;
-            object[] parameters = new object[] { zoneID, zoneSummary, noRestrict, args };
+            object[] parameters = new object[] { zoneID, zoneSummary, args };
             string name = LuaEngine.ZONE_RULE_SCRIPT_NAME + "." + ZoneRuleEffectScript;
             LuaFunction func_iter = LuaEngine.Instance.CreateCoroutineIterator(name, parameters);
 
