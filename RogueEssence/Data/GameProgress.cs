@@ -1176,8 +1176,9 @@ namespace RogueEssence.Data
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
-            if (!noRestrict && zone.LevelCap) {
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
+            if (!noRestrict) {
+                if (zone.LevelCap)
+                    yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
                 yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, false));
             }
 
