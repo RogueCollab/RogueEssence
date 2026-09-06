@@ -16,12 +16,12 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The terrain types to spawn the mobs in.
         /// </summary>
-        public List<ITile> AcceptedTiles;
+        public List<ITile> AcceptedTiles { get; set; }
 
         /// <summary>
         /// How deeply in the terrain it should be spawned in.
         /// </summary>
-        public int Depth;
+        public int Depth { get; set; }
 
         public PlaceTerrainMobsStep()
         {
@@ -98,5 +98,11 @@ namespace RogueEssence.LevelGen
 
         }
 
+    }
+
+    public interface IPlaceTerrainMobsStep
+    {
+        public List<ITile> AcceptedTiles { get; set; }
+        public int Depth { get; set; }
     }
 }

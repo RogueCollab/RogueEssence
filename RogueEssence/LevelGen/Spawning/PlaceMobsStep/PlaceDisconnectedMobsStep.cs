@@ -16,7 +16,7 @@ namespace RogueEssence.LevelGen
         /// <summary>
         /// The terrain types to spawn the mobs in.
         /// </summary>
-        public List<ITile> AcceptedTiles;
+        public List<ITile> AcceptedTiles { get; set; }
 
         public PlaceDisconnectedMobsStep()
         {
@@ -118,5 +118,10 @@ namespace RogueEssence.LevelGen
 
         }
 
+    }
+
+    public interface IPlaceDisconnectedMobsStep
+    {
+        public List<ITile> AcceptedTiles { get; set; }
     }
 }
