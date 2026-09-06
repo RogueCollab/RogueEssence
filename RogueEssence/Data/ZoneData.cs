@@ -117,7 +117,7 @@ namespace RogueEssence.Data
         /// Pre-save restrictions are always applied before post-save restrictions, following the priority order.
         /// </summary>
         [ListCollapse]
-        public PriorityList<CustomRestriction> CustomRestrictions;
+        public PriorityList<CustomRestriction> CustomRestrictions { get; set; }
 
         /// <summary>
         /// Turn this on for the zone to remember map layouts and load the old state when returning to the floor.
@@ -205,6 +205,7 @@ namespace RogueEssence.Data
 
             Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
+            CustomRestrictions = new PriorityList<CustomRestriction>();
         }
 
         public string GetColoredName()
