@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using RogueEssence.LevelGen;
 using RogueEssence.Dungeon;
-using RogueEssence.Script;
 using System.Runtime.Serialization;
 using RogueEssence.Dev;
+using RogueElements;
 
 namespace RogueEssence.Data
 {
@@ -112,6 +112,12 @@ namespace RogueEssence.Data
         /// Forces the bag's maximum size.
         /// </summary>
         public int BagSize { get; set; }
+        /// <summary>
+        /// List of custom restrictions that are applied to the dungeon using scripts.
+        /// Pre-save restrictions are always applied before post-save restrictions, following the priority order.
+        /// </summary>
+        [ListCollapse]
+        public PriorityList<CustomRestriction> CustomRestrictions { get; set; }
 
         /// <summary>
         /// Turn this on for the zone to remember map layouts and load the old state when returning to the floor.
@@ -151,6 +157,10 @@ namespace RogueEssence.Data
             summary.Rescues = Rescues;
             summary.CountedFloors = totalFloors;
             summary.Rogue = Rogue;
+            foreach (var pair in CustomRestrictions)
+            {
+                summary.CustomRestrictions.Add(pair.Key, pair.Value);
+            }
             summary.Grounds.AddRange(GroundMaps);
             for (int ii = 0; ii < Segments.Count; ii++)
             {
@@ -195,6 +205,7 @@ namespace RogueEssence.Data
 
             Segments = new List<ZoneSegmentBase>();
             GroundMaps = new List<string>();
+            CustomRestrictions = new PriorityList<CustomRestriction>();
         }
 
         public string GetColoredName()
@@ -254,6 +265,7 @@ namespace RogueEssence.Data
         public int BagSize;
         public int Rescues;
         public int CountedFloors;
+        public PriorityList<CustomRestriction> CustomRestrictions;
         public RogueStatus Rogue;
         public List<string> Grounds;
         public List<HashSet<int>> Maps;
@@ -262,6 +274,7 @@ namespace RogueEssence.Data
         {
             Grounds = new List<string>();
             Maps = new List<HashSet<int>>();
+            CustomRestrictions = new PriorityList<CustomRestriction>();
         }
 
         public ZoneEntrySummary(LocalText name, bool released, string comment)
@@ -269,6 +282,7 @@ namespace RogueEssence.Data
         {
             Grounds = new List<string>();
             Maps = new List<HashSet<int>>();
+            CustomRestrictions = new PriorityList<CustomRestriction>();
         }
 
         public int GetFloorCount(int segidx)

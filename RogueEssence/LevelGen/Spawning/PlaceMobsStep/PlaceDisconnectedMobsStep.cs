@@ -10,13 +10,13 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T>
+    public class PlaceDisconnectedMobsStep<T> : PlaceMobsStep<T>, IPlaceDisconnectedMobsStep
         where T : StairsMapGenContext, ITiledGenContext
     {
         /// <summary>
         /// The terrain types to spawn the mobs in.
         /// </summary>
-        public List<ITile> AcceptedTiles;
+        public List<ITile> AcceptedTiles { get; set; }
 
         public PlaceDisconnectedMobsStep()
         {
@@ -118,5 +118,10 @@ namespace RogueEssence.LevelGen
 
         }
 
+    }
+
+    public interface IPlaceDisconnectedMobsStep
+    {
+        public List<ITile> AcceptedTiles { get; set; }
     }
 }

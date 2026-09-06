@@ -67,11 +67,11 @@ namespace RogueEssence.Script
         /// <param name="entry">The entry point on the resulting map</param>
         /// <param name="stakes">Decides what happens when the adventure fails/succeeds.</param>
         /// <param name="recorded">Record the adventure in a replay</param>
-        /// <param name="silentRestrict">Make the dungeon restrictions silently</param>
+        /// <param name="noRestrict">Do not apply dungeon restrictions</param>
         /// <returns></returns>
-        public Coroutine _EnterDungeon(string dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public Coroutine _EnterDungeon(string dungeonid, int structureid, int mapid, int entry, GameProgress.DungeonStakes stakes, bool recorded, bool noRestrict)
         {
-            return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), stakes, recorded, silentRestrict));
+            return new Coroutine(GameManager.Instance.BeginGameInSegment(new ZoneLoc(dungeonid, new SegLoc(structureid, mapid), entry), stakes, recorded, noRestrict));
         }
 
         /// <summary>
