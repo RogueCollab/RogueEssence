@@ -10,7 +10,7 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class PlaceTerrainMobsStep<T> : PlaceMobsStep<T>
+    public class PlaceTerrainMobsStep<T> : PlaceMobsStep<T>, IPlaceTerrainMobsStep
         where T : BaseMapGenContext, ITiledGenContext
     {
         /// <summary>
