@@ -580,6 +580,25 @@ namespace RogueEssence.Data
             }
         }
 
+        /// <summary>
+        /// Runs the zone's custom restriction code
+        /// </summary>
+        /// <param name="zoneID">The id of the zone</param>
+        /// <param name="zoneSummary">The zone summary</param>
+        /// <param name="preSave">If true, only run pre-save restrictions. If false, only run post-save restrictions</param>
+        /// <returns></returns>
+        public IEnumerator<YieldInstruction> RunCustomRestrictions(string zoneID, ZoneEntrySummary zoneSummary, bool preSave)
+        {
+            foreach (var kvPair in zoneSummary.CustomRestrictions)
+            {
+                ZoneRestriction restriction = kvPair.Value;
+                if(restriction.IsPreAutosave() == preSave)
+                {
+                    yield return CoroutineManager.Instance.StartCoroutine(restriction.Apply(zoneID, zoneSummary));
+                }
+            }
+        }
+
         public void PrepAdventureStates()
         {
             MidAdventure = true;
@@ -1141,9 +1160,11 @@ namespace RogueEssence.Data
             ZoneEntrySummary zone = (ZoneEntrySummary)DataManager.Instance.DataIndices[DataManager.DataType.Zone].Get(zoneID);
 
             //restrict team size/bag size/etc
-            if (!noRestrict)
+            if (!noRestrict) {
                 yield return CoroutineManager.Instance.StartCoroutine(RestrictTeam(zone, false));
-            
+                yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, true));
+            }
+
             Stakes = stakes;
 
             PrepAdventureStates();
@@ -1155,8 +1176,11 @@ namespace RogueEssence.Data
 
             //set everyone's levels and mark them for backreferral
             //need to mention the instance on save directly since it has been backed up and changed
-            if (!noRestrict && zone.LevelCap)
-                yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
+            if (!noRestrict) {
+                if (zone.LevelCap)
+                    yield return CoroutineManager.Instance.StartCoroutine(RestrictLevel(zone.Level, true, false, false, zone.KeepSkills));
+                yield return CoroutineManager.Instance.StartCoroutine(RunCustomRestrictions(zoneID, zone, false));
+            }
 
             RestartLogs(seed);
             RescuesLeft = zone.Rescues;

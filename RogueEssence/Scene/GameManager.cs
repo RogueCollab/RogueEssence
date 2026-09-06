@@ -820,16 +820,16 @@ namespace RogueEssence
             //if the mission was a success, the replay must be packaged into an AOK mail
         }
 
-        public IEnumerator<YieldInstruction> BeginGameInSegment(ZoneLoc nextZone, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public IEnumerator<YieldInstruction> BeginGameInSegment(ZoneLoc nextZone, GameProgress.DungeonStakes stakes, bool recorded, bool noRestrict)
         {
-            yield return CoroutineManager.Instance.StartCoroutine(BeginGame(nextZone.ID, MathUtils.Rand.NextUInt64(), stakes, recorded, silentRestrict));
+            yield return CoroutineManager.Instance.StartCoroutine(BeginGame(nextZone.ID, MathUtils.Rand.NextUInt64(), stakes, recorded, noRestrict));
             yield return CoroutineManager.Instance.StartCoroutine(BeginSegment(nextZone, true));
         }
-        public IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool silentRestrict)
+        public IEnumerator<YieldInstruction> BeginGame(string zoneID, ulong seed, GameProgress.DungeonStakes stakes, bool recorded, bool noRestrict)
         {
             //initiate the adventure
             DataManager.Instance.CurrentReplay = null;
-            yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.BeginGame(zoneID, seed, stakes, recorded, silentRestrict));
+            yield return CoroutineManager.Instance.StartCoroutine(DataManager.Instance.Save.BeginGame(zoneID, seed, stakes, recorded, noRestrict));
         }
         public IEnumerator<YieldInstruction> BeginSegment(ZoneLoc nextZone, bool newGame)
         {
