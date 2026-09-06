@@ -9,7 +9,7 @@ namespace RogueEssence.Data
 {
     public abstract class ZoneRestriction : GameEvent
     {
-        public abstract bool ApplyBeforeAutosave();
+        public abstract bool IsPreAutosave();
         public abstract string GetDisplayName(string index, ZoneEntrySummary zoneEntry, bool showRestrict);
         public abstract IEnumerator<YieldInstruction> Apply(string zoneID, ZoneEntrySummary zoneSummary, bool noRestrict);
     }
@@ -20,7 +20,7 @@ namespace RogueEssence.Data
     [Serializable]
     public class CustomRestriction : ZoneRestriction
     {
-        public bool BeforeAutosave;
+        public bool PreAutosave;
         [Dev.Sanitize(0)]
         public string ZoneRuleNameScript;
         [Dev.Multiline(0)]
@@ -32,17 +32,17 @@ namespace RogueEssence.Data
 
         public CustomRestriction() { ZoneRuleNameScript = ""; ZoneRuleNameArgs = "{}"; ZoneRuleEffectScript = ""; ZoneRuleEffectArgs = "{}"; }
         public CustomRestriction(bool beforeAutosave, string nameScript, string effectScript) {
-            BeforeAutosave = beforeAutosave; ZoneRuleNameScript = nameScript; ZoneRuleNameArgs = "{}"; ZoneRuleEffectScript = effectScript; ZoneRuleEffectArgs = "{}";
+            PreAutosave = beforeAutosave; ZoneRuleNameScript = nameScript; ZoneRuleNameArgs = "{}"; ZoneRuleEffectScript = effectScript; ZoneRuleEffectArgs = "{}";
         }
         public CustomRestriction(bool beforeAutosave, string nameScript, string nameArgs, string effectScript, string effectArgs) {
-            BeforeAutosave = beforeAutosave; ZoneRuleNameScript = nameScript; ZoneRuleNameArgs = nameArgs; ZoneRuleEffectScript = effectScript; ZoneRuleEffectArgs = effectArgs;
+            PreAutosave = beforeAutosave; ZoneRuleNameScript = nameScript; ZoneRuleNameArgs = nameArgs; ZoneRuleEffectScript = effectScript; ZoneRuleEffectArgs = effectArgs;
         }
         public override GameEvent Clone()
         {
-            return new CustomRestriction(BeforeAutosave, ZoneRuleNameScript, ZoneRuleNameArgs, ZoneRuleEffectScript, ZoneRuleEffectArgs);
+            return new CustomRestriction(PreAutosave, ZoneRuleNameScript, ZoneRuleNameArgs, ZoneRuleEffectScript, ZoneRuleEffectArgs);
         }
 
-        public override bool ApplyBeforeAutosave() => BeforeAutosave;
+        public override bool IsPreAutosave() => PreAutosave;
         public override string GetDisplayName(string index, ZoneEntrySummary zoneEntry, bool showRestrict) {
             LuaTable args = LuaEngine.Instance.RunString("return " + ZoneRuleNameArgs).First() as LuaTable;
             string name = LuaEngine.ZONE_RULE_NAME_NAME + "." + ZoneRuleNameScript;

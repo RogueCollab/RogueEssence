@@ -593,7 +593,7 @@ namespace RogueEssence.Data
             foreach (var kvPair in zoneSummary.CustomRestrictions)
             {
                 ZoneRestriction restriction = kvPair.Value;
-                if(restriction.ApplyBeforeAutosave() == preSave)
+                if(restriction.IsPreAutosave() == preSave)
                 {
                     yield return CoroutineManager.Instance.StartCoroutine(restriction.Apply(zoneID, zoneSummary, noRestrict));
                 }
