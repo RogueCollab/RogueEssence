@@ -863,7 +863,7 @@ namespace RogueEssence.Dungeon
             if (RunMode)
                 return 12;
 
-            Loc seen = Character.GetSightDims();
+            Loc seen = Character.GetGlobalSightDims();
             Rect sightBounds = new Rect(FocusedCharacter.CharLoc - seen, seen * 2 + Loc.One);
             sightBounds = ZoneManager.Instance.CurrentMap.GetClampedSight(sightBounds);
 

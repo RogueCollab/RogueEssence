@@ -2281,18 +2281,18 @@ namespace RogueEssence.Dungeon
         //SIGHT LOGIC
 
         //either border of sight range, or border of the screen
-        public static Loc GetSightDims()
+        public static Loc GetGlobalSightDims()
         {
             int width = MathUtils.DivUp(GraphicsManager.ScreenWidth - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
             int height = MathUtils.DivUp(GraphicsManager.ScreenHeight - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
             return new Loc(width, height);
         }
 
-        public static Loc GetSightDims(Character chara)
+        public Loc GetSightDims()
         {
-            Loc dims = GetSightDims();
-            int radius = chara.GetSightRadius();
-            if(chara.IsSightRadiusLimited())
+            Loc dims = GetGlobalSightDims();
+            int radius = GetSightRadius();
+            if(IsSightRadiusLimited())
             {
                 dims = new Loc(Math.Min(radius, dims.X),
                                 Math.Min(radius, dims.Y));
@@ -2327,8 +2327,8 @@ namespace RogueEssence.Dungeon
             Map.SightRange sight = CharSight;
             if (sight == Map.SightRange.Any)
                 sight = ZoneManager.Instance.CurrentMap.CharSight;
-            if(IsSightRadiusLimited() && sight == Map.SightRange.Clear)
-                    sight = Map.SightRange.Dark;
+            if (IsSightRadiusLimited() && sight == Map.SightRange.Clear)
+                sight = Map.SightRange.Dark;
             return sight;
         }
 
@@ -2353,14 +2353,14 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        Loc seen = GetSightDims(this);
+                        Loc seen = GetSightDims();
                         Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         Fov.CalculateAnalogFOV(sightBounds.Start, sightBounds.Size, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
                         break;
                     }
                 default:
                     {
-                        Loc seen = GetSightDims();
+                        Loc seen = GetGlobalSightDims();
                         Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
                         for (int x = sightBounds.X; x < sightBounds.End.X; x++)
@@ -2399,7 +2399,7 @@ namespace RogueEssence.Dungeon
                         seenChars.Add(target);
                 }
 
-                Loc radius = GetSightDims(this);
+                Loc radius = GetSightDims();
                 Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius + Loc.One);
                 sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
@@ -2459,7 +2459,7 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        Loc seen = GetSightDims(this);
+                        Loc seen = GetSightDims();
                         Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
                         foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
@@ -2481,7 +2481,7 @@ namespace RogueEssence.Dungeon
 
         public bool IsInSightBoundsFrom(Loc fromLoc, Loc loc)
         {
-            Loc seen = GetSightDims(this);
+            Loc seen = GetSightDims();
             Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
             sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
