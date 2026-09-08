@@ -1201,7 +1201,7 @@ namespace RogueEssence.Dungeon
                                 {
                                     if (member.SeeWallItems)
                                     {
-                                        if (member.SeeItems || member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
+                                        if (member.SeeItems || member.CanSeeScreenLoc(item.TileLoc))
                                         {
                                             seeItem = true;
                                             break;
@@ -1592,8 +1592,8 @@ namespace RogueEssence.Dungeon
             //However, this is not ideal; the tiles being lit up actually aren't in character sight.
             //So there needs to be a better way eventually...
             Map.SightRange sight = chara.GetCharSight();
-            Loc seen = chara.GetSightDims();
-            if(!chara.IsSightRadiusLimited())
+            Loc seen = chara.GetCharSightDims();
+            if(!chara.IsCharSightRadiusLimited())
                 seen += Loc.One;
             Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
             switch (sight)

@@ -64,7 +64,8 @@ namespace RogueEssence.Dungeon
         public string Music;
         public SightRange TileSight;
         public SightRange CharSight;
-        public int SightRadius;
+        public int TileSightRadius;
+        public int CharSightRadius;
 
         [JsonConverter(typeof(MapStatusDictConverter))]
         public Dictionary<string, MapStatus> Status;
@@ -162,7 +163,8 @@ namespace RogueEssence.Dungeon
 
             TileSight = SightRange.Clear;
             CharSight = SightRange.Clear;
-            SightRadius = -1;
+            TileSightRadius = -1;
+            CharSightRadius = -1;
 
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
@@ -301,7 +303,7 @@ namespace RogueEssence.Dungeon
                     //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
                     foreach (Character character in ActiveTeam.Players)
                     {
-                        if (character.IsInSightBounds(testLoc))
+                        if (character.IsInCharSightBounds(testLoc))
                             return;
                     }
 
