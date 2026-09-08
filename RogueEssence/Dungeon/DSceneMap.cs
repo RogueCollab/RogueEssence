@@ -1529,7 +1529,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!player.Dead)
                 {
-                    if (player.CanSeeLoc(loc, player.GetTileSight()))
+                    if (player.CanSeeTileLoc(loc, player.GetTileSight()))
                         return true;
                 }
             }
@@ -1541,7 +1541,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!player.Dead)
                 {
-                    if (player.CanSeeLoc(loc, player.GetCharSight()))
+                    if (player.CanSeeCharLoc(loc, player.GetCharSight()))
                         return true;
                 }
             }
