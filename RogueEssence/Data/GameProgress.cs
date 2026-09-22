@@ -589,7 +589,16 @@ namespace RogueEssence.Data
         /// <returns></returns>
         public IEnumerator<YieldInstruction> RunCustomRestrictions(string zoneID, ZoneEntrySummary zoneSummary, bool preSave)
         {
+            PriorityList<CustomRestriction> joinedList = new PriorityList<CustomRestriction>();
+            foreach (var kvPair in DataManager.Instance.UniversalEvent.CustomZoneRestrictions)
+            {
+                joinedList.Add(kvPair.Key, kvPair.Value);
+            }
             foreach (var kvPair in zoneSummary.CustomRestrictions)
+            {
+                joinedList.Add(kvPair.Key, kvPair.Value);
+            }
+            foreach (var kvPair in joinedList)
             {
                 ZoneRestriction restriction = kvPair.Value;
                 if(restriction.IsPreAutosave() == preSave)

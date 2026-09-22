@@ -64,6 +64,7 @@ namespace RogueEssence.Dungeon
     /// Event that activates if the supplied condition script returns true
     /// If the script does not return a boolean, it will still count as true as long as it is not nil
     /// </summary>
+    [Serializable]
     public class ScriptedConditionEvent : BattleScriptEvent
     {
         /// <summary>

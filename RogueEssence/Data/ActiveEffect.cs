@@ -220,10 +220,22 @@ namespace RogueEssence.Data
     [Serializable]
     public abstract  class UniversalBaseEffect : ActiveEffect
     {
+        /// <summary>
+        /// List of Zone-level GenSteps that are applied to all dungeons.
+        /// They are applied after the zone's own ZoneSteps, before processing the floor GenSteps queue.
+        /// </summary>
         public List<ZoneStep> ZoneSteps;
+        /// <summary>
+        /// List of custom restrictions that are applied to all dungeons using scripts.
+        /// Pre-save restrictions are always applied before post-save restrictions, following the priority order.
+        /// These restrictions are merged with the dungeon-specific restrictions. They do not get any special treatment.
+        /// </summary>
+        [ListCollapse]
+        public PriorityList<CustomRestriction> CustomZoneRestrictions;
         public UniversalBaseEffect() : base()
         {
             this.ZoneSteps = new List<ZoneStep>();
+            this.CustomZoneRestrictions = new PriorityList<CustomRestriction>();
         }
 
         public abstract int GetRange(Character character, ref SkillData entry);

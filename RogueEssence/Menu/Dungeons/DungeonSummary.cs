@@ -81,7 +81,16 @@ namespace RogueEssence.Menu
                     rules.Add(new MenuText(Text.FormatKey("ZONE_RESTRICT_BAG", zoneEntry.BagSize), Loc.Zero,
                         (showRestrict && save.ActiveTeam.GetInvCount() > zoneEntry.BagSize) ? Color.Red : Color.White));
 
-                foreach (var elem in zoneEntry.CustomRestrictions)
+                PriorityList<CustomRestriction> joinedRestrictions = new PriorityList<CustomRestriction>();
+                foreach (var kvPair in DataManager.Instance.UniversalEvent.CustomZoneRestrictions)
+                {
+                    joinedRestrictions.Add(kvPair.Key, kvPair.Value);
+                }
+                foreach (var kvPair in zoneEntry.CustomRestrictions)
+                {
+                    joinedRestrictions.Add(kvPair.Key, kvPair.Value);
+                }
+                foreach (var elem in joinedRestrictions)
                 {
                     ZoneRestriction restriction = elem.Value;
                     string text = restriction.GetDisplayName(index, zoneEntry, showRestrict);
