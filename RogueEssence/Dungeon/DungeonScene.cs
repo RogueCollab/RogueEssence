@@ -847,7 +847,7 @@ namespace RogueEssence.Dungeon
                             foreach (VisionLoc visionLoc in member.GetVisionLocs())
                             {
                                 if (visionLoc.Weight > 0)
-                                    AddBrightLocs(visionLoc, member.GetCharSight());
+                                    AddBrightLocs(visionLoc, member);
                             }
                         }
                     }
@@ -1201,7 +1201,7 @@ namespace RogueEssence.Dungeon
                                 {
                                     if (member.SeeWallItems)
                                     {
-                                        if (member.SeeItems || member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
+                                        if (member.SeeItems || member.CanSeeScreenLoc(item.TileLoc))
                                         {
                                             seeItem = true;
                                             break;
@@ -1583,15 +1583,18 @@ namespace RogueEssence.Dungeon
         /// Lights up tiles for graphical reasons.
         /// </summary>
         /// <param name="loc"></param>
-        /// <param name="sight"></param>
-        public void AddBrightLocs(VisionLoc loc, Map.SightRange sight)
+        /// <param name="chara"></param>
+        public void AddBrightLocs(VisionLoc loc, Character chara)
         {
             //The sight rect of the character, not the screen.
             //TODO: we currently add 1 to the range, even though it's beyond the actual sight of the players.
             //This is to prevent darkness at the edge of vision from constantly showing up when walking.
             //However, this is not ideal; the tiles being lit up actually aren't in character sight.
             //So there needs to be a better way eventually...
-            Loc seen = Character.GetSightDims() + Loc.One;
+            Map.SightRange sight = chara.GetCharSight();
+            Loc seen = chara.GetCharSightDims();
+            if(!chara.IsCharSightRadiusLimited())
+                seen += Loc.One;
             Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
             switch (sight)
             {

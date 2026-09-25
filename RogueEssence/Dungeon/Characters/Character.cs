@@ -347,6 +347,8 @@ namespace RogueEssence.Dungeon
         //visibility and sight
         public Map.SightRange TileSight;
         public Map.SightRange CharSight;
+        public int TileSightRadius = -1;
+        public int CharSightRadius = -1;
         //sprite is not visible and information about the entity is unavailable
         public bool Unidentifiable;
         //position is not visible
@@ -413,6 +415,8 @@ namespace RogueEssence.Dungeon
             StatusesTargetingThis = new List<StatusRef>();
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
+            TileSightRadius = -1;
+            CharSightRadius = -1;
 
             BackRef = new TempCharBackRef(-1);
         }
@@ -472,6 +476,8 @@ namespace RogueEssence.Dungeon
             StatusesTargetingThis = new List<StatusRef>();
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
+            TileSightRadius = -1;
+            CharSightRadius = -1;
 
             BackRef = new TempCharBackRef(-1);
 
@@ -1586,6 +1592,8 @@ namespace RogueEssence.Dungeon
 
             TileSight = Map.SightRange.Any;
             CharSight = Map.SightRange.Any;
+            TileSightRadius = -1;
+            CharSightRadius = -1;
 
             //Mobility
             Mobility = TerrainData.Mobility.Passable;
@@ -2277,13 +2285,64 @@ namespace RogueEssence.Dungeon
         //SIGHT LOGIC
 
         //either border of sight range, or border of the screen
-        public static Loc GetSightDims()
+        public static Loc GetGlobalSightDims()
         {
             int width = MathUtils.DivUp(GraphicsManager.ScreenWidth - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
             int height = MathUtils.DivUp(GraphicsManager.ScreenHeight - GraphicsManager.TileSize, 2 * GraphicsManager.TileSize);
             return new Loc(width, height);
         }
 
+        public Loc GetTileSightDims()
+        {
+            Loc dims = GetGlobalSightDims();
+            int radius = GetTileSightRadius();
+            if(IsTileSightRadiusLimited())
+            {
+                dims = new Loc(Math.Min(radius, dims.X),
+                                Math.Min(radius, dims.Y));
+            }
+            return dims;
+        }
+
+        public Loc GetCharSightDims()
+        {
+            Loc dims = GetGlobalSightDims();
+            int radius = GetCharSightRadius();
+            if(IsCharSightRadiusLimited())
+            {
+                dims = new Loc(Math.Min(radius, dims.X),
+                                Math.Min(radius, dims.Y));
+            }
+            return dims;
+        }
+
+        public int GetTileSightRadius()
+        {
+            int radius = TileSightRadius;
+            if (radius < 0)
+                radius = ZoneManager.Instance.CurrentMap.TileSightRadius;
+            return radius;
+        }
+
+        public int GetCharSightRadius()
+        {
+            int radius = CharSightRadius;
+            if (radius < 0)
+                radius = ZoneManager.Instance.CurrentMap.CharSightRadius;
+            return radius;
+        }
+
+        public bool IsTileSightRadiusLimited()
+        {
+            int radius = GetTileSightRadius();
+            return radius >= 0 && radius < 7;
+        }
+
+        public bool IsCharSightRadiusLimited()
+        {
+            int radius = GetCharSightRadius();
+            return radius >= 0 && radius < 7;
+        }
 
         public Map.SightRange GetTileSight()
         {
@@ -2322,14 +2381,14 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        Loc seen = GetSightDims();
+                        Loc seen = GetTileSightDims();
                         Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         Fov.CalculateAnalogFOV(sightBounds.Start, sightBounds.Size, CharLoc, DungeonScene.Instance.VisionBlocked, lightOp);
                         break;
                     }
                 default:
                     {
-                        Loc seen = GetSightDims();
+                        Loc seen = GetGlobalSightDims();
                         Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
                         for (int x = sightBounds.X; x < sightBounds.End.X; x++)
@@ -2368,7 +2427,7 @@ namespace RogueEssence.Dungeon
                         seenChars.Add(target);
                 }
 
-                Loc radius = GetSightDims();
+                Loc radius = GetCharSightDims();
                 Rect sightBounds = Rect.FromPoints(CharLoc - radius, CharLoc + radius + Loc.One);
                 sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
@@ -2402,7 +2461,7 @@ namespace RogueEssence.Dungeon
             if (character.Unlocatable)
                 return false;
 
-            if (CanSeeLoc(character.CharLoc, sight))
+            if (CanSeeCharLoc(character.CharLoc, sight))
                 return true;
             return false;
         }
@@ -2410,11 +2469,19 @@ namespace RogueEssence.Dungeon
         public IEnumerable<Loc> GetLocsVisible() { return currentCharAction.GetLocsVisible(); }
         public IEnumerable<VisionLoc> GetVisionLocs() { return currentCharAction.GetVisionLocs(); }
 
-        public bool CanSeeLoc(Loc loc, Map.SightRange sight)
+        public bool CanSeeScreenLoc(Loc loc)
         {
-            return CanSeeLocFromLoc(CharLoc, loc, sight);
+            return IsInScreenBoundsFrom(CharLoc, loc);
         }
-        public bool CanSeeLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
+        public bool CanSeeTileLoc(Loc loc, Map.SightRange sight)
+        {
+            return CanSeeTileLocFromLoc(CharLoc, loc, sight);
+        }
+        public bool CanSeeCharLoc(Loc loc, Map.SightRange sight)
+        {
+            return CanSeeCharLocFromLoc(CharLoc, loc, sight);
+        }
+        public bool CanSeeTileLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
         {
             //needs to be edited according to FOV
             switch (sight)
@@ -2428,7 +2495,7 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        Loc seen = GetSightDims();
+                        Loc seen = GetTileSightDims();
                         Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
 
                         foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
@@ -2439,18 +2506,69 @@ namespace RogueEssence.Dungeon
                         return false;
                     }
                 default:
-                        return IsInSightBoundsFrom(fromLoc, toLoc);
+                        return IsInTileSightBoundsFrom(fromLoc, toLoc);
+            }
+        }
+        public bool CanSeeCharLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
+        {
+            //needs to be edited according to FOV
+            switch (sight)
+            {
+                case Map.SightRange.Blind:
+                    return false;
+                case Map.SightRange.Murky:
+                    {
+                        Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
+                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
+                    }
+                case Map.SightRange.Dark:
+                    {
+                        Loc seen = GetCharSightDims();
+                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
+
+                        foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
+                        {
+                            if (Fov.IsInFOV(fromLoc, testLoc, DungeonScene.Instance.VisionBlocked))
+                                return true;
+                        }
+                        return false;
+                    }
+                default:
+                        return IsInCharSightBoundsFrom(fromLoc, toLoc);
             }
         }
 
-        public bool IsInSightBounds(Loc loc)
+        public bool IsInTileSightBounds(Loc loc)
         {
-            return IsInSightBoundsFrom(CharLoc, loc);
+            return IsInTileSightBoundsFrom(CharLoc, loc);
         }
 
-        public bool IsInSightBoundsFrom(Loc fromLoc, Loc loc)
+        public bool IsInCharSightBounds(Loc loc)
         {
-            Loc seen = GetSightDims();
+            return IsInCharSightBoundsFrom(CharLoc, loc);
+        }
+
+        public bool IsInScreenBoundsFrom(Loc fromLoc, Loc loc)
+        {
+            Loc seen = GetGlobalSightDims();
+            Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
+            sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
+
+            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
+        }
+
+        public bool IsInTileSightBoundsFrom(Loc fromLoc, Loc loc)
+        {
+            Loc seen = GetTileSightDims();
+            Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
+            sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
+
+            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
+        }
+
+        public bool IsInCharSightBoundsFrom(Loc fromLoc, Loc loc)
+        {
+            Loc seen = GetCharSightDims();
             Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
             sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
 
