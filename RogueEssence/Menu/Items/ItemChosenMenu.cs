@@ -191,6 +191,11 @@ namespace RogueEssence.Menu
                         choices.Add(new MenuTextChoice(Text.FormatKey("MENU_ITEM_THROW"), ThrowAction));
                 }
             }
+            if (!held && entry.UsageType == ItemData.UseType.Throw)
+            {
+                bool registered = DataManager.Instance.Save.ActiveTeam.RegisteredItem == invItem.ID;
+                choices.Add(new MenuTextChoice(Text.FormatKey(registered ? "MENU_FAVORITE_OFF" : "MENU_FAVORITE"), RegisterAction));
+            }
             if (entry.UsageType == ItemData.UseType.Learn)
                 choices.Add(new MenuTextChoice(Text.FormatKey("MENU_INFO"), InfoAction));
             if (GameManager.Instance.CurrentScene != DungeonScene.Instance)
@@ -270,6 +275,14 @@ namespace RogueEssence.Menu
         {
             MenuManager.Instance.ClearMenus();
             MenuManager.Instance.EndAction = DungeonScene.Instance.ProcessPlayerInput(new GameAction(GameAction.ActionType.Throw, Dir8.None, getItemUseSlot()));
+        }
+
+        private void RegisterAction()
+        {
+            ExplorerTeam team = DataManager.Instance.Save.ActiveTeam;
+            InvItem item = team.GetInv(slot);
+            team.RegisteredItem = team.RegisteredItem == item.ID ? "" : item.ID;
+            MenuManager.Instance.RemoveMenu();
         }
 
         private void InfoAction()
