@@ -332,6 +332,7 @@ namespace RogueEssence.Dev.ViewModels
 
         private void loadEditorSettings()
         {
+            Textures.CancelStroke();
             Textures.Layers.LoadLayers();
             Textures.TileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
             Textures.AutotileBrowser.TileSize = ZoneManager.Instance.CurrentGround.TileSize;
@@ -550,15 +551,19 @@ namespace RogueEssence.Dev.ViewModels
                 Decorations.TabbedOut();
             if (selectedTabIndex != 3)
                 Entities.TabbedOut();
+            if (selectedTabIndex != 0)
+                Textures.CancelStroke();
         }
 
         public void ProcessInput(InputManager input)
         {
             lock (GameBase.lockObj)
             {
-                if (input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+                bool controlDown = input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl) || input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl);
+                bool shiftDown = input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift) || input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.RightShift);
+                if (controlDown)
                 {
-                    if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z) && input.BaseKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift))
+                    if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z) && shiftDown)
                     {
                         mnuRedo_Click();
                         return;
@@ -566,6 +571,16 @@ namespace RogueEssence.Dev.ViewModels
                     else if (input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.Z))
                     {
                         mnuUndo_Click();
+                        return;
+                    }
+                    else if (selectedTabIndex == 0 && input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.C))
+                    {
+                        Textures.BeginCopy();
+                        return;
+                    }
+                    else if (selectedTabIndex == 0 && input.BaseKeyPressed(Microsoft.Xna.Framework.Input.Keys.V))
+                    {
+                        Textures.BeginPaste();
                         return;
                     }
                 }
