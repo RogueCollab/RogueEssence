@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class MultiRandPickerEditor : Editor<IMultiRandPicker>
     {
+        public MultiRandPickerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
     }
 }

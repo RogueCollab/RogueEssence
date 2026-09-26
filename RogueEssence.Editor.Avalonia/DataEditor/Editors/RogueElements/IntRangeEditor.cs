@@ -26,7 +26,7 @@ namespace RogueEssence.Dev
         /// </summary>
         public bool Inclusive;
 
-        public IntRangeEditor(bool index1, bool inclusive)
+        public IntRangeEditor(EditorContext context, bool index1, bool inclusive) : base(context)
         {
             Index1 = index1;
             Inclusive = inclusive;

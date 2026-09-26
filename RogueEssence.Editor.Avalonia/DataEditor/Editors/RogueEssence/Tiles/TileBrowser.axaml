@@ -42,29 +42,31 @@
       <CheckBox Margin="4" IsChecked="{Binding Animated}" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Animated</CheckBox>
       <TextBlock Margin="4,2" Text="{Binding Frames[0], Converter={StaticResource FrameConverter}}" IsVisible="{Binding !Animated}" VerticalAlignment="Top" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
       <TextBlock Margin="4,2" Text="{Binding MultiSelect, Converter={StaticResource MultiSelectConverter}}" IsVisible="{Binding !Animated}" VerticalAlignment="Top" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
-      <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" IsVisible="{Binding Animated}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="42"/>
-          <RowDefinition/>
-          <RowDefinition Height="16"/>
-          <RowDefinition Height="34"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition/>
-          <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Frame Length:" Grid.Row="0" Grid.Column="0"/>
-        <NumericUpDown Value="{Binding FrameLength}" Minimum="1" Margin="4" Grid.Row="0" Grid.Column="1" />
-        <ListBox SelectionMode="AlwaysSelected" Items="{Binding Frames}" SelectedIndex="{Binding ChosenFrame}" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+      <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" IsVisible="{Binding Animated}"
+            RowDefinitions="42,*,16" ColumnDefinitions="*,*,30">
+        <TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Frame Length:"/>
+        <NumericUpDown Increment="1" Value="{Binding FrameLength}" Minimum="1" Margin="4" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <ListBox 
+          Classes="borderless" 
+          SelectionMode="AlwaysSelected" ItemsSource="{Binding Frames}" SelectedIndex="{Binding ChosenFrame}" Margin="4" Grid.Row="1" Grid.ColumnSpan="2">
           <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding Converter={StaticResource FrameConverter}}"/>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <TextBlock Margin="4,2" Text="{Binding MultiSelect, Converter={StaticResource MultiSelectConverter}}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
-        <Button Command="{Binding btnAddFrame_Click}" Margin="4,2" Grid.Row="3" Grid.Column="0" >Add</Button>
-        <Button Command="{Binding btnDeleteFrame_Click}" Margin="4,2" Grid.Row="3" Grid.Column="1">Delete</Button>
+        
+
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="4,0,0,0" VerticalAlignment="Top">
+          <Button Command="{Binding btnAddFrame_Click}" Classes="secondary" Margin="0" Padding="4,3">
+            <Path Width="10" Height="10" Margin="0,2,0,0" Data="{StaticResource Icons.Plus}"/>
+          </Button>
+          <Button Command="{Binding btnDeleteFrame_Click}" Classes="secondary" Margin="0" Padding="4,3">
+            <Path Width="10" Height="10" Data="{StaticResource Icons.Minus}"/>
+          </Button>
+        </StackPanel>
+        
+        <TextBlock Margin="4,2" Text="{Binding MultiSelect, Converter={StaticResource MultiSelectConverter}}" Grid.Row="2" Grid.ColumnSpan="2"/>
       </Grid>
     </Grid>
     <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3">

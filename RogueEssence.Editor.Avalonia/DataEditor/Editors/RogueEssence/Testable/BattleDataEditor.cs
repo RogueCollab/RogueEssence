@@ -11,6 +11,7 @@ namespace RogueEssence.Dev
 {
     public class BattleDataEditor : TestableEditor<BattleData>
     {
+        public BattleDataEditor(EditorContext context) : base(context) { }
         protected override void RunTest(BattleData data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

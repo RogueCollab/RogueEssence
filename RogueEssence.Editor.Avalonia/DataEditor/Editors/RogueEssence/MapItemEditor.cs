@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class MapItemEditor : Editor<MapItem>
     {
+        public MapItemEditor(EditorContext context) : base(context) { }
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, MapItem member, Type[] subGroupStack)
         {
             MapItemAttribute itemAtt = ReflectionExt.FindAttribute<MapItemAttribute>(attributes);
@@ -32,8 +33,7 @@ namespace RogueEssence.Dev
             lblItem.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
 
             ComboBox cbItem = new SearchComboBox();
-
-            cbItem.VirtualizationMode = ItemVirtualizationMode.Simple;
+            
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Item];
             List<string> itemKeys = nameIndex.GetOrderedKeys(false);
@@ -50,7 +50,7 @@ namespace RogueEssence.Dev
 
             var itemsSubject = new Subject<List<string>>();
 
-            cbItem.Bind(ComboBox.ItemsProperty, itemsSubject);
+            cbItem.Bind(ComboBox.ItemsSourceProperty, itemsSubject);
             itemsSubject.OnNext(items);
 
             innerPanel1.ColumnDefinitions[0].Width = new GridLength(70);

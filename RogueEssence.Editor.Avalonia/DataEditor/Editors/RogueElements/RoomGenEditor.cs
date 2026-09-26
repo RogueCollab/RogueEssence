@@ -18,6 +18,8 @@ namespace RogueEssence.Dev
 {
     public class RoomGenDefaultEditor : Editor<IRoomGenDefault>
     {
+        public RoomGenDefaultEditor(EditorContext context) : base(context) { }
+        
         public override string GetString(IRoomGenDefault obj, Type type, object[] attributes)
         {
             return string.Format("Single-Tile Room");
@@ -31,6 +33,8 @@ namespace RogueEssence.Dev
 
     public class SizedRoomGenEditor : Editor<ISizedRoomGen>
     {
+        
+        public SizedRoomGenEditor(EditorContext context) : base(context) { }
         public override string GetString(ISizedRoomGen obj, Type type, object[] attributes)
         {
             PropertyInfo widthInfo = typeof(ISizedRoomGen).GetProperty(nameof(obj.Width));
@@ -43,6 +47,8 @@ namespace RogueEssence.Dev
 
     public class RoomGenCrossEditor : Editor<IRoomGenCross>
     {
+        
+        public RoomGenCrossEditor(EditorContext context) : base(context) { }
         public override string GetString(IRoomGenCross obj, Type type, object[] attributes)
         {
             PropertyInfo majorWidthInfo = typeof(IRoomGenCross).GetProperty(nameof(obj.MajorWidth));

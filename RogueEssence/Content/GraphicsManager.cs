@@ -11,6 +11,39 @@ using System.Collections.Generic;
 
 namespace RogueEssence.Content
 {
+    
+    public static class AssetTypeExtensions
+    {
+        public static bool IsAnimEdit(this GraphicsManager.AssetType type)
+        {
+            return type is GraphicsManager.AssetType.Particle
+                or GraphicsManager.AssetType.Beam
+                or GraphicsManager.AssetType.BG
+                or GraphicsManager.AssetType.Item
+                or GraphicsManager.AssetType.Object
+                or GraphicsManager.AssetType.Icon;
+        }
+
+        public static string GetIcon(this GraphicsManager.AssetType dataType) => dataType switch
+        {
+            GraphicsManager.AssetType.None => "Icons.ListFill",
+            // GraphicsManager.AssetType.Font => "Icons.ListFill",
+            // GraphicsManager.AssetType.Chara => "Icons.SparkleFill",
+            // GraphicsManager.AssetType.Portrait => "Icons.ListFill",
+            GraphicsManager.AssetType.Tile => "Icons.GridNineFill",
+            GraphicsManager.AssetType.Item => "Icons.JarLabelFill",
+            GraphicsManager.AssetType.Particle => "Icons.SparkleFill",
+            GraphicsManager.AssetType.Beam => "Icons.HeadlightsFill",
+            GraphicsManager.AssetType.Icon => "Icons.ExclamationMarkFill",
+            GraphicsManager.AssetType.Object => "Icons.CubeFill",
+            GraphicsManager.AssetType.BG => "Icons.ImageFill",
+            // GraphicsManager.AssetType.Autotile => "Icons.ListFill",
+            // GraphicsManager.AssetType.All => "Icons.ListFill",
+            // GraphicsManager.AssetType.Count => "Icons.ListFill",
+            _ => "Icons.ListFill"
+        };
+    }
+
     //Responsible for managing all graphics and sound for the game
     public static class GraphicsManager
     {

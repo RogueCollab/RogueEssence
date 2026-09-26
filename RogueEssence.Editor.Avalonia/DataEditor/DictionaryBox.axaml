@@ -6,30 +6,35 @@
              mc:Ignorable="d"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
              x:Class="RogueEssence.Dev.Views.DictionaryBox">
-  <Design.DataContext>
-    <vm:DictionaryBoxViewModel/>
-  </Design.DataContext>
-  <UserControl.Resources>
-  </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition/>
-      <RowDefinition/>
-      <RowDefinition Height="40"/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <DataGrid Name="gridItems" IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" DoubleTapped="doubleClickStart" PointerReleased="lbxCollection_DoubleClick" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="2" MinHeight="60">
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Key"
-                      Binding="{Binding Key}" />
-        <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=DisplayValue}" />
-      </DataGrid.Columns>
-    </DataGrid>
-    <Button x:Name="DictionaryBoxAddButton" PointerReleased="DictionaryBoxAddButton_OnPointerReleased" Margin="4" Grid.Row="2" Grid.Column="0">Add</Button>
-    <Button Command="{Binding btnDelete_Click}" Margin="4" Grid.Row="2" Grid.Column="1">Delete</Button>
-  </Grid>
+    <Design.DataContext>
+        <vm:DictionaryBoxViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+    </UserControl.Resources>
+    <Grid RowDefinitions="200, *, *, 40" ColumnDefinitions="*, *, 30">
+        <DataGrid Classes="default" Name="gridItems" IsReadOnly="true"
+                  ItemsSource="{Binding Collection}"
+                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}"
+                  DoubleTapped="doubleClickStart"
+                  PointerReleased="lbxCollection_DoubleClick"
+                  Grid.RowSpan="3" Grid.ColumnSpan="2"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="*" MinWidth="60" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Path=DisplayValue}" Width="2*" MinWidth="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Margin="4,0,0,0">
+            <Button x:Name="DictionaryBoxAddButton" PointerReleased="DictionaryBoxAddButton_OnPointerReleased"
+                    Classes="secondary" Margin="0,0,0,2" Padding="4,3">
+                <Path Width="10" Height="10" Margin="0,2,0,0" Data="{StaticResource Icons.Plus}" />
+            </Button>
+            <Button Command="{Binding btnDelete_Click}" Classes="secondary" Margin="0,0,0,2" Padding="4,3">
+                <Path Width="10" Height="10" Data="{StaticResource Icons.Minus}" />
+            </Button>
+        </StackPanel>
+    </Grid>
 </UserControl>

@@ -8,7 +8,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class ClassBox : UserControl
+    public partial class ClassBox : UserControl
     {
         public ClassBox()
         {
@@ -16,12 +16,7 @@ namespace RogueEssence.Dev.Views
             Button button = this.FindControl<Button>("ClassBoxEditButton");
             button.AddHandler(PointerReleasedEvent, ClassBoxEditButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         private void ClassBoxEditButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
         {
             KeyModifiers modifiers = e.KeyModifiers;

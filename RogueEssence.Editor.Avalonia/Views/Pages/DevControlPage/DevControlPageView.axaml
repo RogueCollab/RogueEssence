@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             FontSize="12"
+             x:DataType="vm:DevControlPageViewModel"
+             x:Class="RogueEssence.Dev.Views.DevControlPageView">
+    
+    
+    <Design.DataContext>
+        <vm:DevControlPageViewModel/>
+    </Design.DataContext>
+    
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="10"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Padding" Value="8"></Setter>
+        </Style>
+    </UserControl.Styles>
+    <Border>
+        <TabControl>
+            <TabItem Header="Game">
+                <views:DevTabGame DataContext="{Binding Game}"/>
+            </TabItem>
+            <TabItem Header="Player">
+                <views:DevTabPlayer DataContext="{Binding Player}"/>
+            </TabItem>
+            <TabItem Header="Travel">
+                <views:DevTabTravel DataContext="{Binding Travel}"/>
+            </TabItem>
+            <TabItem Header="Script">
+                <views:DevTabScript DataContext="{Binding Script}"/>
+            </TabItem>
+        </TabControl>
+    </Border>
+</UserControl>

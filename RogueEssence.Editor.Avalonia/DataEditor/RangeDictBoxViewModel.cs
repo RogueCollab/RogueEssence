@@ -10,6 +10,7 @@ using System.Collections;
 using RogueEssence.Dev.Views;
 using RogueEssence.LevelGen;
 using System.Linq;
+using RogueEssence.Dev.Services;
 
 namespace RogueEssence.Dev.ViewModels
 {
@@ -41,14 +42,22 @@ namespace RogueEssence.Dev.ViewModels
         public int DisplayStart
         {
             get { return start + addMin; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                start = value - addMin;
+                this.RaisePropertyChanged();
+            }
         }
+
         public int DisplayEnd
         {
             get { return end + addMax; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                end = value - addMax;
+                this.RaisePropertyChanged();
+            }
         }
-
         private object value;
         public object Value
         {
@@ -162,15 +171,25 @@ namespace RogueEssence.Dev.ViewModels
 
         public StringConv StringConv;
 
-        private Window parent;
-
         public bool ConfirmDelete;
 
-        public RangeDictBoxViewModel(Window parent, StringConv conv)
+        private IDialogService _dialogService;
+        public bool HasSelection => CurrentElement >= 0 && CurrentElement < Collection.Count;
+
+        public RangeDictBoxViewModel(IDialogService dialogService, StringConv conv)
         {
+            _dialogService = dialogService;
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<RangeDictElement>();
+            this.WhenAnyValue(x => x.CurrentElement).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public T GetDict<T>() where T : IRangeDict
@@ -287,7 +306,7 @@ namespace RogueEssence.Dev.ViewModels
         }
 
 
-        public void lbxCollection_DoubleClick(object sender, RoutedEventArgs e)
+        public void lbxCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int index = lbxDictionary.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
@@ -313,9 +332,9 @@ namespace RogueEssence.Dev.ViewModels
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                        MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 

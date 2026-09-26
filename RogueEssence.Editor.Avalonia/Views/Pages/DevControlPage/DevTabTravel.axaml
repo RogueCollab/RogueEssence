@@ -1,0 +1,30 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             x:Class="RogueEssence.Dev.Views.DevTabTravel">
+  <Design.DataContext>
+    <vm:DevTabTravelViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ListNotEmptyConverter x:Key="ListNotEmptyConverter"/>
+  </UserControl.Resources>
+  <Grid RowDefinitions="Auto, 30, 30, Auto, 30, Auto, 30, Auto, 10, Auto" ColumnDefinitions="*, *" ColumnSpacing="8">
+    <Button  Margin="4" Classes="flat" Command="{Binding btnReloadMap_Click}" Grid.Row="0" Grid.ColumnSpan="2">Reload Current Map</Button>
+    <CheckBox Name="chkDebugGen" Margin="4" IsChecked="{Binding DebugGen}" VerticalAlignment="Center" Grid.Row="1" Grid.ColumnSpan="2">Show Generation Steps</CheckBox>
+    <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="2">Zone:</TextBlock>
+    <views:SearchComboBox Margin="4" ItemsSource="{Binding Zones}" SelectedIndex="{Binding ChosenZone}" Grid.Row="3" Grid.ColumnSpan="2"/>
+    <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="4" Grid.ColumnSpan="2" >Structure:</TextBlock>
+    <views:SearchComboBox Margin="4" ItemsSource="{Binding Structures}" IsEnabled="{Binding Path=Structures, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenStructure}" Grid.Row="5" Grid.ColumnSpan="2" />
+    <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="0">Ground:</TextBlock>
+    <views:SearchComboBox Margin="4,0" ItemsSource="{Binding Grounds}" SelectedIndex="{Binding ChosenGround}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="7" Grid.Column="0"/>
+    <Button Margin="4,0" Classes="flat" Command="{Binding btnEnterGround_Click}" IsEnabled="{Binding Path=Grounds, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="9" Grid.Column="0">Enter Ground</Button>
+    <TextBlock Margin="4,0" VerticalAlignment="Bottom" Grid.Row="6" Grid.Column="1" >Floor:</TextBlock>
+    <views:SearchComboBox  Margin="4,0" ItemsSource="{Binding Floors}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" SelectedIndex="{Binding ChosenFloor}" Grid.Row="7" Grid.Column="1"/>
+    <Button Margin="4,0" Classes="flat" Command="{Binding btnEnterDungeon_Click}" IsEnabled="{Binding Path=Floors, Converter={StaticResource ListNotEmptyConverter}}" Grid.Row="9" Grid.Column="1">Enter Map</Button>
+  </Grid>
+</UserControl>

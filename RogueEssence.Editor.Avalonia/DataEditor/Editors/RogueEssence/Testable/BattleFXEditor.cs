@@ -10,6 +10,7 @@ namespace RogueEssence.Dev
 {
     public class BattleFXEditor : TestableEditor<BattleFX>
     {
+        public BattleFXEditor(EditorContext context) : base(context) { }
         protected override void RunTest(BattleFX data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

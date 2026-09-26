@@ -8,12 +8,8 @@
   <Design.DataContext>
     <vm:ClassBoxViewModel/>
   </Design.DataContext>
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="80"/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <Button x:Name="ClassBoxEditButton" PointerReleased="ClassBoxEditButton_OnPointerReleased">Edit</Button>
-    <TextBlock Text="{Binding Name}" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="Wrap" Width="180" Grid.Column="1"/>
+  <Grid ColumnDefinitions="80, *">
+    <Button x:Name="ClassBoxEditButton" PointerReleased="ClassBoxEditButton_OnPointerReleased" Classes="flat">Edit</Button>
+    <TextBlock Text="{Binding Name}" Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" TextWrapping="Wrap" MaxWidth="{Binding $parent[Window].Bounds.Width}" Grid.Column="1"/>
   </Grid>
 </UserControl>

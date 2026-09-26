@@ -8,13 +8,14 @@ using Avalonia.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 
 namespace RogueEssence.Dev.Views
 {
     public class SearchComboBox : ComboBox, IStyleable
     {
-        Type IStyleable.StyleKey => typeof(ComboBox);
+        protected override Type StyleKeyOverride => typeof(ComboBox);
 
         private string workingSearch;
         private bool[] processedKey;
@@ -22,6 +23,9 @@ namespace RogueEssence.Dev.Views
         {
             workingSearch = "";
             processedKey = new bool[26];
+            
+            var itemsPanelTemplate = new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
+            ItemsPanel = itemsPanelTemplate;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

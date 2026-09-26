@@ -12,6 +12,7 @@ namespace RogueEssence.Dev
 {
     public class ItemDataEditor : Editor<ItemData>
     {
+        public ItemDataEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => false;
 
         public override void LoadMemberControl(string parent, ItemData obj, StackPanel control, string name, Type type, object[] attributes, object member, bool isWindow, Type[] subGroupStack)

@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using RogueElements;
 using System.Collections;
 using Avalonia.Input;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -35,7 +36,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return conv.GetString(value); }
         }
-
+        
         private StringConv conv;
 
 
@@ -49,6 +50,7 @@ namespace RogueEssence.Dev.ViewModels
 
     public class PriorityListBoxViewModel : ViewModelBase
     {
+        public bool HasSelection => SelectedIndex >= 0 && SelectedIndex < Collection.Count;
         public ObservableCollection<PriorityElement> Collection { get; }
 
         private int selectedIndex;
@@ -61,24 +63,30 @@ namespace RogueEssence.Dev.ViewModels
 
         public delegate void EditElementOp(Priority priority, int index, object element);
         public delegate void ElementOp(Priority priority, int index, object element, bool advancedEdit, EditElementOp op);
-
-        public delegate void EditPriorityOp(Priority priority, int index, Priority newPriority);
-        public delegate void PriorityOp(Priority priority, int index, bool advancedEdit, EditPriorityOp op);
-
+        
         public ElementOp OnEditItem;
-        public PriorityOp OnEditPriority;
-
+      
         public StringConv StringConv;
-
-        private Window parent;
+        
+        private IDialogService _dialogService;
 
         public bool ConfirmDelete;
 
-        public PriorityListBoxViewModel(Window parent, StringConv conv)
+        public PriorityListBoxViewModel(IDialogService dialogService, StringConv conv)
         {
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<PriorityElement>();
+            _dialogService = dialogService;
+            
+            this.WhenAnyValue(x => x.SelectedIndex).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public IPriorityList GetList(Type type)
@@ -153,11 +161,19 @@ namespace RogueEssence.Dev.ViewModels
             return Collection.Count;
         }
 
-        public void lbxCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        public void ChangePriority(Priority newPriority)
+        {
+            if (SelectedIndex >= 0)
+            {
+                changePriority(SelectedIndex, newPriority);
+            }
+        }
+        
+        public void lbxCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int boxIndex = lbxCollection.IndexFromPoint(e.X, e.Y);
             int boxIndex = SelectedIndex;
-            KeyModifiers modifiers = e.KeyModifiers;
+            KeyModifiers modifiers = e.PointerPressedEventArgs.KeyModifiers;
             bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             if (boxIndex > -1)
             {
@@ -182,16 +198,17 @@ namespace RogueEssence.Dev.ViewModels
 
         public async void btnDelete_Click()
         {
+    
             if (SelectedIndex > -1 && SelectedIndex < Collection.Count)
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    Console.WriteLine(_dialogService);
+                    
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[SelectedIndex].DisplayValue, "Confirm Delete", MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
-
                 Collection.RemoveAt(SelectedIndex);
             }
         }
@@ -257,7 +274,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void changePriority(Priority priority, int index, Priority newPriority)
+        private void changePriority(int index, Priority newPriority)
         {
             PriorityElement item = Collection[index];
             Collection.RemoveAt(index);
@@ -266,17 +283,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection.Insert(newBoxIndex, new PriorityElement(StringConv, newPriority, item.Value));
             SelectedIndex = newBoxIndex;
         }
-
-        public void btnEditKey_Click(bool advancedEdit)
-        {
-            if (SelectedIndex > -1)
-            {
-                Priority priority = Collection[SelectedIndex].Priority;
-                OnEditPriority(priority, SelectedIndex, advancedEdit, changePriority);
-            }
-        }
-
-
+        
         /// <summary>
         /// Gets the lowest tier in which the two priorities differ.
         /// If two priorities are the same up to the last tier of one of them, that tier is selected instead.

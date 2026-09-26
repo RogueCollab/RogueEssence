@@ -17,6 +17,8 @@ namespace RogueEssence.Dev
 {
     public class ByteEditor : Editor<Byte>
     {
+        public ByteEditor(EditorContext context) : base(context) { }
+        
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -25,6 +27,7 @@ namespace RogueEssence.Dev
             NumericUpDown nudValue = new NumericUpDown();
             nudValue.Minimum = byte.MinValue;
             nudValue.Maximum = byte.MaxValue;
+            nudValue.Increment = 1;
             NumberRangeAttribute rangeAtt = ReflectionExt.FindAttribute<NumberRangeAttribute>(attributes);
             if (rangeAtt != null)
             {
