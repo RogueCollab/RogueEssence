@@ -329,10 +329,10 @@ namespace RogueEssence.Content
                     if (ii >= start)
                     {
                         DrawSprite(spriteBatch, new Vector2(dX, dY), texture_char, curColor);
-                        if (boldnessStack.Peek())
+                        if (boldnessStack.Peek() == true)
                         {
                             DrawSprite(spriteBatch, new Vector2(dX + 1, dY), texture_char, curColor);
-                            //char_rect.Width += 1;
+                            char_rect.Width += 1;
                         }
                     }
 
