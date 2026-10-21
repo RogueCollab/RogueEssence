@@ -475,6 +475,8 @@ namespace RogueEssence.Menu
                                 break;
                             case "colorstart":
                             case "colorend":
+                            case "boldstart":
+                            case "boldend":
                                 break;
                         }
                     }
@@ -488,6 +490,7 @@ namespace RogueEssence.Menu
                 //remove the tags, leaving pure text (except for the color tags)
                 for (int ii = tagRanges.Count - 1; ii >= 0; ii--)
                     scrolls[nn] = scrolls[nn].Remove(tagRanges[ii].Min, tagRanges[ii].Length);
+                    Console.WriteLine(scrolls[nn]);
 
                 //split the text, being mindful of color tags
                 List<DialogueText> texts = DialogueText.SplitFormattedText(scrolls[nn], new Rect(GraphicsManager.MenuBG.TileWidth + HORIZ_PAD, GraphicsManager.MenuBG.TileHeight + VERT_PAD + VERT_OFFSET,

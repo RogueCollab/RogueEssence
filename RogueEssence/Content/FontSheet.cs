@@ -208,8 +208,12 @@ namespace RogueEssence.Content
         {
             DrawText(spriteBatch, x, y, text, area, vOrigin, hOrigin, color, 0, text.Length);
         }
-
         public void DrawText(SpriteBatch spriteBatch, int x, int y, string text, Rectangle? area, DirV vOrigin, DirH hOrigin, Color color, int start, int length)
+        {
+            DrawText(spriteBatch, x, y, text, area, vOrigin, hOrigin, color, start, length, new List<(int idx, bool isBold)>());
+        }
+
+        public void DrawText(SpriteBatch spriteBatch, int x, int y, string text, Rectangle? area, DirV vOrigin, DirH hOrigin, Color color, int start, int length, List<(int idx, bool isBold)> textBoldness)
         {
             if (String.IsNullOrWhiteSpace(text))
                 return;
@@ -251,10 +255,32 @@ namespace RogueEssence.Content
                     break;
             }
             int startDX = dX;
+            int boldnessIndex = 0;
+
+            Stack<bool> boldnessStack = new Stack<bool>();
+            if (boldnessStack.Count > 0)
+            {
+                boldnessStack.Push(textBoldness[boldnessIndex].isBold);
+            }
+            else
+            {
+                boldnessStack.Push(false);
+            }
+            boldnessIndex++;
 
             //Go through string
             for (int ii = 0; ii < start + length; ii++)
             {
+                // Check for boldness
+                if (boldnessIndex < textBoldness.Count)
+                {
+                    if (textBoldness[boldnessIndex].idx == ii)
+                    {
+                        boldnessStack.Push(textBoldness[boldnessIndex].isBold);
+                        boldnessIndex++;
+                    }
+                }
+
                 //Space
                 if (text[ii] == ' ' || text[ii] == '　')
                     dX += SpaceWidth;
@@ -301,7 +327,14 @@ namespace RogueEssence.Content
 
                     Rectangle char_rect = spriteRects[texture_char];
                     if (ii >= start)
+                    {
                         DrawSprite(spriteBatch, new Vector2(dX, dY), texture_char, curColor);
+                        if (boldnessStack.Peek())
+                        {
+                            DrawSprite(spriteBatch, new Vector2(dX + 1, dY), texture_char, curColor);
+                            //char_rect.Width += 1;
+                        }
+                    }
 
                     //Move over
                     dX += char_rect.Width;
@@ -412,6 +445,10 @@ namespace RogueEssence.Content
         }
         public string[] BreakIntoLines(string substring, int width, int charIndex, out List<int> trimmedStarts)
         {
+            return BreakIntoLines(substring, width, charIndex, out trimmedStarts, new List<(int idx, bool isBold)>());
+        }
+        public string[] BreakIntoLines(string substring, int width, int charIndex, out List<int> trimmedStarts, List<(int idx, bool isBold)> boldfaceList)
+        {
             trimmedStarts = new List<int>();
             if (String.IsNullOrEmpty(substring))
                 return null;
@@ -468,7 +505,7 @@ namespace RogueEssence.Content
                         //Get ASCII
                         int texture_char = charMap[substring[ii]].RectIdx;
                         Rectangle char_rect = spriteRects[texture_char];
-                        substr_width += char_rect.Width;
+                        substr_width += char_rect.Width + 1;
                         if (substring[ii] == '-' || substring[ii] == '、' || substring[ii] == '。')
                         {
                             width_since_breakable = 0;

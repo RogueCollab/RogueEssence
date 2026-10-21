@@ -1,10 +1,11 @@
-﻿using RogueElements;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using RogueElements;
 using RogueEssence.Content;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace RogueEssence.Menu
 {
@@ -23,6 +24,11 @@ namespace RogueEssence.Menu
         /// Text color starts and stops.
         /// </summary>
         private List<(int idx, Color color)> textColor;
+
+        /// <summary>
+        /// Text boldface starts and stops.
+        /// </summary>
+        private List<(int idx, bool isBold)> textBoldface;
 
         /// <summary>
         /// The amount of space to trim when the lines were broken up.
@@ -50,6 +56,7 @@ namespace RogueEssence.Menu
             CurrentCharIndex = startIndex;
             Color = color;
             textColor = new List<(int idx, Color color)>();
+            textBoldface = new List<(int idx, bool isBold)>();
             SetAndFormatText(text);
         }
         public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex, Color color)
@@ -72,9 +79,10 @@ namespace RogueEssence.Menu
         { }
 
 
-        private static void formatText(List<(int idx, Color color)> colors, ref string text)
+        private static void formatText(List<(int idx, Color color)> colors, List<(int idx, bool isBold)> bolds, ref string text)
         {
             colors.Add((0, Color.White));
+            bolds.Add((0, false));
 
             List<IntRange> ranges = new List<IntRange>();
             int lag = 0;
@@ -99,6 +107,18 @@ namespace RogueEssence.Menu
                                 colors.Add((match.Index - lag, Color.Transparent));
                             }
                             break;
+
+                        case "boldstart":
+                            {
+                                bolds.Add((match.Index - lag, true));
+                            }
+                            break;
+
+                        case "boldend":
+                            {
+                                bolds.Add((match.Index - lag, false));
+                            }
+                            break;
                     }
                 }
 
@@ -110,6 +130,20 @@ namespace RogueEssence.Menu
                 text = text.Remove(ranges[ii].Min, ranges[ii].Length);
 
             colors.Add((text.Length, Color.Transparent));
+            bolds.Add((text.Length, false));
+
+            /*
+            for (int i = 0; i < colors.Count; i++)
+            {
+                Console.WriteLine(colors[i].idx);
+                Console.WriteLine(colors[i].color);
+            }
+            for (int i = 0; i < bolds.Count; i++)
+            {
+                Console.WriteLine(bolds[i].idx);
+                Console.WriteLine(bolds[i].isBold);
+            }
+            */
         }
 
         /// <summary>
@@ -119,16 +153,21 @@ namespace RogueEssence.Menu
         public static List<DialogueText> SplitFormattedText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex)
         {
             List<(int idx, Color color)> tempColor = new List<(int idx, Color color)>();
+            List<(int idx, bool isBold)> tempBoldface = new List<(int idx, bool isBold)>();
             string tempText = text;
-            formatText(tempColor, ref tempText);
+            formatText(tempColor, tempBoldface, ref tempText);
 
             List<int> trimmedStarts;
-            string[] tempLines = GraphicsManager.TextFont.BreakIntoLines(tempText, rect.Width, tempText.Length, out trimmedStarts);
+            string[] tempLines = GraphicsManager.TextFont.BreakIntoLines(tempText, rect.Width, tempText.Length, out trimmedStarts, tempBoldface);
 
             List<DialogueText> results = new List<DialogueText>();
             int cutIdx = 0;
+
             int endColorIndex = 0;
+            int endBoldIndex = 0;
             List<Color> colorStack = new List<Color>();
+            List<bool> boldStack = new List<bool>();
+
             for (int ii = 0; ii < tempLines.Length + 1; ii++)
             {
                 if (ii == tempLines.Length || GraphicsManager.TextFont.CharHeight + (ii - cutIdx) * lineHeight > rect.Height)
@@ -163,8 +202,18 @@ namespace RogueEssence.Menu
                     for (int nn = colorStack.Count - 1; nn >= 0; nn--)
                         initColor.Add((endColorIndex- startColorIndex, Color.Transparent));
 
+                    //
+
                     DialogueText newBox = new DialogueText("", rect, lineHeight, centerH, centerV, startIndex);
                     newBox.textColor = initColor;
+                    newBox.textBoldface = tempBoldface;
+
+                    for (int i = 0; i < tempBoldface.Count; i++)
+                    {
+                        Console.WriteLine(newBox.textBoldface[i].idx);
+                        Console.WriteLine(newBox.textBoldface[i].isBold);
+                    }
+
                     newBox.fullLines = initLines;
                     newBox.trimmedStarts = initTrim;
                     newBox.updateFullTextLength();
@@ -177,9 +226,25 @@ namespace RogueEssence.Menu
             return results;
         }
 
-        public void SetPreFormattedText(string text, List<(int idx, Color color)> color)
+        public void SetPreFormattedText(string text, List<(int idx, Color color)> color, List<(int idx, bool isBold)> bold)
         {
             textColor = color;
+            textBoldface = bold;
+
+            //Console.WriteLine(text);
+
+            /*
+            for (int i = 0; i < textColor.Count; i++)
+            {
+                Console.WriteLine(textColor[i].idx);
+                Console.WriteLine(textColor[i].color);
+            }
+            for (int i = 0; i < textBoldface.Count; i++)
+            {
+                Console.WriteLine(textBoldface[i].idx);
+                Console.WriteLine(textBoldface[i].isBold);
+            }
+            */
 
             List<int> trimmedStarts;
             fullLines = GraphicsManager.TextFont.BreakIntoLines(text, Rect.Width, text.Length, out trimmedStarts);
@@ -205,9 +270,10 @@ namespace RogueEssence.Menu
         public void SetAndFormatText(string text)
         {
             textColor.Clear();
-            formatText(textColor, ref text);
+            textBoldface.Clear();
+            formatText(textColor, textBoldface, ref text);
 
-            SetPreFormattedText(text, textColor);
+            SetPreFormattedText(text, textColor, textBoldface);
         }
 
         public Loc GetTextProgress()
@@ -285,6 +351,7 @@ namespace RogueEssence.Menu
                 int startHeight = CenterV ? Rect.Center.Y - (GraphicsManager.TextFont.CharHeight + (fullLines.Length - 1) * LineHeight) / 2 : Rect.Y;
 
                 int curColor = 0;
+
                 int lineChars = 0;
                 //offset to move the color tags by, since cutting string into lines removes extra spaces
                 int totalTrimmedOffset = 0;
@@ -307,7 +374,7 @@ namespace RogueEssence.Menu
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
                             fullLines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
-                            Color == Color.White ? colorStack.Peek() * TextOpacity : Color * TextOpacity, curChar, nextColorIdx - curChar);
+                            Color == Color.White ? colorStack.Peek() * TextOpacity : Color * TextOpacity, curChar, nextColorIdx - curChar, textBoldface);
                         curChar = nextColorIdx;
 
                         if (curChar + lineChars >= endIndex)
