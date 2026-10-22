@@ -4,6 +4,7 @@ using RogueElements;
 using RogueEssence.Content;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using static System.Reflection.Metadata.BlobBuilder;
 
@@ -29,6 +30,11 @@ namespace RogueEssence.Menu
         /// Text boldface starts and stops.
         /// </summary>
         private List<(int idx, bool isBold)> textBoldface;
+
+        /// <summary>
+        /// List containing individual lines' boldface values.
+        /// </summary>
+        private List<List<(int idx, bool isBold)>> individualLineBoldfaces;
 
         /// <summary>
         /// The amount of space to trim when the lines were broken up.
@@ -57,6 +63,7 @@ namespace RogueEssence.Menu
             Color = color;
             textColor = new List<(int idx, Color color)>();
             textBoldface = new List<(int idx, bool isBold)>();
+            individualLineBoldfaces = new List<List<(int idx, bool isBold)>>();
             SetAndFormatText(text);
         }
         public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex, Color color)
@@ -164,9 +171,9 @@ namespace RogueEssence.Menu
             int cutIdx = 0;
 
             int endColorIndex = 0;
-            int endBoldIndex = 0;
+            //int endBoldIndex = 0;
             List<Color> colorStack = new List<Color>();
-            List<bool> boldStack = new List<bool>();
+            //List<bool> boldStack = new List<bool>();
 
             for (int ii = 0; ii < tempLines.Length + 1; ii++)
             {
@@ -178,6 +185,22 @@ namespace RogueEssence.Menu
                     List<int> initTrim = new List<int>();
                     for (int nn = cutIdx; nn < ii; nn++)
                         initTrim.Add(trimmedStarts[nn]);
+
+                    /*
+                    // Iterate over boldface list and get a trimmed-down version
+                    List<(int idx, bool isBold)> newBoldness = new List<(int idx, bool isBold)>();
+                    newBoldness.Add((0, false));
+                    for (int boldnessIndex = 1; boldnessIndex < tempBoldface.Count; boldnessIndex++)
+                    {
+                        int idx = tempBoldface[boldnessIndex].idx;
+                        bool isBold = true;// tempBoldface[boldnessIndex].isBold;
+                        idx -= ii;
+                        if (idx > 0)
+                        {
+                            newBoldness.Add((idx, isBold));
+                        }
+                    }
+                    */
 
                     List<(int idx, Color color)> initColor = new List<(int idx, Color color)>();
                     int startColorIndex = endColorIndex;
@@ -208,11 +231,21 @@ namespace RogueEssence.Menu
                     newBox.textColor = initColor;
                     newBox.textBoldface = tempBoldface;
 
+                    Console.WriteLine("Old boldface:");
                     for (int i = 0; i < tempBoldface.Count; i++)
                     {
-                        Console.WriteLine(newBox.textBoldface[i].idx);
-                        Console.WriteLine(newBox.textBoldface[i].isBold);
+                        Console.WriteLine(tempBoldface[i].idx);
+                        Console.WriteLine(tempBoldface[i].isBold);
                     }
+
+                    /*
+                    Console.WriteLine("New boldface:");
+                    for (int i = 0; i < newBoldness.Count; i++)
+                    {
+                        Console.WriteLine(newBoldness[i].idx);
+                        Console.WriteLine(newBoldness[i].isBold);
+                    }
+                    */
 
                     newBox.fullLines = initLines;
                     newBox.trimmedStarts = initTrim;
@@ -359,6 +392,26 @@ namespace RogueEssence.Menu
                 {
                     int curChar = 0;
                     totalTrimmedOffset += trimmedStarts[ii];
+
+                    // Get boldface list for current line
+                    List<(int idx, bool isBold)> individualLineBoldface = new List<(int idx, bool isBold)>();
+                    individualLineBoldface.Add((0, false));
+                    for (int boldfaceIndex = 1; boldfaceIndex < textBoldface.Count; boldfaceIndex++)
+                    {
+                        if (textBoldface[boldfaceIndex].idx - lineChars >= 0)
+                        {
+                            individualLineBoldface.Add((textBoldface[boldfaceIndex].idx - lineChars, textBoldface[boldfaceIndex].isBold));
+                        }
+                    }
+
+                    /*
+                    for (int boldfaceIndex = 0; boldfaceIndex < individualLineBoldface.Count; boldfaceIndex++)
+                    {
+                        Console.WriteLine(individualLineBoldface[boldfaceIndex].idx);
+                        Console.WriteLine(individualLineBoldface[boldfaceIndex].isBold);
+                    }
+                    */
+
                     while (curChar < fullLines[ii].Length)
                     {
                         while ((textColor[curColor + 1].idx - totalTrimmedOffset) - lineChars == curChar)
@@ -374,7 +427,7 @@ namespace RogueEssence.Menu
 
                         GraphicsManager.TextFont.DrawText(spriteBatch, startWidth + offset.X, startHeight + offset.Y + LineHeight * ii,
                             fullLines[ii], null, DirV.Up, CenterH ? DirH.None : DirH.Left,
-                            Color == Color.White ? colorStack.Peek() * TextOpacity : Color * TextOpacity, curChar, nextColorIdx - curChar, textBoldface);
+                            Color == Color.White ? colorStack.Peek() * TextOpacity : Color * TextOpacity, curChar, nextColorIdx - curChar, individualLineBoldface);
                         curChar = nextColorIdx;
 
                         if (curChar + lineChars >= endIndex)
