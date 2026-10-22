@@ -32,11 +32,6 @@ namespace RogueEssence.Menu
         private List<(int idx, bool isBold)> textBoldface;
 
         /// <summary>
-        /// List containing individual lines' boldface values.
-        /// </summary>
-        private List<List<(int idx, bool isBold)>> individualLineBoldfaces;
-
-        /// <summary>
         /// The amount of space to trim when the lines were broken up.
         /// </summary>
         private List<int> trimmedStarts;
@@ -63,7 +58,6 @@ namespace RogueEssence.Menu
             Color = color;
             textColor = new List<(int idx, Color color)>();
             textBoldface = new List<(int idx, bool isBold)>();
-            individualLineBoldfaces = new List<List<(int idx, bool isBold)>>();
             SetAndFormatText(text);
         }
         public DialogueText(string text, Rect rect, int lineHeight, bool centerH, bool centerV, int startIndex, Color color)
@@ -224,8 +218,6 @@ namespace RogueEssence.Menu
                     //close the tags cleanly
                     for (int nn = colorStack.Count - 1; nn >= 0; nn--)
                         initColor.Add((endColorIndex- startColorIndex, Color.Transparent));
-
-                    //
 
                     DialogueText newBox = new DialogueText("", rect, lineHeight, centerH, centerV, startIndex);
                     newBox.textColor = initColor;
