@@ -30,6 +30,7 @@ namespace RogueEssence.Menu
         /// Text boldface starts and stops.
         /// </summary>
         private List<(int idx, bool isBold)> textBoldface;
+        private int boldfaceDisplace = 0;
 
         /// <summary>
         /// The amount of space to trim when the lines were broken up.
@@ -168,6 +169,7 @@ namespace RogueEssence.Menu
             //int endBoldIndex = 0;
             List<Color> colorStack = new List<Color>();
             //List<bool> boldStack = new List<bool>();
+            int currentTextLength = 0;
 
             for (int ii = 0; ii < tempLines.Length + 1; ii++)
             {
@@ -222,7 +224,11 @@ namespace RogueEssence.Menu
                     DialogueText newBox = new DialogueText("", rect, lineHeight, centerH, centerV, startIndex);
                     newBox.textColor = initColor;
                     newBox.textBoldface = tempBoldface;
+                    newBox.boldfaceDisplace = currentTextLength;
+                    
+                    Console.WriteLine(newBox.boldfaceDisplace);
 
+                    /*
                     Console.WriteLine("Old boldface:");
                     for (int i = 0; i < tempBoldface.Count; i++)
                     {
@@ -230,7 +236,6 @@ namespace RogueEssence.Menu
                         Console.WriteLine(tempBoldface[i].isBold);
                     }
 
-                    /*
                     Console.WriteLine("New boldface:");
                     for (int i = 0; i < newBoldness.Count; i++)
                     {
@@ -245,6 +250,11 @@ namespace RogueEssence.Menu
 
                     results.Add(newBox);
                     cutIdx = ii;
+                }
+                if (ii > 0 && ii % 2 == 0 && ii < tempLines.Length)
+                {
+                    currentTextLength += tempLines[ii - 1].Length;
+                    currentTextLength += tempLines[ii].Length;
                 }
             }
 
@@ -390,13 +400,16 @@ namespace RogueEssence.Menu
                     individualLineBoldface.Add((0, false));
                     for (int boldfaceIndex = 1; boldfaceIndex < textBoldface.Count; boldfaceIndex++)
                     {
-                        if (textBoldface[boldfaceIndex].idx - lineChars >= 0)
+                        if (textBoldface[boldfaceIndex].idx - (lineChars + boldfaceDisplace) >= 0)
                         {
-                            individualLineBoldface.Add((textBoldface[boldfaceIndex].idx - lineChars, textBoldface[boldfaceIndex].isBold));
+                            individualLineBoldface.Add((textBoldface[boldfaceIndex].idx - (lineChars + boldfaceDisplace), textBoldface[boldfaceIndex].isBold));
                         }
                     }
 
                     /*
+                    Console.WriteLine("Bold text displace:");
+                    Console.WriteLine(boldfaceDisplace);
+                    Console.WriteLine("Bold indexes:");
                     for (int boldfaceIndex = 0; boldfaceIndex < individualLineBoldface.Count; boldfaceIndex++)
                     {
                         Console.WriteLine(individualLineBoldface[boldfaceIndex].idx);
