@@ -38,6 +38,8 @@ namespace RogueEssence
         private static string subMsgRegex = @"(?<pause>\[pause=(?<pauseval>\d+)\])" +
                                                 @"|(?<sound>\[sound=(?<soundval>[A-Za-z\/0-9\-_]*),?(?<speaktime>\d*)?\])" +
                                                 @"|(?<colorstart>\[color=#(?<colorval>[0-9a-f]{6})\])|(?<colorend>\[color\])" +
+                                                @"|(?<boldstart>\[b\])" +
+                                                @"|(?<boldend>\[/b\])" +
                                                 @"|(?<boxbreak>\[br\])" +
                                                 @"|(?<scrollbreak>\[scroll\])" +
                                                 @"|(?<script>\[script=(?<scriptval>\d+)\])" +
