@@ -553,6 +553,10 @@ namespace RogueEssence.Dungeon
                             if (losTarget != Dir8.None && losTarget != FocusedCharacter.CharDir)
                                 action = new GameAction(GameAction.ActionType.Dir, losTarget);
                         }
+                        //An immobilized character treats the initial movement press as a wait.
+                        //Holding the direction does not keep advancing turns.
+                        else if (FocusedCharacter.CantWalk && input.Direction != Dir8.None && input.Direction != input.PrevDirection)
+                            action = new GameAction(GameAction.ActionType.Wait, Dir8.None);
                         else if (input.Direction != Dir8.None)
                         {
                             //only move on an empty stomach when the key is pressed, not held
