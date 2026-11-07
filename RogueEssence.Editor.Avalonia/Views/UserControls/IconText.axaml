@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+             x:Class="RogueEssence.Dev.Views.IconText">
+    
+    <Design.PreviewWith>
+        <Border Padding="20" Background="{DynamicResource PrimaryBackground}">
+            <StackPanel Spacing="20">
+                <v:IconText Text="Hi" Icon="Icons.GhostFill" IconSize="14"/>
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+    <Grid ColumnDefinitions="Auto, *">
+        <Path IsVisible="{Binding $parent[v:IconText].Icon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+              Width="{Binding $parent[v:IconText].IconSize}"
+              Height="{Binding $parent[v:IconText].IconSize}"
+              Fill="{Binding #MyTextBlock.Foreground}"
+              Margin="0,0,6,0"
+              Data="{Binding $parent[v:IconText].Icon, Converter={StaticResource IconKeyConverter}}"/>
+        <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                   x:Name="MyTextBlock"
+                   Text="{Binding $parent[v:IconText].Text}"
+                   TextTrimming="CharacterEllipsis"
+                   TextWrapping="NoWrap"
+                   ClipToBounds="True" />
+    </Grid>
+</UserControl>

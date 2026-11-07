@@ -1,0 +1,40 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.MapTabTiles">
+  <Design.DataContext>
+    <vm:MapTabTilesViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ComparisonConverter x:Key="ComparisonConverter"/>
+  </UserControl.Resources>
+  <Grid Margin="4" RowDefinitions="38, 38, 38, *">
+    <Grid Grid.Row="0" RowDefinitions="16, 28" ColumnDefinitions="*, *, *, *">
+      <TextBlock Margin="4,2" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0">Mode</TextBlock>
+      <RadioButton IsChecked="{Binding Path=TileMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Draw}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="0">Draw</RadioButton>
+      <RadioButton IsChecked="{Binding Path=TileMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Rectangle}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="1">Rectangle</RadioButton>
+      <RadioButton IsChecked="{Binding Path=TileMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Fill}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="2">Fill</RadioButton>
+      <RadioButton IsChecked="{Binding Path=TileMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:TileEditMode.Eyedrop}}" VerticalAlignment="Top" Margin="2" Grid.Row="1" Grid.Column="3">Eyedrop</RadioButton>
+    </Grid>
+    <Grid Grid.Row="1" ColumnDefinitions="80, *, 80, *">
+      <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Column="0">Tile:</TextBlock>
+      <views:SearchComboBox ItemsSource="{Binding TileTypes}" SelectedIndex="{Binding ChosenTile}"  VerticalAlignment="Center" Margin="4,2" Grid.Column="1"/>
+      <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Column="2">Owner:</TextBlock>
+      <views:SearchComboBox ItemsSource="{Binding Owners}" SelectedIndex="{Binding ChosenOwner}" VerticalAlignment="Center" Margin="4,2" Grid.Column="3"/>
+    </Grid>
+    <Grid Grid.Row="2" ColumnDefinitions="*, *">
+      <CheckBox Margin="4" IsChecked="{Binding IsRevealed}" Grid.Column="0">Revealed</CheckBox>
+    </Grid>
+    <Grid Grid.Row="3" RowDefinitions="20, *" ColumnDefinitions="*, *">
+      <TextBlock Margin="4" VerticalAlignment="Bottom" Grid.Row="0">Tile States</TextBlock>
+      <views:CollectionBox DataContext="{Binding TileStates}" Margin="4" Grid.Row="1" Grid.Column="0"/>
+    </Grid>
+    
+  </Grid>
+</UserControl>

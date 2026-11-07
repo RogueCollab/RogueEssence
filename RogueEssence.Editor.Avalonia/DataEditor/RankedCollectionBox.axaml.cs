@@ -14,7 +14,7 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class RankedCollectionBox : UserControl
+    public partial class RankedCollectionBox : UserControl
     {
         public RankedCollectionBox()
         {
@@ -22,12 +22,7 @@ namespace RogueEssence.Dev.Views
             Button button = this.FindControl<Button>("RankedCollectionBoxAddButton");
             button.AddHandler(PointerReleasedEvent, RankedCollectionBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         //TODO: there has to be some way to set the ItemTemplate's text binding in code-behind...
         //public void SetConv(IValueConverter conv)
         //{

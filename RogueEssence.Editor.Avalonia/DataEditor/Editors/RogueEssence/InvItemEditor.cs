@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class InvItemEditor : Editor<InvItem>
     {
+        public InvItemEditor(EditorContext context) : base(context) { }
         public override void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, InvItem member, Type[] subGroupStack)
         {
             Avalonia.Controls.Grid innerPanel1 = getSharedRowPanel(2);
@@ -26,8 +27,6 @@ namespace RogueEssence.Dev
             lblItem.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
 
             ComboBox cbItem = new SearchComboBox();
-
-            cbItem.VirtualizationMode = ItemVirtualizationMode.Simple;
 
             EntryDataIndex nameIndex = DataManager.Instance.DataIndices[DataManager.DataType.Item];
             List<string> itemKeys = nameIndex.GetOrderedKeys(false);
@@ -40,7 +39,7 @@ namespace RogueEssence.Dev
 
             var itemsSubject = new Subject<List<string>>();
 
-            cbItem.Bind(ComboBox.ItemsProperty, itemsSubject);
+            cbItem.Bind(ComboBox.ItemsSourceProperty, itemsSubject);
             itemsSubject.OnNext(items);
 
             innerPanel1.ColumnDefinitions[0].Width = new GridLength(70);

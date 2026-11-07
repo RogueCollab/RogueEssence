@@ -1,57 +1,63 @@
-﻿using Avalonia;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using System;
-using RogueEssence;
-using RogueEssence.Dev;
-using Microsoft.Xna.Framework;
+using Avalonia.LogicalTree;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using System.Threading;
-using RogueEssence.Data;
+using Avalonia.VisualTree;
+using Avalonia.Platform;
+using Microsoft.Xna.Framework;
 using RogueEssence.Content;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+using RogueEssence.Data;
+using RogueEssence.Dev.Utility;
+using RogueEssence.Dev.ViewModels;
+using RogueEssence.Dungeon;
 
-namespace RogueEssence.Dev.Views
+namespace RogueEssence.Dev.Views;
+
+public partial class DevForm : ChromelessWindow, IRootEditor
 {
-    public class DevForm : Window, IRootEditor
-    {
-        public bool LoadComplete { get; private set; }
+    public bool LoadComplete { get; private set; }
 
-        public MapEditForm MapEditForm;
-        public GroundEditForm GroundEditForm;
+        public MapEditPageViewModel MapEditorPage;
+        public GroundEditPageViewModel GroundEditorPage;
 
         private Action pendingEditorAction;
         private Exception pendingException;
 
-        public IMapEditor MapEditor { get { return MapEditForm; } }
-        public IGroundEditor GroundEditor { get { return GroundEditForm; } }
+        public IMapEditor MapEditor 
+        { 
+            get { return MapEditorPage; }
+            set { MapEditorPage = (MapEditPageViewModel)value; }
+        }
+        
+        public IGroundEditor GroundEditor 
+        { 
+            get { return GroundEditorPage; }
+            set { GroundEditorPage = (GroundEditPageViewModel)value; }
+        }
+        
         public bool AteMouse { get { return false; } }
         public bool AteKeyboard { get { return false; } }
 
         private static Dictionary<string, string> devConfig;
         private static bool canSave;
 
-
-
-        public DevForm()
-        {
-            InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+    
+        
         void IRootEditor.Load(GameBase game)
         {
+            Console.WriteLine("Loading Dev Editor");
             ExecuteOrInvoke(load);
         }
 
@@ -124,9 +130,15 @@ namespace RogueEssence.Dev.Views
                     devViewModel.Travel.ReloadZones();
 
                 if (dataType == DataManager.DataType.All)
-                    devViewModel.Mods.UpdateMod();
+                {
+                    devViewModel.ModsManager.UpdateMod();
+                    devViewModel.ModsManager.ReloadMods();
+                    
+                    devViewModel.LoadDevTree();
+                }
 
                 LoadComplete = true;
+                
             }
         }
 
@@ -173,14 +185,15 @@ namespace RogueEssence.Dev.Views
                     }
                     devViewModel.Player.UpdateSpecies(Dungeon.DungeonScene.Instance.FocusedCharacter.BaseForm);
                 }
-                if (GroundEditForm != null)
+                if (GroundEditorPage != null)
                 {
-                    ViewModels.GroundEditViewModel vm = (ViewModels.GroundEditViewModel)GroundEditForm.DataContext;
+                    ViewModels.GroundEditPageViewModel vm = GroundEditorPage;
                     vm.Textures.TileBrowser.UpdateFrame();
                 }
-                if (MapEditForm != null)
+                if (MapEditorPage != null)
                 {
-                    ViewModels.MapEditViewModel vm = (ViewModels.MapEditViewModel)MapEditForm.DataContext;
+
+                    MapEditPageViewModel vm = MapEditorPage;
                     vm.Textures.TileBrowser.UpdateFrame();
                     vm.Terrain.TileBrowser.UpdateFrame();
                 }
@@ -198,11 +211,8 @@ namespace RogueEssence.Dev.Views
 
         private void openGround()
         {
-            GroundEditForm = new GroundEditForm();
-            ViewModels.GroundEditViewModel vm = new ViewModels.GroundEditViewModel();
-            GroundEditForm.DataContext = vm;
-            vm.LoadFromCurrentGround();
-            GroundEditForm.Show();
+            DevFormViewModel vm  = (DevFormViewModel)this.DataContext;
+            vm.OpenGroundEditor();
         }
 
         public void OpenMap()
@@ -212,11 +222,8 @@ namespace RogueEssence.Dev.Views
 
         public void openMap()
         {
-            MapEditForm = new MapEditForm();
-            ViewModels.MapEditViewModel vm = new ViewModels.MapEditViewModel();
-            MapEditForm.DataContext = vm;
-            vm.LoadFromCurrentMap();
-            MapEditForm.Show();
+            DevFormViewModel vm  = (DevFormViewModel)this.DataContext;
+            vm.OpenMapEditor();
         }
 
         public void groundEditorClosed(object sender, EventArgs e)
@@ -232,25 +239,24 @@ namespace RogueEssence.Dev.Views
 
         private IEnumerator<YieldInstruction> resetEditors()
         {
-            GroundEditForm = null;
-            MapEditForm = null;
+            GroundEditorPage = null;
+            MapEditorPage = null;
             yield return CoroutineManager.Instance.StartCoroutine(GameManager.Instance.RestartToTitle());
         }
-
+        
 
         public void CloseGround()
         {
-            if (GroundEditForm != null)
-                GroundEditForm.Close();
+            if (GroundEditorPage != null)
+                GroundEditorPage.Close();
         }
 
         public void CloseMap()
         {
-            if (MapEditForm != null)
-                MapEditForm.Close();
+            if (MapEditorPage != null)
+                MapEditorPage.Close();
         }
-
-
+        
         void LoadGame()
         {
             // Windows - CAN run game in new thread, CAN run game in same thread via dispatch.
@@ -446,5 +452,350 @@ namespace RogueEssence.Dev.Views
             else
                 return PathMod.FromApp("./devConfig");//Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEssence /devConfig");
         }
+        
+        
+    public static readonly StyledProperty<GridLength> CaptionHeightProperty =
+        AvaloniaProperty.Register<DevForm, GridLength>(nameof(CaptionHeight));
+
+    public GridLength CaptionHeight
+    {
+        get => GetValue(CaptionHeightProperty);
+        set => SetValue(CaptionHeightProperty, value);
     }
+
+    public static readonly StyledProperty<bool> HasLeftCaptionButtonProperty =
+        AvaloniaProperty.Register<DevForm, bool>(nameof(HasLeftCaptionButton));
+
+    public bool HasLeftCaptionButton
+    {
+        get => GetValue(HasLeftCaptionButtonProperty);
+        set => SetValue(HasLeftCaptionButtonProperty, value);
+    }
+
+    public bool HasRightCaptionButton
+    {
+        get
+        {
+            if (OperatingSystem.IsLinux())
+                return !Native.OS.UseSystemWindowFrame;
+
+            return OperatingSystem.IsWindows();
+        }
+    }
+    
+    
+    
+    public DevForm()
+    {
+        
+        if (OperatingSystem.IsMacOS())
+        {
+            HasLeftCaptionButton = true;
+            CaptionHeight = new GridLength(34);
+            ExtendClientAreaChromeHints =
+                ExtendClientAreaChromeHints.SystemChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
+        }
+        else if (UseSystemWindowFrame)
+        {
+            CaptionHeight = new GridLength(30);
+        }
+        else
+        {
+            CaptionHeight = new GridLength(38);
+        }
+        
+        InitializeComponent();
+    }
+    
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (DataContext is DevFormViewModel vm)
+        {
+            vm.ModSwitcherClosed += () => ModSwitcherFlyoutButton.Flyout?.Hide();
+            vm.ActivePageSet += OnActivePageSet;
+        }
+    }
+    
+    private void ModSwitcherFlyout_OnOpened(object? sender, EventArgs e)
+    {
+        if (DataContext is DevFormViewModel vm)
+        {
+            vm.OnModSwitcherOpened();
+        }
+    }
+    
+    private void ModSwitcherFlyout_OnClosed(object? sender, EventArgs e)
+    {
+        if (DataContext is DevFormViewModel vm)
+        {
+            vm.OnModSwitcherClosed();
+            // ModSwitcherFlyoutButton.Flyout?.Hide();
+        }
+    }
+    
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+
+        if (!Design.IsDesignMode && DataContext is ViewModels.DevFormViewModel)
+        {
+            PreferencesWindowViewModel.Instance.Save();
+        }
+    }
+    
+    private void ShowDataItemNodeMenu(TreeDataGridRow current, DataItemNode node, DataRootNode parentNode,
+        ContextRequestedEventArgs e)
+    {
+        
+        var contextMenu = ContextMenuHelper.CreateDataItemMenu(parentNode, node.ItemKey);
+
+        // contextMenu.Open(this);
+        
+        // var menu = new ContextMenu
+        // {
+        //     Items =
+        //     {
+        //         new MenuItem { Header = "Resave as File", Command = parentNode.ResaveItemAsFile, CommandParameter = node.ItemKey, Icon = App.CreateMenuIcon("Icons.FileFill") },
+        //         new MenuItem
+        //             { Header = "Resave as Patch", Command = parentNode.ResaveAsPatch, CommandParameter = node, Icon = App.CreateMenuIcon("Icons.FileTextFill") },
+        //         new Separator(),
+        //         new MenuItem { Header = "Edit", Icon = App.CreateMenuIcon("Icons.PencilFill") },
+        //         new MenuItem { Header = "Delete", Command = parentNode.DeleteCommand, CommandParameter = node,  Icon = App.CreateMenuIcon("Icons.TrashFill") }
+        //     }
+        // };
+        
+        AttachAndOpenMenu(current, contextMenu, e);
+    }
+    
+    private void ShowRootNodeMenu(TreeDataGridRow current, DataRootNode root, ContextRequestedEventArgs e)
+    {
+        var menu = ContextMenuHelper.CreateDataRootMenu(root);
+        AttachAndOpenMenu(current, menu, e);
+    }
+    
+    private void ShowUniversalNodeMenu(TreeDataGridRow current, UniversalNode node, ContextRequestedEventArgs e)
+    {
+        var menu = ContextMenuHelper.CreateUniversalRootMenu(node);
+        AttachAndOpenMenu(current, menu, e);
+    }
+    
+    private void ShowSpriteRootNodeMenu(TreeDataGridRow current, SpriteRootNode root, ContextRequestedEventArgs e)
+    {
+     //    var menu = new ContextMenu
+     //    {
+     //        Items =
+     //        {
+     //            new MenuItem { Header = "Mass Import", Command = root.MassImportCommand, Icon = App.CreateMenuIcon("Icons.DownloadSimpleFill") },
+     //            new MenuItem { Header = "Mass Export", Command = root.MassExportCommand, Icon = App.CreateMenuIcon("Icons.ExportFill") },
+     //            
+     //            
+     // ,
+     //            // new MenuItem { Header = "Import", Command = root.ImportCommand, Icon = App.CreateMenuIcon("Icons.Plus") },
+     //            // new MenuItem { Header = "Re-Import", Command = root.ReImportCommand, Icon = App.CreateMenuIcon("Icons.RepeatFill") },
+     //            // new MenuItem { Header = "Add", Command = root.AddCommand,  Icon = App.CreateMenuIcon("Icons.Plus") }
+     //        }
+     //    };
+
+        var menu = ContextMenuHelper.CreateSpriteRootMenu(root);
+        
+        AttachAndOpenMenu(current, menu, e);
+    }
+
+    private void AttachAndOpenMenu(TreeDataGridRow current, ContextMenu menu, ContextRequestedEventArgs e)
+    {
+        menu.Closed += (_, _) => LeftTreeDataGrid.ContextMenu = null;
+        LeftTreeDataGrid.ContextMenu = menu;
+        menu.Open(LeftTreeDataGrid);
+        e.Handled = true;
+    }
+    
+    private void LeftTreeDataGrid_OnDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (DataContext is DevFormViewModel vm && sender is TreeDataGrid treeView)
+        {
+            var selectedItem = (OpenEditorNode)treeView.RowSelection.SelectedItem;
+            if (selectedItem != null && selectedItem.EditorType != typeof(EmptyPageViewModel))
+            {
+                vm.AddPageFromTreeNode(selectedItem);
+            }
+
+        }
+    }
+    
+    private void LeftTreeDataGrid_OnContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (e.Source is not Visual visual)
+            return;
+    
+        var row = visual.GetSelfAndVisualAncestors()
+            .OfType<TreeDataGridRow>()
+            .FirstOrDefault();
+    
+        if (row == null)
+            return;
+        
+        if (row.DataContext is not NodeBase node)
+            return;
+        
+        var parent = node.Parent;
+        
+        switch (node)
+        {
+            case DataItemNode itemNode when parent is DataRootNode root:
+                ShowDataItemNodeMenu(row, itemNode, root, e);
+                break;
+    
+            // case DataItemNode itemNode when parent is SpriteRootNode spriteRoot:
+            //     ShowSpriteItemNodeMenu(row, itemNode, spriteRoot, e);
+            //     break;
+            //
+            case DataRootNode rootNode:
+                ShowRootNodeMenu(row, rootNode, e);
+                break;
+            
+            case UniversalNode universalNode:
+                ShowUniversalNodeMenu(row, universalNode, e);
+                break;
+    
+            case SpriteRootNode spriteRoot:
+                ShowSpriteRootNodeMenu(row, spriteRoot, e);
+                break;
+        }
+    }
+    
+
+    // Show the sprite in-game when the user clicks on the sprite node in the tree
+    private void LeftTreeDataGrid_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not TreeDataGrid treeDataGrid)
+            return;
+        
+        var point = e.GetPosition(treeDataGrid);
+        var visual = treeDataGrid.InputHitTest(point);
+        
+        var element = visual as Control;
+        while (element != null && element is not TreeDataGridRow)
+        {
+            element = element.Parent as Control;
+        }
+    
+        if (DungeonScene.Instance == null)
+            return;
+
+        GraphicsManager.AssetType debugAsset = GraphicsManager.AssetType.None;
+        string? debugAnim = null;
+        
+        if (element is TreeDataGridRow row &&
+            row.DataContext is DataItemNode node &&
+            node.Parent is SpriteRootNode parent &&
+            parent.AssetType.IsAnimEdit())
+        {
+            debugAsset = parent.AssetType;
+            debugAnim = node.ItemKey;
+        }
+
+        lock (GameBase.lockObj)
+        {
+            DungeonScene.Instance.DebugAsset = debugAsset;
+            DungeonScene.Instance.DebugAnim = debugAnim;
+        }
+
+    }
+
+    public void OnActivePageSet(EditorPageViewModel page)
+    {
+        // Console.WriteLine("OnActivePageSet: " + page.Title);
+        if (DataContext is DevFormViewModel vm)
+        {
+            if (vm.Pages.Count == 0)
+            {
+                return;
+            }
+            
+            var path = FindIndexPath<NodeBase>(vm.NodeSource.Items, page.Node, n => n.SubNodes);
+            // Console.WriteLine("Page?: " + path);
+            if (path.HasValue)
+                // Dispatcher.UIThread.Post(() =>
+                // {
+                //     Dispatcher.UIThread.Post(() =>
+                //     {[[[
+                //         LeftTreeDataGrid.RowSelection.Select(path.Value);
+                //     }, DispatcherPriority.Background);
+                // }, DispatcherPriority.Background);
+                Dispatcher.UIThread.Invoke(() => LeftTreeDataGrid.RowSelection.Select(path.Value), DispatcherPriority.Background);
+        
+        }
+    }
+    //
+    // var source = LeftTreeDataGrid.Source as HierarchicalTreeDataGridSource<NodeBase>;
+    //     if (source == null) return;
+    //
+    // for (int i = 0; i < source.Rows.Count; i++)
+    // {
+    //     if (source.Rows[i] is IRow<NodeBase> row && row.Model.Equals(page.Node))
+    //     {
+    //         Dispatcher.UIThread.Invoke(() =>
+    //         {
+    //             LeftTreeDataGrid.RowSelection!.Select(new IndexPath(i));
+    //                    
+    //         });
+    //         break;
+    //     }
+    // }
+    //
+    
+
+    // Example: IndexPath: [0, 2] means the first root node, then the third node under the root
+    // Perhaps NodeBase should maintain the IndexPath?
+    public static IndexPath? FindIndexPath<T>(IEnumerable<T> items, T target, Func<T, IEnumerable<T>> getChildren, IndexPath current = default) where T : class
+    {
+        int i = 0;
+        foreach (var item in items)
+        {
+            var path = current.Append(i);
+            if (item == target)
+                return path;
+
+            var children = getChildren(item);
+            if (children != null)
+            {
+                var found = FindIndexPath(children, target, getChildren, path);
+                if (found.HasValue)
+                    return found;
+            }
+            i += 1;
+        }
+        return null;
+    }
+    // private void LeftTreeDataGrid_OnLostFocus(object sender, RoutedEventArgs e)
+    // {
+    //     
+    //     if (sender is not TreeDataGrid grid)
+    //         return;
+    //     
+    //     
+    //     if (grid.IsKeyboardFocusWithin)
+    //         return;
+    //     
+    //     if (grid.ContextMenu?.IsOpen == true)
+    //         return;
+    //     
+    //     var window = grid.GetVisualRoot() as Window;
+    //     if (window is { IsActive: false })
+    //         return; 
+    //     // (grid.RowSelection.SelectedItem as DataItemNode)?.Parent?.ResaveAsFile(grid.RowSelection.SelectedItem as DataItemNode)
+    //     // Not sure why it doesn't clear the grid...
+    //     grid.RowSelection.Clear();
+    //     
+    //     lock (GameBase.lockObj)
+    //     {
+    //         if (DungeonScene.Instance != null)
+    //         {
+    //             DungeonScene.Instance.DebugAsset = GraphicsManager.AssetType.None;
+    //             DungeonScene.Instance.DebugAnim = null;
+    //         }
+    //     }
+    // }
+
 }

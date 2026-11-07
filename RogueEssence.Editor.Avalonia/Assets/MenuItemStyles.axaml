@@ -1,0 +1,86 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!-- Add Controls for Previewer Here -->
+        </Border>
+    </Design.PreviewWith>
+    
+    <Style Selector="MenuItem.menuright">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel>
+                    <Border Name="PART_LayoutRoot"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                            <ContentControl Grid.Column="0"
+                                            x:Name="PART_ToggleIconPresenter"
+                                            IsVisible="False"
+                                            Theme="{StaticResource FluentMenuItemIconTheme}"
+                                            Margin="{DynamicResource MenuIconPresenterMargin}" />
+
+                            <ContentControl Grid.Column="1"
+                                            x:Name="PART_IconPresenter"
+                                            IsVisible="False"
+                                            Theme="{StaticResource FluentMenuItemIconTheme}"
+                                            Content="{TemplateBinding Icon}"
+                                            Margin="{DynamicResource MenuIconPresenterMargin}" />
+
+                            <ContentPresenter Name="PART_HeaderPresenter"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Stretch"
+                                              Grid.Column="2" />
+
+                            <TextBlock x:Name="PART_InputGestureText"
+                                       Grid.Column="3"
+                                       Margin="{DynamicResource MenuInputGestureTextMargin}"
+                                       Text="{TemplateBinding InputGesture, Converter={StaticResource KeyGestureConverter}}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" />
+                        </Grid>
+                    </Border>
+
+                    <Popup Name="PART_Popup"
+                           WindowManagerAddShadowHint="False"
+                           Placement="RightEdgeAlignedTop"
+                           MaxHeight="400"
+                           IsLightDismissEnabled="False"
+                           HorizontalOffset="-4"
+                           VerticalOffset="-4"
+                           IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
+                        <Grid>
+                            <Border Background="{DynamicResource Brush.Popup}" Margin="4"
+                                    CornerRadius="{DynamicResource OverlayCornerRadius}">
+                                <Border.Effect>
+                                    <DropShadowEffect OffsetX="0" OffsetY="0" Color="Black"
+                                                      BlurRadius="4" Opacity=".6" />
+                                </Border.Effect>
+                            </Border>
+
+                            <Border BorderThickness="0" Margin="8,4" MaxHeight="400">
+                                <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
+                                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                                    Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+                                                    Grid.IsSharedSizeScope="True">
+                                        <ItemsPresenter.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <VirtualizingStackPanel Orientation="Vertical" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsPresenter.ItemsPanel>
+                                    </ItemsPresenter>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+                    </Popup>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

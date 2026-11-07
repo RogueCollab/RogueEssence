@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Input;
 using RogueElements;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -60,10 +61,10 @@ namespace RogueEssence.Dev.ViewModels
         {
             get { return (category ? "" : "  \u2022"); }
         }
-
+    
         private StringConv conv;
         private bool category;
-
+    
         public CategorySpawnElement(StringConv conv, bool category, int weight, double chance, object val)
         {
             this.conv = conv;
@@ -73,35 +74,35 @@ namespace RogueEssence.Dev.ViewModels
             this.val = val;
         }
     }
-
+    
     public class CategorySpawnBoxViewModel : ViewModelBase
     {
         public delegate void EditElementOp(int index, object element);
         public delegate void ElementOp(int index, object element, bool advancedEdit, EditElementOp op);
-
+    
         public event ElementOp OnEditItem;
         public event ElementOp OnEditKey;
-
+    
         public StringConv CategoryConv;
         public StringConv StringConv;
-
-
-        private Window parent;
-
+    
+        
+    
         public bool ConfirmDelete;
-
-        public CategorySpawnBoxViewModel(Window parent, StringConv categoryConv, StringConv conv)
+    
+        private IDialogService _dialogService;
+        public CategorySpawnBoxViewModel(IDialogService dialogService, StringConv categoryConv, StringConv conv)
         {
+            _dialogService = dialogService;
             CategoryConv = categoryConv;
             StringConv = conv;
-            this.parent = parent;
             heirarchy = new List<(CategorySpawnElement, List<CategorySpawnElement>)>();
             Collection = new ObservableCollection<CategorySpawnElement>();
         }
-
+    
         private List<(CategorySpawnElement, List<CategorySpawnElement>)> heirarchy;
         public ObservableCollection<CategorySpawnElement> Collection { get; }
-
+    
         private int currentElement;
         public int CurrentElement
         {
@@ -115,7 +116,7 @@ namespace RogueEssence.Dev.ViewModels
                     CurrentWeight = 1;
             }
         }
-
+    
         private int currentWeight;
         public int CurrentWeight
         {
@@ -130,7 +131,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
-
+    
         private void updatePercentages()
         {
             int categoryTotal = 0;
@@ -150,7 +151,7 @@ namespace RogueEssence.Dev.ViewModels
                     item.Chance = (double)item.Weight / spawnTotal[ii] * category.Item1.Weight / categoryTotal;
             }
         }
-
+    
         public ISpawnDict GetDict(Type type)
         {
             Type spawnListType = ReflectionExt.GetBaseTypeArg(typeof(ISpawnDict<,>), type, 1);
@@ -166,7 +167,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             return result;
         }
-
+    
         public void LoadFromDict(ISpawnDict source)
         {
             heirarchy.Clear();
@@ -178,7 +179,7 @@ namespace RogueEssence.Dev.ViewModels
                 CategorySpawnElement categorySpawn = new CategorySpawnElement(CategoryConv, true, rate, 0, key);
                 List<CategorySpawnElement> elements = new List<CategorySpawnElement>();
                 Collection.Add(categorySpawn);
-
+    
                 for (int ii = 0; ii < list.Count; ii++)
                 {
                     object obj = list.GetSpawn(ii);
@@ -191,24 +192,24 @@ namespace RogueEssence.Dev.ViewModels
             }
             updatePercentages();
         }
-
-
+    
+    
         private async void editCategory(int index, object element)
         {
             int existingIndex = getCategoryFromKey(element);
             if (existingIndex > -1)
             {
-                await MessageBox.Show(parent, "Spawnlist already contains this category!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_dialogService, "Spawnlist already contains this category!", "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
-
+    
             index = Math.Min(Math.Max(0, index), Collection.Count);
             int categoryIndex = getCategoryIndex(index);
             CategorySpawnElement listElement = new CategorySpawnElement(CategoryConv, true, Collection[index].Weight, Collection[index].Chance, element);
             heirarchy[categoryIndex] = (listElement, heirarchy[categoryIndex].Item2);
             Collection[index] = listElement;
         }
-
+    
         private void editItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count);
@@ -217,39 +218,39 @@ namespace RogueEssence.Dev.ViewModels
             listIndex.Item1[listIndex.Item2] = listElement;
             Collection[index] = listElement;
         }
-
+    
         private async void insertCategory(int index, object element)
         {
             int existingIndex = getCategoryFromKey(element);
             if (existingIndex > -1)
             {
-                await MessageBox.Show(parent, "Spawnlist already contains this category!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_dialogService, "Spawnlist already contains this category!", "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
-
+    
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             int categoryIndex = getCategoryIndex(index);
             //account for inserting while non-selecting
             if (categoryIndex < 0)
                 categoryIndex = heirarchy.Count;
-
+    
             CategorySpawnElement listElement = new CategorySpawnElement(CategoryConv, true, 10, 0, element);
             heirarchy.Insert(categoryIndex, (listElement, new List<CategorySpawnElement>()));
             Collection.Insert(index, listElement);
             updatePercentages();
         }
-
+    
         private void insertItem(int index, object element)
         {
             index = Math.Min(Math.Max(0, index), Collection.Count + 1);
             (List<CategorySpawnElement>, int) listIndex = getHeirarchyListIndex(index);
             CategorySpawnElement listElement = new CategorySpawnElement(StringConv, false, 10, 0, element);
-
+    
             listIndex.Item1.Insert(listIndex.Item2, listElement);
             Collection.Insert(index, listElement);
             updatePercentages();
         }
-
+    
         public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
@@ -265,7 +266,7 @@ namespace RogueEssence.Dev.ViewModels
                     OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
             }
         }
-
+    
         public void btnAddCategory_Click(bool advancedEdit)
         {
             int index = CurrentElement;
@@ -287,7 +288,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             OnEditKey?.Invoke(index, element, advancedEdit, insertCategory);
         }
-
+    
         public async void btnAddItem_Click(bool advancedEdit)
         {
             int index = CurrentElement;
@@ -296,10 +297,10 @@ namespace RogueEssence.Dev.ViewModels
             
             if (index == Collection.Count)
             {
-                await MessageBox.Show(parent, "Choose a category first!", "Error", MessageBox.MessageBoxButtons.Ok);
+                await MessageBoxWindowView.Show(_dialogService, "Choose a category first!", "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
                 return;
             }
-
+    
             object element = null;
             if (isCategory(index))
             {
@@ -313,19 +314,19 @@ namespace RogueEssence.Dev.ViewModels
             }
             OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }
-
+    
         private async void btnDelete_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
-                    MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                    MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
-
+    
                 if (isCategory(CurrentElement))
                 {
                     int categoryIndex = getCategoryIndex(CurrentElement);
@@ -344,14 +345,14 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
-
+    
         private void Switch(int a, int b)
         {
             CategorySpawnElement obj = Collection[a];
             Collection[a] = Collection[b];
             Collection[b] = obj;
         }
-
+    
         private void SwitchRange(IntRange a, IntRange b)
         {
             CategorySpawnElement[] aCache = new CategorySpawnElement[a.Length];
@@ -366,14 +367,14 @@ namespace RogueEssence.Dev.ViewModels
                 bCache[ii] = Collection[b.Min + ii];
                 Collection[b.Min + ii] = new CategorySpawnElement(StringConv, false, 0, 0, "");
             }
-
-
+    
+    
             for (int ii = 0; ii < b.Length; ii++)
                 Collection[a.Min + ii] = bCache[ii];
             for (int ii = 0; ii < a.Length; ii++)
                 Collection[a.Min + b.Length + ii] = aCache[ii];
-
-
+    
+    
             //CategorySpawnElement[] aCache = new CategorySpawnElement[a.Length];
             //for (int ii = 0; ii < a.Length; ii++)
             //{
@@ -383,14 +384,14 @@ namespace RogueEssence.Dev.ViewModels
             //for (int ii = 0; ii < a.Length; ii++)
             //    Collection.Insert(a.Min + b.Length + ii, aCache[ii]);
         }
-
+    
         private void SwitchCategory(int a, int b)
         {
             (CategorySpawnElement, List<CategorySpawnElement>) category = heirarchy[a];
             heirarchy[a] = heirarchy[b];
             heirarchy[b] = category;
         }
-
+    
         private void btnUp_Click()
         {
             if (isCategory(CurrentElement))
@@ -420,12 +421,12 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
-
+    
         private void btnDown_Click()
         {
             if (CurrentElement < 0)
                 return;
-
+    
             if (isCategory(CurrentElement))
             {
                 // check against being the last category
@@ -454,7 +455,7 @@ namespace RogueEssence.Dev.ViewModels
                 }
             }
         }
-
+    
         /// <summary>
         /// Determines if the index points to a category
         /// </summary>
@@ -470,7 +471,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             return false;
         }
-
+    
         /// <summary>
         /// Get the index in the heirarchy given an index in collection
         /// </summary>
@@ -480,7 +481,7 @@ namespace RogueEssence.Dev.ViewModels
         {
             if (index < 0 || index >= Collection.Count)
                 return -1;
-
+    
             CategorySpawnElement element = Collection[index];
             for (int ii = 0; ii < heirarchy.Count; ii++)
             {
@@ -489,7 +490,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             return -1;
         }
-
+    
         private int getCategoryFromKey(object obj)
         {
             for (int ii = 0; ii < heirarchy.Count; ii++)
@@ -500,7 +501,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             return -1;
         }
-
+    
         /// <summary>
         /// Gets the Collections index of the category owning the input Collections index
         /// </summary>
@@ -516,7 +517,7 @@ namespace RogueEssence.Dev.ViewModels
             }
             return -1;
         }
-
+    
         /// <summary>
         /// Get the index in the heirarchy given an index in collection.  If choosing a category itself, return the length of the list as the index.
         /// </summary>
@@ -533,6 +534,6 @@ namespace RogueEssence.Dev.ViewModels
                     return (heirarchy[categoryIndex].Item2, index - ii - 1);
             }
             return (null, -1);
-        }
+    }
     }
 }

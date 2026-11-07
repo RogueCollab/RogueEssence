@@ -12,12 +12,8 @@
   <UserControl.Resources>
     <converters:TileConverter x:Key="TileConverter"/>
   </UserControl.Resources>
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="80"/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <Button Command="{Binding btnEdit_Click}">Edit</Button>
+  <Grid ColumnDefinitions="80, *">
+    <Button Classes="flat" Command="{Binding btnEdit_Click}">Edit</Button>
     <Image Source="{Binding Preview, Converter={StaticResource TileConverter}}" Margin="4" VerticalAlignment="Center" HorizontalAlignment="Left" Stretch="None" Grid.Column="1"/>
   </Grid>
 </UserControl>

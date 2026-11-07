@@ -11,6 +11,7 @@ namespace RogueEssence.Dev
 {
     public class CombatActionEditor : TestableEditor<CombatAction>
     {
+        public CombatActionEditor(EditorContext context) : base(context) { }
         protected override void RunTest(CombatAction data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

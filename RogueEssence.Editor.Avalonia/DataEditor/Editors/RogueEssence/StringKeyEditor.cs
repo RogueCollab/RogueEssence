@@ -20,6 +20,7 @@ namespace RogueEssence.Dev
 
     public class StringKeyEditor : Editor<StringKey>
     {
+        public StringKeyEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -28,7 +29,6 @@ namespace RogueEssence.Dev
             StringKeyAttribute dataAtt = ReflectionExt.FindAttribute<StringKeyAttribute>(attributes);
 
             ComboBox cbValue = new SearchComboBox();
-            cbValue.VirtualizationMode = ItemVirtualizationMode.Simple;
 
             List<string> items = new List<string>();
 
@@ -49,7 +49,7 @@ namespace RogueEssence.Dev
             }
 
             var subject = new Subject<List<string>>();
-            cbValue.Bind(ComboBox.ItemsProperty, subject);
+            cbValue.Bind(ComboBox.ItemsSourceProperty, subject);
             subject.OnNext(items);
             cbValue.SelectedIndex = Math.Min(Math.Max(0, chosenIndex), items.Count - 1);
             control.Children.Add(cbValue);

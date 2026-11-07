@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class TeamMemberSpawnEditor : Editor<TeamMemberSpawn>
     {
+        public TeamMemberSpawnEditor(EditorContext context) : base(context) { }
         public override string GetString(TeamMemberSpawn obj, Type type, object[] attributes)
         {
             MemberInfo[] spawnInfo = type.GetMember(nameof(obj.Spawn));

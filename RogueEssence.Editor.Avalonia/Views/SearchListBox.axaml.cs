@@ -7,19 +7,14 @@ using Avalonia.Input;
 
 namespace RogueEssence.Dev.Views
 {
-    public class SearchListBox : UserControl
+    public partial class SearchListBox : UserControl
     {
         public SearchListBox()
         {
             this.InitializeComponent();
 
         }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
+        
         public void slb_DataContextChanged(object sender, EventArgs e)
         {
             ViewModels.SearchListBoxViewModel viewModel = (ViewModels.SearchListBoxViewModel)DataContext;

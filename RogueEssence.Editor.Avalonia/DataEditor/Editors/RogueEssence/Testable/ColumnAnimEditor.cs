@@ -10,6 +10,7 @@ namespace RogueEssence.Dev
 {
     public class ColumnAnimEditor : TestableEditor<ColumnAnim>
     {
+        public ColumnAnimEditor(EditorContext context) : base(context) { }
         protected override void RunTest(ColumnAnim data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

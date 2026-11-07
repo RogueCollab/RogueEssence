@@ -8,8 +8,8 @@ namespace RogueEssence.Dev
         bool LoadComplete { get; }
         bool AteMouse { get; }
         bool AteKeyboard { get; }
-        IGroundEditor GroundEditor { get; }
-        IMapEditor MapEditor { get; }
+        IGroundEditor GroundEditor { get; set; }
+        IMapEditor MapEditor { get; set; }
 
         void ReloadData(DataManager.DataType dataType);
         void Load(GameBase game);

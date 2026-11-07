@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class PriorityEditor : Editor<Priority>
     {
+        public PriorityEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

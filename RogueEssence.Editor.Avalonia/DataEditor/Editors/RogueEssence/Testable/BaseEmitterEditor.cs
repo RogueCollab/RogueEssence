@@ -10,6 +10,7 @@ namespace RogueEssence.Dev
 {
     public class BaseEmitterEditor : TestableEditor<EndingEmitter>
     {
+        public BaseEmitterEditor(EditorContext context) : base(context) { }
         protected override void RunTest(EndingEmitter data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

@@ -67,7 +67,12 @@ namespace RogueEssence.Dev
             LoadClassControls(editor.ControlPanel, assetName, null, obj.ToString(), editType, new object[0], obj, true, new Type[0], false);
             TrackTypeSize(editor, editType);
         }
-
+        public static void LoadDataControls(string assetName, object obj, StackPanel panel)
+        {
+            Type editType = obj.GetType();
+            LoadClassControls(panel, assetName, null, obj.ToString(), editType, new object[0], obj, true, new Type[0], false);
+        }
+        
         /// <summary>
         /// Sets the editor window based on saved values (if there are any), and sets the event to save editor dimensions when changed.
         /// </summary>
@@ -122,7 +127,7 @@ namespace RogueEssence.Dev
             IEditor converter = findEditor(type, attributes, advancedEdit);
             converter.LoadClassControls(control, parent, parentType, name, type, attributes, member, isWindow, subGroupStack, advancedEdit);
         }
-
+        
         public static void LoadWindowControls(StackPanel control, string parent, Type parentType, string name, Type type, object[] attributes, object obj, Type[] subGroupStack, bool advancedEdit)
         {
             IEditor converter = findEditor(type, attributes, advancedEdit);

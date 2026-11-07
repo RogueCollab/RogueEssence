@@ -11,6 +11,7 @@ namespace RogueEssence.Dev
 {
     public class SkillDataEditor : TestableEditor<SkillData>
     {
+        public SkillDataEditor(EditorContext context) : base(context) { }
         protected override void RunTest(SkillData data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

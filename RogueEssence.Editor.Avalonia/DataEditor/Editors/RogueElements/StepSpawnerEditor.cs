@@ -18,12 +18,14 @@ namespace RogueEssence.Dev
 {
     public class StepSpawnerEditor : Editor<IStepSpawner>
     {
+        public StepSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
     }
 
     public class MultiStepSpawnerEditor : Editor<IMultiStepSpawner>
     {
+        public MultiStepSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
 
@@ -35,6 +37,7 @@ namespace RogueEssence.Dev
     }
     public class PickerSpawnerEditor : Editor<IPickerSpawner>
     {
+        public PickerSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
 
@@ -46,6 +49,7 @@ namespace RogueEssence.Dev
     }
     public class MoneyDivSpawnerEditor : Editor<IDivSpawner>
     {
+        public MoneyDivSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
         public override string GetString(IDivSpawner obj, Type type, object[] attributes)
@@ -56,6 +60,7 @@ namespace RogueEssence.Dev
     }
     public class ContextSpawnerEditor : Editor<IContextSpawner>
     {
+        public ContextSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
 
@@ -67,6 +72,7 @@ namespace RogueEssence.Dev
     }
     public class TeamContextSpawnerEditor : Editor<ITeamContextSpawner>
     {
+        public TeamContextSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
         public override string GetString(ITeamContextSpawner obj, Type type, object[] attributes)
@@ -77,6 +83,7 @@ namespace RogueEssence.Dev
     }
     public class LoopedTeamSpawnerEditor : Editor<ILoopedTeamSpawner>
     {
+        public LoopedTeamSpawnerEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
 
         public override string GetString(ILoopedTeamSpawner obj, Type type, object[] attributes)

@@ -27,7 +27,7 @@ namespace RogueEssence.Dev
         /// </summary>
         public bool Inclusive;
 
-        public MoneySpawnRangeEditor(bool index1, bool inclusive)
+        public MoneySpawnRangeEditor(EditorContext context, bool index1, bool inclusive) : base(context)
         {
             Index1 = index1;
             Inclusive = inclusive;

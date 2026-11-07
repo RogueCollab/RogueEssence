@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RogueEssence.Dev.ViewModels;assembly=RogueEssence.Editor.Avalonia"
+             xmlns:views="clr-namespace:RogueEssence.Dev.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RogueEssence.Dev"
+             xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             mc:Ignorable="d"
+             x:Class="RogueEssence.Dev.Views.MapTabEntrances">
+  <Design.DataContext>
+    <vm:MapTabEntrancesViewModel/>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <converters:ComparisonConverter x:Key="ComparisonConverter"/>
+    <converters:IntInSetConverter x:Key="ValidIdxConverter"/>
+  </UserControl.Resources>
+  <Grid Margin="4" RowDefinitions="38,40" ColumnDefinitions="180,*">
+    <CheckBox Margin="4" IsChecked="{Binding ShowEntrances}">Show Entrances</CheckBox>
+    <Grid Grid.Column="1" RowDefinitions="16,26" ColumnDefinitions="*,*">
+      <TextBlock Margin="4,2" VerticalAlignment="Bottom">Mode</TextBlock>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.SelectEntity}}" Margin="2" Grid.Row="1">Select/Move</RadioButton>
+      <RadioButton IsChecked="{Binding Path=EntMode, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:EntEditMode.PlaceEntity}}" Margin="2" Grid.Row="1" Grid.Column="1">Add/Delete</RadioButton>
+    </Grid>
+    <TextBlock Margin="4,2" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="1">Direction:</TextBlock>
+    <views:SearchComboBox ItemsSource="{Binding Directions}" SelectedIndex="{Binding ChosenDir}" VerticalAlignment="Center" Margin="4,2" Grid.Row="1" Grid.Column="1"/>
+  </Grid>
+</UserControl>

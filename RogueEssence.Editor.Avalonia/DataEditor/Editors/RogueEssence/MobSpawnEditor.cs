@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class MobSpawnEditor : Editor<MobSpawn>
     {
+        public MobSpawnEditor(EditorContext context) : base(context) { }
         public override string GetString(MobSpawn obj, Type type, object[] attributes)
         {
             string monName = "[EMPTY]";

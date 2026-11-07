@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
         x:Class="RogueEssence.Dev.Views.DataEditRootForm"
-        Title="{Binding Name}" Width="340" Height="540" Opened="Window_Loaded" Closing="Window_Closing">
+     
+        Title="{Binding Name}" Width="340" Height="540">
   <!--Icon="/Assets/app-logo.ico"-->
+  <!-- Opened="Window_Loaded" Closing="Window_Closing" -->
   <Window.Resources>
   </Window.Resources>
   <Grid>
@@ -27,8 +29,8 @@
         
       </StackPanel>
     </ScrollViewer>
-    <Button Click="btnApply_Click" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">Save All Sub-Windows</Button>
-    <Button Click="btnOK_Click" Margin="4" Grid.Row="2" Grid.Column="0">OK</Button>
-    <Button Click="btnCancel_Click" Margin="4" Grid.Row="2" Grid.Column="1">Cancel</Button>
+    <!-- <Button Click="btnApply_Click" Margin="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">Save All Sub-Windows</Button> -->
+    <!-- <Button Click="btnOK_Click" Margin="4" Grid.Row="2" Grid.Column="0">OK</Button> -->
+    <!-- <Button Click="btnCancel_Click" Margin="4" Grid.Row="2" Grid.Column="1">Cancel</Button> -->
   </Grid>
 </Window>
