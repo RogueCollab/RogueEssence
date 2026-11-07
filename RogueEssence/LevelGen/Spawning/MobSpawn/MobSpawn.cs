@@ -119,7 +119,7 @@ namespace RogueEssence.LevelGen
             character.Level = Level.Pick(map.Rand);
             
             List<string> final_skills = formEntry.RollLatestSkills(character.Level, SpecifiedSkills);
-            for (int ii = 0; ii < final_skills.Count; ii++)
+            for (int ii = 0; ii < final_skills.Count && ii < CharData.MAX_SKILL_SLOTS; ii++)
                 character.BaseSkills[ii] = new SlotSkill(final_skills[ii]);
 
             if (String.IsNullOrEmpty(Intrinsic))
