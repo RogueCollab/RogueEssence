@@ -21,10 +21,25 @@ namespace RogueEssence.Dungeon
     {
         public enum SightRange
         {
+            /// <summary>
+            /// If set on a character's sight variable, it lets the map decide the value.
+            /// </summary>
             Any = -1,
+            /// <summary>
+            /// Normal sight.  Can be limited by a nonzero sight radius down to just the tile the character is on.
+            /// </summary>
             Clear = 0,
+            /// <summary>
+            /// Uses FOV to draw darkness.
+            /// </summary>
             Dark = 1,
+            /// <summary>
+            /// One-time darkness.  DEPRECATED.
+            /// </summary>
             Murky = 2,
+            /// <summary>
+            /// Complete darkness, including the tile the character is on.
+            /// </summary>
             Blind = 3
         }
 
@@ -64,6 +79,8 @@ namespace RogueEssence.Dungeon
         public string Music;
         public SightRange TileSight;
         public SightRange CharSight;
+        public int TileSightRadius;
+        public int CharSightRadius;
 
         [JsonConverter(typeof(MapStatusDictConverter))]
         public Dictionary<string, MapStatus> Status;
@@ -126,6 +143,9 @@ namespace RogueEssence.Dungeon
         public HashSet<CharIndex> DeadTeams;
 
         [NonSerialized]
+        public HashSet<Character> SightChangedChars;
+
+        [NonSerialized]
         public HashSet<Character> DisplacedChars;
 
         public bool NoRescue;
@@ -161,12 +181,15 @@ namespace RogueEssence.Dungeon
 
             TileSight = SightRange.Clear;
             CharSight = SightRange.Clear;
+            TileSightRadius = -1;
+            CharSightRadius = -1;
 
             TeamSpawns = new SpawnList<TeamSpawner>();
             ItemSpawns = new CategorySpawnChooser<InvItem>();
 
             TeamsWithDead = new HashSet<CharIndex>();
             DeadTeams = new HashSet<CharIndex>();
+            SightChangedChars = new HashSet<Character>();
             DisplacedChars = new HashSet<Character>();
 
             Background = new MapBG();
@@ -299,7 +322,7 @@ namespace RogueEssence.Dungeon
                     //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
                     foreach (Character character in ActiveTeam.Players)
                     {
-                        if (character.IsInSightBounds(testLoc))
+                        if (character.IsInCharSightBounds(testLoc))
                             return;
                     }
 
@@ -475,7 +498,7 @@ namespace RogueEssence.Dungeon
                 {
                     if (!character.Dead)
                     {
-                        Loc seen = Character.GetSightDims();
+                        Loc seen = Character.GetGlobalSightDims();
                         Rect sightBounds = new Rect(character.CharLoc - seen, seen * 2 + Loc.One);
                         sightBounds = ZoneManager.Instance.CurrentMap.GetClampedSight(sightBounds);
 

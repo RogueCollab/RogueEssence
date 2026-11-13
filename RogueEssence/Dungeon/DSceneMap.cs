@@ -129,6 +129,23 @@ namespace RogueEssence.Dungeon
             return FinishTurn(character, advanceTurn, true, false);
         }
 
+        public void CheckAllSightChanges()
+        {
+            //check for all sight changes
+            while (ZoneManager.Instance.CurrentMap.SightChangedChars.Count > 0)
+            {
+                List<Character> changed = new List<Character>();
+                changed.AddRange(ZoneManager.Instance.CurrentMap.SightChangedChars);
+                ZoneManager.Instance.CurrentMap.SightChangedChars.Clear();
+                foreach (Character standChar in changed)
+                {
+                    if (standChar.Dead)
+                        continue;
+                    ZoneManager.Instance.CurrentMap.UpdateExploration(standChar);
+                }
+            }
+        }
+
         public IEnumerator<YieldInstruction> CheckAllMobilityViolations()
         {
             //check for mobility violation at the end of anyone's turn
@@ -162,6 +179,7 @@ namespace RogueEssence.Dungeon
 
             LogMsg(Text.DIVIDER_STR);
 
+            CheckAllSightChanges();
             yield return CoroutineManager.Instance.StartCoroutine(CheckAllMobilityViolations());
 
             //end turn
@@ -1529,7 +1547,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!player.Dead)
                 {
-                    if (player.CanSeeLoc(loc, player.GetTileSight()))
+                    if (player.CanSeeTileLoc(loc, player.GetTileSight()))
                         return true;
                 }
             }
@@ -1541,7 +1559,7 @@ namespace RogueEssence.Dungeon
             {
                 if (!player.Dead)
                 {
-                    if (player.CanSeeLoc(loc, player.GetCharSight()))
+                    if (player.CanSeeCharLoc(loc, player.GetCharSight()))
                         return true;
                 }
             }

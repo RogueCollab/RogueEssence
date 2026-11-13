@@ -830,7 +830,8 @@ namespace RogueEssence.Dungeon
                     MathUtils.DivUp(sightEnd.X, GraphicsManager.TileSize) - MathUtils.DivDown(sightStart.X, GraphicsManager.TileSize),
                     MathUtils.DivUp(sightEnd.Y, GraphicsManager.TileSize) - MathUtils.DivDown(sightStart.Y, GraphicsManager.TileSize));
 
-                if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.GetTileSight() != Map.SightRange.Clear) && !SeeAll)
+                if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.IsCharSightRadiusLimited()
+                    || FocusedCharacter.GetTileSight() != Map.SightRange.Clear || FocusedCharacter.IsTileSightRadiusLimited()) && !SeeAll)
                 {
                     Loc seen = getDrawSight();
                     for (int xx = 0; xx < charSightValues.Length; xx++)
@@ -847,7 +848,7 @@ namespace RogueEssence.Dungeon
                             foreach (VisionLoc visionLoc in member.GetVisionLocs())
                             {
                                 if (visionLoc.Weight > 0)
-                                    AddBrightLocs(visionLoc, member.GetCharSight());
+                                    AddBrightLocs(visionLoc, member);
                             }
                         }
                     }
@@ -948,7 +949,7 @@ namespace RogueEssence.Dungeon
         {
             if (SeeAll)
                 return true;
-            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear && !FocusedCharacter.IsTileSightRadiusLimited())
                 return true;
 
             Loc loc = new Loc(xx, yy);
@@ -1201,7 +1202,7 @@ namespace RogueEssence.Dungeon
                                 {
                                     if (member.SeeWallItems)
                                     {
-                                        if (member.SeeItems || member.CanSeeLoc(item.TileLoc, Map.SightRange.Clear))
+                                        if (member.SeeItems || member.CanSeeScreenLoc(item.TileLoc))
                                         {
                                             seeItem = true;
                                             break;
@@ -1351,7 +1352,8 @@ namespace RogueEssence.Dungeon
         {
             //draw foreground (includes darkness)
             //prepare grid
-            if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.GetTileSight() != Map.SightRange.Clear) && !SeeAll)
+            if ((FocusedCharacter.GetCharSight() != Map.SightRange.Clear || FocusedCharacter.IsCharSightRadiusLimited()
+                || FocusedCharacter.GetTileSight() != Map.SightRange.Clear || FocusedCharacter.IsTileSightRadiusLimited()) && !SeeAll)
             {
                 Matrix matrix = Matrix.CreateScale(new Vector3(drawScale, drawScale, 1));
                 //subtractive blending
@@ -1366,7 +1368,7 @@ namespace RogueEssence.Dungeon
                         //set tile sprite position
                         if (!wrapped && !Collision.InBounds(ZoneManager.Instance.CurrentMap.Width, ZoneManager.Instance.CurrentMap.Height, mapLoc))
                         {
-                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                            if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear && !FocusedCharacter.IsTileSightRadiusLimited())
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.White * DARK_TRANSPARENT, new Vector2(GraphicsManager.TileSize));
                             else
                                 GraphicsManager.Pixel.Draw(spriteBatch, new Vector2(ii * GraphicsManager.TileSize - ViewRect.X, jj * GraphicsManager.TileSize - ViewRect.Y), null, Color.Black, new Vector2(GraphicsManager.TileSize));
@@ -1583,16 +1585,34 @@ namespace RogueEssence.Dungeon
         /// Lights up tiles for graphical reasons.
         /// </summary>
         /// <param name="loc"></param>
-        /// <param name="sight"></param>
-        public void AddBrightLocs(VisionLoc loc, Map.SightRange sight)
+        /// <param name="chara"></param>
+        public void AddBrightLocs(VisionLoc loc, Character chara)
         {
             //The sight rect of the character, not the screen.
-            //TODO: we currently add 1 to the range, even though it's beyond the actual sight of the players.
-            //This is to prevent darkness at the edge of vision from constantly showing up when walking.
-            //However, this is not ideal; the tiles being lit up actually aren't in character sight.
-            //So there needs to be a better way eventually...
-            Loc seen = Character.GetSightDims() + Loc.One;
+            Map.SightRange sight = chara.GetCharSight();
+
+            Loc seen = chara.GetCharSightDims();
             Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
+            if (chara == FocusedCharacter)
+            {
+                // The focused character is treated as not being bounded by the screen in terms of shadowing
+                // This is to avoid an edge-case display issue of drawing of shadows that fade in and out just at the border of the screen.
+                // There is a minor issue that shows in long-reaching pounce effects: in the entire sweep, the map appears lit.
+                // But this is only for character darkness, and does not actually reveal any hidden enemies...
+                if (chara.IsCharSightRadiusLimited())
+                {
+                    // The radius of the character sight, WITHOUT the limitations of the screen, must be used here
+                    int radius = chara.GetCharSightRadius();
+                    Loc unboundSeen = new Loc(radius);
+                    localSightRect = new Rect(loc.Loc - unboundSeen, unboundSeen * 2 + Loc.One);
+                }
+                else
+                {
+                    // If sight dims aren't a limited radius, it should use "infinity" aka all of `charSightValues`
+                    localSightRect = new Rect(sightRect.Start.X, sightRect.Start.Y, charSightValues.Length, charSightValues[0].Length);
+                }
+            }
+
             switch (sight)
             {
                 case Map.SightRange.Blind:
@@ -1749,9 +1769,9 @@ namespace RogueEssence.Dungeon
             Loc wrappedLoc = loc;
             if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref wrappedLoc))
             {
-                if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear && !FocusedCharacter.IsTileSightRadiusLimited())
                 {
-                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear)
+                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear && !FocusedCharacter.IsCharSightRadiusLimited())
                         return 1f;
                     else
                         return 1f - DARK_TRANSPARENT;
@@ -1763,9 +1783,9 @@ namespace RogueEssence.Dungeon
             //if it's undiscovered, it's decided-on darkness
             if (ZoneManager.Instance.CurrentMap.DiscoveryArray[wrappedLoc.X][wrappedLoc.Y] != Map.DiscoveryState.Traversed)
             {
-                if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear)
+                if (FocusedCharacter.GetTileSight() == Map.SightRange.Clear && !FocusedCharacter.IsTileSightRadiusLimited())
                 {
-                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear)
+                    if (FocusedCharacter.GetCharSight() == Map.SightRange.Clear && !FocusedCharacter.IsCharSightRadiusLimited())
                         return 1f;
                     else
                         return 1f - DARK_TRANSPARENT;

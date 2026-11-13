@@ -452,7 +452,7 @@ namespace RogueEssence
 
         public int ModifyBattleSpeed(int waitTime, Loc origin)
         {
-            if (DungeonScene.Instance.FocusedCharacter.IsInSightBounds(origin))
+            if (DungeonScene.Instance.FocusedCharacter.IsInCharSightBounds(origin))
                 return ModifyBattleSpeed(waitTime, Settings.BattleSpeed.Fast);
             else
                 return 0;
@@ -460,7 +460,7 @@ namespace RogueEssence
 
         public int ModifyBattleSpeed(int waitTime, Loc origin, Settings.BattleSpeed minSpeed)
         {
-            if (DungeonScene.Instance.FocusedCharacter.IsInSightBounds(origin))
+            if (DungeonScene.Instance.FocusedCharacter.IsInCharSightBounds(origin))
                 return ModifyBattleSpeed(waitTime, minSpeed);
             else
                 return 0;
