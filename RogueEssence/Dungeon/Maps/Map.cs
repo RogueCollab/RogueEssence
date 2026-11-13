@@ -21,10 +21,25 @@ namespace RogueEssence.Dungeon
     {
         public enum SightRange
         {
+            /// <summary>
+            /// If set on a character's sight variable, it lets the map decide the value.
+            /// </summary>
             Any = -1,
+            /// <summary>
+            /// Normal sight.  Can be limited by a nonzero sight radius down to just the tile the character is on.
+            /// </summary>
             Clear = 0,
+            /// <summary>
+            /// Uses FOV to draw darkness.
+            /// </summary>
             Dark = 1,
+            /// <summary>
+            /// One-time darkness.  DEPRECATED.
+            /// </summary>
             Murky = 2,
+            /// <summary>
+            /// Complete darkness, including the tile the character is on.
+            /// </summary>
             Blind = 3
         }
 

@@ -1589,15 +1589,30 @@ namespace RogueEssence.Dungeon
         public void AddBrightLocs(VisionLoc loc, Character chara)
         {
             //The sight rect of the character, not the screen.
-            //TODO: we currently add 1 to the range, even though it's beyond the actual sight of the players.
-            //This is to prevent darkness at the edge of vision from constantly showing up when walking.
-            //However, this is not ideal; the tiles being lit up actually aren't in character sight.
-            //So there needs to be a better way eventually...
             Map.SightRange sight = chara.GetCharSight();
+
             Loc seen = chara.GetCharSightDims();
-            if(!chara.IsCharSightRadiusLimited())
-                seen += Loc.One;
             Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
+            if (chara == FocusedCharacter)
+            {
+                // The focused character is treated as not being bounded by the screen in terms of shadowing
+                // This is to avoid an edge-case display issue of drawing of shadows that fade in and out just at the border of the screen.
+                // There is a minor issue that shows in long-reaching pounce effects: in the entire sweep, the map appears lit.
+                // But this is only for character darkness, and does not actually reveal any hidden enemies...
+                if (chara.IsCharSightRadiusLimited())
+                {
+                    // The radius of the character sight, WITHOUT the limitations of the screen, must be used here
+                    int radius = chara.GetCharSightRadius();
+                    Loc unboundSeen = new Loc(radius);
+                    localSightRect = new Rect(loc.Loc - unboundSeen, unboundSeen * 2 + Loc.One);
+                }
+                else
+                {
+                    // If sight dims aren't a limited radius, it should use "infinity" aka all of `charSightValues`
+                    localSightRect = new Rect(sightRect.Start.X, sightRect.Start.Y, charSightValues.Length, charSightValues[0].Length);
+                }
+            }
+
             switch (sight)
             {
                 case Map.SightRange.Blind:
