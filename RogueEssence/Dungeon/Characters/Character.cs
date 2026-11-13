@@ -1633,6 +1633,8 @@ namespace RogueEssence.Dungeon
         public void RefreshTraits(bool fullRefresh = true)
         {
             TerrainData.Mobility oldMobility = Mobility;
+            Map.SightRange oldTileSight = TileSight;
+            int oldTileSightRadius = TileSightRadius;
 
             baseRefresh();
 
@@ -1642,6 +1644,8 @@ namespace RogueEssence.Dungeon
 
                 OnRefresh();
 
+                if (TileSight != oldTileSight || TileSightRadius != oldTileSightRadius)
+                    MemberTeam?.ContainingMap?.SightChangedChars.Add(this);
                 if (Mobility != oldMobility)
                     MemberTeam?.ContainingMap?.DisplacedChars.Add(this);
             }
@@ -2316,6 +2320,10 @@ namespace RogueEssence.Dungeon
             return dims;
         }
 
+        /// <summary>
+        /// Defaults to the map radius if set to 1 (Invalid)
+        /// </summary>
+        /// <returns></returns>
         public int GetTileSightRadius()
         {
             int radius = TileSightRadius;
@@ -2324,6 +2332,10 @@ namespace RogueEssence.Dungeon
             return radius;
         }
 
+        /// <summary>
+        /// Defaults to the map radius if set to 1 (Invalid)
+        /// </summary>
+        /// <returns></returns>
         public int GetCharSightRadius()
         {
             int radius = CharSightRadius;
@@ -2388,7 +2400,7 @@ namespace RogueEssence.Dungeon
                     }
                 default:
                     {
-                        Loc seen = GetGlobalSightDims();
+                        Loc seen = GetTileSightDims();
                         Rect sightBounds = Rect.FromPoints(CharLoc - seen, CharLoc + seen + Loc.One);
                         sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
                         for (int x = sightBounds.X; x < sightBounds.End.X; x++)

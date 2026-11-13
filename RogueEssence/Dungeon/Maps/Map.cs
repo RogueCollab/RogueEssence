@@ -128,6 +128,9 @@ namespace RogueEssence.Dungeon
         public HashSet<CharIndex> DeadTeams;
 
         [NonSerialized]
+        public HashSet<Character> SightChangedChars;
+
+        [NonSerialized]
         public HashSet<Character> DisplacedChars;
 
         public bool NoRescue;
@@ -171,6 +174,7 @@ namespace RogueEssence.Dungeon
 
             TeamsWithDead = new HashSet<CharIndex>();
             DeadTeams = new HashSet<CharIndex>();
+            SightChangedChars = new HashSet<Character>();
             DisplacedChars = new HashSet<Character>();
 
             Background = new MapBG();
