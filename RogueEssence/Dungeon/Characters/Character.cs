@@ -2321,7 +2321,7 @@ namespace RogueEssence.Dungeon
         }
 
         /// <summary>
-        /// Defaults to the map radius if set to 1 (Invalid)
+        /// Defaults to the map radius if set to -1 (Invalid)
         /// </summary>
         /// <returns></returns>
         public int GetTileSightRadius()
@@ -2333,7 +2333,7 @@ namespace RogueEssence.Dungeon
         }
 
         /// <summary>
-        /// Defaults to the map radius if set to 1 (Invalid)
+        /// Defaults to the map radius if set to -1 (Invalid)
         /// </summary>
         /// <returns></returns>
         public int GetCharSightRadius()
