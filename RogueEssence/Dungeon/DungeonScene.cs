@@ -1593,16 +1593,17 @@ namespace RogueEssence.Dungeon
 
             Loc seen = chara.GetCharSightDims();
             Rect localSightRect = new Rect(loc.Loc - seen, seen * 2 + Loc.One);
+
+            int radius = chara.GetCharSightRadius();
             if (chara == FocusedCharacter)
             {
                 // The focused character is treated as not being bounded by the screen in terms of shadowing
                 // This is to avoid an edge-case display issue of drawing of shadows that fade in and out just at the border of the screen.
                 // There is a minor issue that shows in long-reaching pounce effects: in the entire sweep, the map appears lit.
                 // But this is only for character darkness, and does not actually reveal any hidden enemies...
-                if (chara.IsCharSightRadiusLimited())
+                if (radius >= 0)
                 {
                     // The radius of the character sight, WITHOUT the limitations of the screen, must be used here
-                    int radius = chara.GetCharSightRadius();
                     Loc unboundSeen = new Loc(radius);
                     localSightRect = new Rect(loc.Loc - unboundSeen, unboundSeen * 2 + Loc.One);
                 }
@@ -1635,7 +1636,29 @@ namespace RogueEssence.Dungeon
                     }
                 case Map.SightRange.Dark:
                     {
-                        CalculateSymmetricFOV(localSightRect.Start, localSightRect.Size, loc);
+                        Fov.LightOperation lightOp = (int locX, int locY, float light) =>
+                        {
+                            Loc testLoc = new Loc(locX, locY);
+                            if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref testLoc))
+                                return;
+
+                            //Can only light up tiles that have been explored
+                            if (ZoneManager.Instance.CurrentMap.DiscoveryArray[testLoc.X][testLoc.Y] != Map.DiscoveryState.Traversed)
+                                return;
+
+                            //Only light up tiles within the circle
+                            if (DataManager.Instance.SightShape == DataManager.SightBorder.Circle)
+                            {
+                                if (!ZoneManager.Instance.CurrentMap.InCircleSightBounds(loc.Loc, radius, testLoc))
+                                    return;
+                            }
+
+                            //can only light up tiles currently in the viewport
+                            //but be sure to light up all of them
+                            foreach (Loc wrapLoc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
+                                charSightValues[wrapLoc.X - sightRect.Start.X][wrapLoc.Y - sightRect.Start.Y] += loc.Weight;
+                        };
+                        Fov.CalculateAnalogFOV(localSightRect.Start, localSightRect.Size, loc.Loc, VisionBlocked, lightOp);
                         break;
                     }
                 default:
@@ -1645,6 +1668,13 @@ namespace RogueEssence.Dungeon
                             for (int y = 0; y < localSightRect.Size.Y; y++)
                             {
                                 Loc testLoc = localSightRect.Start + new Loc(x, y);
+
+                                if (DataManager.Instance.SightShape == DataManager.SightBorder.Circle)
+                                {
+                                    if (!ZoneManager.Instance.CurrentMap.InCircleSightBounds(loc.Loc, radius, testLoc))
+                                        continue;
+                                }
+
                                 foreach (Loc wrapLoc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
                                 {
                                     if (Collision.InBounds(sightRect.Start, sightRect.Size, wrapLoc))
@@ -1655,27 +1685,6 @@ namespace RogueEssence.Dungeon
                         break;
                     }
             }
-        }
-
-
-        public void CalculateSymmetricFOV(Loc rectStart, Loc rectSize, VisionLoc start)
-        {
-            Fov.LightOperation lightOp = (int locX, int locY, float light) =>
-            {
-                Loc testLoc = new Loc(locX, locY);
-                if (!ZoneManager.Instance.CurrentMap.GetLocInMapBounds(ref testLoc))
-                    return;
-
-                //Can only light up tiles that have been explored
-                if (ZoneManager.Instance.CurrentMap.DiscoveryArray[testLoc.X][testLoc.Y] != Map.DiscoveryState.Traversed)
-                    return;
-
-                //can only light up tiles currently in the viewport
-                //but be sure to light up all of them
-                foreach (Loc loc in ZoneManager.Instance.CurrentMap.IterateLocInBounds(sightRect, testLoc))
-                    charSightValues[loc.X - sightRect.Start.X][loc.Y - sightRect.Start.Y] += start.Weight;
-            };
-            Fov.CalculateAnalogFOV(rectStart, rectSize, start.Loc, VisionBlocked, lightOp);
         }
 
         /// <summary>

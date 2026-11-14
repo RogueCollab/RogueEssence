@@ -322,7 +322,7 @@ namespace RogueEssence.Dungeon
                     //must be walkable, not have a nonwalkable on at least 3 cardinal directions, not be within eyesight of any of the player characters
                     foreach (Character character in ActiveTeam.Players)
                     {
-                        if (character.IsInCharSightBounds(testLoc))
+                        if (character.CanSeeScreenLoc(testLoc))
                             return;
                     }
 

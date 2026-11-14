@@ -109,6 +109,11 @@ namespace RogueEssence.Data
             Modded,
             DiffModded
         }
+        public enum SightBorder
+        {
+            Square = 0,
+            Circle = 1
+        }
 
         private static DataManager instance;
         public static void InitInstance()
@@ -287,6 +292,11 @@ namespace RogueEssence.Data
         /// The terrain ID considered to be universally "unbreakable" in random dungeon generation
         /// </summary>
         public string GenUnbreakable;
+
+        /// <summary>
+        /// The shape of the sight radius.
+        /// </summary>
+        public SightBorder SightShape;
         
         public UniversalBaseEffect UniversalEvent;
         
@@ -593,6 +603,9 @@ namespace RogueEssence.Data
                     GenFloor = xmldoc.DocumentElement.SelectSingleNode("GenFloor").InnerText;
                     GenWall = xmldoc.DocumentElement.SelectSingleNode("GenWall").InnerText;
                     GenUnbreakable = xmldoc.DocumentElement.SelectSingleNode("GenUnbreakable").InnerText;
+
+                    XmlNode sightBounds = xmldoc.DocumentElement.SelectSingleNode("SightShape");
+                    SightShape = Enum.Parse<SightBorder>(sightBounds.InnerText);
                     return;
                 }
                 catch (Exception ex)

@@ -2299,9 +2299,9 @@ namespace RogueEssence.Dungeon
         public Loc GetTileSightDims()
         {
             Loc dims = GetGlobalSightDims();
-            int radius = GetTileSightRadius();
-            if(IsTileSightRadiusLimited())
+            if (IsTileSightRadiusLimited())
             {
+                int radius = GetTileSightRadius();
                 dims = new Loc(Math.Min(radius, dims.X),
                                 Math.Min(radius, dims.Y));
             }
@@ -2311,9 +2311,9 @@ namespace RogueEssence.Dungeon
         public Loc GetCharSightDims()
         {
             Loc dims = GetGlobalSightDims();
-            int radius = GetCharSightRadius();
             if(IsCharSightRadiusLimited())
             {
+                int radius = GetCharSightRadius();
                 dims = new Loc(Math.Min(radius, dims.X),
                                 Math.Min(radius, dims.Y));
             }
@@ -2347,13 +2347,13 @@ namespace RogueEssence.Dungeon
         public bool IsTileSightRadiusLimited()
         {
             int radius = GetTileSightRadius();
-            return radius >= 0 && radius < 7;
+            return radius >= 0;
         }
 
         public bool IsCharSightRadiusLimited()
         {
             int radius = GetCharSightRadius();
-            return radius >= 0 && radius < 7;
+            return radius >= 0;
         }
 
         public Map.SightRange GetTileSight()
@@ -2372,8 +2372,23 @@ namespace RogueEssence.Dungeon
             return sight;
         }
 
-        public void UpdateTileSight(Fov.LightOperation lightOp)
+        public void UpdateTileSight(Fov.LightOperation baseLightOp)
         {
+            Fov.LightOperation lightOp = baseLightOp;
+            if (DataManager.Instance.SightShape == DataManager.SightBorder.Circle && IsTileSightRadiusLimited())
+            {
+                // Multiply by 2 to represent distance in half-tiles, then add 1 to account for the origin tile
+                int adjRadius = TileSightRadius * 2 + 1;
+                void circleLightFilter(int locX, int locY, float lighting)
+                {
+                    // Multiply by 2 to represent distance in half-tiles
+                    Loc adjDiff = (CharLoc - new Loc(locX, locY)) * 2;
+                    if (adjDiff.DistSquared() <= adjRadius * adjRadius)
+                        baseLightOp(locX, locY, lighting);
+                }
+                lightOp = circleLightFilter;
+            }
+
             switch (GetTileSight())
             {
                 case Map.SightRange.Blind:
@@ -2481,83 +2496,15 @@ namespace RogueEssence.Dungeon
         public IEnumerable<Loc> GetLocsVisible() { return currentCharAction.GetLocsVisible(); }
         public IEnumerable<VisionLoc> GetVisionLocs() { return currentCharAction.GetVisionLocs(); }
 
+        /// <summary>
+        /// Determines if the given location is a tile within the bounds of this character's screen.
+        /// Only checks for screen bounds presence, not if a given character/tile can actually be seen.
+        /// </summary>
+        /// <param name="loc"></param>
+        /// <returns></returns>
         public bool CanSeeScreenLoc(Loc loc)
         {
             return IsInScreenBoundsFrom(CharLoc, loc);
-        }
-        public bool CanSeeTileLoc(Loc loc, Map.SightRange sight)
-        {
-            return CanSeeTileLocFromLoc(CharLoc, loc, sight);
-        }
-        public bool CanSeeCharLoc(Loc loc, Map.SightRange sight)
-        {
-            return CanSeeCharLocFromLoc(CharLoc, loc, sight);
-        }
-        public bool CanSeeTileLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
-        {
-            //needs to be edited according to FOV
-            switch (sight)
-            {
-                case Map.SightRange.Blind:
-                    return false;
-                case Map.SightRange.Murky:
-                    {
-                        Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
-                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
-                    }
-                case Map.SightRange.Dark:
-                    {
-                        Loc seen = GetTileSightDims();
-                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
-
-                        foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
-                        {
-                            if (Fov.IsInFOV(fromLoc, testLoc, DungeonScene.Instance.VisionBlocked))
-                                return true;
-                        }
-                        return false;
-                    }
-                default:
-                        return IsInTileSightBoundsFrom(fromLoc, toLoc);
-            }
-        }
-        public bool CanSeeCharLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight)
-        {
-            //needs to be edited according to FOV
-            switch (sight)
-            {
-                case Map.SightRange.Blind:
-                    return false;
-                case Map.SightRange.Murky:
-                    {
-                        Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
-                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
-                    }
-                case Map.SightRange.Dark:
-                    {
-                        Loc seen = GetCharSightDims();
-                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
-
-                        foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
-                        {
-                            if (Fov.IsInFOV(fromLoc, testLoc, DungeonScene.Instance.VisionBlocked))
-                                return true;
-                        }
-                        return false;
-                    }
-                default:
-                        return IsInCharSightBoundsFrom(fromLoc, toLoc);
-            }
-        }
-
-        public bool IsInTileSightBounds(Loc loc)
-        {
-            return IsInTileSightBoundsFrom(CharLoc, loc);
-        }
-
-        public bool IsInCharSightBounds(Loc loc)
-        {
-            return IsInCharSightBoundsFrom(CharLoc, loc);
         }
 
         public bool IsInScreenBoundsFrom(Loc fromLoc, Loc loc)
@@ -2569,24 +2516,71 @@ namespace RogueEssence.Dungeon
             return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
         }
 
-        public bool IsInTileSightBoundsFrom(Loc fromLoc, Loc loc)
+        public bool CanSeeTileLoc(Loc loc, Map.SightRange sight)
         {
-            Loc seen = GetTileSightDims();
-            Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
-            sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
-
-            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
+            return CanSeeLocFromLoc(CharLoc, loc, sight, GetTileSightRadius());
+        }
+        public bool CanSeeCharLoc(Loc loc, Map.SightRange sight)
+        {
+            return CanSeeLocFromLoc(CharLoc, loc, sight, GetCharSightRadius());
         }
 
-        public bool IsInCharSightBoundsFrom(Loc fromLoc, Loc loc)
+        public bool CanSeeLocFromLoc(Loc fromLoc, Loc toLoc, Map.SightRange sight, int radius)
         {
-            Loc seen = GetCharSightDims();
-            Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
-            sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
+            //needs to be edited according to FOV
+            switch (sight)
+            {
+                case Map.SightRange.Blind:
+                    return false;
+                case Map.SightRange.Murky:
+                    {
+                        Rect sightBounds = new Rect(fromLoc - Loc.One, Loc.One * 3);
+                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
+                    }
+                case Map.SightRange.Dark:
+                    {
+                        if (DataManager.Instance.SightShape == DataManager.SightBorder.Circle)
+                        {
+                            if (!MemberTeam.ContainingMap.InCircleSightBounds(fromLoc, radius, toLoc))
+                                return false;
+                        }
 
-            return MemberTeam.ContainingMap.InBounds(sightBounds, loc);
+                        Loc seen = GetGlobalSightDims();
+                        if (radius >= 0)
+                        {
+                            seen = new Loc(Math.Min(radius, seen.X),
+                                            Math.Min(radius, seen.Y));
+                        }
+                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
+
+                        foreach (Loc testLoc in MemberTeam.ContainingMap.IterateLocInBounds(sightBounds, toLoc))
+                        {
+                            if (Fov.IsInFOV(fromLoc, testLoc, DungeonScene.Instance.VisionBlocked))
+                                return true;
+                        }
+                        return false;
+                    }
+                default:
+                    {
+                        if (DataManager.Instance.SightShape == DataManager.SightBorder.Circle)
+                        {
+                            if (!MemberTeam.ContainingMap.InCircleSightBounds(fromLoc, radius, toLoc))
+                                return false;
+                        }
+
+                        Loc seen = GetGlobalSightDims();
+                        if (radius >= 0)
+                        {
+                            seen = new Loc(Math.Min(radius, seen.X),
+                                            Math.Min(radius, seen.Y));
+                        }
+                        Rect sightBounds = new Rect(fromLoc - seen, seen * 2 + Loc.One);
+
+                        sightBounds = MemberTeam.ContainingMap.GetClampedSight(sightBounds);
+                        return MemberTeam.ContainingMap.InBounds(sightBounds, toLoc);
+                    }
+            }
         }
-
 
 
 
