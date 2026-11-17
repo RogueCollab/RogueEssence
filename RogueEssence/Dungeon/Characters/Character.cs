@@ -1264,11 +1264,11 @@ namespace RogueEssence.Dungeon
 
 
         /// <summary>
-        /// Gives the characetr a new skill, placing it in the earliest available slot.
+        /// Gives the character a new skill, placing it in the earliest available slot.
         /// </summary>
         /// <param name="skillNum"></param>
         /// <param name="enabled"></param>
-        /// <param name="refresh"></param>
+        /// <param name="fullRefresh"></param>
         public void LearnSkill(string skillNum, bool enabled, bool fullRefresh = true)
         {
             int newSlot = 0;
@@ -1281,7 +1281,13 @@ namespace RogueEssence.Dungeon
                 ReplaceSkill(skillNum, newSlot, enabled, fullRefresh);
         }
 
-
+        /// <summary>
+        /// Replaces an existing skill in the specified slot with a new one.
+        /// </summary>
+        /// <param name="skillNum"></param>
+        /// <param name="newSlot"></param>
+        /// <param name="enabled"></param>
+        /// <param name="fullRefresh"></param>
         public void ReplaceSkill(string skillNum, int newSlot, bool enabled, bool fullRefresh = true)
         {
             List<int> skillIndices = baseReplaceSkill(skillNum, newSlot, enabled);
