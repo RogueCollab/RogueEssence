@@ -674,6 +674,7 @@ namespace RogueEssence.Data
                 docNode.AppendInnerTextChild(xmldoc, "GenFloor", GenFloor.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "GenWall", GenWall.ToString());
                 docNode.AppendInnerTextChild(xmldoc, "GenUnbreakable", GenUnbreakable.ToString());
+                docNode.AppendInnerTextChild(xmldoc, "SightShape", SightShape.ToString());
 
                 xmldoc.Save(path);
             }
