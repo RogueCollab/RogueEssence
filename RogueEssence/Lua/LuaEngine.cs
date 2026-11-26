@@ -1313,7 +1313,7 @@ namespace RogueEssence.Script
         /// Use this to clean up the traces left behind by a zone package.
         /// Also collects garbages.
         /// </summary>
-        /// <param name="zoneassetname"></param>
+        /// <param name="mapassetname"></param>
         public void CleanDungeonMapScript(string mapassetname)
         {
             RunString(@"
