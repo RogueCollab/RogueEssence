@@ -475,6 +475,8 @@ namespace RogueEssence.Menu
                                 break;
                             case "colorstart":
                             case "colorend":
+                            case "boldstart":
+                            case "boldend":
                                 break;
                         }
                     }
