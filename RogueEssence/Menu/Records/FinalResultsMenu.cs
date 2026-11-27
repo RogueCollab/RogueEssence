@@ -80,7 +80,7 @@ namespace RogueEssence.Menu
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 9 + TitledStripMenu.TITLE_OFFSET), DirH.None);
             TotalDungeonTime = new MenuText(Text.FormatKey("MENU_TIMER", Ending.GetDungeonTimeDisplay()),
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 10 + TitledStripMenu.TITLE_OFFSET), DirH.None);
-            Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", Ending.Rand.FirstSeed.ToString("X")),
+            Seed = new MenuText(Text.FormatKey("MENU_RESULTS_SEED", FormatSeed(Ending.Rand.FirstSeed)),
                 new Loc(Bounds.Width / 2, GraphicsManager.MenuBG.TileHeight + VERT_SPACE * 11 + TitledStripMenu.TITLE_OFFSET), DirH.None);
 
             RogueProgress rogue = Ending as RogueProgress;
@@ -102,6 +102,12 @@ namespace RogueEssence.Menu
             }
 
             base.Initialize();
+        }
+
+        private string FormatSeed(ulong seed)
+        {
+            string asHex = seed.ToString("X16");
+            return asHex.Substring(0, 4) + " " + asHex.Substring(3, 4) + " " + asHex.Substring(7, 4) + " " + asHex.Substring(11, 4);
         }
 
         protected override IEnumerable<IMenuElement> GetDrawElements()
