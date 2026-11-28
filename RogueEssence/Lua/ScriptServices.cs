@@ -14,7 +14,7 @@ namespace RogueEssence.Script
     /// <summary>
     /// Component handling managing script services and various script related tasks
     /// </summary>
-    class ScriptServices : ILuaEngineComponent
+    public class ScriptServices : ILuaEngineComponent
     {
         private struct ServiceEntry
         {

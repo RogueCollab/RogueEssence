@@ -16,7 +16,7 @@ namespace RogueEssence.Menu
 
         TeamMiniSummary summaryMenu;
 
-        bool sendHome;
+        public bool sendHome {get; private set;}
 
         public TeamMenu(bool sendHome) : this(sendHome, -1)
         { }

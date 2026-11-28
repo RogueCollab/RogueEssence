@@ -17,9 +17,9 @@ namespace RogueEssence.Menu
         MenuText[] Skills;
         MenuText[] SkillCharges;
 
-        private int slot;
-        private bool held;
-        private int commandIdx;
+        public int slot {get; private set;}
+        public bool held {get; private set;}
+        public int commandIdx {get; private set;}
 
         public TeachMenu(int slot, bool held, int commandIdx) : this(MenuLabel.TEACH_MENU, slot, held, commandIdx) { }
         public TeachMenu(string label, int slot, bool held, int commandIdx)

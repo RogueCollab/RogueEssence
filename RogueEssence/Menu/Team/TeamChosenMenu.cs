@@ -12,7 +12,7 @@ namespace RogueEssence.Menu
     public class TeamChosenMenu : SingleStripMenu
     {
 
-        private int teamSlot;
+        public  int teamSlot {get; private set;}
 
         public TeamChosenMenu(int teamSlot) : this(MenuLabel.TEAM_CHOSEN_MENU, teamSlot) { }
         public TeamChosenMenu(string label, int teamSlot)

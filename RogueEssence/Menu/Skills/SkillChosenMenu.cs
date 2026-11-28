@@ -10,10 +10,10 @@ namespace RogueEssence.Menu
 {
     public class SkillChosenMenu : SingleStripMenu
     {
-        private string parentLabel;
+        public string parentLabel {get; private set;}
 
-        private int teamIndex;
-        private int skillSlot;
+        public int teamIndex {get; private set;}
+        public int skillSlot {get; private set;}
 
 
         public SkillChosenMenu(string parentLabel, int teamIndex, int skillSlot) : this(MenuLabel.SKILL_CHOSEN_MENU, parentLabel, teamIndex, skillSlot) { }

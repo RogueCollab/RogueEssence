@@ -40,5 +40,10 @@ namespace RogueEssence.Dungeon
 
             return this.Segment == other.Segment && this.ID == other.ID;
         }
+
+        public override int GetHashCode()
+        {
+            return this.Segment ^ this.ID;
+        }
     }
 }

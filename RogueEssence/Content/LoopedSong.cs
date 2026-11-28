@@ -22,6 +22,12 @@ namespace RogueEssence.Content
             set { soundStream.Volume = value; }
         }
 
+        public float Pitch
+        {
+            get { return soundStream.Pitch; }
+            set { soundStream.Pitch = value; }
+        }
+
         public SoundState State { get { return soundStream.State; } }
 
         public int Channels { get; private set; }

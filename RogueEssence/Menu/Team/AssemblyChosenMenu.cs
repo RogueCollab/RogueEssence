@@ -11,10 +11,10 @@ namespace RogueEssence.Menu
 {
     public class AssemblyChosenMenu : SingleStripMenu
     {
-        private int teamSlot;
-        private bool assembly;
+        public int teamSlot {get; private set;}
+        public bool assembly {get; private set;}
 
-        private AssemblyMenu baseMenu;
+        public AssemblyMenu baseMenu {get; private set;}
 
         public AssemblyChosenMenu(int teamSlot, bool assembly, AssemblyMenu baseMenu) : this(MenuLabel.ASSEMBLY_CHOSEN_MENU, teamSlot, assembly, baseMenu) { }
         public AssemblyChosenMenu(string label, int teamSlot, bool assembly, AssemblyMenu baseMenu)

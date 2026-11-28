@@ -147,7 +147,7 @@ namespace RogueEssence.Menu
         public override void ImportChoices(params IChoosable[] choices)
         {
             TotalChoices = SortIntoPages(choices, SpacesPerPage);
-            SetPage(CurrentPage);
+            SetPage(Math.Min(Math.Max(0, CurrentPage), TotalChoices.Length - 1));
         }
 
         public override Dictionary<string, int> GetChoiceIndicesByLabel(params string[] labels)

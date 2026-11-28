@@ -432,6 +432,27 @@ namespace RogueEssence.Dungeon
                 yield return inLoc;
         }
 
+        public bool InCircleSightBounds(Loc centerLoc, int radius, Loc loc)
+        {
+            // -1 radius means infinity radius, return true
+            if (radius < 0)
+                return true;
+
+            Rect sightBounds = new Rect(centerLoc - Loc.One * radius, Loc.One * radius * 2 + Loc.One);
+
+            // Multiply by 2 to represent distance in half-tiles, then add 1 to account for the origin tile
+            int adjRadius = radius * 2 + 1;
+            foreach (Loc testLoc in IterateLocInBounds(sightBounds, loc))
+            {
+                // Multiply by 2 to represent distance in half-tiles
+                Loc adjDiff = (centerLoc - testLoc) * 2;
+                // check if outside the circle
+                if (adjDiff.DistSquared() <= adjRadius * adjRadius)
+                    return true;
+            }
+            return false;
+        }
+
         public void AddLayer(string name)
         {
             MapLayer layer = new MapLayer(name);

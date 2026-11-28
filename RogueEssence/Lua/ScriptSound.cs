@@ -4,7 +4,7 @@ using RogueEssence.Content;
 
 namespace RogueEssence.Script
 {
-    class ScriptSound : ILuaEngineComponent
+    public class ScriptSound : ILuaEngineComponent
     {
         //===========================
         //  Sound Effects
@@ -29,19 +29,25 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Plays a sound effect, and waits for it to complete before continuing.
+        /// Wait for the currently played sound effect to end.
+        /// CURRENTLY NOT IMPLEMENTED PROPERLY.
         /// </summary>
         /// <example>
         /// SOUND:WaitSE("Battle/Hit")
         /// </example>
         public LuaFunction WaitSE;
+
+        /// <summary>
+        /// [LuaFunction] WaitSE
+        /// </summary>
+        /// <returns></returns>
         public Coroutine _WaitSE()
         {
             return new Coroutine(GameManager.Instance.WaitFanfareEnds());
         }
 
         /// <summary>
-        /// Plays a continuous sound effect
+        /// Plays a continuous sound effect.
         /// </summary>
         /// <param name="name">Sound file name, relative to the Content/SE folder</param>
         public void LoopSE(string name)
@@ -77,7 +83,7 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Plays a continuous sound effect, fading in over a specified amount of time
+        /// Plays a continuous sound effect, fading in over a specified amount of time.
         /// </summary>
         /// <param name="name">Sound file name, relative to the Content/SE folder</param>
         /// <param name="fadeTime">Time in frames for the sound to fade in</param>
@@ -124,6 +130,9 @@ namespace RogueEssence.Script
         /// Plays a sound effect that temporarily mutes the music for its duration
         /// </summary>
         /// <param name="name">Sound file name, relative to the Content/SE folder</param>
+        /// <example>
+        /// SOUND:PlayFanfare("Fanfare/LevelUp")
+        /// </example>
         public void PlayFanfare(string name)
         {
             GameManager.Instance.Fanfare(name);
@@ -131,13 +140,14 @@ namespace RogueEssence.Script
 
 
         /// <summary>
-        /// Plays a sound effect that temporarily mutes the music for its duration.
-        /// This function waits for the sound to complete before continuing.
+        /// This function waits for the currently playing fanfare to complete before continuing.
         /// </summary>
-        /// <example>
-        /// SOUND:WaitFanfare("Battle/LevelUp")
-        /// </example>
         public LuaFunction WaitFanfare;
+
+        /// <summary>
+        /// [LuaFunction] WaitFanfare
+        /// </summary>
+        /// <returns></returns>
         public Coroutine _WaitFanfare()
         {
             return new Coroutine(GameManager.Instance.WaitFanfareEnds());
@@ -201,6 +211,11 @@ namespace RogueEssence.Script
             return GameManager.Instance.Song;
         }
 
+        /// <summary>
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
+        /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
             WaitFanfare = state.RunString("return function(_) return coroutine.yield(_:_WaitFanfare()) end").First() as LuaFunction;

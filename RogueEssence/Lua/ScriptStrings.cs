@@ -12,8 +12,16 @@ namespace RogueEssence.Script
     /// </summary>
     public class ScriptStrings : ILuaEngineComponent
     {
+        /// <summary>
+        /// A lookup table of string keys -> strings local to the current ground map.
+        /// </summary>
         public LuaTable MapStrings { get; private set; }
 
+        /// <summary>
+        /// DEPRECATED
+        /// </summary>
+        /// <param name="packagefilepath"></param>
+        /// <returns></returns>
         public LuaTable MakePackageStringTable(string packagefilepath)
         {
             return MapStrings;
@@ -41,6 +49,12 @@ namespace RogueEssence.Script
             }
         }
 
+        /// <summary>
+        /// Loads the string table of the current map to MapStrings.
+        /// Do not call this function from lua.
+        /// It is called automatically on map load.
+        /// </summary>
+        /// <param name="packagefilepath"></param>
         public void LoadPackageStringTable(string packagefilepath)
         {
             LuaTable strings = makePackageStringTable(packagefilepath);
@@ -57,7 +71,13 @@ namespace RogueEssence.Script
             return DiagManager.Instance.CurSettings.Language;
         }
 
-
+        /// <summary>
+        /// Takes all letters of a string and shifts their unicode values forward by a specified amount.
+        /// Useful for special character sets.
+        /// </summary>
+        /// <param name="baseStr">The string to have its letter shifted forward.</param>
+        /// <param name="shift">The amount to shift the letters forward.</param>
+        /// <returns>The shifted string.</returns>
         public string ShiftString(string baseStr, int shift)
         {
             string resultStr = "";
@@ -74,17 +94,18 @@ namespace RogueEssence.Script
             }
             return resultStr;
         }
+
         /// <summary>
         /// Formats a string.  Will unescape escaped characters and process grammar tags.
         /// </summary>
-        /// <param name="fmt">String to format.</param>
-        /// <param name="para">Arguments</param>
+        /// <param name="fmt">The string to format.</param>
+        /// <param name="args">Additional arguments to pass into the string being formatted.</param>
         /// <returns>The formatted string.</returns>
-        public string Format( string fmt, params object[] para )
+        public string Format( string fmt, params object[] args)
         {
             try
             {
-                return Text.FormatGrammar(System.Text.RegularExpressions.Regex.Unescape(fmt), para);
+                return Text.FormatGrammar(System.Text.RegularExpressions.Regex.Unescape(fmt), args);
             }
             catch (Exception ex)
             {
@@ -94,16 +115,16 @@ namespace RogueEssence.Script
         }
 
         /// <summary>
-        /// Formats a string given a string key.  Will unescape escaped characters.
+        /// Takes the string key, looks up the string it represents, and formats it.  Will unescape escaped characters and process grammar tags.
         /// </summary>
-        /// <param name="fmt">The string key to format</param>
-        /// <param name="para">string arguments</param>
-        /// <returns></returns>
-        public string FormatKey(string fmt, params object[] para)
+        /// <param name="fmt">The string key to look up and use for formatting.</param>
+        /// <param name="args">Additional arguments to pass into the string being formatted.</param>
+        /// <returns>The formatted string.</returns>
+        public string FormatKey(string fmt, params object[] args)
         {
             try
             {
-                return Text.FormatKey(fmt, para);
+                return Text.FormatKey(fmt, args);
             }
             catch (Exception ex)
             {
@@ -155,9 +176,14 @@ namespace RogueEssence.Script
             return "";
         }
 
+        /// <summary>
+        /// Initializes any LuaFunctions found in the class.
+        /// Automatically on lua initialization.
+        /// </summary>
+        /// <param name="state">The lua engine to initialize with.</param>
         public override void SetupLuaFunctions(LuaEngine state)
         {
-            //TODO
+            // not needed.
         }
     }
 }

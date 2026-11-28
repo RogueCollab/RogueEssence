@@ -10,8 +10,16 @@ namespace RogueEssence.Menu
     public class SellChosenMenu : SingleStripMenu
     {
 
-        private int origIndex;
+        public int origIndex {get; private set;}
         private List<InvSlot> selections;
+        public List<InvSlot> Selections {
+            get
+            {
+                List<InvSlot> newList = new List<InvSlot>();
+                selections.ForEach(elem => newList.Add(new InvSlot(elem.IsEquipped, elem.Slot)));
+                return newList;
+            }
+        }
         private SellMenu.OnChooseSlots action;
 
         public SellChosenMenu(List<InvSlot> selections, int origIndex, SellMenu.OnChooseSlots chooseSlots) :

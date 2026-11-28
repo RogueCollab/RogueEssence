@@ -10,13 +10,13 @@ namespace RogueEssence.LevelGen
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class PresetMultiTeamSpawner<T> : IMultiTeamSpawner<T>
+    public class PresetMultiTeamSpawner<T> : IMultiTeamSpawner<T>, IPresetMultiTeamSpawner
         where T : IGenContext, IMobSpawnMap
     {
         /// <summary>
         /// The list of teams to spawn.
         /// </summary>
-        public List<SpecificTeamSpawner> Spawns;
+        public List<SpecificTeamSpawner> Spawns { get; set; }
 
         public PresetMultiTeamSpawner()
         {
@@ -46,5 +46,10 @@ namespace RogueEssence.LevelGen
             else
                 return String.Format("{0}[{1}]", this.GetType().GetFormattedTypeName(), Spawns.Count);
         }
+    }
+
+    public interface IPresetMultiTeamSpawner
+    {
+        List<SpecificTeamSpawner> Spawns { get; set; }
     }
 }

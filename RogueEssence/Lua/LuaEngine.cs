@@ -367,6 +367,8 @@ namespace RogueEssence.Script
         public const string EVENT_AI_INIT_NAME = "AI_INIT_SCRIPT";
         public const string EVENT_AI_SWITCH_NAME = "AI_SWITCH_SCRIPT";
         public const string EVENT_AI_THINK_NAME = "AI_THINK_SCRIPT";
+        public const string ZONE_RULE_NAME_NAME = "ZONE_RULE_NAME_SCRIPT";
+        public const string ZONE_RULE_SCRIPT_NAME = "ZONE_RULE_SCRIPT";
 
         //Lua State
         public const string SCRIPT_PATH = DataManager.DATA_PATH + "Script/";  //Base script engine scripts path
@@ -651,9 +653,9 @@ namespace RogueEssence.Script
         /// First the base game's table is applied
         /// then each mod adds on top of it
         /// </summary>
+        /// <param name="assignVar"></param>
         /// <param name="loadPath"></param>
         /// <param name="importpath"></param>
-        /// <returns></returns>
         /// <exception cref="InvalidDataException"></exception>
         private void ModLayerTable(string assignVar, string loadPath, string importpath)
         {
@@ -676,8 +678,10 @@ namespace RogueEssence.Script
                 string modulePath = GetModulePath(PathMod.HardMod(mod.Path, SCRIPT_PATH), Path.Join(mod.Namespace, loadPath));
                 if (modulePath != null)
                 {
-                    LuaState.LoadFile(modulePath);
-                    object[] ret = RunString(String.Format("return require('{0}.{1}')", mod.Namespace, importpath));
+                    //TODO: Currently, this file is loaded via DoFile instead of require in order to avoid caching values defined in the script that may become stale later.
+                    // However, this doesn't address any values that get loaded (and cached) by the script's own require calls.
+                    // Later, create a module-based dofile function in lua that the map scripts can call in order to non-cached-load children
+                    object[] ret = LuaState.DoFile(modulePath);
                     if (ret[0] is not LuaTable)
                         throw new InvalidDataException(String.Format("Script did not load a table at mod '{0}'", modulePath));
                     LuaTable tbl2 = (LuaTable)ret[0];
@@ -731,6 +735,8 @@ namespace RogueEssence.Script
             LuaState.NewTable(EVENT_AI_INIT_NAME);
             LuaState.NewTable(EVENT_AI_SWITCH_NAME);
             LuaState.NewTable(EVENT_AI_THINK_NAME);
+            LuaState.NewTable(ZONE_RULE_NAME_NAME);
+            LuaState.NewTable(ZONE_RULE_SCRIPT_NAME);
 
             //Make empty script variable table
             LuaState.NewTable(SCRIPT_VARS_NAME);
@@ -1309,7 +1315,7 @@ namespace RogueEssence.Script
         /// Use this to clean up the traces left behind by a zone package.
         /// Also collects garbages.
         /// </summary>
-        /// <param name="zoneassetname"></param>
+        /// <param name="mapassetname"></param>
         public void CleanDungeonMapScript(string mapassetname)
         {
             RunString(@"

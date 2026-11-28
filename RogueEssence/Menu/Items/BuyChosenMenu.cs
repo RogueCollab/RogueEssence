@@ -8,8 +8,16 @@ namespace RogueEssence.Menu
     public class BuyChosenMenu : SingleStripMenu
     {
 
-        private int origIndex;
+        public int origIndex {get; private set;}
         private List<int> selections;
+        public List<int> Selections {
+            get
+            {
+                List<int> newList = new List<int>();
+                newList.AddRange(selections);
+                return newList;
+            }
+        }
         private OnMultiChoice action;
 
         public BuyChosenMenu(List<int> selections, int origIndex, string itemID, OnMultiChoice chooseSlots) :
