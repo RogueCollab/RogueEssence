@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class MoneySpawnZoneStepEditor : Editor<MoneySpawnZoneStep>
     {
+        public MoneySpawnZoneStepEditor(EditorContext context) : base(context) { }
         public override string GetString(MoneySpawnZoneStep obj, Type type, object[] attributes)
         {
             string startString = getRangeString(obj.StartAmount);

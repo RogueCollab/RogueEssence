@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class StatusEffectEditor : Editor<StatusEffect>
     {
+        public StatusEffectEditor(EditorContext context) : base(context) { }
         //TODO: add a "load from default" button to load all status states from the original definition
         public override string GetString(StatusEffect obj, Type type, object[] attributes)
         {
@@ -40,6 +41,7 @@ namespace RogueEssence.Dev
     }
     public class MapStatusEditor : Editor<MapStatus>
     {
+        public MapStatusEditor(EditorContext context) : base(context) { }
         //TODO: add a "load from default" button to load all status states from the original definition
         public override string GetString(MapStatus obj, Type type, object[] attributes)
         {

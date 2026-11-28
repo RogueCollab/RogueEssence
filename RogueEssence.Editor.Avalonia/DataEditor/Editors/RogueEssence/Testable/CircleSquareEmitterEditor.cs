@@ -10,6 +10,7 @@ namespace RogueEssence.Dev
 {
     public class CircleSquareEmitterEditor : TestableEditor<CircleSquareEmitter>
     {
+        public CircleSquareEmitterEditor(EditorContext context) : base(context) { }
         protected override void RunTest(CircleSquareEmitter data)
         {
             Character player = DungeonScene.Instance.FocusedCharacter;

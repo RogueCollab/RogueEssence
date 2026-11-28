@@ -12,18 +12,13 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class DictionaryBox : UserControl
+    public partial class DictionaryBox : UserControl
     {
         public DictionaryBox()
         {
             this.InitializeComponent();
             Button button = this.FindControl<Button>("DictionaryBoxAddButton");
             button.AddHandler(PointerReleasedEvent, DictionaryBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         bool doubleclick;

@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class AddConnectedRoomsStepEditor : Editor<IAddConnectedRoomsStep>
     {
+        public AddConnectedRoomsStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IAddConnectedRoomsStep obj, Type type, object[] attributes)
         {
             PropertyInfo amountInfo = typeof(IAddConnectedRoomsStep).GetProperty(nameof(obj.Amount));
@@ -30,6 +31,7 @@ namespace RogueEssence.Dev
 
     public class AddDisconnectedRoomsStepEditor : Editor<IAddDisconnectedRoomsStep>
     {
+        public AddDisconnectedRoomsStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IAddDisconnectedRoomsStep obj, Type type, object[] attributes)
         {
             PropertyInfo amountInfo = typeof(IAddDisconnectedRoomsStep).GetProperty(nameof(obj.Amount));
@@ -40,6 +42,8 @@ namespace RogueEssence.Dev
 
     public class ConnectRoomStepEditor : Editor<IConnectRoomStep>
     {
+        
+        public ConnectRoomStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IConnectRoomStep obj, Type type, object[] attributes)
         {
             PropertyInfo connectInfo = typeof(IConnectRoomStep).GetProperty(nameof(obj.ConnectFactor));
@@ -50,6 +54,8 @@ namespace RogueEssence.Dev
 
     public class FloorPathBranchEditor : Editor<IFloorPathBranch>
     {
+        
+        public FloorPathBranchEditor(EditorContext context) : base(context) { }
         public override string GetString(IFloorPathBranch obj, Type type, object[] attributes)
         {
             PropertyInfo fillInfo = typeof(IFloorPathBranch).GetProperty(nameof(obj.FillPercent));

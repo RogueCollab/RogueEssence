@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class ColorEditor : Editor<Color>
     {
+        public ColorEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 
@@ -37,6 +38,7 @@ namespace RogueEssence.Dev
             nudValueR.Minimum = byte.MinValue;
             nudValueR.Maximum = byte.MaxValue;
             nudValueR.Value = member.R;
+            nudValueR.Increment = 1;
             innerPanel.Children.Add(nudValueR);
             nudValueR.SetValue(Avalonia.Controls.Grid.ColumnProperty, 1);
 
@@ -55,6 +57,7 @@ namespace RogueEssence.Dev
             nudValueG.Minimum = byte.MinValue;
             nudValueG.Maximum = byte.MaxValue;
             nudValueG.Value = member.G;
+            nudValueG.Increment = 1;
             innerPanel.Children.Add(nudValueG);
             nudValueG.SetValue(Avalonia.Controls.Grid.ColumnProperty, 3);
 
@@ -73,6 +76,7 @@ namespace RogueEssence.Dev
             nudValueB.Minimum = byte.MinValue;
             nudValueB.Maximum = byte.MaxValue;
             nudValueB.Value = member.B;
+            nudValueB.Increment = 1;
             innerPanel.Children.Add(nudValueB);
             nudValueB.SetValue(Avalonia.Controls.Grid.ColumnProperty, 5);
 

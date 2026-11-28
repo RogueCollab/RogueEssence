@@ -12,38 +12,27 @@ using RogueEssence.Dev.ViewModels;
 
 namespace RogueEssence.Dev.Views
 {
-    public class SpawnRangeListBox : UserControl
+    public partial class SpawnRangeListBox : UserControl
     {
         
         public SpawnRangeListBox()
         {
             this.InitializeComponent();
-            Button button = this.FindControl<Button>("SpawnRangeListBoxAddButton");
-            button.AddHandler(PointerReleasedEvent, SpawnRangeListBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
+            SpawnRangeListBoxAddButton.AddHandler(PointerReleasedEvent, SpawnRangeListBoxAddButton_OnPointerReleased, RoutingStrategies.Tunnel);
         }
+  
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        bool doubleclick;
-        public void doubleClickStart(object sender, RoutedEventArgs e)
-        {
-            doubleclick = true;
-        }
-
-        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
-        {
-            if (!doubleclick)
-                return;
-            doubleclick = false;
-
-            ViewModels.SpawnRangeListBoxViewModel viewModel = (ViewModels.SpawnRangeListBoxViewModel)DataContext;
-            if (viewModel == null)
-                return;
-            viewModel.gridCollection_DoubleClick(sender, e);
-        }
+        // public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        // {
+        //     if (!doubleclick)
+        //         return;
+        //     doubleclick = false;
+        //
+        //     ViewModels.SpawnRangeListBoxViewModel viewModel = (ViewModels.SpawnRangeListBoxViewModel)DataContext;
+        //     if (viewModel == null)
+        //         return;
+        //     viewModel.gridCollection_DoubleClick(sender, e);
+        // }
 
         public void nudStart_ValueChanged(object sender, NumericUpDownValueChangedEventArgs e)
         {
@@ -59,8 +48,7 @@ namespace RogueEssence.Dev.Views
 
         public void SetListContextMenu(ContextMenu menu)
         {
-            DataGrid lbx = this.FindControl<DataGrid>("gridItems");
-            lbx.ContextMenu = menu;
+            SpawnRangeListDataGrid.ContextMenu = menu;
         }
 
         private void SpawnRangeListBoxAddButton_OnPointerReleased(object sender, PointerReleasedEventArgs e)
@@ -69,6 +57,39 @@ namespace RogueEssence.Dev.Views
             bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
             SpawnRangeListBoxViewModel vm = (SpawnRangeListBoxViewModel) DataContext;
             vm.btnAdd_Click(advancedEdit);
+        }
+
+       
+
+        private void SpawnRangeListDataGrid_OnCellPointerPressed(object sender, DataGridCellPointerPressedEventArgs e)
+        {
+            if (e.PointerPressedEventArgs.ClickCount != 2) return;
+            if (e.Column.DisplayIndex != 3) return;
+
+            ViewModels.SpawnRangeListBoxViewModel viewModel = (ViewModels.SpawnRangeListBoxViewModel)DataContext;
+            if (viewModel == null)
+                return;
+            viewModel.gridCollection_DoubleClick(sender, e);
+        }
+
+        private void SpawnRangeListDataGrid_OnCellEditEnded(object sender, DataGridCellEditEndedEventArgs e)
+        {
+            if (e.EditAction != DataGridEditAction.Commit) return;
+    
+            var element = (SpawnRangeListElement)e.Row.DataContext;
+            var columnIndex = e.Column.DisplayIndex;
+
+            ViewModels.SpawnRangeListBoxViewModel viewModel = (ViewModels.SpawnRangeListBoxViewModel)DataContext;
+            if (viewModel == null) return;
+
+            
+            // Start Column
+            if (columnIndex == 0)
+                viewModel.AdjustOtherLimit(element.DisplayStart, false);
+            
+            // End Column
+            else if (columnIndex == 1) 
+                viewModel.AdjustOtherLimit(element.DisplayEnd, true);
         }
     }
 }

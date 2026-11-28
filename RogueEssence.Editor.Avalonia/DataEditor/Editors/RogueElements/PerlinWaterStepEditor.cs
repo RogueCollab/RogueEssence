@@ -18,6 +18,8 @@ namespace RogueEssence.Dev
 {
     public class PerlinWaterStepEditor : Editor<IPerlinWaterStep>
     {
+        
+        public PerlinWaterStepEditor(EditorContext context) : base(context) { }
         public override string GetString(IPerlinWaterStep obj, Type type, object[] attributes)
         {
             PropertyInfo waterInfo = typeof(IPerlinWaterStep).GetProperty(nameof(obj.WaterPercent));

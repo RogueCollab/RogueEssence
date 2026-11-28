@@ -16,6 +16,7 @@ namespace RogueEssence.Dev
 {
     public class PromoteBranchEditor : Editor<PromoteBranch>
     {
+        public PromoteBranchEditor(EditorContext context) : base(context) { }
         public override string GetString(PromoteBranch obj, Type type, object[] attributes)
         {
             MonsterData entry = DataManager.Instance.GetMonster(obj.Result);

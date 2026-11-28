@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using RogueEssence.LevelGen;
 using Avalonia;
 using System.Reflection;
+using RogueEssence.Dev.Utility;
 
 namespace RogueEssence.Dev
 {
@@ -27,7 +28,7 @@ namespace RogueEssence.Dev
         public bool Index1;
 
 
-        public CategorySpawnEditor(bool index1)
+        public CategorySpawnEditor(EditorContext context, bool index1) : base(context) 
         {
             Index1 = index1;
         }
@@ -51,7 +52,7 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 180;
 
-            DictionaryBoxViewModel vm = new DictionaryBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
+            DictionaryBoxViewModel vm = new DictionaryBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(2, attributes)));
 
             CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
             if (confirmAtt != null)
@@ -63,46 +64,62 @@ namespace RogueEssence.Dev
             //add lambda expression for editing a single element
             vm.OnEditItem += (object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + key.ToString() + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
+                // string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(2, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, elementType);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), element, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    element = DataEditor.SaveClassControls(stack, elementName, elementType, ReflectionExt.GetPassableAttributes(2, attributes), true, new Type[0], advancedEdit);
                     op(key, key, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             vm.OnEditKey += (object key, object element, bool advancedEdit, DictionaryBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "<Key>";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
+                // string title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, keyType);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, pageViewModel.Node, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(elementName, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    object newKey = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    object newKey = DataEditor.SaveClassControls(stack, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(key, newKey, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             vm.LoadFromDict(member);
-            lbxValue.SetListContextMenu(DictionaryEditor.CreateContextMenu(control, type, vm));
+            lbxValue.SetListContextMenu(DictionaryEditor.CreateContextMenu(_context.DialogService, control, type, vm));
             control.Children.Add(lbxValue);
 
 
@@ -129,6 +146,7 @@ namespace RogueEssence.Dev
             Button btnTest = new Button();
             btnTest.Margin = new Thickness(4, 4, 0, 0);
             btnTest.Content = "Get Summary";
+            btnTest.Classes.Add("flat");
             btnTest.Click += (object sender, RoutedEventArgs e) =>
             {
                 int floor = (int)nudValueTestFloor.Value;
@@ -148,13 +166,9 @@ namespace RogueEssence.Dev
                 }
 
                 List<(object, double)> flatSpawns = CategorySpawnHelper.CollapseSpawnDict<string, InvItem>(spawns);
-
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = "Spawn Summary";
-                StackPanel viewPanel = frmData.ControlPanel;
-
+                
                 SpawnListViewBox lbxValue = new SpawnListViewBox();
-                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(control.GetOwningForm(), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
+                SpawnListBoxViewModel mv = new SpawnListBoxViewModel(_context.DialogService, new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, attributes)));
 
                 CollectionAttribute confirmAtt = ReflectionExt.FindAttribute<CollectionAttribute>(attributes);
                 if (confirmAtt != null)
@@ -165,12 +179,16 @@ namespace RogueEssence.Dev
                 lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
                 mv.LoadFromTupleList(flatSpawns);
-                viewPanel.Children.Add(lbxValue);
-
-                frmData.SetViewOnly();
-
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                
+                var reflectedVm = new ReflectedDataWindowViewModel();
+                reflectedVm.OnLoadAction = (StackPanel stack) =>
+                {
+                    stack.Children.Add(lbxValue);
+                };
+                
+                
+                int selectedFloor = (int)nudValueTestFloor.Value;
+                _context.DialogService.ShowDialogAsync<ReflectedDataWindowViewModel, bool>(reflectedVm, $"Floor {selectedFloor} Spawn Summary");
             };
             btnTest.SetValue(Avalonia.Controls.Grid.ColumnProperty, 2);
             innerPanel.ColumnDefinitions[2].Width = new GridLength(120);
@@ -194,6 +212,7 @@ namespace RogueEssence.Dev
 
     public class DictSpawnEditor : Editor<SpawnDict<string, SpawnList<InvItem>>>
     {
+        public DictSpawnEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultType => true;
@@ -212,49 +231,65 @@ namespace RogueEssence.Dev
             else
                 lbxValue.MaxHeight = 180;
 
-            CategorySpawnBoxViewModel vm = new CategorySpawnBoxViewModel(control.GetOwningForm(), new StringConv(keyType, ReflectionExt.GetPassableAttributes(1, attributes)), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes))));
+            CategorySpawnBoxViewModel vm = new CategorySpawnBoxViewModel(_context.DialogService, new StringConv(keyType, ReflectionExt.GetPassableAttributes(1, attributes)), new StringConv(elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes))));
             lbxValue.DataContext = vm;
             lbxValue.MinHeight = lbxValue.MaxHeight;//TODO: Uptake Avalonia fix for improperly updating Grid control dimensions
 
             //add lambda expression for editing a single element
             vm.OnEditItem += (int index, object element, bool advancedEdit, CategorySpawnBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + index + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)));
+                string title = DataEditor.GetWindowTitle(parent, elementName, element, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), element, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, elementType);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, null, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(title, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    element = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), element, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    element = DataEditor.SaveClassControls(stack, elementName, elementType, ReflectionExt.GetPassableAttributes(1, ReflectionExt.GetPassableAttributes(2, attributes)), true, new Type[0], advancedEdit);
                     op(index, element);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             vm.OnEditKey += (int index, object key, bool advancedEdit, CategorySpawnBoxViewModel.EditElementOp op) =>
             {
+                EditorPageViewModel pageViewModel = control.FindAncestorViewModel<EditorPageViewModel>();
                 string elementName = name + "[" + index + "]";
-                DataEditForm frmData = new DataEditForm();
-                frmData.Title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
+                string title = DataEditor.GetWindowTitle(parent, elementName, key, keyType, ReflectionExt.GetPassableAttributes(1, attributes));
 
-                DataEditor.LoadClassControls(frmData.ControlPanel, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0], advancedEdit);
-                DataEditor.TrackTypeSize(frmData, keyType);
+                NodeBase node = _context.NodeFactory.CreateReflectedDataNode<ReflectedDataPageViewModel>(elementName, null, pageViewModel.Node.Icon);
+                pageViewModel.Node.AddNodeIfNotExists(node);
 
-                frmData.SelectedOKEvent += async () =>
+                NodeHelper.ExpandParents(node, true);
+                ReflectedDataPageViewModel newEditor = _context.PageFactory.CreatePage<ReflectedDataPageViewModel>(node);
+                newEditor.SetPageTitle(title, pageViewModel.Node.Icon);
+
+                newEditor.OnLoadAction = (StackPanel stack) =>
                 {
-                    key = DataEditor.SaveClassControls(frmData.ControlPanel, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
+                    DataEditor.LoadClassControls(stack, parent, null, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), key, true, new Type[0], advancedEdit);
+                };
+
+                newEditor.OnOKAction = async (StackPanel stack) =>
+                {
+                    key = DataEditor.SaveClassControls(stack, elementName, keyType, ReflectionExt.GetPassableAttributes(1, attributes), true, new Type[0], advancedEdit);
                     op(index, key);
                     return true;
                 };
 
-                control.GetOwningForm().RegisterChild(frmData);
-                frmData.Show();
+                _context.TabEvents.AddChildPage(pageViewModel, newEditor);
             };
 
             vm.LoadFromDict(member);

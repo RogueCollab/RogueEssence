@@ -18,6 +18,7 @@ namespace RogueEssence.Dev
 {
     public class ItemSpawnZoneStepEditor : Editor<ItemSpawnZoneStep>
     {
+        public ItemSpawnZoneStepEditor(EditorContext context) : base(context) { }
         public override string GetString(ItemSpawnZoneStep obj, Type type, object[] attributes)
         {
             return String.Format("{0} [{1}]", "Spawn Items", obj.Spawns.Count.ToString());

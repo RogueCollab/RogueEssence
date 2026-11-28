@@ -17,6 +17,7 @@ namespace RogueEssence.Dev
 {
     public class BooleanEditor : Editor<Boolean>
     {
+        public BooleanEditor(EditorContext context) : base(context) { }
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
         public override bool DefaultLabel => false;

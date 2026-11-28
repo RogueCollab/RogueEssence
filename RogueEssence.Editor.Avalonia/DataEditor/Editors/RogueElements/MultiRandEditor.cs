@@ -17,6 +17,8 @@ namespace RogueEssence.Dev
 {
     public class LoopedRandEditor : Editor<ILoopedRand>
     {
+        
+        public LoopedRandEditor(EditorContext context) : base(context) { }
 
         public override string GetString(ILoopedRand obj, Type type, object[] attributes)
         {
@@ -30,6 +32,8 @@ namespace RogueEssence.Dev
 
     public class PresetMultiRandEditor : Editor<IPresetMultiRand>
     {
+        
+        public PresetMultiRandEditor(EditorContext context) : base(context) { }
         public override string GetString(IPresetMultiRand obj, Type type, object[] attributes)
         {
             if (obj.Count == 1)

@@ -16,6 +16,8 @@ namespace RogueEssence.Dev
 {
     public class LocEditor : Editor<Loc>
     {
+        public LocEditor(EditorContext context) : base(context) { }
+        
         public override bool DefaultSubgroup => true;
         public override bool DefaultDecoration => false;
 

@@ -1,0 +1,688 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using RogueEssence.Dev.Services;
+using ReactiveUI;
+using RogueEssence.Content;
+using RogueEssence.Data;
+using RogueEssence.Dev.Views;
+
+
+namespace RogueEssence.Dev.ViewModels;
+
+using System.Collections.ObjectModel;
+
+public class NodeBase : ViewModelBase, IEquatable<NodeBase>
+{
+    public ObservableCollection<NodeBase> SubNodes { get; }
+
+    public NodeBase? Parent { get; internal set; }
+
+    private string _title = "";
+
+    public virtual string Title
+    {
+        get => _title;
+        set => this.RaiseAndSetIfChanged(ref _title, value);
+    }
+
+    private string _icon = "";
+
+    public string Icon
+    {
+        get => _icon;
+        set => this.RaiseAndSetIfChanged(ref _icon, value);
+    }
+
+    public event Action? SubNodesChanged;
+
+
+    public NodeBase(string title = "", string? icon = null)
+    {
+        Title = title;
+        _icon = icon ?? "";
+        SubNodes = new ObservableCollection<NodeBase>();
+        IsExpanded = false;
+        IsVisible = true;
+        SubNodes.CollectionChanged += OnSubNodesChanged;
+        this.WhenAnyValue(x => x.IsExpanded)
+            .Where(expanded => !expanded)
+            .Subscribe(_ => CollapseChildren());
+    }
+
+    private bool _isExpanded = false;
+
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+    }
+
+    private bool _isVisible = true;
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set => this.RaiseAndSetIfChanged(ref _isVisible, value);
+    }
+
+    public bool Equals(NodeBase? other)
+    {
+        if (other is null) return false;
+        if (GetType() != other.GetType()) return false;
+        return EqualsCore(other);
+    }
+
+    public override bool Equals(object? obj) => (obj is NodeBase) && this.Equals((NodeBase)obj);
+    public override int GetHashCode() => GetHashCodeCore();
+
+    protected virtual bool EqualsCore(NodeBase other) => ReferenceEquals(this, other);
+    protected virtual int GetHashCodeCore() => RuntimeHelpers.GetHashCode(this);
+
+
+    private void OnSubNodesChanged(object? s, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (NodeBase child in e.NewItems)
+            {
+                child.Parent = this;
+                child.SubNodesChanged += SubNodesChanged;
+            }
+        }
+
+        if (e.OldItems != null)
+        {
+            foreach (NodeBase child in e.OldItems)
+            {
+                child.Parent = null;
+                child.SubNodesChanged -= SubNodesChanged;
+            }
+        }
+
+        SubNodesChanged?.Invoke();
+    }
+
+
+    public void CollapseChildren()
+    {
+        if (SubNodes == null)
+            return;
+
+        foreach (var child in SubNodes)
+        {
+            child.IsExpanded = false;
+            child.CollapseChildren();
+        }
+    }
+
+    public NodeBase AddNodeIfNotExists(NodeBase node)
+    {
+        var existing = SubNodes.FirstOrDefault(n => n.Equals(node));
+        if (existing != null)
+            return existing;
+
+        SubNodes.Add(node);
+        return node;
+    }
+
+    public void RemoveNode(NodeBase node)
+    {
+        SubNodes.Remove(node);
+    }
+
+    // NOTE: Include itself while looking for a match
+    public T FindNode<T>() where T : NodeBase
+    {
+        var currentNode = this;
+
+        while (currentNode != null)
+        {
+            if (currentNode is T match)
+                return match;
+
+            currentNode = currentNode.Parent;
+        }
+
+        return null;
+    }
+}
+
+public class OpenEditorNode : NodeBase
+{
+    public Type EditorType { get; }
+
+    public readonly Action<EditorPageViewModel>? OnPageLoad;
+
+    public OpenEditorNode(string title, Type? editorType, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, icon ?? "")
+    {
+        OnPageLoad = onPageLoad;
+        EditorType = editorType;
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not OpenEditorNode node)
+            return false;
+        return EditorType == node.EditorType;
+    }
+
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode();
+    }
+}
+
+public class ReflectedDataNode : OpenEditorNode
+{
+    // Used to ID each individual node, so up the tree and take each title and concat to 
+    // form the identifier. NOTE: When adding items (onEdit) use the last index (not the selected index) so pages don't get messed up?
+    private string BuildIdentifier(NodeBase? parent)
+    {
+        var parts = new List<string> { Title };
+        NodeBase? current = parent;
+
+        while (current != null)
+        {
+            parts.Add(current.Title);
+            current = current.Parent;
+        }
+
+        parts.Reverse();
+        return string.Join("/", parts);
+    }
+
+    private readonly string _identifier;
+
+    public ReflectedDataNode(string title, Type editorType,
+        string icon = null, NodeBase? parent = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon, onPageLoad)
+    {
+        _identifier = BuildIdentifier(parent);
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+        => other is ReflectedDataNode o && _identifier == o._identifier;
+
+    protected override int GetHashCodeCore() => _identifier.GetHashCode();
+}
+
+public class OpenEditorNodeWithParams : OpenEditorNode
+{
+    public object[] ExtraParams { get; }
+
+    public OpenEditorNodeWithParams(
+        string title,
+        Type? editorType,
+        object[] extraParams,
+        string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon, onPageLoad)
+    {
+        ExtraParams = extraParams;
+    }
+}
+
+public class UniversalNode : OpenEditorNode
+{
+    private IDialogService _dialogService;
+
+    public UniversalNode(IDialogService dialogService,
+        Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
+    {
+        _dialogService = dialogService;
+    }
+
+    public async Task ResaveAsFile()
+    {
+        if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) ==
+            DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, "Universal data must have saved edits first!", "Error",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal",
+            DataManager.DATA_EXT, DataManager.SavePolicy.File);
+
+        await MessageBoxWindowView.Show(_dialogService, "Universal is now saved as a file.", "Complete",
+            MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+
+    public async Task ResaveAsDiff()
+    {
+        if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) ==
+            DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, "Universal data must have saved edits first!", "Error",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        //you can't make a diff for the base game!
+        DataManager.SaveData(DataManager.Instance.UniversalEvent, DataManager.DATA_PATH, "Universal",
+            DataManager.DATA_EXT, DataManager.SavePolicy.Diff);
+
+        if (DataManager.GetDataModStatus(DataManager.DATA_PATH, "Universal", DataManager.DATA_EXT) ==
+            DataManager.ModStatus.Base)
+            await MessageBoxWindowView.Show(_dialogService, "Modded Universal was identical to base. Unneeded patch removed.", "Complete",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+        else
+            await MessageBoxWindowView.Show(_dialogService, "Universal is now saved as a patch.", "Complete",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+}
+
+
+public class ModItemNode : OpenEditorNode
+{
+    public string Path { get; }
+
+    public ModItemNode(string path, Type? editorType, string? title, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title ?? "", editorType, icon ?? "", onPageLoad)
+    {
+        Path = path;
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not ModItemNode node)
+            return false;
+        return Path == node.Path && EditorType == node.EditorType;
+    }
+
+    protected override int GetHashCodeCore()
+    {
+        return Path.GetHashCode() ^ EditorType.GetHashCode();
+    }
+}
+
+public class DataRootNode : OpenEditorNode
+{
+    public DataManager.DataType DataType { get; }
+
+    private readonly NodeFactory _nodeFactory;
+    private readonly IDialogService _dialogService;
+    public Action OnReload;
+    
+    public void Reload()
+    {
+        OnReload?.Invoke(); 
+    }
+    
+    public async Task ReIndexAsync()
+    {
+        await Task.Run(() =>
+        {
+            lock (GameBase.lockObj)
+            {
+                DevHelper.RunIndexing(DataType);
+                DevHelper.RunExtraIndexing(DataType);
+                DataManager.Instance.LoadIndex(DataType);
+                DataManager.Instance.LoadUniversalIndices();
+                DataManager.Instance.ClearCache(DataType);
+                DiagManager.Instance.DevEditor.ReloadData(DataType);
+                Reload();
+            }
+        });
+    }
+    
+    public async Task ResaveAllAsync(bool asDiff)
+    {
+        await Task.Run(() =>
+        {
+            lock (GameBase.lockObj)
+            {
+                DevHelper.Resave(DataType, asDiff);
+                DevHelper.RunIndexing(DataType);
+                DevHelper.RunExtraIndexing(DataType);
+                DataManager.Instance.LoadIndex(DataType);
+                DataManager.Instance.LoadUniversalIndices();
+                DataManager.Instance.ClearCache(DataType);
+                DiagManager.Instance.DevEditor.ReloadData(DataType);
+                Reload();
+            }
+        });
+    }
+    
+    public DataRootNode(DataManager.DataType dataType,
+        Type? editorType, string title, string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
+    {
+    
+        DataType = dataType;
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not DataRootNode node)
+            return false;
+        return DataType == node.DataType && EditorType == node.EditorType;
+    }
+
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode() ^ DataType.GetHashCode();
+    }
+    
+    
+
+    public async Task ResaveItemAsFile(string key)
+    {
+        if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key),
+                "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        lock (GameBase.lockObj)
+        {
+            var entry = DataRegistry.Map[DataType];
+            IEntryData data = entry.GetEntry(key);
+            DataManager.Instance.ContentResaved(DataType, key, data, false);
+            string newName = DataManager.Instance.DataIndices[DataType].Get(key).GetLocalString(true);
+        }
+
+        await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a file.", key), "Complete",
+            MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+
+    public async Task ResaveItemAsPatch(string key)
+    {
+        var modStatus = DataManager.GetEntryDataModStatus(key, DataType.ToString());
+
+        if (modStatus == DataManager.ModStatus.Base)
+        {
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} must have saved edits first!", key),
+                "Error", MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        if (modStatus == DataManager.ModStatus.Added)
+        {
+            await MessageBoxWindowView.Show(_dialogService,
+                string.Format("{0} is newly added in this mod and cannot be saved as patch.", key), "Error",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+
+        lock (GameBase.lockObj)
+        {
+            var entry = DataRegistry.Map[DataType];
+            IEntryData data = entry.GetEntry(key);
+            DataManager.Instance.ContentResaved(DataType, key, data, true);
+        }
+
+        if (DataManager.GetEntryDataModStatus(key, DataType.ToString()) == DataManager.ModStatus.Base)
+            await MessageBoxWindowView.Show(_dialogService,
+                string.Format("Modded {0} was identical to base. Unneeded patch removed.", key), "Complete",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+        else
+            await MessageBoxWindowView.Show(_dialogService, string.Format("{0} is now saved as a patch.", key),
+                "Complete", MessageBoxWindowView.MessageBoxButtons.Ok);
+    }
+}
+
+public class AutoTileRootNode : DataRootNode
+{
+    private readonly EditorContext _context;
+    public AutoTileRootNode(EditorContext context, Type? editorType, string title, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(DataManager.DataType.AutoTile, editorType, title, icon, onPageLoad)
+    {
+        _context = context;
+    }
+    
+    
+    public async Task ImportDtefAsync()
+    {
+        //remember addresses in registry
+        string folderName = DevForm.GetConfig("TilesetDir", Directory.GetCurrentDirectory());
+
+        var options = new FolderPickerOpenOptions
+        {
+            Title = "Select DTEF folder",
+            AllowMultiple = false,
+        };
+        Dispatcher.UIThread.InvokeAsync(async () =>
+        {
+            string? folder = await _context.DialogService.ShowFolderPickerAsync(options, folderName);
+
+
+
+            if (folder is null)
+                return;
+
+            string animName = Path.GetFileNameWithoutExtension(folder);
+
+            bool conflict = false;
+            foreach (string name in GraphicsManager.TileIndex.Nodes.Keys)
+            {
+                if (name.ToLower() == animName.ToLower())
+                {
+                    conflict = true;
+                    break;
+                }
+            }
+
+            if (conflict)
+            {
+                var result = await MessageBoxWindowView.Show(_context.DialogService,
+                    $"Are you sure you want to overwrite the existing sheet:\n{animName}",
+                    "Tileset already exists.", MessageBoxWindowView.MessageBoxButtons.YesNo);
+
+                if (result == MessageBoxWindowView.MessageBoxResult.No)
+                    return;
+            }
+
+            DevForm.SetConfig("TilesetDir", Path.GetDirectoryName(folder));
+
+            try
+            {
+                DevForm.ExecuteOrPend(() => { _tryImportDtef(folder, animName); });
+            }
+            catch (Exception ex)
+            {
+                DiagManager.Instance.LogError(ex, false);
+                await MessageBoxWindowView.Show(_context.DialogService,
+                    $"Error importing from\n{folder}\n\n{ex.Message}",
+                    "Import Failed", MessageBoxWindowView.MessageBoxButtons.Ok);
+                return;
+            }
+        });
+    }
+    
+    
+    private void _tryImportDtef(string folder, string animName)
+    {
+        lock (GameBase.lockObj)
+        {
+            string destFile = PathMod.HardMod(string.Format(Content.GraphicsManager.TILE_PATTERN, animName));
+            DtefImportHelper.ImportDtef(folder, destFile);
+
+            //reindex graphics
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+            DevDataManager.ClearCaches();
+
+            //reindex data
+            DevHelper.RunIndexing(DataManager.DataType.AutoTile);
+            DevHelper.RunExtraIndexing(DataManager.DataType.AutoTile);
+            DataManager.Instance.LoadIndex(DataManager.DataType.AutoTile);
+            DataManager.Instance.LoadUniversalIndices();
+            DataManager.Instance.ClearCache(DataManager.DataType.AutoTile);
+            DiagManager.Instance.DevEditor.ReloadData(DataManager.DataType.AutoTile);
+            // TODO: Reload
+        }
+    }
+}
+// Children of the DataRootNode
+public class DataItemNode : OpenEditorNode
+{
+    public string ItemKey { get; }
+
+    public DataItemNode(string itemKey, Type? editorType, string? title, string? icon = null,
+        Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title ?? "", editorType, icon ?? "", onPageLoad)
+    {
+        ItemKey = itemKey;
+    }
+
+    protected override bool EqualsCore(NodeBase other)
+    {
+        if (other is not DataItemNode node)
+            return false;
+        return ItemKey == node.ItemKey && EditorType == node.EditorType;
+    }
+
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode() ^ ItemKey.GetHashCode();
+    }
+}
+
+public class SpriteRootNode : OpenEditorNode
+{
+    public ISpriteRootOperationStrategy Strategy;
+
+    public readonly GraphicsManager.AssetType AssetType;
+
+    private string _cachedPath;
+
+    public string CachedPath
+    {
+        get => _cachedPath;
+        set => this.RaiseAndSetIfChanged(ref _cachedPath, value);
+    }
+
+    public SpriteRootNode(
+        IDialogService dialogService,
+        GraphicsManager.AssetType assetType,
+        Type? editorType,
+        string title,
+        string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(title, editorType, icon ?? "", onPageLoad)
+    {
+        AssetType = assetType;
+        Strategy = CreateStrategy(dialogService);
+    }
+
+    protected virtual ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
+    {
+        if (AssetType == GraphicsManager.AssetType.Beam)
+            return new SpriteRootBeamStrategy(dialogService, this);
+
+        return new SpriteRootAssetTypeStrategy(dialogService, this);
+    }
+
+    public async Task MassExportAsync() => await Strategy.MassExportAsync();
+    public async Task MassImportAsync() => await Strategy.MassImportAsync();
+    public async Task ReImportAsync() => await Strategy.ReImportAsync();
+    public async Task DeleteAsync(string key) => await Strategy.DeleteAsync(key);
+    public async Task ExportAsync(string key) => await Strategy.ExportAsync(key);
+    
+    public async Task ImportAsync(ObservableCollection<string> items) => await Strategy.ImportAsync(items);
+    
+    protected override int GetHashCodeCore()
+    {
+        return EditorType.GetHashCode() ^ AssetType.GetHashCode();
+    }
+}
+
+
+public class SpriteTileRootNode : SpriteRootNode
+{
+    private readonly IDialogService _dialogService;
+
+    public SpriteTileRootNode(IDialogService dialogService, Type? editorType, string title,
+        string? icon = null, Action<EditorPageViewModel>? onPageLoad = null)
+        : base(dialogService, GraphicsManager.AssetType.Tile, editorType, title, icon, onPageLoad)
+    {
+        _dialogService = dialogService;
+        
+    }
+
+    protected override ISpriteRootOperationStrategy CreateStrategy(IDialogService dialogService)
+        => new SpriteRootTileStrategy(dialogService, this);
+
+
+    public async Task ReIndexAsync()
+    {
+        try
+        {
+            _reIndex();
+        }
+        catch (Exception ex)
+        {
+            DiagManager.Instance.LogError(ex, false);
+            await MessageBoxWindowView.Show(_dialogService, "Error when reindexing.\n\n" + ex.Message, "Reindex Failed",
+                MessageBoxWindowView.MessageBoxButtons.Ok);
+            return;
+        }
+    }
+
+    private void _reIndex()
+    {
+        DevForm.ExecuteOrPend(() => { _tryReIndex(); });
+    }
+
+    private void _tryReIndex()
+    {
+        lock (GameBase.lockObj)
+        {
+            GraphicsManager.RebuildIndices(GraphicsManager.AssetType.Tile);
+            GraphicsManager.ClearCaches(GraphicsManager.AssetType.Tile);
+
+            DiagManager.Instance.LogInfo("All files re-indexed.");
+        }
+    }
+}
+
+// Used by TabSwitcher
+public class PageNode : NodeBase
+{
+    private readonly NodeFactory _nodeFactory;
+
+    // private readonly IDialogService _dialogService;
+    public EditorPageViewModel Page { get; }
+    public PageNode? Parent { get; set; }
+    public bool IsTopLevel => Parent == null;
+
+    public PageNode(NodeFactory nodeFactory, EditorPageViewModel page,
+        PageNode? parent = null)
+        : base(page.Title, page.Icon)
+    {
+        // _dialogService = dialogService;
+        _nodeFactory = nodeFactory;
+        Page = page;
+        Parent = parent;
+    }
+
+    public override string Title => Page.Title;
+
+    public PageNode AddChild(EditorPageViewModel childPage)
+    {
+        var childNode = _nodeFactory.CreatePageNode(childPage, this);
+        SubNodes.Add(childNode);
+        return childNode;
+    }
+
+    public void RemoveChild(PageNode childNode)
+    {
+        SubNodes.Remove(childNode);
+        childNode.Parent = null;
+    }
+}

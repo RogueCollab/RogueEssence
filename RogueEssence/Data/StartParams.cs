@@ -8,6 +8,7 @@ namespace RogueEssence.Data
     [Serializable]
     public class StartParams
     {
+        [RenameLabel("Starting Characters")]
         public List<StartChar> Chars;
         public int Personality;
         public ZoneLoc Map;

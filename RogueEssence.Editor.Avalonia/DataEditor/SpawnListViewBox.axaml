@@ -5,30 +5,28 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              xmlns:converters="clr-namespace:RogueEssence.Dev.Converters"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
              x:Class="RogueEssence.Dev.Views.SpawnListViewBox">
-  <Design.DataContext>
-    <vm:SpawnListBoxViewModel/>
-  </Design.DataContext>
-  <UserControl.Resources>
-    <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
-    <converters:PercentConverter x:Key="PercentConverter"/>
-  </UserControl.Resources>
+    <Design.DataContext>
+        <vm:SpawnListBoxViewModel/>
+    </Design.DataContext>
+    <UserControl.Resources>
+        <converters:ValidIdxConverter x:Key="ValidIdxConverter"/>
+        <converters:PercentConverter x:Key="PercentConverter"/>
+    </UserControl.Resources>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition/>
-      <RowDefinition/>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <DataGrid IsReadOnly="true" Items="{Binding Collection}" SelectedIndex="{Binding CurrentElement, Mode=TwoWay}" Margin="4" Grid.RowSpan="2" Grid.ColumnSpan="1" MinHeight="50">
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Chance"
-                      Binding="{Binding Path=Chance, Converter={StaticResource PercentConverter}, Mode=OneWay}" />
-        <DataGridTextColumn Header="Value"
-                            Binding="{Binding Path=DisplayValue}" />
-      </DataGrid.Columns>
+    <DataGrid IsReadOnly="true"
+              HorizontalAlignment="Stretch"
+              ItemsSource="{Binding Collection}"
+              SelectedIndex="{Binding CurrentElement, Mode=TwoWay}"
+              Margin="4"
+              MinHeight="50"
+              Classes="default">
+        <DataGrid.Columns>
+            <DataGridTextColumn Header="Chance" Binding="{Binding Path=Chance, Converter={StaticResource PercentConverter}, Mode=OneWay}" Width="80" />
+            <DataGridTextColumn Header="Value"  Binding="{Binding Path=DisplayValue}" Width="*" />
+        </DataGrid.Columns>
     </DataGrid>
-  </Grid>
+
 </UserControl>

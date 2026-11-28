@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RogueEssence.Dev.ViewModels"
+             xmlns:v="clr-namespace:RogueEssence.Dev.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:ModListPageViewModel"
+             x:Class="RogueEssence.Dev.Views.ModListPageView">
+    <Design.DataContext>
+        <vm:ModListPageViewModel/>
+    </Design.DataContext>
+    <Grid RowDefinitions="64, Auto, Auto, Auto">
+
+
+        <!-- Search Grid -->
+        <Grid Grid.Row="2" RowDefinitions="Auto, Auto, Auto, Auto" Margin="64, 8">
+
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" Classes="table_header" FontSize="16"
+                       Text="Mods" />
+            
+            <TextBox Classes="search"
+                     Grid.Row="1"
+                     Text="{Binding SearchFilter, Mode=TwoWay}"/>
+
+         
+            <ListBox Grid.Row="2"
+                     DoubleTapped="ModListPageListBox_OnDoubleTapped"
+                     Margin="0, 16, 0, 8"
+                     Background="{DynamicResource Brush.ListBox.Background}"
+                     x:Name="ModListPageListBox" SelectedItem="{Binding SelectedItem}"
+                     ItemsSource="{Binding FilteredItems}" Height="400" BorderBrush="{DynamicResource Brush.Border2}"
+                     BorderThickness="1">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+                    </Style>
+                </ListBox.Styles>
+                <ListBox.ItemContainerTheme>
+                    <StaticResource ResourceKey="CompactListBoxItem"/>
+                </ListBox.ItemContainerTheme>
+   
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Display}" Padding="4" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                <Button Classes="flat" Width="100"
+                        Command="{Binding btnSwitch_Click}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Switch To" Icon="Icons.RepeatFill" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnAdd_Click}">
+                    <v:IconText Text="Add" Icon="Icons.Plus" IconSize="12" />
+                </Button>
+                <Button Classes="flat" Width="100" Margin="24,0,0,0"
+                        Command="{Binding btnDelete_Click}"
+                        IsEnabled="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <v:IconText Text="Delete" Icon="Icons.TrashFill" IconSize="12" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+    
+</UserControl>

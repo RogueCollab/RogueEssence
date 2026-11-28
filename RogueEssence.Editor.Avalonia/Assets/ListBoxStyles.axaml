@@ -1,0 +1,30 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:s="using:RogueEssence.Dev">
+    <Styles.Resources>
+        <ControlTheme x:Key="CompactListBoxItem" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+            <Setter Property="Padding" Value="4,2"/>
+        </ControlTheme>
+    </Styles.Resources>
+
+    <Style Selector="ListBox.datalist">
+        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border2}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="ItemContainerTheme" Value="{StaticResource CompactListBoxItem}" />
+    </Style>
+    <Style Selector="ListBox.datalist ListBoxItem">
+        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+    </Style>
+    
+    <Style Selector="ListBox.borderless">
+        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+        <Setter Property="ItemContainerTheme" Value="{StaticResource CompactListBoxItem}" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="ListBox.borderless ListBoxItem">
+        <Setter Property="Background" Value="{DynamicResource Brush.ListBox.Background}" />
+    </Style>
+    
+
+</Styles>

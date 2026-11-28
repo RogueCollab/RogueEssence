@@ -6,7 +6,9 @@ using System.Collections.ObjectModel;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using RogueElements;
+using RogueEssence.Dev.Services;
 using RogueEssence.Dev.Views;
 
 namespace RogueEssence.Dev.ViewModels
@@ -38,14 +40,22 @@ namespace RogueEssence.Dev.ViewModels
         public int DisplayStart
         {
             get { return start + addMin; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                start = value - addMin;
+                this.RaisePropertyChanged();
+            }
         }
+
         public int DisplayEnd
         {
             get { return end + addMax; }
-            set { this.RaisePropertyChanged(); }
+            set 
+            { 
+                end = value - addMax;
+                this.RaisePropertyChanged();
+            }
         }
-
         private int weight;
         public int Weight
         {
@@ -86,9 +96,7 @@ namespace RogueEssence.Dev.ViewModels
         public delegate void ElementOp(int index, object element, bool advancedEdit, EditElementOp op);
 
         public StringConv StringConv;
-
-        private Window parent;
-
+        
         public event ElementOp OnEditItem;
 
         public bool Index1;
@@ -111,11 +119,32 @@ namespace RogueEssence.Dev.ViewModels
 
         public bool ConfirmDelete;
 
-        public SpawnRangeListBoxViewModel(Window parent, StringConv conv)
+        private IDialogService _dialogService;
+        
+        
+        public bool CanMoveUp => CurrentElement > 0;
+        public bool CanMoveDown => CurrentElement >= 0 && CurrentElement < Collection.Count - 1;
+        public bool HasSelection => CurrentElement >= 0 && CurrentElement < Collection.Count;
+        
+        public SpawnRangeListBoxViewModel(IDialogService dialogService, StringConv conv)
         {
+            _dialogService = dialogService;
             StringConv = conv;
-            this.parent = parent;
             Collection = new ObservableCollection<SpawnRangeListElement>();
+            
+            this.WhenAnyValue(x => x.CurrentElement).Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            });
+
+            Collection.CollectionChanged += (_, _) =>
+            {
+                this.RaisePropertyChanged(nameof(CanMoveUp));
+                this.RaisePropertyChanged(nameof(CanMoveDown));
+                this.RaisePropertyChanged(nameof(HasSelection));
+            };
         }
 
         public ObservableCollection<SpawnRangeListElement> Collection { get; }
@@ -127,6 +156,7 @@ namespace RogueEssence.Dev.ViewModels
             set
             {
                 this.SetIfChanged(ref currentElement, value);
+                if (currentElement > -1)
                 if (currentElement > -1)
                 {
                     CurrentWeight = Collection[currentElement].Weight;
@@ -232,15 +262,37 @@ namespace RogueEssence.Dev.ViewModels
             Collection.Insert(index, new SpawnRangeListElement(StringConv, AddMin, AddMax, start, end, rate, element));
             CurrentElement = index;
         }
+        
+        // public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        // {
+        //     var source = e.Source as Control;
+        //     var cell = source?.FindAncestorOfType<DataGridCell>();
+        //     if (cell == null) return;
+        //     
+        //     Console.WriteLine(cell);
+        //     // cell.
+        //
+        //     // var columnIndex = ((DataGrid)sender).Columns.;
+        //     // if (columnIndex != 3) return; // Value column only
+        //
+        //     int index = CurrentElement;
+        //     if (index > -1)
+        //     {
+        //         SpawnRangeListElement element = Collection[index];
+        //         bool advancedEdit = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        //         OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
+        //     }
+        // }
+        //
 
-        public void gridCollection_DoubleClick(object sender, PointerReleasedEventArgs e)
+        public void gridCollection_DoubleClick(object sender, DataGridCellPointerPressedEventArgs e)
         {
             //int index = lbxCollection.IndexFromPoint(e.X, e.Y);
             int index = CurrentElement;
             if (index > -1)
             {
                 SpawnRangeListElement element = Collection[index];
-                KeyModifiers modifiers = e.KeyModifiers;
+                KeyModifiers modifiers = e.PointerPressedEventArgs.KeyModifiers;
                 bool advancedEdit = modifiers.HasFlag(KeyModifiers.Shift);
                 OnEditItem?.Invoke(index, element.Value, advancedEdit, editItem);
             }
@@ -249,22 +301,22 @@ namespace RogueEssence.Dev.ViewModels
 
         public void btnAdd_Click(bool advancedEdit)
         {
-            int index = CurrentElement;
-            if (index < 0)
-                index = Collection.Count;
+            // int index = CurrentElement;
+            // if (index < 0) 
+            int index = Collection.Count;
             object element = null;
             OnEditItem?.Invoke(index, element, advancedEdit, insertItem);
         }
 
-        private async void btnDelete_Click()
+        public async void btnDelete_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count)
             {
                 if (ConfirmDelete)
                 {
-                    MessageBox.MessageBoxResult result = await MessageBox.Show(parent, "Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
-                        MessageBox.MessageBoxButtons.YesNo);
-                    if (result == MessageBox.MessageBoxResult.No)
+                    MessageBoxWindowView.MessageBoxResult result = await MessageBoxWindowView.Show(_dialogService,"Are you sure you want to delete this item:\n" + Collection[currentElement].DisplayValue, "Confirm Delete",
+                        MessageBoxWindowView.MessageBoxButtons.YesNo);
+                    if (result == MessageBoxWindowView.MessageBoxResult.No)
                         return;
                 }
 
@@ -279,7 +331,7 @@ namespace RogueEssence.Dev.ViewModels
             Collection[b] = obj;
         }
 
-        private void btnUp_Click()
+        public void btnUp_Click()
         {
             if (CurrentElement > 0)
             {
@@ -289,7 +341,7 @@ namespace RogueEssence.Dev.ViewModels
             }
         }
 
-        private void btnDown_Click()
+        public void btnDown_Click()
         {
             if (CurrentElement > -1 && CurrentElement < Collection.Count - 1)
             {
