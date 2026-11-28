@@ -10,6 +10,8 @@ namespace RogueEssence.Dev
         Rectangle = 1,
         Fill = 2,
         Eyedrop = 3,
+        Copy = 4,
+        Paste = 5,
     }
 
     public enum EntEditMode

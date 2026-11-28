@@ -18,6 +18,7 @@
     <converters:TilesetConverter x:Key="TilesetConverter"/>
     <converters:FrameConverter x:Key="FrameConverter"/>
     <converters:MultiSelectConverter x:Key="MultiSelectConverter"/>
+    <converters:TilesetScaledSizeConverter x:Key="TilesetScaledSizeConverter"/>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -67,31 +68,58 @@
         <Button Command="{Binding btnDeleteFrame_Click}" Margin="4,2" Grid.Row="3" Grid.Column="1">Delete</Button>
       </Grid>
     </Grid>
-    <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3">
-      <Grid>
-        <Image Source="{Binding CurrentTileset, Converter={StaticResource TilesetConverter}}" PointerPressed="picTileset_Click" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0"/>
-        <Border VerticalAlignment="Top" HorizontalAlignment="Left" IsVisible="{Binding BorderPresent}" BorderThickness="1" BorderBrush="Red">
-          <Border.Margin>
-            <MultiBinding Converter="{StaticResource TileToThicknessConverter}">
-              <Binding Path="SelectedTile"/>
-              <Binding Path="TileSize"/>
-            </MultiBinding>
-          </Border.Margin>
-          <Border.Width>
-            <MultiBinding Converter="{StaticResource TileSizedConverter}" ConverterParameter="false">
-              <Binding Path="MultiSelect"/>
-              <Binding Path="TileSize"/>
-            </MultiBinding>
-          </Border.Width>
-          <Border.Height>
-            <MultiBinding Converter="{StaticResource TileSizedConverter}" ConverterParameter="true">
-              <Binding Path="MultiSelect"/>
-              <Binding Path="TileSize"/>
-            </MultiBinding>
-          </Border.Height>
-        </Border>
-      </Grid>
-    </ScrollViewer>
+    <Grid Grid.Row="0" Grid.Column="0" Grid.RowSpan="3">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition/>
+      </Grid.RowDefinitions>
+      <StackPanel Orientation="Horizontal" Margin="4,2">
+        <TextBlock VerticalAlignment="Center">Zoom:</TextBlock>
+        <NumericUpDown Value="{Binding ZoomPercent}" Minimum="50" Maximum="800" Increment="25" Width="82" Margin="6,0"/>
+        <TextBlock VerticalAlignment="Center">%  Left click: select tile  Right click: select second corner</TextBlock>
+      </StackPanel>
+      <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.Row="1">
+        <Grid>
+          <Image Source="{Binding CurrentTileset, Converter={StaticResource TilesetConverter}}" PointerPressed="picTileset_Click" VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="Fill" Margin="0">
+            <Image.Width>
+              <MultiBinding Converter="{StaticResource TilesetScaledSizeConverter}" ConverterParameter="false">
+                <Binding Path="CurrentTileset"/>
+                <Binding Path="ZoomPercent"/>
+              </MultiBinding>
+            </Image.Width>
+            <Image.Height>
+              <MultiBinding Converter="{StaticResource TilesetScaledSizeConverter}" ConverterParameter="true">
+                <Binding Path="CurrentTileset"/>
+                <Binding Path="ZoomPercent"/>
+              </MultiBinding>
+            </Image.Height>
+          </Image>
+          <Border VerticalAlignment="Top" HorizontalAlignment="Left" IsVisible="{Binding BorderPresent}" BorderThickness="2" BorderBrush="Red">
+            <Border.Margin>
+              <MultiBinding Converter="{StaticResource TileToThicknessConverter}">
+                <Binding Path="SelectedTile"/>
+                <Binding Path="TileSize"/>
+                <Binding Path="ZoomPercent"/>
+              </MultiBinding>
+            </Border.Margin>
+            <Border.Width>
+              <MultiBinding Converter="{StaticResource TileSizedConverter}" ConverterParameter="false">
+                <Binding Path="MultiSelect"/>
+                <Binding Path="TileSize"/>
+                <Binding Path="ZoomPercent"/>
+              </MultiBinding>
+            </Border.Width>
+            <Border.Height>
+              <MultiBinding Converter="{StaticResource TileSizedConverter}" ConverterParameter="true">
+                <Binding Path="MultiSelect"/>
+                <Binding Path="TileSize"/>
+                <Binding Path="ZoomPercent"/>
+              </MultiBinding>
+            </Border.Height>
+          </Border>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
     <views:SearchListBox DataContext="{Binding Tilesets}" Margin="4" Grid.Row="1" Grid.Column="1">
       <views:SearchListBox.ContextMenu>
         <ContextMenu>

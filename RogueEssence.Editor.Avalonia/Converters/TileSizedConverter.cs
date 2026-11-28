@@ -19,7 +19,8 @@ namespace RogueEssence.Dev.Converters
             {
                 bool useY = Boolean.Parse((string)parameter);
                 int diff = useY ? tileXY.Y : tileXY.X;
-                return diff * tileSize;
+                int zoomPercent = values.Count > 2 && values[2] is int zoom ? zoom : 100;
+                return diff * tileSize * zoomPercent / 100.0;
             }
             return 0;
         }

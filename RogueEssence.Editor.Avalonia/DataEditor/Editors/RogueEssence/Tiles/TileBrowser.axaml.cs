@@ -27,7 +27,8 @@ namespace RogueEssence.Dev.Views
             PointerPoint pt = e.GetCurrentPoint((IVisual)sender);
             TileBrowserViewModel vm = (TileBrowserViewModel)DataContext;
             
-            Loc clickedLoc = new Loc((int)pt.Position.X / vm.TileSize, (int)pt.Position.Y / vm.TileSize);
+            double scaledTileSize = vm.TileSize * vm.ZoomPercent / 100.0;
+            Loc clickedLoc = new Loc((int)(pt.Position.X / scaledTileSize), (int)(pt.Position.Y / scaledTileSize));
             vm.SelectTile(clickedLoc, pt.Properties.IsRightButtonPressed, (e.KeyModifiers & KeyModifiers.Shift) != KeyModifiers.None);
         }
     }

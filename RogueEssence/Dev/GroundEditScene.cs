@@ -45,6 +45,10 @@ namespace RogueEssence.Dev
         public EditorMode EditMode;
 
         public CanvasStroke<AutoTile> AutoTileInProgress;
+        /// <summary>
+        /// The texture-region selection currently previewed by the ground editor.
+        /// </summary>
+        public CanvasStroke<bool> TextureSelectionInProgress;
         public CanvasStroke<bool> BlockInProgress;
         public GroundAnim DecorationInProgress;
         public GroundEntity EntityInProgress;
@@ -170,6 +174,24 @@ namespace RogueEssence.Dev
                                     GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.X, jj * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.Y, ZoneManager.Instance.CurrentGround.TileSize, ZoneManager.Instance.CurrentGround.TileSize), null, Color.Black);
                                 else
                                     brush.Draw(spriteBatch, new Loc(ii * ZoneManager.Instance.CurrentGround.TileSize, jj * ZoneManager.Instance.CurrentGround.TileSize) - ViewRect.Start);
+                            }
+                        }
+                    }
+                }
+
+                if (TextureSelectionInProgress != null)
+                {
+                    for (int jj = viewTileRect.Y; jj < viewTileRect.End.Y; jj++)
+                    {
+                        for (int ii = viewTileRect.X; ii < viewTileRect.End.X; ii++)
+                        {
+                            Loc testLoc = new Loc(ii, jj);
+                            if (Collision.InBounds(ZoneManager.Instance.CurrentGround.Width, ZoneManager.Instance.CurrentGround.Height, testLoc) &&
+                                TextureSelectionInProgress.IncludesLoc(testLoc))
+                            {
+                                GraphicsManager.Pixel.Draw(spriteBatch, new Rectangle(ii * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.X,
+                                    jj * ZoneManager.Instance.CurrentGround.TileSize - ViewRect.Y,
+                                    ZoneManager.Instance.CurrentGround.TileSize, ZoneManager.Instance.CurrentGround.TileSize), null, Color.White * 0.5f);
                             }
                         }
                     }
