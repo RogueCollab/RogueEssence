@@ -86,7 +86,7 @@ namespace RogueEssence.Menu
 
         protected override void ChoiceChanged()
         {
-            if (CurrentChoice < 4)
+            if (CurrentChoice < CharData.MAX_SKILL_SLOTS)
                 summaryMenu.SetSkill(player.BaseSkills[CurrentChoice].SkillNum);
             else
                 summaryMenu.SetSkill(skillNum);
